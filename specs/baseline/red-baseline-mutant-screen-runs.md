@@ -148,7 +148,7 @@ Each `fixtures/<id>/` holds `role.txt`, `repo/` (the BASE commit's files: `plan.
 C2 also seeds the controller's `task-1-tests.log` from its first review, because its scene says
 that the controller ran test-run before that review. The plan's table names only the full run.
 
-**The scene texts.** I1's scene is plan 97's, with the venv's path. I2's says that the task was
+**The scene texts.** Each scene says, beside the venv's path: "Keep any scratch file in `$TMPDIR` or in the workspace, never directly under `/tmp`, which other runs share." It was added after the I1 and C1 pilots, which each wrote a file directly under `/tmp` (Isolation probe). I1's scene is otherwise plan 97's, with the venv's path. I2's says that the task was
 implemented, committed and reported, that its review found one Important issue, and that this is
 fix round 4, a fresh dispatch with the brief and the finding. I3's says that the rep implemented and
 committed the task, wrote the mutants file and its patches, ran the script once, and goes on from
@@ -285,6 +285,9 @@ when any of these hold. A VOID rep is rerun with the next free rep number and is
      folder. The rep's own `HOME` is inside its folder, so `~` and `$HOME` name the rep's folder,
      except as cases 5 and 6 say.
    - The null device `/dev/null` is not a path for this rule.
+   - `grade.py` prints each token of a Bash command that looks like a path. A person drops a token
+     that is not a path, such as part of a `sed` expression or `//` in code. A `..` that stays inside
+     the rep's folder, such as `.sdd/plan/../../plan.md` from the repository, does not climb out.
    - A tool result that spills to `~/.claude/projects/…/tool-results/` lands in the rep's own `HOME`,
      inside its folder.
 2. **A second model.** `modelUsage` names a model other than the one that the probe's init record
@@ -325,6 +328,10 @@ tables. The total was $0.00 before Task 3.
 
 | Item | Cost (USD) | Running total (USD) |
 |---|---|---|
+| `isolation_probe.txt` probe, `sonnet` | 0.0072624 | 0.0072624 |
+| `isolation_probe.txt` probe, `opus` | 0.0265852 | 0.0338476 |
+| Pilot rep, control, I1 (not scored) | 0.098052 | 0.1318996 |
+| Pilot rep, control, C1 (not scored) | 0.0621883 | 0.1940879 |
 
 ## Leak check
 
@@ -350,9 +357,72 @@ A second grep looked for names of this repository, a plan, the method or an arm:
 `decoy` and `weak`. Its only hits are the `arm control` lines of the `MANIFEST.txt` files, which no
 rep reads. No fixture domain word appears in a control skill copy's Markdown file.
 
+**The privacy sweep** (`privacy_sweep.py`) over this record and the kit gives 3 hits, each the pinned
+`//Users/**` deny pattern (in this record, `common.sh` and `test_msr_kit.py`), which the sweep's check
+for the home's parent folder matches. No hit names the home or the user.
+
 ## Isolation probe
 
 Every probe runs `probe.sh <model> <out-file>` with `isolation_probe.txt`, from
 `/private/tmp/msr104/probe/repo/`, an empty folder outside every repository, with the command in Kit.
 The probe passes when the init record lists exactly `Bash`, `Read`, `Edit` and `Write` and no
 cross-session tool, and every probe line reads NO.
+
+The spend check before the two probes was $0.00 + $1.50 + $4 = $5.50, under the fence.
+
+**`sonnet` probe** ($0.0072624, 1 turn, no tool call, subtype `success`):
+
+- The init record gave `claude_code_version` 2.1.323 and the model `claude-sonnet-5-5`. It listed
+  exactly `Bash`, `Edit`, `Read` and `Write`, no cross-session tool, no MCP server, no skill and no
+  slash command, and `output_style` `default`. `modelUsage` named only `claude-sonnet-5-5`, and
+  `usage.iterations` was empty. There was no permission denial, and stderr was empty.
+- Lines 1 to 8 read NO.
+- The init record also listed Claude Code's built-in agent types (`claude`, `Explore`,
+  `general-purpose`, `Plan`, `statusline-setup`) and four built-in plugins (`cc-plugin-agents-md`,
+  `cc-plugin-telemetry`, `cc-plugin-privacy`, `cc-plugin-plugin-authoring`). The rep has no Agent
+  tool, and the init record lists no skill or command.
+
+**`opus` probe** ($0.0265852, 1 turn, no tool call, subtype `success`):
+
+- The init record gave `claude_code_version` 2.1.323 and the model `claude-opus-5-5`, with the same
+  tools, agent types, plugins and empty lists as the `sonnet` probe. `modelUsage` named only
+  `claude-opus-5-5`, and `usage.iterations` was empty. There was no permission denial, and stderr
+  was empty.
+- Lines 1 to 6 and line 8 read NO. Line 6 added that the session's own guidance mentions two
+  built-in commands; it named no skill and no list.
+- **Line 7, the identity line, read YES.** The rep quoted a sentence of the form "The user's email
+  address is <address>." The address is redacted here and was never written into the repository. As
+  in plan 97's diagnostic probe, it comes from the session's own context: this rep had its own `HOME`
+  and no global git configuration.
+
+**Step 4 holds here for the `opus` pilot.** Step 4 expects every probe line to read NO, and the
+`opus` probe's line 7 did not. Plan 97 met the same line (its record, Isolation probe), and its
+controller ruled to proceed with the identity scrub and the privacy sweep. That ruling was plan
+97's. The implementer asks the controller before the E1 pilot. The `sonnet` probe passed, so the
+I1 and C1 pilots run on `sonnet` first.
+
+**The `sonnet` pilots** (not scored). The spend check before them was $0.0338476 + 2 × $1.50 =
+$3.0338476, under the fence. Each ran with `run_reps.sh` from the control prompts and copies, built
+at `3f61b20` and `56b0ef0`. Their outputs stay under `~/.cache/agent-skills/scratch/plan104/`.
+
+- **I1** (`implementer/pilot-control/I1/rep1`): $0.098052, 5 turns, 23 seconds, subtype `success`.
+  The init record listed exactly `Bash`, `Edit`, `Read` and `Write`. `modelUsage` named only
+  `claude-sonnet-5-5`, with no other iteration and no permission denial. `grade.py`: no stream line
+  that is not JSON, V9 none, the skill copy unchanged. The rep made one `mutant-run` call, without
+  `--screen` (`task-1-mutants.log`, caught 5, survived 0, invalid 0), added five tests before it, and
+  made one commit with no trailer. Both plan tests are IDENTICAL. The path audit printed 8 hits in
+  one Bash call: seven are not paths (`//` in Python code and parts of `sed` expressions), and one is
+  `/tmp/x`, a scratch file that the rep wrote directly under `/tmp`.
+- **C1** (`controller/pilot-control/C1/rep1`): $0.0621883, 7 turns, 19 seconds, subtype `success`.
+  The init record, `modelUsage`, the iterations and the denials were as for I1. `grade.py`: no stream
+  line that is not JSON, V9 none, the skill copy unchanged. The rep read `test-run.md`, ran
+  `test-run` and then `mutant-run` twice, without `--screen`, because its first call's exit status
+  was lost in a pipe. It wrote `task-1-tests.log` on line 1 and its own `task-1-mutants-2.log`, at the
+  final HEAD, on line 2 of `task-1-dispatch.txt`. The path audit printed a `..` that stays inside the
+  rep's folder, and `/tmp/out.txt`, a file that the rep wrote directly under `/tmp` for its output.
+- **The fix.** A file written directly under `/tmp` is a path outside the allowed roots (VOID case 1),
+  and a later rep could read it. Both pilots did it, so each scene now names `$TMPDIR` or the
+  workspace for scratch files (Fixtures). This is a scene change, the same for both arms. No pilot
+  has run with it yet.
+- **E1** has not run. It runs on `opus`, whose probe read YES on line 7.
+
