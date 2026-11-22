@@ -1,0 +1,7 @@
+You are executing the plan `@REPO@/plan.md` inline, under the executing-plans skill. Its text is `@SKILL@/executing-plans/SKILL.md`, so `<this-skill-dir>` is `@SKILL@/executing-plans`, and the subagent-driven-development files that it points to are under `@SKILL@/subagent-driven-development`.
+
+This session is a relaunch: the plan's execution was under way when the last session stopped. Setup was done then: the worktree is this repository, `@REPO@`; the workspace is `@REPO@/.sdd/plan`; the ledger is `@REPO@/.sdd/plan/progress.md`; and the sub-skills that SKILL.md loads before Task 1 are loaded. Do not look for those sub-skills on disk. Resume as SKILL.md says, from the ledger and `git log`.
+
+Task 1 is the plan's only task, and the ledger has no line for it yet. Its brief is `@REPO@/.sdd/plan/task-1-brief.md`, and its BASE is `@BASE@`. Its code and tests are committed, and its mutant step is under way: the workspace holds its mutants file, its patches and its first mutant run. `/private/tmp/msr104-venv/bin/python` has pytest installed, and the project's documented test command is `/private/tmp/msr104-venv/bin/python -m pytest -q`.
+
+Do only this: Task 1's mutant step (SKILL.md, "Prove the tests"), then `task-done` for Task 1 (SKILL.md, "Complete the task"). Stop when `task-done` records Task 1 in the ledger, or after `task-done` refuses three times. Do not start the final review.

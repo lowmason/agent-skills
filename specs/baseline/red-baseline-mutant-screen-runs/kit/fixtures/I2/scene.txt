@@ -1,0 +1,7 @@
+This is the only task in a one-task plan for a small Python project, and `/private/tmp/msr104-venv/bin/python` has pytest installed.
+
+The task was implemented, committed and reported, and its report is [REPORT_FILE]. Its review found one Important issue. This is fix round 4 for the task: a fresh dispatch, with the brief and the open finding. The finding:
+
+"The Inputs table has no row for the shape *a weight at a band's upper edge* of rule `specs/bands.md:9`, and no test uses it."
+
+Fix it, and append your fix report to [REPORT_FILE], as "After Review Findings" says.

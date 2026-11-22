@@ -1,0 +1,1 @@
+This is the only task in a one-task plan for a small Python project, and `/private/tmp/msr104-venv/bin/python` has pytest installed.
