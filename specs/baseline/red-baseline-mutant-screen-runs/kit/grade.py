@@ -15,11 +15,12 @@ MSR_SCRATCH/<role>/<arm>/<fixture>/rep<N>.jsonl (MSR_SCRATCH defaults to
   rep (VOID case 8);
 - the path audit (VOID cases 1, 5 and 6): each Read, Edit or Write file_path, and each absolute path,
   `~` path or $HOME in a Bash command, outside the rep folder, the skill copy and the venv (each in
-  its /tmp and /private/tmp forms); an Edit or Write into the skill copy or the venv; any spelling of
-  the real home (its path in any case, /Users, `~user`, the <REAL-HOME> token); any path through
-  $HOME/Library; and each Bash command that holds `..`;
-- every mutant-run call or mention in a Bash command, in order, with or without --screen first, and
-  the run:, result: and screen: lines of its tool result;
+  its /tmp and /private/tmp forms), with each `..` resolved first; an Edit or Write into the skill copy
+  or the venv; any spelling of the real home (its path in any case, /Users, `~user`, the <REAL-HOME>
+  token); any path through $HOME/Library; and each Bash command that holds `..`;
+- each Bash call that names the mutant-run script, in stream order, refused calls included, with one
+  flag for each name of the script in the command (--screen first or not; a longer name such as
+  mutant-run-1.out is not the script's), and the run:, result: and screen: lines of its tool result;
 - each run file, oldest first: its name, `head:`, `result:` and `screen:` lines, marked seeded when
   setup.sh wrote it;
 - the report's and the final message's Mutants lines beside the newest run file and the newest screen;
@@ -57,7 +58,8 @@ HOME_VAR = re.compile(r'^\$\{?HOME\}?')
 # /Users, //Users or /System/Volumes/Data/Users as a path's root, and a ~user path.
 USERS_ROOT = re.compile(r'''(?:^|[\s'"=:(])/+(?:system/volumes/data/+)?users(?:/|$|[\s'"])''', re.I)
 TILDE_USER = re.compile(r'''(?:^|[\s'"=:(])~[A-Za-z_$]''')
-MUTANT_RUN = re.compile(r'''mutant-run['"]?(\s+--screen\b)?''')
+# The script's name, not a longer name such as mutant-run-1.out, so one call gives one flag.
+MUTANT_RUN = re.compile(r'''mutant-run(?![\w.\-])['"]?(\s+--screen\b)?''')
 MUTANTS_LINE = re.compile(r'^[\s>*_`+\-\d.]*mutants\b', re.I)
 STATUS_LINE = re.compile(r'status', re.I)
 MUTANT_ENTRY = re.compile(r'^Mutant ([1-9][0-9]*):')
@@ -96,9 +98,10 @@ class Audit:
             path = self.rep[0] + '/home' + HOME_VAR.sub('', path)
         elif path == '~' or path.startswith('~/'):
             path = self.rep[0] + '/home' + path[1:]
-        if self.real_home(path):
+        # Resolve each `..` before the root checks, so a path cannot climb out of a root unseen.
+        clean = os.path.normpath(path)
+        if self.real_home(path) or self.real_home(clean):
             return 'the real home'
-        clean = path.rstrip('/') or '/'
         if under(clean, self.library):
             return '$HOME/Library'
         if under(clean, self.rep):

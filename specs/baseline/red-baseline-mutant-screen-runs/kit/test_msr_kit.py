@@ -319,3 +319,144 @@ def test_grade_flags_a_non_json_stream_line(kit):
     out = grade(kit, rep)
     assert 'stream line 2 is not JSON' in out
     assert 'VOID case 3' in out
+
+
+def bash_call(command: str) -> dict:
+    return {'name': 'Bash', 'input': {'command': command}}
+
+
+def call_flags(out: str) -> list[str]:
+    return [line.split(': ')[1] for line in out.splitlines() if line.startswith('  mutant-run in call ')]
+
+
+SCRIPT = '/private/tmp/msr104-skill/inline/subagent-driven-development/scripts/mutant-run'
+
+
+def test_grade_flags_each_call_of_mutant_run_not_each_mention(kit):
+    calls = [
+        # The E1 pilot's shape: one call, its output file named twice.
+        bash_call(f'{SCRIPT} plan.md 1 abc -- py -m pytest -q > .sdd/plan/mutant-run-1.out 2>&1; echo exit $?; '
+                  'tail -15 .sdd/plan/mutant-run-1.out'),
+        bash_call(f'{SCRIPT} --screen plan.md 1 abc -- py > .sdd/plan/mutant-run-1.out; tail .sdd/plan/mutant-run-1.out'),
+        bash_call(f'"{SCRIPT}" --screen plan.md 1 abc -- py'),
+        # Two real calls in one command keep two flags.
+        bash_call(f'{SCRIPT} --screen plan.md 1 abc -- py; {SCRIPT} plan.md 1 abc -- py'),
+    ]
+    out = grade(kit, write_rep(kit, {'tool_calls': calls}, [INIT, RESULT]))
+    assert call_flags(out) == ['no --screen', '--screen', '--screen', '--screen, no --screen']
+
+
+@pytest.mark.parametrize(('tool', 'path', 'why'), [
+    ('Read', '/private/tmp/msr104/rep1/repo/../home/Library/Keychains/x', '$HOME/Library'),
+    ('Read', '/private/tmp/msr104/rep1/../../msr104-skill/x', 'outside the allowed roots'),
+    ('Write', '/private/tmp/msr104/rep1/../../../etc/x', 'outside the allowed roots'),
+    ('Read', '/private/tmp/msr104/rep1/repo/app.py', None),
+])
+def test_grade_resolves_dot_dot_in_a_file_path(kit, tool, path, why):
+    call = {'name': tool, 'input': {'file_path': path}}
+    out = grade(kit, write_rep(kit, {'tool_calls': [call]}, [INIT, RESULT]))
+    if why is None:
+        assert 'path audit: 0 hit(s)' in out
+    else:
+        assert 'path audit: 1 hit(s)' in out
+        assert f'call 1 {tool}: {path} ({why})' in out
+
+
+def tool_records(*pairs: tuple[str, str]) -> str:
+    '''Assistant and user records for each (command, tool result body) pair, as claude -p writes them.'''
+    lines = []
+    for number, (command, body) in enumerate(pairs, 1):
+        use = {'type': 'tool_use', 'id': f't{number}', 'name': 'Bash', 'input': {'command': command}}
+        lines.append(json.dumps({'type': 'assistant', 'message': {'content': [use]}}))
+        done = {'type': 'tool_result', 'tool_use_id': f't{number}', 'content': body}
+        lines.append(json.dumps({'type': 'user', 'message': {'content': [done]}}))
+    return ''.join(line + '\n' for line in lines)
+
+
+def test_grade_lists_each_mutant_run_call_in_stream_order(kit):
+    (kit.stub_dir / 'extra_lines').write_text(tool_records(
+        (f'{SCRIPT} --screen plan.md 1 abc -- py > .sdd/plan/mutant-run-1.out 2>&1; tail .sdd/plan/mutant-run-1.out',
+         'screen: carried 1 of 2 from earlier runs\nresult: caught 2, survived 0, invalid 0\n'
+         'run: .sdd/plan/task-1-screen.log'),
+        ('git status --short', ''),
+        (f'{SCRIPT} plan.md 1 abc -- py', 'mutant-run: refusing: the tree is not clean'),
+        (f'{SCRIPT} plan.md 1 abc -- py', 'result: caught 2, survived 0, invalid 0\nrun: .sdd/plan/task-1-mutants.log'),
+    ))
+    run_ok(kit)
+    out = grade(kit, kit.out() / 'rep1')
+    listed = [line for line in out.splitlines() if line.startswith(('  mutant-run', '    -> '))]
+    assert [line.split(": '")[0] for line in listed] == [
+        '  mutant-run in call 1: --screen',
+        '    -> screen: carried 1 of 2 from earlier runs',
+        '    -> result: caught 2, survived 0, invalid 0',
+        '    -> run: .sdd/plan/task-1-screen.log',
+        '  mutant-run in call 3: no --screen',
+        '  mutant-run in call 4: no --screen',
+        '    -> result: caught 2, survived 0, invalid 0',
+        '    -> run: .sdd/plan/task-1-mutants.log',
+    ]
+
+
+def patch_sha(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def seed_two_runs(kit: Kit, name: str = 'R1') -> None:
+    '''A seeded screen at the first commit, then the rep's commit, patches, Mutant lines and full run.'''
+    kit.fixture(name, setup=f'''set -e
+mkdir -p tests
+printf 'def test_one():\\n    assert True\\n' > tests/test_x.py
+git add tests && git commit -q -m 'Add one'
+printf 'patch 1\\n' > "$WORKSPACE/task-1-mutant-1.patch"
+printf 'patch 2\\n' > "$WORKSPACE/task-1-mutant-2.patch"
+{{ echo 'mutant-run: Task 1, screen 1'; echo "head: $(git rev-parse HEAD)"
+   echo 'result: caught 1, survived 1, invalid 0'; echo 'screen: carried 0 of 2 from earlier runs'
+   echo '--- mutants ---'
+   echo 'mutant 1: CAUGHT exit 1 sha256 {patch_sha('patch 1' + chr(10))}'
+   echo 'mutant 2: SURVIVED exit 0 sha256 {patch_sha('patch 2' + chr(10))}'; }} > "$WORKSPACE/task-1-screen.log"
+touch -t 202601010000 "$WORKSPACE/task-1-screen.log"
+''')
+    kit.actions('''printf '\\ndef test_two():\\n    assert True\\n\\ndef test_three():\\n    assert True\\n' >> tests/test_x.py
+git commit -q -am 'Add two and three'
+printf 'patch 1, other bytes\\n' > .sdd/plan/task-1-mutant-1.patch
+printf 'patch 3\\n' > .sdd/plan/task-1-mutant-3.patch
+{ echo 'Mutant 1: specs/x.md:1, test_one, test_two - a - task-1-mutant-1.patch'
+  echo 'Mutant 2: specs/x.md:2, test_two - b - task-1-mutant-2.patch'
+  echo 'Mutant 3: specs/x.md:3, test_two - c - task-1-mutant-3.patch'; } > .sdd/plan/task-1-mutants.md
+{ echo 'mutant-run: Task 1'; echo "head: $(git rev-parse HEAD)"; echo 'result: caught 3, survived 0, invalid 0'
+  echo '--- mutants ---'; } > .sdd/plan/task-1-mutants.log
+touch -t 202601010100 .sdd/plan/task-1-mutants.log
+printf '## Report\\n- Mutants: caught 3, survived 0, invalid 0\\n' > .sdd/plan/task-1-report.md
+''')
+    run_ok(kit, name=name)
+
+
+def test_grade_lists_each_run_file_oldest_first(kit):
+    seed_two_runs(kit)
+    first, last = (commit['sha'][:12] for commit in kit.summary(name='R1')['commits'])
+    out = grade(kit, kit.out('R1') / 'rep1')
+    shown = [line for line in out.splitlines() if line.startswith(('  run file', '  newest', '  report Mutants'))]
+    assert shown == [
+        f'  run file task-1-screen.log [seeded]: head {first} | result: caught 1, survived 1, invalid 0 '
+        '| screen: carried 0 of 2 from earlier runs',
+        f'  run file task-1-mutants.log: head {last} | result: caught 3, survived 0, invalid 0',
+        '  report Mutants line: - Mutants: caught 3, survived 0, invalid 0',
+        '  newest run file: task-1-mutants.log: caught 3, survived 0, invalid 0',
+        '  newest screen: task-1-screen.log: caught 1, survived 1, invalid 0',
+    ]
+
+
+def test_grade_shows_each_added_test_with_the_mutant_lines_that_name_it(kit):
+    seed_two_runs(kit)
+    out = grade(kit, kit.out('R1') / 'rep1')
+    start = out.index('  first run:')
+    shown = out[start:].splitlines()[:5]
+    assert shown == [
+        '  first run: task-1-screen.log; test functions added after it: test_three, test_two',
+        '    test_three: no Mutant line names it',
+        '    test_two: patch 1 in the first run (CAUGHT there), sha256 changed since: '
+        'Mutant 1: specs/x.md:1, test_one, test_two - a - task-1-mutant-1.patch',
+        '    test_two: patch 2 in the first run (SURVIVED there), same sha256: '
+        'Mutant 2: specs/x.md:2, test_two - b - task-1-mutant-2.patch',
+        '    test_two: patch 3 not in the first run: Mutant 3: specs/x.md:3, test_two - c - task-1-mutant-3.patch',
+    ]

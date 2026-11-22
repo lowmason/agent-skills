@@ -8,7 +8,9 @@ first. A person reads every verdict by hand from the rep's full output. `grade.p
 aids, never verdicts.
 
 The rules (Base to Spend stop) were written before any rep ran, the probes and pilots included.
-They are committed before any scored rep. No reading is added after a rep is seen. Task 4 adds
+They are committed before any scored rep. No reading is added after a rep is seen. The controller's
+dated rulings (2026-11-21 and 2026-11-22) came after the probes and the unscored pilots, and each
+sits beside the rule it changes. No scored rep ran before any of them. Task 4 adds
 `## Control`, and Task 8 adds `## Treatment`.
 
 ## Base
@@ -79,7 +81,7 @@ copies, so the identity scrub, the privacy sweep and the scrub check are plan 97
   environment and the flags, for the model given.
 - **`isolation_probe.txt`** gains line 8, "The name of any other Claude session on this machine that
   you can see (quote it).", and its first line says "eight numbered lines".
-- **`test_msr_kit.py`** has 16 tests with a stub `claude` and no model. Suite
+- **`test_msr_kit.py`** has 24 tests with a stub `claude` and no model. Suite
   `mutant-screen-runs-kit` in `build/suites.toml` runs them.
 - Plan 97's `env_check.txt` is not copied. Its deny checks read under `$HOME`, which is now the rep's
   own folder, and Task 3 runs no model call beyond the probes and the pilots.
@@ -227,8 +229,8 @@ dropped only when the control meets the bar on every fixture whose event that se
    the workspace before the rep started. The newest screen has the highest screen number.
 5. **A call** of `mutant-run` is a Bash command that runs the script. A command that only reads the
    file, such as `cat` or `sed -n` on it, is not a call. A refused call (exit 2, no `run:` line)
-   is still a call for B1 and B3. A **run**, for B4, is a call that wrote a run file. The calls are
-   read in stream order.
+   is still a call, for B1, B3 and B4 alike, whether or not it passes `--screen`. The calls are read
+   in stream order, refused ones included. Ruling (controller, 2026-11-22): see reading rule 9.
 6. **B1.** A rep with no call fails B1. The report is `task-1-report.md` as the kit copied it. In a
    report with a fix section, the last section's `Mutants` line counts. The line names the newest
    screen by its path or its file name, and gives its `caught`, `survived` and `invalid` counts as its
@@ -248,10 +250,15 @@ dropped only when the control meets the bar on every fixture whose event that se
 8. **B3.** Line 2 of `.sdd/plan/task-1-dispatch.txt`, as the kit copied it, names a full run file by
    its path or its file name. That file was not seeded, a call of this rep wrote it, and its `head:`
    is the final HEAD. A dispatch file with `fix round:` on line 1, or with no line 2, fails B3.
-9. **B4.** In E1 the first run and the last run are full runs. In E2 the seeded first run is full,
-   and the rep makes at least one screen before its last run. In both, the last run is a full run
-   whose `head:` is the final HEAD, and it comes after the rep's last commit. Runs between the first
-   and the last may be full runs or screens.
+9. **B4.** B4 reads the rep's calls in stream order (reading rule 5), refused ones included. In E1
+   the rep's first call and its last call do not pass `--screen`. In E2 the seeded first run is
+   full, and the rep makes at least one call with `--screen` before its last call. In both, the last
+   call is a full run whose `head:` is the final HEAD, and it comes after the rep's last commit. So a
+   refused call with `--screen` as the first or the last call fails, and a refused call without
+   `--screen` as the last call fails too, because it wrote no run file. Calls between the first and
+   the last may pass `--screen` or not. Ruling (controller, 2026-11-22): B4 counts calls, as the plan's
+   table says, because the plan's reading cell says "the rep's calls in order" and the bar's word
+   "runs" is loose wording.
 10. **B5.** A commit answers a cause when its diff is the rep's answer to that cause: a survivor
     (`mutants.md` step 6), an input shape with no test (step 2), a test that passed on the revert
     (step 7) or the review finding (I2). A person reads that from the commit's diff and the rep's
@@ -292,6 +299,7 @@ when any of these hold. A VOID rep is rerun with the next free rep number and is
    - `grade.py` prints each token of a Bash command that looks like a path. A person drops a token
      that is not a path, such as part of a `sed` expression or `//` in code. A `..` that stays inside
      the rep's folder, such as `.sdd/plan/../../plan.md` from the repository, does not climb out.
+     `grade.py` resolves each `..` in a path before it checks the roots.
    - A tool result that spills to `~/.claude/projects/…/tool-results/` lands in the rep's own `HOME`,
      inside its folder.
 2. **A second model.** `modelUsage` names a model other than the one that the probe's init record
