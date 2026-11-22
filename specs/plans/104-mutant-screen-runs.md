@@ -1,5 +1,7 @@
 # Mutant Screen Runs Implementation Plan
 
+**Status: COMPLETE (2026-11-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Owner gate.** No execution starts until PR #237 and PR #235 have merged and no other machinery stream runs. The owner orders this plan and the E3 pass. (Status on 2026-11-19: #237 merged at `29d744f` and #235 at `4a367fb`. Plan 103's execution, planned in #240, edits finishing-a-development-branch and using-git-worktrees, so it is a machinery stream too. The owner orders it with this plan and the E3 `/cc-guide files` pass.)
@@ -164,7 +166,7 @@ Callers of `mutant-run` that stay as they are, each read at `fce19d3`: `task-don
 **Interfaces:**
 - Produces: the call, the screen file's name, numbering and header, and stdout, as File formats pins them. In this task a screen still runs every patch, so its `screen:` line reads `carried 0 of <total>`. Task 2 adds the carry.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `test_sdd_scripts.py`:
 
@@ -199,21 +201,21 @@ In `test_executing_plans_scripts.py` (spec test 9), with a helper `calc_task(rep
 - `test_task_done_refuses_an_older_full_run_beside_a_newer_screen`: a full run at H1 exits 0. `commit_work(repo)` makes H2. A screen at H2 exits 0. `task-done` exits 4, its stderr holds `the mutant run is at <H1>, not HEAD <H2>`, and `recorded(repo)` is False.
 - `test_task_done_records_a_clean_full_run_beside_a_newer_screen_with_a_survivor`: a full run on `PYTEST` exits 0. A screen on `[*PYTEST, '-k', 'neg']` exits 1, and its file holds `result: caught 0, survived 1, invalid 0`. `task-done` on `PYTEST` exits 0, and the ledger's last line holds `mutants: 1/1`.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py subagent-driven-development -- -k "screen or bad_arguments or requires_a_base" -rfs`, then `uv run python build/run_suites.py executing-plans -- -k screen -rfs`
 Expected: FAIL. Each new test gets the usage refusal (exit 2), because `--screen` is not an argument yet, and the two updated usage tests miss the new usage text.
 
-- [ ] **Step 3: Implement the flag and the screen file in `mutant-run`**
+- [x] **Step 3: Implement the flag and the screen file in `mutant-run`**
 
 Strip a leading `--screen` before the argument check, and print the new usage line. Generalize `next_run_file` to the two series, so a screen takes `task-<N>-screen[-<K>].log` and `mutant-run: Task <N>, screen <K>`. Write the `screen:` line, as File formats pins it, in the header and on stdout. In this task `<m>` is always 0. Add the screen to the header comment, as Global Constraints, Scripts, limits it: the call with `[--screen]`, the file names and numbering, the header lines, the carried line form, and the exit status.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: the Step 2 commands, then `uv run python build/run_suites.py subagent-driven-development executing-plans`, then the same with `PATH="/bin:$PATH"`.
 Expected: PASS. The `subagent-driven-development` suite gains +5 tests and +3 cases. The `executing-plans` suite gains +2 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/subagent-driven-development/scripts/mutant-run skills/subagent-driven-development/scripts/test_sdd_scripts.py skills/executing-plans/scripts/test_executing_plans_scripts.py
@@ -232,7 +234,7 @@ git commit -m "feat(sdd): mutant-run --screen writes a screen file of its own"
 - Consumes: Task 1's call, numbering and header.
 - Produces: the carry, as File formats, Earlier catches, pins it. Tasks 3 to 8 run this commit's `mutant-run`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 def counting(repo):
@@ -273,26 +275,28 @@ Also add, each on `PYTEST` and mutant A unless it says otherwise:
 - `test_mutant_run_screen_skips_a_failed_baseline_and_look_alike_names` (Review Focus 4): a command that exits 1 while a flag file exists in the workspace gives a full run with a failing baseline (exit 3). Remove the flag, and run a full run on that command, which catches mutant 1. Add mutant 2 (W). Write `task-1-screen-01.log` and `task-1-mutants-x.log` into the workspace, each with that command, a `--- mutants ---` line and then a CAUGHT line for W's sha. A screen on that command exits 0, writes `task-1-screen.log`, carries mutant 1 from `task-1-mutants-2.log`, and runs mutant 2 (`exit 1`).
 - `test_mutant_run_screen_carries_every_patch_whose_sha_was_caught` (Review Focus 5): a full run catches mutant 1. Copy patch 1's bytes to `task-1-mutant-2.patch`. The screen carries both from `task-1-mutants.log` and holds `screen: carried 2 of 2 from earlier runs`.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py subagent-driven-development -- -k "mutant_run_screen" -rfs`
 Expected: each of the 14 new tests FAILS, because Task 1's screen carries nothing: each test expects a carried line, its witness's or its own. Task 1's five screen tests still pass. A new test that passes here is vacuous: fix the test before Step 3.
 
-- [ ] **Step 3: Implement the carry in `mutant-run`**
+- [x] **Step 3: Implement the carry in `mutant-run`**
+
+> Deviation: The carry reads each carried patch's test IDs from the earlier run file's `--- tests ---` section, not from a split of the catch line's `tests:` field. A split broke IDs that hold `]` or `::` (review rounds 2 to 4); the tests section prints each ID whole.
 
 Read the earlier files once, before the patch loop, into a sha256-keyed list of file name and tests, as File formats, Earlier catches, pins it. Use awk readers in the style of `task-done:207-238`. In the loop, a patch that passes the checks and whose sha256 is on the list gets the carried line and adds its tests to the `--- tests ---` pairs, and the command does not run. Add the carry to the header comment, within Global Constraints, Scripts.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run python build/run_suites.py subagent-driven-development executing-plans`, then the same with `PATH="/bin:$PATH"`.
 Expected: PASS. The `subagent-driven-development` suite gains +14 tests.
 
-- [ ] **Step 5: Check the header**
+- [x] **Step 5: Check the header**
 
 Run: `/usr/bin/grep -n -i -E 'proof|evidence|review|task-done|full run' skills/subagent-driven-development/scripts/mutant-run`
 Expected: no hit in any line that this plan added. Each other hit is a line from before the plan (compare with `git show fce19d3:skills/subagent-driven-development/scripts/mutant-run`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/subagent-driven-development/scripts/mutant-run skills/subagent-driven-development/scripts/test_sdd_scripts.py
@@ -316,7 +320,7 @@ git commit -m "feat(sdd): a mutant-run screen carries the catches of earlier run
   - `probe.sh`, `grade.py <rep-dir> ...` and `privacy_sweep.py`.
   - The record, committed with every rule before any scored rep.
 
-- [ ] **Step 1: Copy and adapt the kit**
+- [x] **Step 1: Copy and adapt the kit**
 
 Copy `specs/baseline/red-baseline-change-reverted-mutant/impl-kit/` without its fixtures. Keep plan 97's identity scrub, privacy sweep and scrub check. Make these changes:
 - **`build_prompts.py`** reads every text at `<text-sha>` and every script at `<script-sha>` with `git show`. The skill copy for each role:
@@ -345,7 +349,7 @@ Copy `specs/baseline/red-baseline-change-reverted-mutant/impl-kit/` without its 
 - **`isolation_probe.txt`** gains a line: "8. The name of any other Claude session on this machine that you can see (quote it)." Its first line says "eight numbered lines".
 - **Tests** (`test_msr_kit.py`, stub `claude`, no model): `test_second_rep_sees_nothing_of_first`, `test_refuses_a_nonempty_rep_root`, `test_strip_removes_credential_field_everywhere`, `test_unstripped_field_fails_the_rep`, `test_refuses_a_changed_skill_copy`, `test_settings_deny_the_cross_session_tools`, `test_grade_flags_a_peer_origin`, `test_grade_flags_a_real_home_path_in_a_for_loop`.
 
-- [ ] **Step 2: Write the seven fixtures (D13)**
+- [x] **Step 2: Write the seven fixtures (D13)**
 
 Each `fixtures/<id>/` holds `role.txt`, `repo/` (the BASE commit's files: `plan.md`, the spec under `specs/`, any pre-change code, and a `.gitignore` for `__pycache__/` and `.pytest_cache/`), `brief.md` and `spec.md` as plan 97's fixtures hold them, and, for a seeded fixture, `setup.sh` and the files it needs. `setup.sh` runs in the rep's repository with the skill copy's scripts and the venv. It makes each commit as `Developer <developer@example.invalid>`, writes the workspace files, runs the real `mutant-run` for every seeded run, and writes the report or ledger with the real paths and counts. It exits non-zero when a seeded run does not give the result the table expects, and `run_reps.sh` then records a kit error and runs no rep. The focused command is `/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_<module>.py`.
 
@@ -361,7 +365,9 @@ Each `fixtures/<id>/` holds `role.txt`, `repo/` (the BASE commit's files: `plan.
 
 The domains stay apart from each other, from plan 93's and plan 97's fixtures, from the example in `references/mutants.md` (forms inside code), and from this repository. Each I and E rep writes its report or ledger in `.sdd/plan/`. A controller rep writes the path it would give as `[RUN_FILE]` on line 1 of `.sdd/plan/task-1-dispatch.txt`, and the path it would give as `[MUTANT_RUN_FILE]` on line 2, and then stops: it has no Agent tool. The scene texts for C and E say who the rep is, where its text is in the skill copy, the task's BASE, where it starts, and where it stops. E stops when `task-done` records Task 1, or after it refuses three times. The E scene text says that setup is done (the worktree, the workspace, the ledger and the sub-skills that `SKILL.md` loads before Task 1), and that the rep does Task 1's mutant step and `task-done` only. The I3 scene text says that the rep implemented and committed the task, wrote the mutants and ran the script once, and now goes on from that run. The scene texts hold no bar words (Step 4).
 
-- [ ] **Step 3: Write the record's rules**
+- [x] **Step 3: Write the record's rules**
+
+> Deviation: The VOID rule also voids a rep whose stream holds a line that is not JSON (case 3, from the handoff brief's trap 2), and it changes two words of plan 97's rule: the status-line case binds implementer reps only, and the expected model follows the rep's role. The B5 allowance for an `input shape` value beside the forced cause also covers E2, and B4 counts calls, refused ones included. The record's VOID rule and Bars and readings hold each ruling.
 
 Sections, filled before any rep: Base, Kit, Fixtures, Arms, Bars and readings, VOID rule, Spend stop, Leak check, Isolation probe. The bars are the spec's (Verification), and the readings follow D8 and D9:
 
@@ -376,11 +382,13 @@ Sections, filled before any rep: Base, Kit, Fixtures, Arms, Bars and readings, V
 
 The VOID rule is plan 97's (`specs/baseline/red-baseline-change-reverted-mutant.md:239-266`). The allowed roots are the rep's folder, the role's skill copy (read only) and the venv (read only), each in its `/tmp` and `/private/tmp` forms. The Kit section records the venv's Python and pytest versions. Add four cases: a path through `$HOME/Library`; any spelling of the real home; V9; and a skill copy that changed during the rep. The spend stop is Global Constraints, Micro-test. Name the untested wording (D11) in Arms.
 
-- [ ] **Step 4: Check for leaks, probe and pilot**
+- [x] **Step 4: Check for leaks, probe and pilot**
+
+> Deviation: The `opus` probe's identity line read YES, as in plan 97. The identity scrub and the privacy sweep keep it out of every committed file. The I1 and C1 pilots wrote a scratch file under `/tmp`, so each scene gained a `$TMPDIR` line and the pilots ran again.
 
 Build the control prompts and skill copies (`build_prompts.py <role> control <control-sha> <Task 2 commit> <tmp-dir>`) and run each seeded fixture's `setup.sh` once in a scratch repository. Then grep every file that a control rep can read for each bar's words: every prompt, every skill-copy file with `mutant-run`'s header included, every fixture file, and each seeded file. The words are `Mutant-step`, `trailer`, `proof`, `evidence`, `full run`, `first and last`, `in between`, `every call`, `new patch`, `new mutant` and `re-aim`. Record each hit and each exemption with its reason. Text at `<control-sha>` is the control by definition, so a hit there is exempt. A hit in the header, a fixture, a scene text or a seeded file is fixed before any rep. Run `uv run python build/run_suites.py mutant-screen-runs-kit`: PASS. Run `probe.sh` for each model: the init record lists exactly Bash, Read, Edit and Write and no cross-session tool, and every probe line reads NO. Run one unscored control pilot for each role, on I1, C1 and E1, and audit each stream with `grade.py`. Fix any kit fault or path-audit hit before a scored rep. An E pilot that looks on disk for a skill that `SKILL.md` names, such as test-driven-development, means the scene text needs a fix.
 
-- [ ] **Step 5: Commit the kit and the rules, before any scored rep**
+- [x] **Step 5: Commit the kit and the rules, before any scored rep**
 
 ```bash
 git add specs/baseline/red-baseline-mutant-screen-runs.md specs/baseline/red-baseline-mutant-screen-runs/kit/ build/suites.toml
@@ -399,12 +407,12 @@ git commit -m "test(specs): register the mutant screen micro-test"
 - Consumes: Task 3's kit and rules.
 - Produces: `## Control` in the record, with each bar's pass count for each fixture, and the list of bars the control meets (D9). Tasks 5, 6 and 7 read that list.
 
-- [ ] **Step 1: Run the control arms**
+- [x] **Step 1: Run the control arms**
 
 For each fixture, five reps into `<role>/control/<fixture>/`, one fixture for each batch, with the spend check before each batch.
 Expected: 35 scored reps.
 
-- [ ] **Step 2: Grade, record and commit**
+- [x] **Step 2: Grade, record and commit**
 
 Read every rep by hand with `grade.py`'s aids. Under `## Control`, write each fixture's pass count for each registered bar, the reached counts, every weakening with its quoted lines, the VOID reps with their reasons, and the spend. List each bar the control meets (D9).
 
@@ -426,7 +434,7 @@ git commit -m "test(specs): record the mutant screen micro-test's control arms"
 - Consumes: Task 4's list of bars the control meets; Tasks 1 and 2's file formats.
 - Produces: `mutants.md`'s split between the two executors and the trailer rule. Tasks 6 and 7 point to them.
 
-- [ ] **Step 1: Write the text**
+- [x] **Step 1: Write the text**
 
 Follow the spec's Designs 3 and 5, and leave out the wording for each bar that the control met (D9):
 - **Terms:** a screen, and a carried mutant.
@@ -438,12 +446,12 @@ Follow the spec's Designs 3 and 5, and leave out the wording for each bar that t
 
 In the implementer prompt, `:44-46` and `:143-156` take the screen and the trailer for a fix commit. Keep plan 93's and plan 97's micro-tested sentences word for word, except where a call or a step number changes. Name no reviewer and no review check of the trailer (spec, Design 5).
 
-- [ ] **Step 2: Check the anchors and the lints**
+- [x] **Step 2: Check the anchors and the lints**
 
 Run: `uv run python build/check_helper_paths.py && uv run --with pyyaml python build/check_conformance.py && uv run python build/check_links.py && uv run python build/check_snippets.py skills/`
 Expected: each exits 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/subagent-driven-development/references/mutants.md skills/subagent-driven-development/implementer-prompt.md
@@ -460,15 +468,17 @@ git commit -m "feat(sdd): implementers screen their mutant runs and tag what the
 **Interfaces:**
 - Consumes: Task 4's list; Task 5's Terms.
 
-- [ ] **Step 1: Decide from the control's result**
+- [x] **Step 1: Decide from the control's result**
 
 If the control met B3 on C1 and C2 (D9), change nothing. Write under the record's `## Control` that the controller's wording is dropped, with the counts, and go to Step 3. Otherwise, go to Step 2.
 
 - [ ] **Step 2: Write the text**
 
+> Skipped: Step 1's branch applies. The control met B3 on C1 and C2 (5 of 5 each), so no controller text was written and `test-run.md` is unchanged. Task 8 measured B3 again on the treatment arm (5 of 5 each).
+
 Per spec Design 3: the controller never passes `--screen`. An implementer's screen file is not evidence, and the controller never hands one to a reviewer. Its full run before each review stays as it is. Then run the Task 5 Step 2 lints. Expected: each exits 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/subagent-driven-development/references/test-run.md specs/baseline/red-baseline-mutant-screen-runs.md
@@ -488,16 +498,18 @@ When Step 1 changed nothing, commit only the record, with the message `test(spec
 - Consumes: Task 4's list; Task 5's `mutants.md` step 5 and trailer rule.
 - Produces: the treatment text's last commit, which Task 8 reads as `<treatment-sha>`.
 
-- [ ] **Step 1: Write the text**
+- [x] **Step 1: Write the text**
+
+> Deviation: The trailer text is two short sentences, not one (D11). Lines 289 and 310 of `SKILL.md` now name the newest full run, because a screen is a kind of mutant run that `task-done` does not read.
 
 Per spec Design 3: the first run is a full run. Use `--screen` only for re-runs while you answer survivors and invalid mutants. Once a screen shows no survivor and no invalid mutant, make one more full run after the last commit. A clean full run at HEAD ends the step, and `task-done` reads only full runs. Leave out the wording for a bar that the control met (D9). Add one sentence: every commit that answers the mutant step carries the trailer that `mutants.md` gives, and this includes a commit in the final review's fix pass (D11). Keep the call's anchor.
 
-- [ ] **Step 2: Check the anchors and the lints**
+- [x] **Step 2: Check the anchors and the lints**
 
 Run: the Task 5 Step 2 command.
 Expected: each exits 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/executing-plans/SKILL.md
@@ -515,16 +527,18 @@ git commit -m "feat(executing-plans): full mutant runs first and last, screens i
 **Interfaces:**
 - Consumes: Task 3's kit and rules; Task 7's commit as `<treatment-sha>`.
 
-- [ ] **Step 1: Run the treatment arms**
+- [x] **Step 1: Run the treatment arms**
 
 `build_prompts.py <role> treatment <treatment-sha> <Task 2 commit> <tmp-dir>`, then five reps for each fixture, with the spend check before each batch. The controller arm runs too (D10).
 Expected: 35 scored reps.
 
-- [ ] **Step 2: Grade against the bars**
+- [x] **Step 2: Grade against the bars**
+
+> Deviation: Round 0 missed B2 on I3 (3 of 5), so round 1 restored step 7's half of the dropped B2 sentence in `references/mutants.md` (`20c279d`, `00e657b`) and reran all seven fixtures into `treatment-r1/`. Round 1 met every bar, so no round 2 ran. Two review passes corrected two sentences and two phrases of the record (`9db7b62`, `19ea502`).
 
 Read every rep by hand. A bar missed on a fixture that forces it gets a revision of the wording in Task 5, 6 or 7, committed, and a rerun into `treatment-r<k>/` of every fixture whose prompt or skill copy that revision changed. Allow at most two rounds (D3). A bar still missed after round two is the scope fence: stop and ask the owner.
 
-- [ ] **Step 3: Record and commit**
+- [x] **Step 3: Record and commit**
 
 Under `## Treatment`, write each fixture's pass and reached counts for each round, every weakening, the VOID reps, the spend, and each wording change with its commit.
 
@@ -546,22 +560,24 @@ git commit -m "test(specs): record the mutant screen micro-test's treatment arms
 - Consumes: every earlier task.
 - Produces: the two deferred items' text, which plan-completion protocol step 3 appends under this plan's section.
 
-- [ ] **Step 1: Write the `NOTICE` bullet**
+- [x] **Step 1: Write the `NOTICE` bullet**
 
 Write it in plan 97's form: plan 104 (its date) adds a screen mode to `mutant-run`, the split of who screens, and the `Mutant-step:` trailer; it changes `references/mutants.md`, `implementer-prompt.md`, executing-plans' `SKILL.md`, and `test-run.md` if Task 6 changed it; the record is `specs/baseline/red-baseline-mutant-screen-runs.md`.
 
-- [ ] **Step 2: Write the record's summary and the two items**
+- [x] **Step 2: Write the record's summary and the two items**
+
+> Deviation: The final review found three limits of the screen, and the owner accepted each at the completion gate (2026-11-22). Each became a watch item beside the two drafts: a screen carries an older catch over a newer survivor, the SDD final-review fix wave may screen, and a screen compares only the command line.
 
 `## Summary` gives each bar's control and treatment counts, the dropped wording, the untested wording (D11), the backlog items this plan touches, and the spend. Draft two items in the deferred-item schema (`skills/writing-plans/references/deferred-backlog.md:149`), for protocol step 3:
 - **The re-measure** (spec, Design 6): after about 5 more code plans that have a Codex final review, tally the `Mutant-step:` commits of each task (`git log --format='%h %(trailers:key=Mutant-step,valueonly,separator=%x2C )' | awk 'NF > 1'`), split into code changes and test-only changes. Compare the final-review findings for each task with agent-skills' pre-mutant rate of 0.56 code-behavior findings for each task (plans 69-96). Decide whether to keep the step, shrink it (a mutant cap, `-x` screens) or make the runs opt-in. Size: design. Done when: the tally and the decision are recorded.
 - **Design 4's fallback** (D12): Revisit if: a task review or a final review raises a finding about a screen file. The fix is one sentence in the shared reviewer block, which `build/check_reviewer_block.py` keeps equal in its four copies.
 
-- [ ] **Step 3: Run the whole-change checks**
+- [x] **Step 3: Run the whole-change checks**
 
 Run: `bash build/run_commit_lints.sh && uv run python build/run_suites.py subagent-driven-development executing-plans mutant-screen-runs-kit`
 Expected: every lint passes, and every suite passes with the deltas of Tasks 1, 2 and 3.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add NOTICE specs/baseline/red-baseline-mutant-screen-runs.md

@@ -7187,3 +7187,61 @@ review and the Plan Completion gate (2026-10-27) add the others.
 ## 101-plan-completion-triage-and-gate-revert — 2026-11-19
 - [ ] **Triage rubric step 4 says to stop and wait, while Protocol step 4 says to go on to step 5 (plan 101 final review, Codex finding P2).** `skills/writing-plans/SKILL.md` step 4 runs steps 1 to 4 of the Triage rubric when the aged tail is above 0, presents the proposal in the completion batch, and goes on to step 5. Step 4 of the Triage rubric in `skills/writing-plans/references/deferred-backlog.md` ends "Then stop and wait for the user's selection." An agent that follows the referenced step to its end can halt the completion. The base text has the same structure. The `triage-aged` case reads both files and passed 5 of 5 at the shipped text, so its reps resolve it. Plan 101's spec said to leave the rubric alone, and a change to that file voids the case's evidence. Size: quick-fix. Done when: the rubric's step 4 says what to do at plan completion (present the proposal in the completion batch and go on to step 5), and `triage-aged` and `triage-narrow` still pass 5 of 5 under `specs/baseline/red-baseline-completion-triage/kit/`.
 - [ ] **Plan 100's kit stamps the owner's git identity into rep-repo reflogs (plan 101 Task 9).** `specs/baseline/red-baseline-handoff-rerun/kit/run_rep.sh` sets the identity with `-c user.*` options on its git calls. `git remote set-head` ignores those options and reads the identity that the account database gives, so the `origin/HEAD` and `origin/main` reflogs of every rep repo hold the owner's real name and a derived email, and a rep can read them with `git reflog`. The kit's README says that no real identity reaches the rep. Plan 101's guard kit (`specs/baseline/red-baseline-completion-triage/guard-kit/`) fixes this with `GIT_AUTHOR_*` and `GIT_COMMITTER_*` variables. Plan 100's committed files are unchanged, and its parked reps are outside the repository. Size: quick-fix. Done when: plan 100's runner, or the next kit copy of it, sets the identity through those variables, and the README states the limit for the reps that already ran.
+
+## 104-mutant-screen-runs — 2026-11-22
+- [ ] **Re-measure the mutant step after about 5 more code plans that have a Codex final review (`specs/completed/mutant-screen-runs.md`, Design 6).**
+      Plan 104 (`specs/plans/completed/104-mutant-screen-runs.md`, micro-test record
+      `specs/baseline/red-baseline-mutant-screen-runs.md`) added `mutant-run --screen` to the mutant step, so
+      that a run does not repeat a mutant that an earlier run caught. It also tags each commit that answers the step with a `Mutant-step:` trailer. Only
+      plans that execute after plan 104 carry the trailer, so the re-measure waits for about 5 more code plans
+      that have a Codex final review. The owner chooses, for each repository, whether it runs that review.
+      Then, for each task: list its `Mutant-step:` commits with
+      `git log --format='%h %(trailers:key=Mutant-step,valueonly,separator=%x2C )' | awk 'NF > 1'`, and split
+      them into commits that change code and commits that change only tests. A plan's merge commit names its commits
+      (`<merge>^1..<merge>^2`). After a squash merge, `gh pr view <number> --json commits` lists them. Compare the
+      task's final-review findings with agent-skills' pre-mutant rate of 0.56 code-behavior findings for each
+      task (plans 69-96). Then decide whether to keep the step, shrink it (a mutant cap, `-x` screens) or make the
+      mutant runs opt-in. Size: design. Done when: the tally and the decision are recorded.
+- [ ] **A reviewer raises a finding about a screen file (`specs/completed/mutant-screen-runs.md`, Design 4; D12 of
+      `specs/plans/completed/104-mutant-screen-runs.md`).** Plan 104 leaves the reviewer text as it is. The
+      reviewers read only the controller's or the inline agent's full run, never a screen file
+      (`task-<N>-screen*.log`). No task of plan 104 made a screen, because its Tasks 1 and 2 ran full runs only, so
+      no task review had one to judge and the fallback did not fire in the plan's task reviews. If a reviewer raises a finding about a screen file, the fix is one sentence in the shared
+      reviewer block, which runs from `## Review scope` to the end of `## Declined to judge`.
+      `build/check_reviewer_block.py` keeps that block equal in its four copies: `agents/code-reviewer.md`,
+      `agents/task-reviewer.md`, `skills/requesting-code-review/code-reviewer.md` and
+      `skills/subagent-driven-development/task-reviewer-prompt.md`. A change to a file under `agents/` also needs
+      `uv run --with pyyaml python build/sync_runtime_assets.py`, which regenerates `runtimes/`. Size: plan.
+      Revisit if: a task review or a final review raises a finding about a screen file.
+- [ ] **A screen carries an older catch although a newer run shows the same patch survived (plan 104 final review,
+      2026-11-22; the owner accepted this limit at the completion gate).** `earlier_catches` in
+      `skills/subagent-driven-development/scripts/mutant-run` reads `CAUGHT` lines only. A newer run whose line for the
+      same sha256 reads `SURVIVED` cancels nothing. The controller's full run stays the proof, and `task-done` reads
+      full runs only. But in an SDD fix round that a controller survivor starts, the implementer's screens still carry
+      that mutant as caught. The implementer cannot see the survivor, and each blind attempt counts toward the
+      five-attempt cap. The spec accepts the limit in principle (`specs/completed/mutant-screen-runs.md`, Known limits:
+      0 flips in 10,139 re-runs), and D4 of `specs/plans/completed/104-mutant-screen-runs.md` pins the newest-catch
+      rule. A fix needs a recency order that D4's file-name order does not give, and new tests. Size: plan.
+      Revisit if: an implementer's fix report shows a mutant caught in a screen that the controller's full run, under
+      the same command, shows survived.
+- [ ] **The SDD final-review fix wave may end with a screen and no full mutant run (plan 104 final review, 2026-11-22;
+      the owner accepted this limit at the completion gate).** `skills/subagent-driven-development/references/final-review.md`
+      sends the merged findings to one fix subagent and asks for no mutant run after that wave. `references/fix-loop.md`
+      gives fix dispatches the implementer contract, and `references/mutants.md` step 5 and `implementer-prompt.md` now
+      make every implementer run a screen. Before plan 104, that subagent made a full run when its fix added or changed
+      a test. So a carried mutant that a code change in the wave breaks may not run again. The reach of the implementer
+      text into that wave is inferred, and `final-review.md` is a frozen reviewer file. One fix is a sentence in
+      `mutants.md` step 5 that makes runs in the final review's fix wave full runs. It contradicts Design 3's "each
+      fix-round run" and is untested wording. Size: plan. Revisit if: a final-review fix wave's report cites a
+      `task-<N>-screen*.log` file or a `mutant-run --screen` call.
+- [ ] **A screen compares only the rendered command line, not the working directory or the environment (plan 104 final
+      review and Codex review, 2026-11-22; the owner accepted this limit at the completion gate).** `mutant-run`
+      carries a catch when an earlier run's `command:` line equals the screen's command
+      (`specs/completed/mutant-screen-runs.md`, Design 1). If `PYTEST_ADDOPTS` changes between two runs of the same
+      command (for example `-k fast`, then `-k slow`), or the working directory changes, a catch from the first context
+      carries into the second. A full run under the second context could read that mutant as survived. `mutants.md`
+      step 5 says to run from the repository root, and a task's focused command is fixed by its brief, so normal use
+      does not meet this. Full runs and the proof are unaffected. A fix records the working directory and the test
+      options in the run file and compares them, which changes the file format and adds tests. Size: plan.
+      Revisit if: a full run's verdict for a mutant differs from a screen's carried catch because the environment or
+      the working directory changed between the two runs.
