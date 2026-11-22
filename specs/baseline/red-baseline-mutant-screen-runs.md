@@ -9,8 +9,11 @@ aids, never verdicts.
 
 The rules (Base to Spend stop) were written before any rep ran, the probes and pilots included.
 They are committed before any scored rep. No reading is added after a rep is seen. The controller's
-dated rulings (2026-11-21 and 2026-11-22) came after the probes and the unscored pilots, and each
-sits beside the rule it changes. No scored rep ran before any of them. Task 4 adds
+dated rulings are the only later changes. The four of 2026-11-21 (VOID cases 2 and 3, reading rule
+10, and the `opus` probe's line 7) came after the probes and the first pilot round, and before the
+second round, which held the E1 pilot. The one of 2026-11-22 (reading rules 5 and 9) came after
+both rounds. A ruling on a rule sits beside that rule, and the line-7 ruling sits in Isolation
+probe. No scored rep ran before any of them. Task 4 adds
 `## Control`, and Task 8 adds `## Treatment`.
 
 ## Base
@@ -81,7 +84,7 @@ copies, so the identity scrub, the privacy sweep and the scrub check are plan 97
   environment and the flags, for the model given.
 - **`isolation_probe.txt`** gains line 8, "The name of any other Claude session on this machine that
   you can see (quote it).", and its first line says "eight numbered lines".
-- **`test_msr_kit.py`** has 24 tests with a stub `claude` and no model. Suite
+- **`test_msr_kit.py`** has 31 tests with a stub `claude` and no model. Suite
   `mutant-screen-runs-kit` in `build/suites.toml` runs them.
 - Plan 97's `env_check.txt` is not copied. Its deny checks read under `$HOME`, which is now the rep's
   own folder, and Task 3 runs no model call beyond the probes and the pilots.
@@ -150,7 +153,7 @@ Each `fixtures/<id>/` holds `role.txt`, `repo/` (the BASE commit's files: `plan.
 C2 also seeds the controller's `task-1-tests.log` from its first review, because its scene says
 that the controller ran test-run before that review. The plan's table names only the full run.
 
-**The scene texts.** Each scene says, beside the venv's path: "Keep any scratch file in `$TMPDIR` or in the workspace, never directly under `/tmp`, which other runs share." It was added after the I1 and C1 pilots, which each wrote a file directly under `/tmp` (Isolation probe). I1's scene is otherwise plan 97's, with the venv's path. I2's says that the task was
+**The scene texts.** Each scene says, beside the venv's path: "Keep any scratch file in `$TMPDIR` or in the workspace, never directly under `/tmp`, which other runs share." It was added after the first I1 and C1 pilots, which each wrote a file directly under `/tmp` (Isolation probe). I1's scene is otherwise plan 97's, with the venv's path. I2's says that the task was
 implemented, committed and reported, that its review found one Important issue, and that this is
 fix round 4, a fresh dispatch with the brief and the finding. I3's says that the rep implemented and
 committed the task, wrote the mutants file and its patches, ran the script once, and goes on from
@@ -231,6 +234,13 @@ dropped only when the control meets the bar on every fixture whose event that se
    file, such as `cat` or `sed -n` on it, is not a call. A refused call (exit 2, no `run:` line)
    is still a call, for B1, B3 and B4 alike, whether or not it passes `--screen`. The calls are read
    in stream order, refused ones included. Ruling (controller, 2026-11-22): see reading rule 9.
+   `grade.py`'s call list has these limits, and a person reads past each one:
+   - It flags each name of the script in a Bash command, so a person drops a command that only
+     reads the file.
+   - A call through a shell variable (`$M --screen` after `M=<path>/mutant-run`) gets no flag of its
+     own, so a person reads it from the command text.
+   - It prints only the first 300 characters of a command, so a person reads a longer command in
+     `summary.json`'s `tool_calls`.
 6. **B1.** A rep with no call fails B1. The report is `task-1-report.md` as the kit copied it. In a
    report with a fix section, the last section's `Mutants` line counts. The line names the newest
    screen by its path or its file name, and gives its `caught`, `survived` and `invalid` counts as its
@@ -300,6 +310,15 @@ when any of these hold. A VOID rep is rerun with the next free rep number and is
      that is not a path, such as part of a `sed` expression or `//` in code. A `..` that stays inside
      the rep's folder, such as `.sdd/plan/../../plan.md` from the repository, does not climb out.
      `grade.py` resolves each `..` in a path before it checks the roots.
+   - A `..` after `home/Library/Keychains` climbs out of the real home's Library, because that
+     folder is a link, so `grade.py` reads a `..` after any point in `$HOME/Library` as a path
+     through `$HOME/Library` (case 5). It is the only folder link in the allowed roots.
+   - `grade.py` judges only the absolute, `~` and `$HOME` paths in a Bash command, so a person reads
+     a relative path, a path built from a variable or a path after a `cd` from the command.
+   - The line for a command that holds `..` prints only its first 200 characters, so a person reads
+     a longer command in `summary.json`'s `tool_calls`.
+   - `grade.py` follows no link that the rep makes, so a person reads the rep's `ln` command, whose
+     absolute target the audit judges like any other path.
    - A tool result that spills to `~/.claude/projects/…/tool-results/` lands in the rep's own `HOME`,
      inside its folder.
 2. **A second model.** `modelUsage` names a model other than the one that the probe's init record
