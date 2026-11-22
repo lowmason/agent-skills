@@ -3,6 +3,16 @@
 Read this when you write a SKILL.md's frontmatter, lay out its body, or write or tighten its
 description. The description rule itself stays in SKILL.md § Skill Discovery Optimization.
 
+## Contents
+
+- SKILL.md Structure
+- Skill Discovery Optimization (SDO)
+  - 1. Rich Description Field
+  - 2. Keyword Coverage
+  - 3. Descriptive Naming
+  - 4. Token Efficiency (Critical)
+  - 5. Cross-Referencing Other Skills
+
 ## SKILL.md Structure
 
 **Frontmatter (YAML):**

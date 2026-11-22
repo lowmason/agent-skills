@@ -2,6 +2,23 @@
 
 **Load this reference when:** creating or editing skills, before deployment, to verify they work under pressure and resist rationalization.
 
+## Contents
+
+- Overview
+- When to Use
+- TDD Mapping for Skill Testing
+- RED Phase: Baseline Testing (Watch It Fail)
+- GREEN Phase: Write Minimal Skill (Make It Pass)
+- VERIFY GREEN: Pressure Testing
+- REFACTOR Phase: Close Loopholes (Stay Green)
+- Meta-Testing (When GREEN Isn't Working)
+- When Skill is Bulletproof
+- Example: TDD Skill Bulletproofing
+- Testing Checklist (TDD for Skills)
+- Common Mistakes (Same as TDD)
+- Quick Reference (TDD Cycle)
+- The Bottom Line
+
 ## Overview
 
 **Testing skills is just TDD applied to process documentation.**
