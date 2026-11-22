@@ -158,10 +158,10 @@ Subagent (general-purpose):
     revert for each test that the fix adds or changes, as the guide's step
     "The revert" says.
 
-    When a finding is about the mutant step (the mutants file, its Inputs
-    table, a mutant or the revert), give each commit that answers it
-    `--trailer 'Mutant-step: task <N> review'`, where <N> is your task's
-    number, as the guide's "The trailer" says.
+    When a reviewer's finding is about the mutant step (the mutants file,
+    its Inputs table, a mutant or the revert), give each commit that
+    answers it `--trailer 'Mutant-step: task <N> review'`, where <N> is
+    your task's number, as the guide's "The trailer" says.
 
     ## Report Format
 
