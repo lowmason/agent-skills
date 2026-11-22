@@ -1,7 +1,8 @@
 # writing-skills: analysis and proposed improvements — Design Spec
 
-**Status: DRAFT (2026-11-22).** Owner decisions are open (see Open decisions). No skill text has changed.
-No brainstorming ran, so this spec records no decisions.
+**Status: DRAFT (2026-11-22), owner rulings recorded.** The owner ruled on every open question on
+2026-11-22 (see Owner decisions). Approval of the whole spec for planning is still open. No skill text
+has changed. No brainstorming ran.
 
 > ⚠️ Quarantine this file during any later micro-test of writing-skills. Items 1, 2 and 10 name the
 > RED scenarios and what they score, so a rep that reads this file is void.
@@ -40,9 +41,9 @@ Each row is one proposed change, ranked by the harm the defect does today and by
 | 1 | Describe the micro-test method in full | gap | about +100 | RED first | plan | none |
 | 2 | Add a trigger test | gap | about +120 | RED first | plan | Trigger-eval suites |
 | 3 | Refresh the Codex cut, and front-load the skill's own description | defect | 0 | waiver, then a trigger test | quick-fix, then plan | Trigger-eval suites |
-| 4 | Fix `render-graphs.js` | defect | 0 | script test | quick-fix | none |
+| 4 | Fix `render-graphs.js` (Q1: port to Python) | defect | 0 | script test | plan, with item 8 | none |
 | 5 | Fix the worked example | defect | 0 | waiver | quick-fix | none |
-| 6 | Scope the persuasion evidence | defect | 0 | waiver, owner call on one line | quick-fix | none |
+| 6 | Scope the persuasion evidence | defect | 0 | waiver (owner ruling) | quick-fix | none |
 | 7 | Settle which reference-skill tests apply | defect | 0 | waiver | quick-fix | none |
 | 8 | Bring support files one level from SKILL.md | structure | 0 to about +150 | guard run | plan | the `t3` read-then-use item |
 | 9 | Name a test for edits that keep behavior | gap | about +200 | pressure test | design | register `writing-skills-tdd-for-docs` |
@@ -50,9 +51,9 @@ Each row is one proposed change, ranked by the harm the defect does today and by
 | 11 | Add tables of contents | structure | 0 | waiver | quick-fix | none |
 | 12 | Use one list of skill types | structure | about +80 | waiver | quick-fix | none |
 | 13 | Name the `agy` skills folder | defect | about +40 | waiver | part of a plan | the `agy` instructions item |
-| 14 | Match the example language to the stack | defect | about −40 | owner call | quick-fix | none |
+| 14 | Match the example language to the stack | defect | about −40 | waiver (owner ruling) | quick-fix | none |
 | 15 | Delete the dated session report | defect | 0 | waiver | quick-fix | none |
-| 16 | Cut repeated text from the body | structure | about −1,200 | pressure test | plan | none |
+| 16 | Cut repeated text from the body | structure | about −1,200 | pressure test | held (Q6) | none |
 
 How to read the columns:
 
@@ -479,23 +480,42 @@ These count as failure even if the rest works:
 - private detail in a committed record
 - an example that matches a fixture
 
-## Open decisions
+## Owner decisions
+
+The owner ruled on all six questions and on the two owner calls in items 6 and 14 on 2026-11-22.
 
 1. **Q1, `render-graphs.js`.** Fix it in JavaScript, with a test that skips when `node` is absent? Or
    port it to Python with a PEP 723 header, like this repository's other scripts?
+   Ruling: port it to Python. The port runs with `uv run`, still needs the `dot` binary, and leaves
+   upstream's copy for good. With Q2, it lands as `scripts/render_graphs.py`, and `render-graphs.js`
+   goes. Its test skips when `dot` is absent. `NOTICE` records the port as a new work based on
+   upstream's script.
 2. **Q2, layout.** Link the two-hop files from `SKILL.md` (item 8a), or move every support file into
    `references/` and `scripts/` (item 8b)?
+   Ruling: move and link (item 8b). `testing-skills-with-subagents.md`, `persuasion-principles.md`
+   and `graphviz-conventions.dot` move into `references/`, and `SKILL.md` links each one directly.
 3. **Q3, worked example.** Delete it (recommended), relabel it, or replace it?
+   Ruling: delete it. The `examples/` folder goes with it, so item 11 covers three files.
 4. **Q4, edits that keep behavior.** Add the guard run as the named test (item 9), or keep today's
    case-by-case waiver?
+   Ruling: add the guard run. It needs a pressure test on Opus and Sonnet, and the `reason` line of
+   `writing-skills-tdd-for-docs` changes with it.
 5. **Q5, waivers.** D4 let plan 92's factual corrections ship with no micro-test. May items 3a, 5,
    6 (the study part), 7, 11, 12, 13 and 15 do the same?
+   Ruling: waive all eight. Each still ships with the lints and a `NOTICE` line.
 6. **Q6, repetition.** Cut it (item 16), or keep it as deliberate reinforcement?
+   Ruling: keep it for now. Revisit item 16 when the free room runs out.
+7. **Item 6, the scope line.** Add bulletproofing's scope line to `persuasion-principles.md`?
+   Ruling: add it, with no micro-test. It repeats a scope that the skill already states.
+8. **Item 14, the example language.** Change it to "Use the language of the skill's target stack"?
+   Ruling: change it, with no micro-test.
 
 ## Proposed sequence
 
-1. **Quick fixes**, one commit each, each with the test its row names. Items 3a, 5, 6 (the study part),
-   7, 11, 12 and 15 ship under the Q5 waiver. Item 4 ships with its script test, after Q1. Item 14
-   waits for the owner's call. Item 13 goes with its own backlog plan.
-2. **One plan, RED first:** items 1, 2 and 10, then 3b once item 2's trigger test exists.
-3. **Owner decisions, then a plan:** items 8 and 9, and item 16 if the room is needed.
+1. **Quick fixes**, one commit each: items 3a, 5, 6, 7, 11, 12, 14 and 15. The Q5 waiver and the
+   rulings on items 6 and 14 cover them. Item 13 goes with its own backlog plan.
+2. **One plan for the layout:** items 8 and 4 together, because the Python port lands in the new
+   `scripts/` folder. It needs a guard run on plan 72's `t3` cases, then a fresh `/cc-guide files` verify.
+3. **One plan, RED first:** items 1, 2 and 10, then 3b once item 2's trigger test exists.
+4. **One plan, pressure-tested:** item 9, with the register change.
+5. **Held:** item 16, under the Q6 ruling.
