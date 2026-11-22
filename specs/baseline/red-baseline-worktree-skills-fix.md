@@ -47,7 +47,7 @@ The kit is `specs/baseline/red-baseline-worktree-skills-fix/kit/`. It starts fro
 | `probe.sh`, `isolation_probe.txt` | The isolation probe. Copies of plan 97's, with the model set to `claude-sonnet-5-5`. |
 | `kit_identity.py`, `check_scrub.py` | The identity scrub and its check. Copies of plan 97's. |
 | `postprocess.py` | New. Voids a rep or keeps it scrubbed, and drops `origin` and `credential_expires_at`. |
-| `test_postprocess.py`, `test_postprocess_shapes.py`, `test_run_reps.py` | New. The self-test, with a stub `claude` and no model. |
+| `test_postprocess.py`, `test_postprocess_shapes.py`, `test_run_reps.py`, `test_rep_isolation.py`, `test_build_prompts.py`, `test_show_reps.py` | New. The self-test, with a stub `claude` and no model. |
 | `build_prompts.py` | New. `build_prompts.py <case> <arm> <ref>` writes `prompts/<case>-<arm>.txt`. |
 | `show_reps.py` | New. Prints grading sheets, status flags and the spend. |
 | `fixtures/<case>.txt` | New. The session state for each case. |
@@ -74,7 +74,10 @@ applies. A rep has no tools, so the `Read(~/**)` gap of tool kits does not arise
 
 **Self-test.** `uv run python build/run_suites.py worktree-skills-fix-kit` runs it. It covers the void
 on `result_index` and on `origin`, the drop of the private keys at any depth, the scrub, the command
-line, and the wiring of `run_reps.sh` with a stub `claude`.
+line, and the wiring of `run_reps.sh` with a stub `claude`. It also covers how `run_reps.sh` and `probe.sh`
+start `claude` (the exact flags, the default and an explicit cap, `env -i`, the prompt on stdin, and a new
+empty folder outside every repository for each rep), the skill text that `build_prompts.py` reads at its
+ref, the arm-free grading sheet, and the spend sum of `show_reps.py cost`.
 
 ## Cases
 
