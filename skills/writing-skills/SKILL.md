@@ -147,10 +147,7 @@ its place, and the graphviz style rules and render tool.
 
 **One excellent example beats many mediocre ones**
 
-Choose most relevant language:
-- Testing techniques → TypeScript/JavaScript
-- System debugging → Shell/Python
-- Data processing → Python
+Use the language of the skill's target stack.
 
 **Good example:**
 - Complete and runnable
