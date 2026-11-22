@@ -7245,3 +7245,19 @@ review and the Plan Completion gate (2026-10-27) add the others.
       options in the run file and compares them, which changes the file format and adds tests. Size: plan.
       Revisit if: a full run's verdict for a mutant differs from a screen's carried catch because the environment or
       the working directory changed between the two runs.
+
+## brainstorming-improvements (no plan; owner rulings on specs/findings/brainstorming-improvements.md, branch claude/brainstorming-skill-review-handoff-45fef9) — 2026-11-22
+- [ ] **Let brainstorming's builder check read the project, once a run shows the waste
+      (`specs/findings/brainstorming-improvements.md`, item 7; owner ruling 2026-11-22: hold it in the backlog
+      with a prove-first note).** `skills/brainstorming/builder-check-prompt.md:12` tells the builder to read the
+      design only. The sort at `skills/brainstorming/SKILL.md:323-325` then drops each question "Answered already
+      by the conversation or the project". The finding reasons that a builder who cannot read the code asks
+      questions that the project answers, and that the main agent spends time to drop them. No run has shown this
+      yet. The fix also edits a file that `NOTICE` says is copied from upstream unchanged. Prove it first: run the
+      builder check with today's prompt on one recent spec, and count the questions that the project already
+      answers. If there are none, retire this item. If there are some, add the finding's line: the builder may
+      read the project at a given root, and it reports only what neither the design nor the project answers.
+      Keep "You will not be able to talk to the person who wrote it." Then run the check again on the same spec,
+      compare the two question lists, and add a `NOTICE` sentence. Size: quick-fix after the check. Done when: this item's tick
+      note gives the first run's count, and either the item is retired or the prompt carries the line and
+      `NOTICE` names it.
