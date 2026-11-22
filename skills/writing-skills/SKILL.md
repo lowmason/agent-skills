@@ -71,6 +71,9 @@ The entire skill creation process follows RED-GREEN-REFACTOR.
 
 ## Skill Types
 
+### Discipline
+Rules agents must keep under pressure (test-first, verify before claiming done)
+
 ### Technique
 Concrete method with steps to follow (condition-based-waiting, root-cause-tracing)
 

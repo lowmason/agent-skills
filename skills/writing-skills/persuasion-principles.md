@@ -129,8 +129,8 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 
 | Skill Type | Use | Avoid |
 |------------|-----|-------|
-| Discipline-enforcing | Authority + Commitment + Social Proof | Liking, Reciprocity |
-| Guidance/technique | Moderate Authority + Unity | Heavy authority |
+| Discipline | Authority + Commitment + Social Proof | Liking, Reciprocity |
+| Technique or pattern | Moderate Authority + Unity | Heavy authority |
 | Collaborative | Unity + Commitment | Authority, Liking |
 | Reference | Clarity only | All persuasion |
 
@@ -182,7 +182,7 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 
 When designing a skill, ask:
 
-1. **What type is it?** (Discipline vs. guidance vs. reference)
+1. **What type is it?** (Discipline, technique, pattern or reference)
 2. **What behavior am I trying to change?**
 3. **Which principle(s) apply?** (Usually authority + commitment for discipline)
 4. **Am I combining too many?** (Don't use all seven)
