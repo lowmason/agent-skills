@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 6383,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0111543,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 364,
+    "cache_read_input_tokens": 10843,
+    "output_tokens": 861,
+    "output_tokens_details": {
+      "thinking_tokens": 386
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 364,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 861,
+      "cacheReadInputTokens": 10843,
+      "cacheCreationInputTokens": 364,
+      "webSearchRequests": 0,
+      "costUSD": 0.0111543,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 386,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 364,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Merge and tests are done. Step 6 has no commands for me to run, because I didn't record that this session created the worktree (MADE_BY is `launcher`). I won't remove it, and I'll leave its branch, since git won't delete a branch that a worktree has checked out.\n\nSAY: The merge is done. `main` fast-forwarded to 9b50e40 and the 2 tests pass on the result. I haven't pushed `main`, since you chose a local merge.\n\nSAY: I'm leaving the worktree and its branch alone. The desktop app started this session in the worktree, so I didn't create it and can't safely remove it.\n- Worktree: `/work/atlas/.claude/worktrees/rate-limit`\n- Branch: `claude/rate-limit-4f2a`, already merged into `main`\n\nSAY: Before you archive, there is one untracked file in the worktree, `notes.md`. It isn't committed or merged. Archiving can discard uncommitted changes, usually after asking. If you want to keep it, copy or commit it first.\n\nSAY: After you archive, the app handles the worktree, and it may reuse it. A kept worktree is removed about 30 days later. The branch can outlive the archive. To clean up by hand, run these from `/work/atlas`:\n`git worktree remove /work/atlas/.claude/worktrees/rate-limit`\n`git branch -d claude/rate-limit-4f2a`\n\nI'll wait for you here.",
+  "ttft_ms": 3333,
+  "type": "result",
+  "duration_ms": 6468,
+  "ttft_stream_ms": 582,
+  "time_to_request_ms": 84,
+  "first_content_frame_ms": 582,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

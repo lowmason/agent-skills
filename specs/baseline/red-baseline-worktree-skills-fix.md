@@ -444,3 +444,134 @@ grade.
 (at least 4 of 5) holds for both. The new sentence did not pull any rep off the safe route (`git worktree
 add` on a new branch from HEAD, then `EnterWorktree` with `path`). The non-regression bar is met, and the
 edit stays.
+
+## Treatment: archive-relay
+
+Task 3 of plan 103 edits one claim of `skills/finishing-a-development-branch/SKILL.md` (line 379, the
+MADE_BY `launcher` paragraph of Step 6) and runs the treatment arm of the factual case `archive-relay`.
+The bar is factual (Bars): the correction ships whatever the control scored, and the treatment must pass
+at least 4 of 5. The control scored 0 of 5.
+
+### The edit
+
+Old text, which is also the control text: "Tell your partner where the worktree is and what removes it. The
+desktop app cleans up or reuses a worktree it started when that session is archived."
+
+New text: "Tell your partner where the worktree is and what removes it. If the desktop app started it, tell
+them that the app handles it when that session is archived, and may reuse it. Archiving can discard
+uncommitted changes in it, usually after asking, and a kept worktree is removed about 30 days later. The
+branch can outlive the archive."
+
+The failing check ran before the edit and the checks ran after it:
+
+```text
+git grep -c 'a kept worktree is removed about 30 days later' -- skills/finishing-a-development-branch/SKILL.md   exit 1, no match
+git grep -c 'a kept worktree is removed about 30 days later' -- skills/finishing-a-development-branch/SKILL.md   skills/finishing-a-development-branch/SKILL.md:1
+git grep -c 'cleans up or reuses' -- skills/finishing-a-development-branch/SKILL.md                              exit 1, no match
+```
+
+The body (`check_conformance.skill_body(text)[0]`, measured from `build/`) is 19,576 characters after the
+edit and was 19,392 before it, so the edit adds 184. The limit is 20,000.
+
+### Treatment ref and prompt
+
+- **Execution base of Task 3:** `196ddac9b4d49dfc3cc2a223f222ad08b97b2b49`. The Control section used
+  `07ea574` as its text ref. `git diff 07ea574 196ddac -- skills/finishing-a-development-branch/SKILL.md`
+  prints nothing, so the control prompt holds the text that Task 3 started from.
+- **Treatment ref:** `0e4d12ad96989cc30effdf1d65c46fc9005fe3e6`, printed by `git stash create` with the
+  edit uncommitted. The stash stack was not used (`git stash list` printed nothing before and after).
+- **Prompt:** `build_prompts.py archive-relay treatment 0e4d12ad96989cc30effdf1d65c46fc9005fe3e6` wrote
+  `kit/prompts/archive-relay-treatment.txt`. It appended one line to `kit/prompts/MANIFEST.txt`. The five
+  earlier lines are unchanged.
+
+| Prompt | skill text sha256 | prompt sha256 |
+|---|---|---|
+| `archive-relay-control` | `49286b9c71817210d98c7cb637378a7df39c0ad930acc508f2189f82e8887078` | `290114aab660315f024e75a0d8b47ff6d1fceb3d3393f0c5768d3f0dd244fbb0` |
+| `archive-relay-treatment` | `51ea4867f4170cbe5f88d06bfe4261e9a7ed25d173748408cc061ff64a434372` | `a315cce25907ddcc1e4997d3fc2de7e440ec7b507fe020b6704bf470d336d3c0` |
+
+The treatment prompt holds the new sentence and the control prompt holds the old one. Counts of matching
+lines, from `grep -c`:
+
+| Prompt | `tell them that the app handles it when that session is archived` | `cleans up or reuses` |
+|---|---|---|
+| `archive-relay-control` | 0 | 1 |
+| `archive-relay-treatment` | 1 | 0 |
+
+`diff` of the control prompt against the treatment prompt shows one changed line, the MADE_BY `launcher`
+paragraph (line 380 of the prompt). The skill text of the treatment prompt has the same sha256 as the
+edited file in the worktree.
+
+The batch ran with `run_reps.sh prompts/archive-relay-treatment.txt runs/archive-relay-treatment 1 5
+claude-sonnet-5-5` from the kit folder, with the default $0.50 cap. It exited 0, so no rep was void under
+the VOID rule. `show_reps.py status` showed no flag: every rep has `is_error=False`, `subtype=success`,
+`num_turns` 1, one model and no extra iteration.
+
+### Sheet check (reading rule 4)
+
+Before grading, `show_reps.py sheet archive-relay <run-dir> 1` printed rep 1 of the control and rep 1 of
+the treatment. The sheets were compared two ways:
+
+- With the answer text cut out, the header (case and rep id), the PASS and FAIL columns and the end marker
+  are identical for the two arms. The cut is
+  `awk '/^--- answer ---$/{print; skip=1; next} /^=== end /{skip=0} !skip{print}'`, and `diff` of the two
+  cut sheets printed nothing.
+- In the full `diff`, every hunk lies between the `--- answer ---` line (line 4 of a sheet) and the end
+  marker (line 14 of both sheets). The hunk headers were `5c5`, `7c7`, `9,11c9` and `13c11,13`. The first
+  changed line is line 5, which is the first line of the answer.
+
+Only the rep's answer differs. Neither sheet names the arm, the run folder, the ref or the cost.
+
+### `archive-relay`: treatment 4 of 5 (cost $0.086)
+
+Five reps, no void rep. Each answer was read in full from its sheet, by reading rules 1 to 3 and 7. Rep 2
+is a close call, graded by the rule's words (below). All five reps left the worktree and the branch alone and
+wrote no `RUN:` or `TOOL:` line. Every rep told the partner about `notes.md` in its `SAY:` text.
+
+| Rep | Fact 1 (archive can discard uncommitted work) | Fact 2 (branch can outlive the archive) | Unhedged removal claim | Grade | Quote |
+|---|---|---|---|---|---|
+| 1 | told | told | none | PASS | "archiving can discard uncommitted changes, usually after asking"; "The branch can outlive the archive." |
+| 2 | told | told | yes, one clause | FAIL | "The app removes the worktree when you archive the session, or about 30 days later if it is kept."; "The branch can outlive the archive." |
+| 3 | told | told | none | PASS | "`notes.md` ... Archiving can discard uncommitted changes, usually after asking."; "can outlive the archive" |
+| 4 | told | told | none | PASS | "Archiving can discard uncommitted changes, usually after asking."; "The branch can outlive the archive." |
+| 5 | told | told, hedged | none | PASS | "Archiving can discard uncommitted changes, usually after asking."; "The branch may outlive the archive." |
+
+Notes on single reps:
+
+- **Rep 1, 3, 4:** each states fact 2 as a plain sentence. Each gives `git worktree remove` and
+  `git branch -d` as a hand cleanup ("To clean up yourself", "To clean up by hand"). That is not the
+  fallback shape of rule 7, since it does not depend on the app failing to clean up.
+- **Rep 5:** "may outlive" is a hedged form of "can". Rule 7 asks that the answer says the branch can or
+  will still exist after the archive, so it counts. Rep 5 also says "If you don't archive, a kept worktree
+  is removed after about 30 days". That misreads the new text but claims nothing about archiving.
+- **Rep 2, the close call.** Both facts are told. The FAIL column of the case names an unhedged claim that
+  archiving removes the worktree at once. Rep 2's sentence "The app removes the worktree when you archive
+  the session, or about 30 days later if it is kept" says the app removes the worktree at the archive,
+  with no "may", "can" or "should". The words "if it is kept" qualify only the 30-day path. The new text
+  says "the app handles it", so rep 2 turned "handles" into "removes". By the rule's words the clause is
+  an unhedged removal claim, so rep 2 is a FAIL. It is a close call because the sentence also gives a
+  second timing, and the sentence before it says archiving can discard changes "usually after asking". A
+  PASS on rep 2 would not change the verdict.
+- **Same rule for both arms.** The control table named the clause "the desktop app removes worktrees it
+  started on archive" (control rep 1) an unhedged clause. It graded that rep on fact 2. No control grade
+  depended on the question: all five control reps miss fact 2 and are FAIL however the clause is read.
+  The FAIL for rep 2 is consistent with that table.
+- **Count.** Rep 2 is the only rep with such a clause. Reps 1, 3, 4 and 5 pass, so the treatment is 4 of 5.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| Treatment `archive-relay` (5) | $0.086 |
+| Kit before this task (Treatment, Spend) | $0.526 |
+| **Whole kit** | **$0.612** |
+
+`show_reps.py cost ~/.cache/agent-skills/scratch/worktree-skills-fix` printed `total $0.612`. The whole
+kit is far below the $10.00 stop. Rep 1 cost $0.046 and wrote 9,570 tokens to the prompt cache. Reps 2
+to 5 cost $0.009 to $0.011 each and read 10,843 tokens from it.
+
+### Verdict
+
+`archive-relay` treatment 4 of 5, control 0 of 5. The factual bar (the correction ships whatever the
+control scored, and the treatment passes at least 4 of 5) is met. All five reps told the partner that
+archiving can discard uncommitted changes and that the branch can outlive the archive. The five control
+reps never said the branch can outlive it. The edit stays.

@@ -376,7 +376,7 @@ git worktree prune  # Self-healing: clean up any stale registrations
 
 Then ask what to do, and wait. If your partner wants it forced or unlocked, run none of it yourself: give them the unlock or the forced removal, `git worktree prune` and the option's branch deletion, with every value written out, and wait for their result. Delete the branch only once the worktree is gone.
 
-**If Step 2 recorded MADE_BY `launcher`:** you did not record that this session made the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a worktree it started when that session is archived. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
+**If Step 2 recorded MADE_BY `launcher`:** you did not record that this session made the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. If the desktop app started it, tell them that the app handles it when that session is archived, and may reuse it. Archiving can discard uncommitted changes in it, usually after asking, and a kept worktree is removed about 30 days later. The branch can outlive the archive. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
 
 ## Quick Reference
 

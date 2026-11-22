@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 5127,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0098363,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 362,
+    "cache_read_input_tokens": 10843,
+    "output_tokens": 730,
+    "output_tokens_details": {
+      "thinking_tokens": 269
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 362,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 730,
+      "cacheReadInputTokens": 10843,
+      "cacheCreationInputTokens": 362,
+      "webSearchRequests": 0,
+      "costUSD": 0.0098363,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 269,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 362,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I'm not running any more commands. The worktree was recorded as MADE_BY `launcher`, so I won't remove it or delete the branch.\n\nSAY: The merge is done. `main` fast-forwarded to `9b50e40` and the tests passed on the merged result (2 passed).\n\nSAY: I left the worktree at `/work/atlas/.claude/worktrees/rate-limit` and its branch `claude/rate-limit-4f2a` in place. The desktop app started this session, so I didn't create the worktree and won't remove it. Git also won't delete a branch while a worktree has it checked out.\n\nSAY: Before you archive, note that the worktree has one untracked file, `notes.md`. It isn't committed and exists only there. Archiving can discard uncommitted changes, usually after asking. Do you want to copy it somewhere or commit it first?\n\nSAY: Archiving the session lets the app handle the worktree. If you don't archive, a kept worktree is removed after about 30 days. The branch may outlive the archive. Its commits are already on `main`, so once the worktree is gone you can delete it from `/work/atlas` with `git branch -d claude/rate-limit-4f2a`. To remove the worktree yourself, run `git worktree remove /work/atlas/.claude/worktrees/rate-limit` from `/work/atlas` first.\n\nI'll wait for your answer on `notes.md`.",
+  "ttft_ms": 2615,
+  "type": "result",
+  "duration_ms": 5221,
+  "ttft_stream_ms": 577,
+  "time_to_request_ms": 95,
+  "first_content_frame_ms": 577,
+  "queued_turn_count": 0,
+  "result_index": 0
+}
