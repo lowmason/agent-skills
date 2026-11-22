@@ -1,8 +1,8 @@
 # writing-skills: analysis and proposed improvements — Design Spec
 
-**Status: DRAFT (2026-11-22), owner rulings recorded.** The owner ruled on every open question on
-2026-11-22 (see Owner decisions). Approval of the whole spec for planning is still open. No skill text
-has changed. No brainstorming ran.
+**Status: APPROVED for planning (owner, 2026-11-22).** The owner ruled on every open question on
+2026-11-22 (see Owner decisions), then approved the whole spec for planning the same day. The next step
+is writing-plans. No skill text has changed. No brainstorming ran.
 
 > ⚠️ Quarantine this file during any later micro-test of writing-skills. Items 1, 2 and 10 name the
 > RED scenarios and what they score, so a rep that reads this file is void.
