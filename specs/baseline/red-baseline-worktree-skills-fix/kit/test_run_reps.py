@@ -106,3 +106,16 @@ def test_an_unreadable_claude_reply_is_void_and_not_a_scored_rep(world):
     assert run.returncode == 3
     assert 'rep1 VOID (unreadable)' in run.stdout
     assert not (world.out / 'rep1.json').exists()
+
+
+def test_every_rep_of_a_clean_batch_goes_through_postprocess(world):
+    # The brief (Interfaces): "run_reps.sh calls it on each raw JSON". The first rep runs alone and the
+    # others run together, so a call on only one of them would leave private keys in the rest.
+    world.reply({'result': 'ok', 'result_index': 0, 'origin': None, 'credential_expires_at': 1, 'session_id': 's'})
+    run = world.run(1, 3)
+    assert run.returncode == 0, run.stdout + run.stderr
+    for number in (1, 2, 3):
+        kept = (world.out / f'rep{number}.json').read_text()
+        assert json.loads(kept)['result'] == 'ok'
+        assert not any(key in kept for key in PRIVATE_KEYS)
+        assert 'credential_expires_at' in (world.raw / f'rep{number}.json').read_text()
