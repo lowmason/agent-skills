@@ -1,7 +1,8 @@
 # Mutant screen runs: stop re-running caught mutants — Design Spec
 
-**Status: APPROVED (2026-11-19)** — the owner's question was "Do you approve the committed spec?", and the owner
-answered "Approve it". Next: writing-plans, in a fresh session.
+**Status: COMPLETE (2026-11-22)** — implemented by plan 104 (`specs/plans/completed/104-mutant-screen-runs.md`) and
+retired here. APPROVED on 2026-11-19: the owner's question was "Do you approve the committed spec?", and the owner
+answered "Approve it".
 
 This design came from a brainstorming session on 2026-11-19. Its input was a local findings write-up on the cost and
 benefit of the mutant step. That write-up is not committed, because it names private repositories. This spec copies

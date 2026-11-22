@@ -12,7 +12,7 @@
 
 **Tech Stack:** bash (macOS 3.2 compatible), git, pytest JUnit XML; Markdown skill text; pytest suites that drive the scripts as subprocesses; a `claude -p` tool-rep micro-test kit; the repo's commit lints (`build/run_commit_lints.sh`).
 
-**Spec:** `specs/mutant-screen-runs.md` (approved 2026-11-19; Design 1 step 2 corrected by the owner in PR #239, `651e0cd`). Its Terms, Design, Constraints and Verification are authoritative. Read it in full before Task 1.
+**Spec:** `specs/completed/mutant-screen-runs.md` (approved 2026-11-19; Design 1 step 2 corrected by the owner in PR #239, `651e0cd`). Its Terms, Design, Constraints and Verification are authoritative. Read it in full before Task 1.
 
 ## Global Constraints
 

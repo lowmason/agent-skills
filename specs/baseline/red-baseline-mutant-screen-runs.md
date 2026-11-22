@@ -1,7 +1,7 @@
 # Plan 104 micro-tests: mutant screen runs
 
-This record holds the micro-tests of plan 104 (`specs/plans/104-mutant-screen-runs.md`). The spec,
-`specs/mutant-screen-runs.md`, asks for them in Verification. They follow writing-skills' micro-test
+This record holds the micro-tests of plan 104 (`specs/plans/completed/104-mutant-screen-runs.md`). The spec,
+`specs/completed/mutant-screen-runs.md`, asks for them in Verification. They follow writing-skills' micro-test
 method, main's copy, as plan 97 applied it (`specs/plans/completed/97-change-reverted-mutant.md:105`).
 Each arm has five scored reps per fixture, each in a fresh context. A control arm runs today's text
 first. A person reads every verdict by hand from the rep's full output. `grade.py` prints reading
