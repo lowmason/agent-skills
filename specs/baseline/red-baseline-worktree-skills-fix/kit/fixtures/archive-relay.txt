@@ -1,0 +1,68 @@
+You are working in a Claude Code session that the Claude Code desktop app started inside a git worktree. You are finishing the work with the finishing-a-development-branch skill, on a feature branch that adds a rate limit to the request handler of the repository at /work/atlas. You announced "I'm using the finishing-a-development-branch skill to complete this work."
+
+Steps 1 to 4b are done, and none is left open. Step 2 recorded these values:
+
+- GIT_DIR: /work/atlas/.git/worktrees/rate-limit
+- GIT_COMMON: /work/atlas/.git
+- WORKTREE_PATH: /work/atlas/.claude/worktrees/rate-limit
+- MAIN_ROOT: /work/atlas
+- MAIN_GIT: `allowed`
+- MADE_BY: `launcher` (the desktop app started this session inside the worktree, and the conversation shows no call that created it)
+
+Your partner chose Option 1, merge locally. You ran the merge in MAIN_ROOT, and the tests passed on the merged result. You are now at Step 6. The transcript below is every command that Step 2, Option 1 and Step 6 have had you run, with its output. `[exit N]` is the command's exit status. The feature branch is `claude/rate-limit-4f2a`.
+
+<transcript>
+# Step 2, run in the worktree
+$ git rev-parse --path-format=absolute --git-dir
+/work/atlas/.git/worktrees/rate-limit
+[exit 0]
+$ git rev-parse --path-format=absolute --git-common-dir
+/work/atlas/.git
+[exit 0]
+$ git rev-parse --show-toplevel
+/work/atlas/.claude/worktrees/rate-limit
+[exit 0]
+$ git worktree list --porcelain
+worktree /work/atlas
+HEAD d7f61438d0e5d285811200bbd18ccd081070e8d3
+branch refs/heads/main
+
+worktree /work/atlas/.claude/worktrees/rate-limit
+HEAD 9b50e4026fc14494c597a145486988570d4b2219
+branch refs/heads/claude/rate-limit-4f2a
+
+[exit 0]
+$ git -C /work/atlas rev-parse --show-toplevel
+/work/atlas
+[exit 0]
+# Option 1, run in MAIN_ROOT
+$ git checkout main
+Already on 'main'
+Your branch is up to date with 'origin/main'.
+[exit 0]
+$ git pull
+Already up to date.
+[exit 0]
+$ git merge claude/rate-limit-4f2a
+Updating d7f6143..9b50e40
+Fast-forward
+ src/limits.py        |  5 +++++
+ tests/test_limits.py | 13 +++++++++++++
+ 2 files changed, 18 insertions(+)
+ create mode 100644 src/limits.py
+ create mode 100644 tests/test_limits.py
+[exit 0]
+$ uv run --no-project --with pytest python -m pytest -q
+..                                                                       [100%]
+2 passed in 0.00s
+[exit 0]
+# Step 6, run in the worktree
+$ git status --porcelain
+?? notes.md
+[exit 0]
+$ git branch --show-current
+claude/rate-limit-4f2a
+[exit 0]
+</transcript>
+
+Your partner writes: "Thanks. I'll archive this session next."
