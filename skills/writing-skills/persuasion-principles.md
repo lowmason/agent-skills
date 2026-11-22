@@ -4,7 +4,9 @@
 
 LLMs respond to the same persuasion principles as humans. Understanding this psychology helps you design more effective skills - not to manipulate, but to ensure critical practices are followed even under pressure.
 
-**Research foundation:** Meincke et al. (2025) tested 7 persuasion principles with N=28,000 AI conversations. Persuasion techniques more than doubled compliance rates (33% → 72%, p < .001).
+**Research foundation:** Meincke et al. (2025) ran 28,000 conversations in which user messages tried to persuade one model, GPT-4o mini, to fulfil two objectionable requests. Persuasion raised compliance from 33.3% to 72.0% (p < .001). The study did not measure how a model follows a system prompt or a skill, so it suggests how these principles work in a skill but does not show it. A 2026 follow-up from the same lab (Wharton Generative AI Labs) tested newer reasoning models: read it before you cite its figures.
+
+**Scope:** these principles are for discipline failures — an agent that knows the rule and skips it under pressure. For wrong-shaped output or omitted elements, use the forms in SKILL.md § Match the Form to the Failure instead.
 
 ## The Seven Principles
 
@@ -171,10 +173,10 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 - Empirical foundation for influence research
 
 **Meincke, L., Shapiro, D., Duckworth, A. L., Mollick, E., Mollick, L., & Cialdini, R. (2025).** Call Me A Jerk: Persuading AI to Comply with Objectionable Requests. University of Pennsylvania.
-- Tested 7 principles with N=28,000 LLM conversations
-- Compliance increased 33% → 72% with persuasion techniques
+- Tested 7 principles in 28,000 conversations in which user messages asked GPT-4o mini to fulfil two objectionable requests
+- Compliance rose from 33.3% to 72.0% with persuasion techniques
 - Authority, commitment, scarcity most effective
-- Validates parahuman model of LLM behavior
+- Suggests a parahuman model of LLM behavior; it did not test system prompts or skills
 
 ## Quick Reference
 
