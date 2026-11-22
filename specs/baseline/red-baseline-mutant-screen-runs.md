@@ -1625,8 +1625,8 @@ for plan 104. This task does not edit that file.
 - [ ] **A reviewer raises a finding about a screen file (`specs/completed/mutant-screen-runs.md`, Design 4; D12 of
       `specs/plans/completed/104-mutant-screen-runs.md`).** Plan 104 leaves the reviewer text as it is. The
       reviewers read only the controller's or the inline agent's full run, never a screen file
-      (`task-<N>-screen*.log`), and no task review in plan 104 read one, so the fallback did not fire in the
-      plan's task reviews. If a reviewer raises a finding about a screen file, the fix is one sentence in the shared
+      (`task-<N>-screen*.log`). No task of plan 104 made a screen, because its Tasks 1 and 2 ran full runs only, so
+      no task review had one to judge and the fallback did not fire in the plan's task reviews. If a reviewer raises a finding about a screen file, the fix is one sentence in the shared
       reviewer block, which runs from `## Review scope` to the end of `## Declined to judge`.
       `build/check_reviewer_block.py` keeps that block equal in its four copies: `agents/code-reviewer.md`,
       `agents/task-reviewer.md`, `skills/requesting-code-review/code-reviewer.md` and
