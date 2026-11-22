@@ -5501,6 +5501,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the constant. Size: quick-fix. Revisit if: the owner wants the pointer, or a later pressure
       test shows a rep that edits after a check found a wider reach. The owner chooses the wording.
       Owner decision D18 set the current wording in Task 8.
+      → planned 2026-11-22: specs/plans/106-brainstorming-improvements.md
 
 ## 71-sdd-bayesian-compaction-window — 2026-10-29
 - [x] Nothing resolves relative links inside `skills/**/references/` (plan 71 final review,
@@ -6325,6 +6326,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       budget." Size: design. Done when: Size the Work and the first-message path agree in
       `skills/brainstorming/SKILL.md`, micro-tests on T11, T13 and the approach guards show no regression, and
       `NOTICE` names the divergence.
+      → planned 2026-11-22: specs/plans/106-brainstorming-improvements.md
 
 ## 84-spec-derived-acceptance-tests — 2026-11-10
 - [x] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
@@ -7263,6 +7265,21 @@ review and the Plan Completion gate (2026-10-27) add the others.
       compare the two question lists, and add a `NOTICE` sentence. Size: quick-fix after the check. Done when: this item's tick
       note gives the first run's count, and either the item is retired or the prompt carries the line and
       `NOTICE` names it.
+
+## handoff-briefs-in-repo (no plan; owner request, branch claude/briefs-builder-docs-structure-a7dc79) — 2026-11-22
+- [ ] **Keep handoff briefs in the repo under `specs/handoff-briefs/` (owner request, 2026-11-22).** Today
+      prepare-handoff writes each brief outside the repo, to
+      `~/.cache/agent-skills/handoffs/<repo>/<YYYY-MM-DD>-<slug>.md` (`skills/prepare-handoff/SKILL.md:89`), and its
+      overview says a brief is "never committed" (`SKILL.md:23`). This reverses an approved decision:
+      `specs/completed/handoff-briefs.md` Decision 5 rejected "briefs committed under `specs/handoffs/`, which would
+      be public and a second source of truth". So the change needs an owner ruling on two points first. (1) Privacy:
+      a brief may hold a decision that must stay out of this public repo (prepare-handoff's Sort bin, and memory
+      `planning-record-is-public`). Pick one: such decisions stay in memory only, the brief gets a private part
+      outside the repo, or the directory is gitignored. (2) Source of truth: a committed brief can repeat a spec or
+      plan and then drift from it. Then edit prepare-handoff's Overview and § 4 Store (with its `.handoff/`
+      fallback), the plan-completion protocol if briefs retire to `specs/completed/`, and the CLAUDE.md Specs & plans
+      line. Size: spec (it amends an approved spec's decision). Done when: the owner has ruled on both points,
+      prepare-handoff names `specs/handoff-briefs/`, and the commit lints pass.
 
 ## 103-worktree-skills-cc-guide-fixes — 2026-11-22
 - [ ] **Align the guide's "kept worktree" sentence with the desktop page (plan 103 completion gate, owner ruling
