@@ -47,11 +47,20 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-22): default 1, "Approve as written (Recommended)": two rounds, and round B runs plan 86's full set (105 reps plus the panel). Applied in: Tasks 2 and 3, `<rec>.md` Bars.
+- **D2** (owner, plan review, 2026-11-22): default 2, "Approve as written (Recommended)": copy plan 103's merged `postprocess` after an interface check, and stop if it differs. Applied in: Task 1.
+- **D3** (owner, plan review, 2026-11-22): default 3, "Approve as written (Recommended)": keep the Gemini CLI and Copilot CLI blocks, and add an agy line from the probe, never a guessed recipe. Applied in: Tasks 4 and 5.
+- **D4** (owner, plan review, 2026-11-22): default 4, approved with D2's answer: a YES on isolation line 7 is recorded and does not stop the run. Applied in: Task 1, `<rec>.md` Rules.
+- **D5** (owner, plan review, 2026-11-22): default 5, approved with D1's answer: P3 is held to 3 of 5 in round A and 4 of 5 in round B. Applied in: `<rec>.md` Bars.
+- **D6** (owner, plan review, 2026-11-22): default 6, approved with D1's answer: about $6.30, with stops at $3.00 and $8.00. Applied in: Global Constraints.
+- **D7** (owner, plan review, 2026-11-22): default 7, "Inline, executing-plans (Recommended)". Applied in: the execution handoff.
+- **D8** (owner, plan review, 2026-11-22): default 8, "Yes, they may overlap (Recommended)": `NOTICE` merges as keep-both, so plan 105's execution and this one may overlap. Applied in: Global Constraints.
+- **D9** (owner, plan review, 2026-11-22): "Approve the wording (Recommended)": the exact copy of edits I1a to I1c, I6, I2a to I2d and I4 (I5 is the owner's own wording, findings Owner decisions 3). Applied in: Tasks 2 and 3.
+- **D10** (owner, plan review, 2026-11-22): "Approve the NOTICE text (Recommended)": the exact copy of Task 5 Steps 2 to 4. Applied in: Task 5.
 
-## Defaults for plan review
+## Defaults (approved at plan review, D1 to D8)
 
-These are the planning session's defaults. The owner rules on each at plan review, and each ruling is logged in Decisions.
+These were the planning session's defaults. The owner approved each at plan review (Decisions).
 
 1. **Round shape.** Two rounds. Round A runs item 1 alone, on the twelve guards at 5 reps. Round B runs items 2, 4, 5 and 6 together on plan 86's full new-copy set: T7 at 25 reps plus a panel, T10 to T13 and the twelve guards at 5 reps. That set is wider than the union of the three items' case lists, because edit I2a changes the ordered list that every case reads and edit I2d changes what the written design records, which T4's strict reading scores. If a case regresses in round B, it re-runs on each "B without item N" arm for items 2, 4 and 5 (Task 3 Step 12).
 2. **The kit.** A new record `<rec>.md` and kit `<rec>/kit/`. The cases come from `<v702>/kit/` unchanged. The kit adds (a) the peer-message void, (b) the `credential_expires_at` drop and (c) plan 104's 8-question isolation probe (`specs/baseline/red-baseline-mutant-screen-runs/kit/isolation_probe.txt`). No ref held plan 103's kit when this plan was written. Because this execution starts after plan 103 merges, Task 1 copies plan 103's merged `postprocess.py`, `test_postprocess.py`, `kit_identity.py` and `check_scrub.py`, and records the commit it copied them from. If plan 103's merged `postprocess` does not have the interface in Task 1's Interfaces block, stop for the owner.
