@@ -1,0 +1,290 @@
+<skill name="using-git-worktrees">
+---
+name: using-git-worktrees
+description: >
+  Use when starting feature work, a bugfix, or plan execution that must not disturb the current
+  checkout — before executing an implementation plan, when the working tree has uncommitted
+  changes to protect, when the user asks for a worktree, isolated workspace, or branch sandbox,
+  or when parallel agents need separate checkouts of the same repo.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
+# cc-guide: subagents.worktrees @2.1.326
+---
+
+# Using Git Worktrees
+
+## Overview
+
+Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available, or when Step 1a's base check sends you there.
+
+**Core principle:** Detect existing isolation first. Then use native tools, unless Step 1a's base check sends you to git. Then fall back to git. Never fight the harness.
+
+**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+
+## Step 0: Detect Existing Isolation
+
+**Before creating anything, check if you are already in an isolated workspace.** Run each command as its own Bash call, exactly as written. A session that Claude Code isolates in a worktree refuses `$(…)` and `cd … &&` forms.
+
+```bash
+git rev-parse --path-format=absolute --git-dir
+git rev-parse --path-format=absolute --git-common-dir
+git branch --show-current
+```
+
+Record the three outputs as GIT_DIR, GIT_COMMON and BRANCH.
+
+**Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside git submodules. Before concluding "already in a worktree," verify you are not in a submodule:
+
+```bash
+# If this returns a path, you're in a submodule, not a worktree — treat as normal repo
+git rev-parse --show-superproject-working-tree 2>/dev/null
+```
+
+**If `GIT_DIR != GIT_COMMON` (and not a submodule):** You are already in a linked worktree. Skip to Step 2 (Project Setup). Do NOT create another worktree.
+
+Report with branch state:
+- On a branch: "Already in isolated workspace at `<path>` on branch `<name>`."
+- Detached HEAD: "Already in isolated workspace at `<path>` (detached HEAD, externally managed). Branch creation needed at finish time."
+
+**If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
+
+Has the user already indicated their worktree preference in your instructions? If not, ask for consent before creating a worktree:
+
+> "Would you like me to set up an isolated worktree? It protects your current branch from changes."
+
+Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 2.
+
+## Step 1: Create Isolated Workspace
+
+**You have two mechanisms. Try them in this order.**
+
+### 1a. Native Worktree Tools (preferred)
+
+The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, run the base check below, then follow it.
+
+**Base check.** A native tool can branch from the remote's default branch instead of your HEAD, which leaves out every commit that HEAD has and that branch lacks, your unpushed commits among them. Claude Code's `EnterWorktree` does this unless its `worktree.baseRef` setting is `"head"`. Run:
+
+```bash
+git rev-list --count origin/HEAD..HEAD
+```
+
+- **It prints 0:** HEAD has nothing that the default branch lacks. Create the worktree with the native tool and skip to Step 2.
+- **It prints a number above 0, or fails** (no `origin/HEAD`, because the remote never set it or there is no remote): HEAD may have commits that the default branch lacks, whether pushed or not. With a remote, the native tool can leave them out, even when `origin/HEAD` is unset. With no remote, it branches from HEAD, but a failed check looks the same in both cases. Create the worktree with Step 1b's commands, which branch from HEAD. In place of Step 1b's `cd`, switch the session into the new worktree with the native tool's form for an existing worktree (`EnterWorktree` with `path`). Claude Code asks your partner to approve a path outside `.claude/worktrees/`. Then skip to Step 2. If your partner declines the approval, this session is not inside the new worktree: tell them it exists at `<path>`, ask whether to retry the approval, remove it with `git worktree remove <path>`, or work in place, and wait.
+
+Native tools handle directory placement, branch creation, and cleanup automatically. A `git worktree add` worktree that the native tool never enters is phantom state your harness can't see or manage, which is why the base check ends by entering it.
+
+Go to Step 1b on your own only if you have no native worktree tool available.
+
+### 1b. Git Worktree Fallback
+
+**Only use this if Step 1a does not apply** — you have no native worktree tool available, or Step 1a's base check sent you here. Create a worktree manually using git.
+
+#### Directory Selection
+
+Follow this priority order. Explicit user preference always beats observed filesystem state.
+
+1. **Check your instructions for a declared worktree directory preference.** If the user has already specified one, use it without asking.
+
+2. **Check for an existing project-local worktree directory:**
+   ```bash
+   ls -d .worktrees 2>/dev/null     # Preferred (hidden)
+   ls -d worktrees 2>/dev/null      # Alternative
+   ```
+   If found, use it. If both exist, `.worktrees` wins.
+
+3. **If there is no other guidance available**, default to `.worktrees/` at the project root.
+
+Call the chosen directory `LOCATION` (for example `.worktrees`).
+
+#### Safety Verification (project-local directories only)
+
+**MUST verify the chosen `LOCATION` is ignored before creating worktree.** Keep the trailing slash: a bare path never matches a directory-only pattern while the directory is absent.
+
+```bash
+git check-ignore -q "$LOCATION/"
+```
+
+**If NOT ignored:** Add to .gitignore, commit the change, then proceed.
+
+**Why critical:** Prevents accidentally committing worktree contents to repository.
+
+#### Create the Worktree
+
+```bash
+# Determine path based on chosen location
+path="$LOCATION/$BRANCH_NAME"
+
+git worktree add "$path" -b "$BRANCH_NAME"
+cd "$path"
+```
+
+**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
+
+## Step 2: Project Setup
+
+Auto-detect and run appropriate setup:
+
+```bash
+# Node.js
+if [ -f package.json ]; then npm install; fi
+
+# Rust
+if [ -f Cargo.toml ]; then cargo build; fi
+
+# Python
+if [ -f uv.lock ]; then uv sync
+elif [ -f poetry.lock ]; then poetry install
+elif [ -f requirements.txt ]; then pip install -r requirements.txt
+fi
+# A pyproject.toml with no lock file: no automatic install. Follow the README, or ask.
+
+# Go
+if [ -f go.mod ]; then go mod download; fi
+```
+
+## Step 3: Verify Clean Baseline
+
+Run tests to ensure workspace starts clean:
+
+```bash
+# Use project-appropriate command
+npm test / cargo test / pytest / go test ./...
+```
+
+**If tests fail:** Report failures, ask whether to proceed or investigate.
+
+**If tests pass:** Report ready.
+
+### Report
+
+```
+Worktree ready at <full-path>
+Tests passing (<N> tests, 0 failures)
+Ready to implement <feature-name>
+```
+
+## Quick Reference
+
+| Situation | Action |
+|-----------|--------|
+| Already in linked worktree | Skip creation (Step 0) |
+| In a submodule | Treat as normal repo (Step 0 guard) |
+| Native worktree tool available | Base check, then use it (Step 1a) |
+| Native tool, base check prints above 0 or fails | Step 1b's git commands, then enter with the native tool (Step 1a) |
+| No native tool | Git worktree fallback (Step 1b) |
+| `.worktrees/` exists | Use it (verify ignored) |
+| `worktrees/` exists | Use it (verify ignored) |
+| Both exist | Use `.worktrees/` |
+| Neither exists | Check instruction file, then default `.worktrees/` |
+| Directory not ignored | Add to .gitignore + commit |
+| Permission error on create | Sandbox fallback, work in place |
+| Tests fail during baseline | Report failures + ask |
+| No package.json/Cargo.toml | Skip dependency install |
+
+## Common Mistakes
+
+### Fighting the harness
+
+- **Problem:** Using `git worktree add` when the platform already provides isolation
+- **Fix:** Step 0 detects existing isolation. Step 1a defers to native tools, unless its base check sends you to Step 1b's git commands.
+
+### Losing unpushed commits
+
+- **Problem:** A native tool that branches from the remote's default branch makes a worktree without the commits that HEAD has and that branch lacks
+- **Fix:** Step 1a's base check
+
+### Skipping detection
+
+- **Problem:** Creating a nested worktree inside an existing one
+- **Fix:** Always run Step 0 before creating anything
+
+### Skipping ignore verification
+
+- **Problem:** Worktree contents get tracked, pollute git status
+- **Fix:** Always use `git check-ignore` before creating project-local worktree
+
+### Assuming directory location
+
+- **Problem:** Creates inconsistency, violates project conventions
+- **Fix:** Follow priority: explicit instructions > existing project-local directory > default
+
+### Proceeding with failing tests
+
+- **Problem:** Can't distinguish new bugs from pre-existing issues
+- **Fix:** Report failures, get explicit permission to proceed
+
+## Red Flags
+
+**Never:**
+- Create a worktree when Step 0 detects existing isolation
+- Use `git worktree add` when you have a native worktree tool (e.g., `EnterWorktree`) and Step 1a's base check printed 0. This is the #1 mistake — if you have it, use it.
+- Skip Step 1a by jumping straight to Step 1b's git commands
+- Create a worktree with a native tool before Step 1a's base check
+- Create worktree without verifying it's ignored (project-local)
+- Skip baseline test verification
+- Proceed with failing tests without asking
+
+**Always:**
+- Run Step 0 detection first
+- Prefer native tools over git fallback, except where Step 1a's base check sends you to git
+- Follow directory priority: explicit instructions > existing project-local directory > default
+- Verify directory is ignored for project-local
+- Auto-detect and run project setup
+- Verify clean test baseline
+</skill>
+
+<session>
+You are working in a Claude Code session in the repository at /work/atlas. Your partner asked you to add a rate limit to the request handler. You announced "I'm using the using-git-worktrees skill to set up an isolated workspace." The checkout is a normal one on branch `main`, with three local commits. The repository has a remote named `origin`. Your partner said yes when you asked whether to set up an isolated worktree, and they want it on a new branch named `feat/rate-limit`. Your instructions declare no worktree directory. You have Bash and the native Claude Code tool `EnterWorktree`.
+
+You ran Step 0, Step 1a's base check and Step 1b's directory and ignore checks. Each ran as its own Bash call. This is every command that you ran, with its output. `[exit N]` is the command's exit status.
+
+<transcript>
+$ git rev-parse --path-format=absolute --git-dir
+/work/atlas/.git
+[exit 0]
+$ git rev-parse --path-format=absolute --git-common-dir
+/work/atlas/.git
+[exit 0]
+$ git branch --show-current
+main
+[exit 0]
+$ git rev-parse --show-superproject-working-tree
+[exit 0]
+$ git log --oneline
+af80652 feat: return a status object
+565b1ee feat: add the request handler
+2e21e31 chore: start atlas
+[exit 0]
+$ git rev-list --count origin/HEAD..HEAD
+fatal: ambiguous argument 'origin/HEAD..HEAD': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+[exit 128]
+$ git remote -v
+origin	/work/mirror/atlas.git (fetch)
+origin	/work/mirror/atlas.git (push)
+[exit 0]
+$ git fetch origin
+fatal: '/work/mirror/atlas.git' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[exit 128]
+$ git rev-list --count origin/main..HEAD
+2
+[exit 0]
+$ ls -d .worktrees
+.worktrees
+[exit 0]
+$ git check-ignore -q .worktrees/
+[exit 0]
+</transcript>
+
+You have run nothing else and changed nothing.
+</session>
+
+This is a decision-only exercise. You have no tools in this turn, so no command can run. Continue the session from here. Write what you do next, in order, up to the point where you would wait for your partner. Write each shell command you would run on a line that starts `RUN:`. Write each tool call on a line that starts `TOOL:`, with the tool name and its arguments. Write each thing you say to your partner on a line that starts `SAY:`. A command whose output you were not given runs and succeeds. Stop where you would wait for your partner.

@@ -308,3 +308,139 @@ tools kit, and it does not close the backlog item "Void a no-tools rep that took
 `rep_tools.py` strips only `credential_expires_at`. It has no `result_index` check, and it never drops
 `origin`. Its `grade.py` only flags a peer `origin` (V9). So this kit starts from plan 97's review kit
 and builds the void and the drop itself (Kit).
+
+## Treatment: noremote, remote-nohead
+
+Task 2 of plan 103 edits one claim of `skills/using-git-worktrees/SKILL.md` (line 74, Step 1a) and
+runs the treatment arms of the two non-regression cases. The bar is the control's count minus one,
+so at least 4 of 5 for each case (Bars).
+
+### The edit
+
+Old text, which is also the control text: "HEAD may have commits that the default branch lacks, whether
+pushed or not, and the native tool leaves them out."
+
+New text: "HEAD may have commits that the default branch lacks, whether pushed or not. With a remote, the
+native tool can leave them out, even when `origin/HEAD` is unset. With no remote, it branches from HEAD,
+but a failed check looks the same in both cases."
+
+The failing check ran before the edit and the checks ran after it:
+
+```text
+git grep -c 'With no remote, it branches from HEAD' -- skills/using-git-worktrees/SKILL.md   exit 1, no match
+git grep -c 'With no remote, it branches from HEAD' -- skills/using-git-worktrees/SKILL.md   skills/using-git-worktrees/SKILL.md:1
+git grep -c 'and the native tool leaves them out' -- skills/using-git-worktrees/SKILL.md     exit 1, no match
+```
+
+### Treatment ref and prompts
+
+- **Execution base of Task 2:** `f20dc4ed3d76ab1e01bfdd9e8febe856df714602`. The Control section used
+  `07ea574` as its text ref. `git diff 07ea574 f20dc4e -- skills/using-git-worktrees/SKILL.md` prints
+  nothing, so the control prompts hold the text that Task 2 started from.
+- **Treatment ref:** `d4ac13aebf3f50acf44bd13914114573bd07bdde`, printed by `git stash create` with the
+  edit uncommitted. The stash stack was not used (`git stash list` printed nothing).
+- **Prompts:** `build_prompts.py <case> treatment d4ac13aebf3f50acf44bd13914114573bd07bdde` wrote
+  `kit/prompts/noremote-treatment.txt` and `kit/prompts/remote-nohead-treatment.txt`. It appended their
+  two lines to `kit/prompts/MANIFEST.txt`. The three control lines are unchanged.
+
+| Prompt | skill text sha256 | prompt sha256 |
+|---|---|---|
+| `noremote-control` | `2b7995938879dab546fc43337c77f367679101b3490d49957239aaffbedf1bae` | `0a9ae1e3e788f916e3019004c8f16e223cf30ba18750a35bd90bb2c570b0d8a7` |
+| `noremote-treatment` | `f596d518b37340e5afa576df4af977903aaf4c4eed8e1b19d20ff02cfaa26b76` | `33385ea7840ec815e66db5cb0df5bc9c6f2342dc788dce03f805b62fa9030117` |
+| `remote-nohead-control` | `2b7995938879dab546fc43337c77f367679101b3490d49957239aaffbedf1bae` | `650b89121e2aefb572d3840b4b23e667f1024a97d24238e1014af87b693bc8ac` |
+| `remote-nohead-treatment` | `f596d518b37340e5afa576df4af977903aaf4c4eed8e1b19d20ff02cfaa26b76` | `884015f9db4f7163b673fc0a0c41bc898a983e527833a78441bd366371bcc4a8` |
+
+The treatment prompt holds the new sentence and the control prompt holds the old one. Counts of
+matching lines, from `grep -c`:
+
+| Prompt | `With no remote, it branches from HEAD` | `and the native tool leaves them out` |
+|---|---|---|
+| `noremote-control` | 0 | 1 |
+| `noremote-treatment` | 1 | 0 |
+| `remote-nohead-control` | 0 | 1 |
+| `remote-nohead-treatment` | 1 | 0 |
+
+`diff` of each control prompt against its treatment prompt shows one changed line, the Step 1a bullet
+(line 75 of the prompt).
+
+### Sheet check (reading rule 4)
+
+Before grading, `show_reps.py sheet <case> <run-dir> 1` printed rep 1 of the control and rep 1 of the
+treatment for each case. The sheets were compared two ways:
+
+- With the answer text cut out, the header (case and rep id), the PASS and FAIL columns and the end marker
+  are identical for the two arms of each case. The cut is
+  `awk '/^--- answer ---$/{print; skip=1; next} /^=== end /{skip=0} !skip{print}'`, and `diff` of the two cut
+  sheets printed nothing, for both cases.
+- In the full `diff`, every hunk lies between the `--- answer ---` line (line 4 of a sheet) and the end
+  marker. The hunk headers were `5c5`, `6a7,8`, `9c11` and `11c13,15` for `noremote`, and `5c5`, `7,8d6`
+  and `13,15c11` for `remote-nohead`. The first changed line is line 5, which is the first line of the answer.
+
+Only the rep's answer differs. Neither sheet names the arm, the run folder, the ref or the cost.
+
+### `noremote`: treatment 5 of 5 (cost $0.141)
+
+Five reps, no void rep (the batch exited 0 and `show_reps.py status` showed no flag). Each answer was
+read in full from its sheet. All five ran `git worktree add` on a new branch with no start point, then
+`EnterWorktree` with `path`. None called `EnterWorktree` with `name`, and none stopped to ask first.
+
+| Rep | Grade | Quote |
+|---|---|---|
+| 1 | PASS | `RUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit`, then `TOOL: EnterWorktree path="/work/atlas/.worktrees/feat/rate-limit"` |
+| 2 | PASS | `RUN: git worktree add /work/atlas/.worktrees/feat/rate-limit -b feat/rate-limit` (absolute path, no start point), then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+| 3 | PASS | the rep 1 RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+| 4 | PASS | the rep 1 RUN line, then `TOOL: EnterWorktree path="/work/atlas/.worktrees/feat/rate-limit"` |
+| 5 | PASS | the rep 1 RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+
+Each rep wrote the git command first, then the tool call. Reps 1 to 3 and 5 said that the native tool
+"might" or "could" leave out the three local commits. Rep 4 said "The repo has no remote, so I couldn't
+confirm" that the native tool would include them. No rep relied on the new sentence to take the native
+tool's own branching.
+
+### `remote-nohead`: treatment 5 of 5 (cost $0.075)
+
+Five reps, no void rep. All five took the same two calls, and each said that the remote at
+`/work/mirror/atlas.git` is unreachable or that the check or fetch failed. None used `origin/main` as a
+start point.
+
+| Rep | Grade | Quote |
+|---|---|---|
+| 1 | PASS | `RUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit`, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+| 2 | PASS | the rep 1 RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit`, after "Assuming that succeeds, I enter the new worktree" |
+| 3 | PASS | the rep 1 RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+| 4 | PASS | the rep 1 RUN line, a read-only `RUN: git -C .worktrees/feat/rate-limit log --oneline`, then `TOOL: EnterWorktree path="/work/atlas/.worktrees/feat/rate-limit"` |
+| 5 | PASS | the rep 1 RUN line, then `TOOL: EnterWorktree with path="/work/atlas/.worktrees/feat/rate-limit"` |
+
+Rep 4's extra `git log` runs after the worktree add and before the tool call, so the PASS order holds
+(reading rule 5: a `git worktree add` with no start point, then `EnterWorktree` with `path`).
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| Treatment `noremote` (5) | $0.141 |
+| Treatment `remote-nohead` (5) | $0.075 |
+| **Treatment arms, this task** | **$0.216** |
+| Kit before this task (Control, Spend) | $0.310 |
+| **Whole kit** | **$0.526** |
+
+`show_reps.py cost ~/.cache/agent-skills/scratch/worktree-skills-fix` printed `total $0.526`. The whole
+kit is far below the $10.00 stop. The `noremote` treatment reps cost $0.028 each, and the control reps of
+that case $0.011 each. The usage fields in the JSON show how the prompt cache was used:
+
+| Batch | Rep 1: cache read / write (tokens) | Reps 2 to 5: cache read / write (tokens) |
+|---|---|---|
+| `noremote` control | 6,427 / 363 | 6,427 / 363 |
+| `noremote` treatment | 1,675 / 5,201 | 1,635 / about 5,200 |
+| `remote-nohead` control | 1,675 / 5,320 | 6,592 / 362 to 363 |
+| `remote-nohead` treatment | 1,635 / 5,368 | 6,639 / 363 |
+
+The cache use varies from batch to batch, in both arms. This record gives no cause for it. It changes no
+grade.
+
+### Verdict
+
+`noremote` 5 of 5 and `remote-nohead` 5 of 5. The control scored 5 of 5 on each case, so the bar
+(at least 4 of 5) holds for both. The new sentence did not pull any rep off the safe route (`git worktree
+add` on a new branch from HEAD, then `EnterWorktree` with `path`). The non-regression bar is met, and the
+edit stays.
