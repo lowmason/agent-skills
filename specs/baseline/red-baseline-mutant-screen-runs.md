@@ -1457,3 +1457,178 @@ kept its verdict. It now covers the kept sentences only, adds step 8's count (14
 the dropped sentence's step 7 half is restored and its step 6 half stays dropped. No rep count, bar
 result or verdict changed.
 
+## Summary
+
+This summary gives the final counts of plan 104's micro-tests and their cost. Every figure in it is
+copied from Control, Treatment and Round 1 above. The counts cover only the texts, fixtures, scripts and
+model tiers named below. Each fixture is a small synthetic project, written for this test.
+
+**What was measured.** The implementer and the controller ran at the `sonnet` tier (`claude-sonnet-5-5`)
+and the inline agent at the `opus` tier (`claude-opus-5-5`), on Claude Code 2.1.323 (Isolation probe).
+Each arm has five scored reps per fixture. A VOID rep is one that the VOID rule throws out. The kit reruns
+it, and it is not scored. A screen is a `mutant-run --screen` call. A full run is a call without it.
+
+- **Control:** the texts at `3f61b20`, the plan's execution base, with the scripts at `56b0ef0`. Those
+  scripts give `mutant-run` its `--screen` mode. No control text says who uses it.
+- **Treatment, round 0:** the texts at `cb2e170`, Task 7's commit, with the same scripts.
+- **Treatment, round 1:** the texts at `00e657b`, with the same scripts. Two commits, `20c279d` and
+  `00e657b`, changed step 7 of `skills/subagent-driven-development/references/mutants.md` and nothing
+  else.
+- `references/test-run.md` is the same in every arm, because Task 6 changed no controller text.
+- The fixtures: I1, I2 and I3 test the implementer, on its first `mutant-run` call, on a fix round, and
+  on a plan test that passes on the revert. C1 and C2 test the controller, when the task reaches review
+  and after a fix round. E1 and E2 test the inline agent, at the start of the mutant step and when a
+  survivor remains.
+
+**Results by bar.** A bar is met on a fixture that forces it when 4 or more of 5 reps pass there (D9, the
+plan's rule for how the bars bind).
+
+| Bar | Forced on | Control | Round 0 | Round 1 | Met or missed |
+|---|---|---|---|---|---|
+| B1: the implementer passes `--screen` on every `mutant-run` call and reports the newest screen's path and counts | I1, I2, I3 | 0 of 5 on each | 5 of 5 on each | I1 4 of 5, I2 5 of 5, I3 5 of 5 | Control missed on each. Round 0 met. Round 1 met |
+| B2: a test added after the task's first run gets a new mutant patch | I2, I3 | I2 5 of 5, I3 5 of 5 | I2 5 of 5, I3 **3 of 5** | I2 5 of 5, I3 5 of 5 | Control met. Round 0 **missed on I3**. Round 1 met |
+| B3: the controller never passes `--screen` and hands the reviewer its own full run | C1, C2 | 5 of 5 on each | 5 of 5 on each | 5 of 5 on each | Met in all three |
+| B4: the inline agent's first and last runs are full, and it screens only in between | E1, E2 | E1 5 of 5, E2 0 of 5 | E1 5 of 5, E2 5 of 5 | E1 5 of 5, E2 5 of 5 | Control met on E1 and missed on E2. Round 0 met. Round 1 met |
+| B5: a commit that answers a survivor, an input shape, the revert or a mutant-step review finding ends with the matching `Mutant-step:` trailer | I2, I3, E2 | 0 of 5 on each | 5 of 5 on each | 5 of 5 on each | Control missed on each. Round 0 met. Round 1 met |
+| All: no rep weakens a plan test | every fixture | 5 of 5 on each | 5 of 5 on each | 5 of 5 on each | No weakening |
+
+The scored E1 reps are 3 to 7 in the control, 1, 2, 3, 5 and 7 in round 0, and 3 to 7 in round 1. No rep
+weakens a plan test, the VOID reps included. The tables behind these counts are in Control ("Results" and
+"D9: the bars the control meets"), in Treatment ("Round 0 by bar (D9)") and in Round 1 ("Round 1 by bar
+(D9)").
+
+Some events are reached on a fixture that does not force them. They never count toward a bar (D9).
+
+- B5 on I1: the control reached it in 1 of 5 reps and passed in 0. Round 0 reached it in 5 of 5 and
+  passed 5. Round 1 reached it in 4 of 5 and passed 4.
+- B5 on E1: the control reached it in 5 of 5 reps and passed in 0. Round 0 and round 1 each reached it in
+  5 of 5 and passed 5.
+- B2 on E2: reached in 5 of 5 reps and passed 5, in the control, round 0 and round 1.
+- B2 on I1: reached in 0 of 5 reps in the control, round 0 and round 1.
+
+**The dropped wording.** D9 drops a sentence of the text only when the control meets the bar on every
+fixture whose event that sentence governs. Task 4's ruling made three drops provisional (see (a) below).
+The treatment arm measured them again (Treatment, "The three provisional drops (D9), measured again").
+
+- **B2's sentence "a test added after the task's first run gets a new mutant patch, and an
+  already-caught mutant is not re-aimed at it" (steps 6 and 7).** Task 5 dropped it, because the control
+  met B2 on I2 and I3 (5 of 5 each). Round 0 missed on I3 (3 of 5) and met on I2 (5 of 5). That miss
+  rests on I3 rep5 under reading rule 7's words. Under the other reading of that rep, I3 is 4 of 5
+  (Treatment, "Readings that could go two ways"). The controller ruled that the frozen reading stands,
+  and round 1 restored step 7's half of the sentence in two new sentences. Round 1 is 5 of 5 on I3, and
+  the new sentences stay. Step 6's half stays dropped, because B2 was met on I2 in every arm and passed
+  in every E2 rep that reached it.
+- **B3's controller text.** The control met B3 on C1 and C2 (5 of 5 each), so Task 6 wrote no controller
+  text and `references/test-run.md` does not change. The drop holds: C1 and C2 are 5 of 5 in round 0 and
+  in round 1. The limit on that evidence is (d) below.
+- **B4's stand-alone sentence "the first run is a full run".** Only E1 exercises it, and the control met
+  B4 on E1 (5 of 5). The drop holds: E1 is 5 of 5 in round 0 and in round 1. The sentences that stay are
+  "the last run is a full run, made after the last commit", "screen only in between", and any sentence
+  that joins the first, the last and the in-between runs. The control missed B4 on E2 (0 of 5), and E2's
+  event governs each of them. E2 is 5 of 5 in both rounds.
+- **B1 and B5.** The control missed both on every forced fixture, so all of their wording stays.
+
+Treatment, "The wording sentences" and Round 1, "The wording sentences in round 1" give the verdict for
+each sentence of the treatment text that a fixture's event exercises.
+
+Two revision rounds were allowed (D3), and one ran. It ended with no bar missed, so the scope fence of
+D3, on shipping text whose treatment arm still misses a bar after two rounds, does not apply (Round 1,
+"For the revision decision, round 1").
+
+**Untested wording (D11).** No fixture's event exercises these two sentences, so they stay. Round 0's
+list stands in round 1.
+
+- `skills/executing-plans/SKILL.md`: the sentence that gives a commit in the final review's fix pass the
+  trailer, when it answers a finding about a task's mutant step. No fixture reaches the final-review fix
+  pass. The trailer's `review` cause names the same event ("from a task review or a final review"), and
+  only its task-review half is exercised (I2).
+- `references/mutants.md` step 7: "If you implement the task yourself (executing-plans), end the step with
+  the full run that step 5 gives, after your last commit." No inline fixture has a test that passes on
+  the revert. E1 and E2 did end with a full run, which step 5's bullet and `SKILL.md` also ask for.
+
+The two sentences that round 1 added to step 7 are exercised by I3 only.
+
+**Backlog items this plan touches.** The plan's section lists four items. The plan ticks none of them.
+
+- "Parallel micro-test reps share the scratch folder" and "The next micro-test kit still copies
+  `credential_expires_at`": plan 100 ticked both. This kit keeps both fixes. Each rep runs alone, in its
+  own folder, with its own `HOME` and `TMPDIR`. The kit strips `credential_expires_at`, and its 35 tests
+  run with a stub `claude` and no model (Kit). No treatment rep output holds the field.
+- "Detect or block a peer message to a rep that has tools": stays open. This kit voids a rep whose stream
+  holds a peer `origin` (VOID rule, case 7). The item says that a message to a rep that has tools leaves
+  `origin` null. The kit ran no test with a real delivery.
+- "Account identity reaches the isolated micro-test runs": stays open. The `opus` probe's identity line
+  (line 7) read YES, as in plan 97. The controller ruled that the runs go on, with the identity scrub and
+  the privacy sweep (Isolation probe). No bar of this record reads whether a rep knows the user's name.
+
+**Spend.** The micro-test total is the sum of `total_cost_usd` over every rep, probe and pilot. Each
+batch's spend check came to less than the $90 fence (the Spend tables of Spend stop, Control, Treatment
+and Round 1).
+
+| Item | Cost (USD) |
+|---|---|
+| Probes and pilots (Spend stop) | 0.6138860 |
+| Control arm, 37 reps (35 scored, 2 VOID) | 5.6227314 |
+| Treatment round 0, 37 reps (35 scored, 2 VOID) | 6.1800024 |
+| Treatment round 1, 37 reps (35 scored, 2 VOID) | 5.9834794 |
+| Total | 18.4000992 of the $90 fence |
+
+**Items for the owner at the completion gate.**
+
+- **(a) The control arm never saw `--screen`.** No record in any of the 37 control raw streams holds the
+  text, whether in a prompt, a tool input or a tool result, and no control rep read `mutant-run`'s usage
+  line or header. So the control's passes on B2, B3 and B4 never met a screen. The controller ruled
+  (2026-11-22) that D9's three drops stand, as provisional. Task 8 measured them on the treatment arm,
+  the first arm whose text names `--screen`. The results are in the first three bullets of "The dropped
+  wording".
+- **(b) I1 rep1 of round 1 made no `mutant-run` call.** It read no file of the skill copy. Its report
+  reads "Mutants: none: not a mutant task (plan has no mutant step)." So B1 on I1 is 4 of 5 in round 1
+  (5 of 5 in round 0), which still meets the bar. Step 8's sentence ("give its path and the counts") is
+  14 of 15 for the same rep (round 0: 15 of 15). It is the first of 15 I1 reps (control, round 0 and
+  round 1) with no call. Its prompt is byte for byte round 0's, so the revision did not reach it.
+- **(c) E1 had two VOID reps in each arm and round, under VOID case 1.** Each named `/usr/bin/sed`, an
+  absolute path outside the allowed roots, in its mutant helper. They are reps 1 and 2 in the control,
+  reps 4 and 6 in round 0 (rep4's rerun, rep6, was VOID too, and rep6 was rerun as rep7), and reps 1 and
+  2 in round 1. The other reading is that the rep's own `PATH` starts with `/usr/bin`, so `sed` names the
+  same file. On it no rep is VOID, and no verdict changes (VOID reps in Control, Treatment and Round 1).
+- **(d) Some B3 reps never read the text that names `--screen`.** In round 0, all five C1 reps and C2
+  rep1 read it, and C2 reps 2 to 5 did not. In round 1, C1 reps 2 to 5 read it and C1 rep1 did not. C2
+  reps 1, 2, 4 and 5 did not either, so only C2 rep3's stream holds the text. So in round 1 B3's "never
+  passes `--screen`" half rests mostly on C1 reps 2 to 5 and C2 rep3.
+- **(e) The revision commits and their reviews.** The controller wrote `20c279d` and `00e657b`, reviewed
+  them and approved them (Round 1, "The revision"). Both change step 7 of `references/mutants.md` and
+  nothing else. `00e657b` rewrote the second of the two sentences that `20c279d` added. Two reviews of
+  Task 8's record re-derived every count in rounds 0 and 1 from the rep folders. They found two sentences
+  that said more than the reps show. Both are corrected in place, and no rep count, bar result or verdict
+  changed (Round 1, "Corrections after the Task 8 review").
+
+### Deferred items (drafts for the plan-completion protocol)
+
+Plan-completion protocol step 3 appends these two items to `specs/deferred_items.md`, under a section
+for plan 104. This task does not edit that file.
+
+```markdown
+- [ ] **Re-measure the mutant step after about 5 more code plans that have a Codex final review (plan 104 spec, Design 6).**
+      Plan 104 added `mutant-run --screen` to the mutant step, so that a run does not repeat a mutant that an
+      earlier run caught. It also tags each commit that answers the step with a `Mutant-step:` trailer. Only
+      plans that execute after plan 104 carry the trailer, so the re-measure waits for about 5 more code plans
+      that have a Codex final review. The owner chooses, for each repository, whether it runs that review.
+      Then, for each task: list its `Mutant-step:` commits with
+      `git log --format='%h %(trailers:key=Mutant-step,valueonly,separator=%x2C )' | awk 'NF > 1'`, and split
+      them into commits that change code and commits that change only tests. A plan's merge commit names its commits
+      (`<merge>^1..<merge>^2`). After a squash merge, `gh pr view <number> --json commits` lists them. Compare the
+      task's final-review findings with agent-skills' pre-mutant rate of 0.56 code-behavior findings for each
+      task (plans 69-96). Then decide whether to keep the step, shrink it (a mutant cap, `-x` screens) or make the
+      mutant runs opt-in. Size: design. Done when: the tally and the decision are recorded.
+- [ ] **A reviewer raises a finding about a screen file (plan 104 spec, Design 4 and D12).** Plan 104 leaves the
+      reviewer text as it is. The reviewers read only the controller's or the inline agent's full run, never a
+      screen file (`task-<N>-screen*.log`), and no review in plan 104 read one, so the fallback could not fire
+      inside the plan. If a reviewer raises a finding about a screen file, the fix is one sentence in the shared
+      reviewer block, which runs from `## Review scope` to the end of `## Declined to judge`.
+      `build/check_reviewer_block.py` keeps that block equal in its four copies: `agents/code-reviewer.md`,
+      `agents/task-reviewer.md`, `skills/requesting-code-review/code-reviewer.md` and
+      `skills/subagent-driven-development/task-reviewer-prompt.md`. A change to a file under `agents/` also needs
+      `uv run --with pyyaml python build/sync_runtime_assets.py`, which regenerates `runtimes/`. Size: plan.
+      Revisit if: a task review or a final review raises a finding about a screen file.
+```
+

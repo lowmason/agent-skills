@@ -1112,6 +1112,22 @@ Changes from upstream:
     these skills give an isolated session rest on, so a docs change flags
     them for review (specs/completed/claude-code-drift-automation-spec.md,
     R4). No parsed field changed.
+  - Plan 104 (2026-11-22) adds a screen mode to the mutant step of
+    subagent-driven-development and executing-plans
+    (specs/completed/mutant-screen-runs.md). The script
+    subagent-driven-development/scripts/mutant-run now takes `--screen` as
+    its first argument. A screen carries each earlier catch of the same
+    task that has the same patch bytes and the same test command, runs the
+    test command only for the other mutants, and writes
+    `task-<N>-screen*.log`. The mutant step now says who screens. The
+    implementer of subagent-driven-development screens every run, and its
+    controller makes full runs. The inline agent of executing-plans makes
+    its first and last runs full and screens in between. A commit that
+    answers the mutant step ends with a `Mutant-step:` trailer that names
+    its cause. references/mutants.md, the implementer prompt and
+    executing-plans' SKILL.md carry the matching text. The changes are
+    local, and no upstream text was taken. The micro-test fixtures are this
+    repository's own (specs/baseline/red-baseline-mutant-screen-runs.md).
 
     brainstorming/
     dispatching-parallel-agents/
