@@ -808,3 +808,11 @@ treatment arm is the first arm whose text names `--screen`: the new implementer 
 measures B2, B3 and B4 on that arm, and the controller's arm always runs. A miss there restores the
 wording in a revision round. If this ruling is wrong, it costs one revision round.
 
+**Task 6: the controller's wording is dropped.** The control met B3 on C1 (5 of 5) and on C2 (5 of 5).
+No call passed `--screen`. Line 2 of `task-1-dispatch.txt` named the rep's own `task-1-mutants*.log` at
+the final HEAD, in all 10 reps. So D9 and Task 6 Step 1 apply: `references/test-run.md` does not
+change, and this task writes no controller text. The drop is provisional, for the reason in the
+concern above: no control rep saw `--screen`. The controller's skill copy in the treatment arm names
+it, through `mutants.md`. Task 8 measures B3 on that arm, and a miss there adds the controller text
+in a revision round.
+
