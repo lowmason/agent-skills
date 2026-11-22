@@ -1125,7 +1125,7 @@ because no control rep saw `--screen`. The treatment arm is the first arm whose 
 
 - **B2's wording: the drop misses on I3.** I2 met B2 (5 of 5), and I3 missed it (3 of 5), against
   the control's 5 of 5 on each. Under the other reading of rep5 (Readings that could go two ways), I3
-  is 4 of 5 and the drop holds. In each screen, a caught mutant whose patch kept its bytes was carried;
+  is 4 of 5 and the drop holds. In each screen whose baseline passed, a caught mutant whose patch kept its bytes was carried;
   rep5 wrote mutant 1's patch again, so its last screen carried none. No
   rep made the re-aim that reading rule 7 names, and neither miss came from a carried catch. The two
   misses are a new test with no mutant at all (rep2) and a caught mutant's patch written again with
@@ -1412,7 +1412,7 @@ forces it.
 
 Round 0's row for the sentence that Task 5 dropped (D9) was "missed" on I3, so it is not a kept
 sentence. Round 1 restores its step 7 half, through the two new sentences below. Its step 6 half stays
-dropped, because B2 was met on I2 and E2 in every arm.
+dropped, because B2 was met on I2 in every arm, and passed in every E2 rep that reached it.
 
 Two sentences are new in round 1, and only I3's event exercises them:
 
