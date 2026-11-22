@@ -12,7 +12,7 @@ true to the letter and still mislead; say so when it does.
 Report each problem as one block, numbered from 0:
 
 ```
---- [n] wrong | misleading | missing | nit
+--- [n] wrong | misleading | missing
 DRAFT: <the brief's text, verbatim>
 PROBLEM: <what is wrong, in one or two sentences>
 SUGGEST: <replacement text>
