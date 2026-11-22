@@ -1112,6 +1112,15 @@ Changes from upstream:
     these skills give an isolated session rest on, so a docs change flags
     them for review (specs/completed/claude-code-drift-automation-spec.md,
     R4). No parsed field changed.
+  - finishing-a-development-branch's Step 6 and using-git-worktrees' Step 1a
+    were corrected against this repo's Claude Code guide (plan 103, after
+    the 2026-11-17 /cc-guide files review). Step 6 now says what archiving
+    a desktop app session does: it can discard uncommitted changes in the
+    worktree, usually after asking, a kept worktree is removed about 30
+    days later, and the branch can outlive the archive. Step 1a no longer
+    says that the native tool leaves HEAD's commits out when there is no
+    remote, since it then branches from HEAD. A failed base check still
+    goes to Step 1b's git commands.
   - Plan 104 (2026-11-22) adds a screen mode to the mutant step of
     subagent-driven-development and executing-plans
     (specs/completed/mutant-screen-runs.md). The script

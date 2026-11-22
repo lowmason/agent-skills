@@ -10,7 +10,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: subagents.worktrees @2.1.326
+# cc-guide: subagents.worktrees @2.1.326.1
 ---
 
 # Using Git Worktrees
