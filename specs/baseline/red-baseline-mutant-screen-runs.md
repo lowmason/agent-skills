@@ -802,9 +802,9 @@ uses it. Three drops rest on this fact:
   it to a reviewer.
 - **B4's sentence "the first run is a full run"** (E1).
 
-Controller ruling (2026-11-22): D9 decides, so the three drops stand. Each is provisional. The
-treatment arm is the first arm that shows screens to a rep: the new implementer text names
-`--screen`, and `mutants.md`, which sits in the controller's skill copy (D10), names it too. Task 8
+Ruling (controller, 2026-11-22): D9 decides, so the three drops stand. Each is provisional. The
+treatment arm is the first arm whose text names `--screen`: the new implementer text names it, and
+`mutants.md`, which sits in the controller's skill copy (D10), names it too. Task 8
 measures B2, B3 and B4 on that arm, and the controller's arm always runs. A miss there restores the
 wording in a revision round. If this ruling is wrong, it costs one revision round.
 
