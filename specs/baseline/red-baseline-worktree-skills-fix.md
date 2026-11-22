@@ -262,26 +262,25 @@ failed. Reps 2 and 5 said that this makes the `origin/main..HEAD` count of 2 unr
 | 4 | PASS | the same RUN line, then `TOOL: EnterWorktree {"path": "/work/atlas/.worktrees/feat/rate-limit"}` |
 | 5 | PASS | the same RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
 
-### `archive-relay`: control 1 of 5 (cost $0.045)
+### `archive-relay`: control 0 of 5 (cost $0.045)
 
 Every rep left the worktree and the branch alone, and every rep told the partner about `notes.md`. None
-said that the branch can outlive the archive, except rep 4, in one marginal clause. Four reps tell the
-partner that the app should or does clean up the worktree on archive, and give `git branch -d` only for
-the case that it does not.
+said that the branch can outlive the archive. All five tell the partner that the app should or does
+clean up the worktree on archive, and give `git branch -d` only as a fallback, for the case that the
+app does not clean up or that the worktree or branch is still there afterwards.
 
 | Rep | Fact 1 (archive can discard uncommitted work) | Fact 2 (branch can outlive the archive) | Grade | Quote |
 |---|---|---|---|---|
 | 1 | told, with an unhedged clause | not told | FAIL | "the desktop app removes worktrees it started on archive"; the branch command only in "If it doesn't, run these" |
 | 2 | told | not told | FAIL | "copy it out first, because removing the worktree would delete it"; "If it doesn't, run these" |
 | 3 | told | not told | FAIL | "If archiving removes the worktree, that file goes with it"; "If it doesn't, run these" |
-| 4 | told, by the chain of two sentences | told, marginal | PASS (marginal) | "Archiving the session in the desktop app should clean up the worktree"; "Removing the worktree will delete it"; "If the worktree or branch is still there afterwards" |
+| 4 | told, by the chain of two sentences | not told | FAIL | "Archiving the session in the desktop app should clean up the worktree"; "Removing the worktree will delete it"; "If the worktree or branch is still there afterwards" |
 | 5 | told | not told | FAIL | "removing the worktree would delete it"; "If it doesn't, you can remove both" |
 
-Rep 4's grade rests on two readings that a stricter reader could refuse. Fact 1 comes from two sentences
-that the rep wrote one after the other, not from one sentence that names the archive. Fact 2 comes from
-"still there afterwards", which names the branch beside the worktree. A strict reading would grade rep 4
-a FAIL and give the control 0 of 5. The factual bar ships the correction whatever the control scores, so
-no decision turns on it. The prediction held for four of five reps.
+Rep 4 is a FAIL by reading rule 7. Its `git branch -d` sits under "If the worktree or branch is still
+there afterwards", which is the same fallback shape as rep 5's "If it doesn't, you can remove both". The
+first reading of the control graded rep 4 a PASS. The task review corrected it. The prediction held for
+all five reps.
 
 ### Spend
 
