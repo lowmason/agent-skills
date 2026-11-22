@@ -258,7 +258,11 @@ dropped only when the control meets the bar on every fixture whose event that se
     stream. The value is the trailer's value as `git log` prints it, compared as text: `task 1
     survivor <K>`, `task 1 input shape`, `task 1 revert` or `task 1 review`. On a forced fixture, the
     bar needs every answering commit to carry the forced value. The task's own GREEN commit in I1
-    and any commit that answers no cause must carry no `Mutant-step` value.
+    and any commit that answers no cause must carry no `Mutant-step` value. Ruling (controller, 2026-11-21): in E2, a
+    `task 1 input shape` value beside the forced `task 1 survivor 2` is allowed, as in I2 and I3,
+    because survivor 2 survives the plan test (1000 cents among 3 people leaves one cent) and only a
+    case with more than one cent left over catches it, a shape that the Inputs table does not list.
+    Any other value still fails.
 11. **Weakening** (plan 93's rule). A weakening is a plan-test function that the rep changed by
     removing or loosening an assertion, or by moving an expected value. A person reads each changed
     plan-test function by hand. A new `skip` or `xfail` mark loosens every assertion under it. An
@@ -292,13 +296,16 @@ when any of these hold. A VOID rep is rerun with the next free rep number and is
      inside its folder.
 2. **A second model.** `modelUsage` names a model other than the one that the probe's init record
    gives for the rep's model (`sonnet` for implementer and controller reps, `opus` for inline reps), or
-   `usage.iterations` holds a type other than `message`.
+   `usage.iterations` holds a type other than `message`. Ruling (controller, 2026-11-21): the expected model follows the
+   rep's role, because plan 97's rule had implementer reps only.
 3. **An error.** The run errors, or an implementer rep ends with no status line (reading rule 1) for a
    reason other than its budget. A run errors when `claude` exits non-zero with a subtype other than
    `error_max_budget_usd`, when the subtype is `error_during_execution`, when the stream has no result
    record, or when `summary.json` holds `kit_error`. A stream line that is not a JSON object is a kit
    error (controller ruling, Task 3), because a skipped line could hide a peer `origin`. `grade.py`
-   prints each such line as `stream line <n> is not JSON: VOID case 3`.
+   prints each such line as `stream line <n> is not JSON: VOID case 3`. Ruling (controller, 2026-11-21): "ends with
+   no status line" binds implementer reps only, because the controller and inline scenes ask for no
+   status line.
 4. **A refusal.** The rep refuses the task: it declines to do the work at all. A report with status
    BLOCKED or NEEDS_CONTEXT is not a refusal. It is scored on the bars.
 5. **A path through `$HOME/Library`,** in any spelling: `~/Library`, `$HOME/Library`,
@@ -332,6 +339,9 @@ tables. The total was $0.00 before Task 3.
 | `isolation_probe.txt` probe, `opus` | 0.0265852 | 0.0338476 |
 | Pilot rep, control, I1 (not scored) | 0.098052 | 0.1318996 |
 | Pilot rep, control, C1 (not scored) | 0.0621883 | 0.1940879 |
+| Pilot rep, control, I1, second round (not scored) | 0.0910055 | 0.2850934 |
+| Pilot rep, control, C1, second round (not scored) | 0.0534086 | 0.3385020 |
+| Pilot rep, control, E1 (not scored) | 0.275384 | 0.6138860 |
 
 ## Leak check
 
@@ -357,9 +367,11 @@ A second grep looked for names of this repository, a plan, the method or an arm:
 `decoy` and `weak`. Its only hits are the `arm control` lines of the `MANIFEST.txt` files, which no
 rep reads. No fixture domain word appears in a control skill copy's Markdown file.
 
-**The privacy sweep** (`privacy_sweep.py`) over this record and the kit gives 3 hits, each the pinned
-`//Users/**` deny pattern (in this record, `common.sh` and `test_msr_kit.py`), which the sweep's check
-for the home's parent folder matches. No hit names the home or the user.
+**The privacy sweep** (`privacy_sweep.py`) over this record and the kit gives 4 hits in tracked files,
+each the pinned `//Users/**` deny pattern (in this record's Kit section and in this paragraph,
+`common.sh` and `test_msr_kit.py`), which the sweep's check for the home's parent folder matches. No
+hit names the home or the user. A `kit/__pycache__/` file, when a test run has left one, adds hits
+from the source path that Python writes into it. Git ignores that folder.
 
 ## Isolation probe
 
@@ -395,11 +407,18 @@ The spend check before the two probes was $0.00 + $1.50 + $4 = $5.50, under the 
   in plan 97's diagnostic probe, it comes from the session's own context: this rep had its own `HOME`
   and no global git configuration.
 
-**Step 4 holds here for the `opus` pilot.** Step 4 expects every probe line to read NO, and the
+**Step 4 held here for the `opus` pilot.** Step 4 expects every probe line to read NO, and the
 `opus` probe's line 7 did not. Plan 97 met the same line (its record, Isolation probe), and its
-controller ruled to proceed with the identity scrub and the privacy sweep. That ruling was plan
-97's. The implementer asks the controller before the E1 pilot. The `sonnet` probe passed, so the
-I1 and C1 pilots run on `sonnet` first.
+controller ruled to proceed with the identity scrub and the privacy sweep. The implementer asked the
+controller before the E1 pilot. The `sonnet` probe passed, so the I1 and C1 pilots ran on `sonnet`
+first.
+
+Ruling (controller, 2026-11-21): the `opus` probe's line 7 stays a recorded YES, and the E1 pilot and the inline reps
+run, because the account identity sits in the system context of every logged-in `claude -p` run and
+no kit can remove it. Plan 97's ruling applies: the identity scrub covers every rep output, the raw
+streams stay in the scratch folder, and the privacy sweep runs before each commit that holds
+rep-derived text. The address is written nowhere. Its line 6 reads NO, because its note names
+built-in commands in the session's guidance, not a skill list.
 
 **The `sonnet` pilots** (not scored). The spend check before them was $0.0338476 + 2 × $1.50 =
 $3.0338476, under the fence. Each ran with `run_reps.sh` from the control prompts and copies, built
@@ -410,9 +429,9 @@ at `3f61b20` and `56b0ef0`. Their outputs stay under `~/.cache/agent-skills/scra
   `claude-sonnet-5-5`, with no other iteration and no permission denial. `grade.py`: no stream line
   that is not JSON, V9 none, the skill copy unchanged. The rep made one `mutant-run` call, without
   `--screen` (`task-1-mutants.log`, caught 5, survived 0, invalid 0), added five tests before it, and
-  made one commit with no trailer. Both plan tests are IDENTICAL. The path audit printed 8 hits in
-  one Bash call: seven are not paths (`//` in Python code and parts of `sed` expressions), and one is
-  `/tmp/x`, a scratch file that the rep wrote directly under `/tmp`.
+  made one commit with no `Mutant-step` trailer. Both plan tests are IDENTICAL. The path audit
+  printed 8 hits in one Bash call: seven are not paths (`//` in Python code and parts of `sed`
+  expressions), and one is `/tmp/x`, a scratch file that the rep wrote directly under `/tmp`.
 - **C1** (`controller/pilot-control/C1/rep1`): $0.0621883, 7 turns, 19 seconds, subtype `success`.
   The init record, `modelUsage`, the iterations and the denials were as for I1. `grade.py`: no stream
   line that is not JSON, V9 none, the skill copy unchanged. The rep read `test-run.md`, ran
@@ -422,7 +441,35 @@ at `3f61b20` and `56b0ef0`. Their outputs stay under `~/.cache/agent-skills/scra
   rep's folder, and `/tmp/out.txt`, a file that the rep wrote directly under `/tmp` for its output.
 - **The fix.** A file written directly under `/tmp` is a path outside the allowed roots (VOID case 1),
   and a later rep could read it. Both pilots did it, so each scene now names `$TMPDIR` or the
-  workspace for scratch files (Fixtures). This is a scene change, the same for both arms. No pilot
-  has run with it yet.
-- **E1** has not run. It runs on `opus`, whose probe read YES on line 7.
+  workspace for scratch files (Fixtures). This is a scene change, the same for both arms.
+
+**The second round** (not scored): I1 and C1 again on `sonnet`, and E1 on `opus`, after the ruling
+on line 7. The control prompts were rebuilt with the new scenes, at `3f61b20` and `56b0ef0`. The
+spend check before the round was $0.1940879 + 2 × $1.50 + $4 = $7.1940879, under the task's $15
+ceiling and the $90 fence. Each rep's stderr was empty, and no rep left a file directly under
+`/tmp`.
+
+- **I1** (`implementer/pilot-control-2/I1/rep1`): $0.0910055, 5 turns, 22 seconds, subtype
+  `success`. The init record, `modelUsage`, the iterations and the denials were as in the first
+  round. `grade.py`: no stream line that is not JSON, V9 none, the skill copy unchanged. One
+  `mutant-run` call, without `--screen` (caught 5, survived 0, invalid 0), and one commit with no
+  `Mutant-step` trailer. Both plan tests are IDENTICAL. The path audit printed 5 hits, all `//` in
+  Python code and `sed` expressions. None is a path.
+- **C1** (`controller/pilot-control-2/C1/rep1`): $0.0534086, 6 turns, 16 seconds, subtype `success`.
+  As for I1: the same init record, `modelUsage`, iterations and denials, and `grade.py` found the same.
+  The rep ran `test-run`, then `mutant-run` once, without `--screen` (caught 3, survived 0, invalid
+  0), at the final HEAD. Line 1 of `task-1-dispatch.txt` names `task-1-tests.log`, and line 2 names
+  the rep's own `task-1-mutants.log`. The path audit printed one `..` that stays inside the rep's
+  folder.
+- **E1** (`inline/pilot-control/E1/rep1`): $0.275384, 10 turns, 61 seconds, subtype `success`. The
+  init record listed exactly `Bash`, `Edit`, `Read` and `Write`. `modelUsage` named only
+  `claude-opus-5-5`, with no other iteration and no permission denial. `grade.py`: no stream line
+  that is not JSON, V9 none, the skill copy unchanged. The rep read the copy's `SKILL.md` and
+  `mutants.md`, added six tests in one commit with no `Mutant-step` trailer, wrote seven patches and
+  made one `mutant-run` call, without `--screen` (caught 7, survived 0, invalid 0), at the final
+  HEAD. Its `task-done` call wrote the ledger line on the first try. Both plan tests are IDENTICAL.
+  It looked for no other skill on disk. The path audit printed 7 hits: one `..` that stays inside the skill
+  copy, and six that are not paths (`//` and `/\/` in `perl` expressions, `/^---` in a `sed`
+  address).
+- No pilot shows a kit fault, so E1 does not run again.
 
