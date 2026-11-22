@@ -160,7 +160,7 @@
 # "AssertionError: " that pytest takes off it. A skip reason is the <skipped>
 # message.
 #
-# Usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
+# Usage: mutant-run [--screen] PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
 #   TASK_NUMBER is a task ID in task-brief's grammar, as test-run takes it.
 #   BASE is the task's base commit, as task-done takes it: any name git
 #   resolves to a commit, a short sha included.
@@ -175,12 +175,76 @@
 #   failing baseline; 143, 130 or 129 after TERM, INT or HUP, once the applied
 #   patch is reversed. sdd-repo's and sdd-workspace's exit 2 pass through.
 #
+# --screen, a first argument that selects the screen mode. It counts only as
+# the first argument, and the arguments after it are checked as without it, so
+# a --screen anywhere else is an ordinary argument. A call without --screen
+# does what the text above says, with the same file names, numbering, header,
+# stdout and exit status.
+#   A screen follows the steps above, and its run file has a name of its own:
+# task-<N>-screen.log for a task's first screen, task-<N>-screen-<K>.log for
+# screen K = 2, 3 and so on (the smallest K whose file does not exist). Screens
+# and the runs above number on their own, and a screen never takes a
+# task-<N>-mutants name. The file has the run file's format, with these
+# changes:
+#   mutant-run: Task <N>, screen <K>
+#   command: <the command, rendered the way a person would type it>
+#   head: <the full sha of HEAD>
+#   base: <the full sha of BASE>
+#   tree: clean
+#   result: caught <c>, survived <s>, invalid <i>
+#   screen: carried <m> of <total> from earlier runs
+#   note: reversed <patch file name>, left applied by a killed run
+#   revert: <one of the forms above>
+#   mutant <K>: CAUGHT exit - sha256 <hex> carried: <file name of the earlier run> tests: <that line's tests>
+# <total> is the number of patches in the run, and the result line counts each
+# carried mutant as caught. A carried mutant's line is the one shown. The
+# tests section joins this run's catches and the carried catches, in K order.
+# An output section exists only for a mutant whose command ran. A failing
+# baseline writes the header through the note line, with "result: baseline
+# failed, exit <n>", no screen line and no revert line, then "--- output:
+# baseline ---" and its output only, and exits 3.
+#   stdout: the result line, the screen line, each mutant line, the revert
+# line, then "run: <absolute path of the screen file>" last. The exit status
+# is the one above, with a carried mutant counted as caught. The check for a
+# patch that is already in HEAD refuses the whole screen with exit 2, before
+# the baseline.
+#   Before the patches, a screen reads this task's earlier run files in the
+# workspace: task-<N>-mutants.log, task-<N>-mutants-<K>.log,
+# task-<N>-screen.log and task-<N>-screen-<K>.log, K a whole number with no
+# leading zero. It skips any other name, and each file whose command is not
+# this call's: the text from line 2 up to the line before the first "head: "
+# line, less "command: ", so a command that spans lines is compared whole.
+# From each file it reads the mutants section only, the first section after
+# the header, so a file with none, such as a failing baseline's, gives
+# nothing. A line there counts when it starts "mutant <K>: CAUGHT " and has no
+# carried field. Its key is its sha256, and its tests follow "tests: ". For
+# each sha256 the newest file with a catch wins: a task-<N>-mutants file
+# outranks a screen, and a higher number outranks a lower one in the same
+# series.
+#   In step 6, a patch that passes the test-file check and `git apply
+# --check`, and whose sha256 has an earlier catch, is carried: the script
+# writes no marker, applies nothing and runs no command for it. Its line names
+# that file and gives that line's tests field as it is. The tests it adds to
+# the tests section come from that file's own tests section, one ID to a line:
+# each "test <id>: caught <K> ..." line whose numbers hold the earlier line's
+# mutant number, the ID running to the last ": caught ". That section counts
+# only where it follows the file's mutants section. A carried mutant whose
+# file has no such line adds no test and still counts as caught. Every other
+# patch runs as in step 6. The baseline and the revert always run.
+#
 # Callers: the SDD implementer and controller, and executing-plans' inline
 # executor. executing-plans' task-done reads the run file and never runs it.
 set -euo pipefail
 
+# --screen counts only as the first argument.
+screen=false
+if [ "${1:-}" = '--screen' ]; then
+  screen=true
+  shift
+fi
+
 if [ $# -lt 5 ] || [ "$4" != "--" ]; then
-  echo "usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
+  echo "usage: mutant-run [--screen] PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
   exit 2
 fi
 
@@ -653,13 +717,16 @@ rm -f "$base_out.xml"
 base_rc=$run_rc
 check_tree 'after the baseline'
 
-# The smallest K whose file does not exist.
+# The smallest K whose file does not exist, in the series of this call: the
+# screens' or the runs'.
 next_run_file() {
+  local series=mutants
+  [ "$screen" = false ] || series=screen
   run_k=1
-  run_file="$dir/task-${n}-mutants.log"
+  run_file="$dir/task-${n}-${series}.log"
   while [ -e "$run_file" ]; do
     run_k=$((run_k + 1))
-    run_file="$dir/task-${n}-mutants-${run_k}.log"
+    run_file="$dir/task-${n}-${series}-${run_k}.log"
   done
 }
 
@@ -669,13 +736,21 @@ cat_lines() {
   [ -z "$(tail -c 1 "$1")" ] || echo
 }
 
+# screen_line is set only once the patches have run, in a call with --screen,
+# so a failing baseline writes no screen line.
+screen_line=
 write_header() {
-  printf 'mutant-run: Task %s, run %s\n' "$n" "$run_k"
+  if [ "$screen" = true ]; then
+    printf 'mutant-run: Task %s, screen %s\n' "$n" "$run_k"
+  else
+    printf 'mutant-run: Task %s, run %s\n' "$n" "$run_k"
+  fi
   printf 'command: %s\n' "$cmd"
   printf 'head: %s\n' "$head_sha"
   printf 'base: %s\n' "$base_sha"
   printf 'tree: clean\n'
   printf '%s\n' "$result"
+  [ -z "$screen_line" ] || printf '%s\n' "$screen_line"
   [ -z "$note" ] || printf '%s\n' "$note"
 }
 
@@ -702,7 +777,105 @@ else
   limit=$((10 * base_secs + 60))
 fi
 
+# Print the names of this task's earlier run files, one to a line, lowest rank
+# first: the screens, then the task-<N>-mutants files, each in number order.
+# The file with no number is number 1. A name whose number is not a whole
+# number with no leading zero is skipped.
+earlier_run_files() {
+  local series f k ks
+  for series in screen mutants; do
+    [ ! -f "$dir/task-$n-$series.log" ] || printf '%s\n' "task-$n-$series.log"
+    ks=
+    for f in "$dir/task-$n-$series-"*.log; do
+      [ -f "$f" ] || continue
+      k=${f#"$dir/task-$n-$series-"}
+      k=${k%.log}
+      case "$k" in
+        '' | 0* | *[!0-9]*) continue ;;
+      esac
+      ks="$ks $k"
+    done
+    # Each K is digits only, so splitting the list into words is safe.
+    for k in $(printf '%s\n' $ks | sort -n); do
+      printf '%s\n' "task-$n-$series-$k.log"
+    done
+  done
+}
+
+# Print the catches that a screen carries, one to a line, as "<sha256> <file
+# name> <K> <tests>": each CAUGHT line with no carried field in the mutants
+# section of an earlier run file whose command is this call's, with that
+# line's mutant number and tests field. The files come lowest rank first, so
+# a later line for a sha256 outranks an earlier one.
+earlier_catches() {
+  local name
+  for name in $(earlier_run_files); do
+    # The command runs from line 2 up to the line before the first head: line,
+    # so a command that spans lines is compared whole.
+    [ "$(awk 'NR > 1 && /^head: / { exit } NR > 1 { print }' "$dir/$name")" = "command: $cmd" ] || continue
+    # The mutants section is the first section after the header, so a line of
+    # its shape in an output section, a failing baseline's included, never
+    # counts.
+    awk -v name="$name" '
+      NR > 1 && !h && /^head: / { h = 1; next }
+      h && !m && /^--- / { if ($0 != "--- mutants ---") exit; m = 1; next }
+      m && /^--- / { exit }
+      m && /^mutant [0-9]+: CAUGHT / && !/ carried: / {
+        k = $2
+        sub(/:$/, "", k)
+        print $7 " " name " " k " " substr($0, index($0, " tests: ") + 8)
+      }
+    ' "$dir/$name"
+  done
+}
+
+# Print the newest earlier catch of sha256 $1 as "<file name> <K> <tests>", or
+# nothing.
+earlier_catch() {
+  [ -n "$catches" ] || return 0
+  printf '%s\n' "$catches" | awk -v sha="$1" '
+    $1 == sha { c = substr($0, length(sha) + 2) }
+    END { if (c != "") print c }
+  '
+}
+
+# Print the IDs of the tests that caught mutant $2 in run file $1, one to a
+# line, from that file's tests section: each "test <id>: caught <K> ..." line
+# whose numbers hold $2 as a whole number. A line holds one ID, which runs to
+# the last ": caught ", so an ID is whole whatever its text holds. The tests
+# section counts only where it follows the mutants section, the first section
+# after the header, so a line of its shape in an output section never counts.
+carried_ids() {
+  awk -v k="$2" '
+    NR > 1 && !h && /^head: / { h = 1; next }
+    h && /^--- / {
+      s++
+      if (s == 1 && $0 == "--- mutants ---") next
+      if (s == 2 && $0 == "--- tests ---") { t = 1; next }
+      exit
+    }
+    t && /^test / {
+      line = substr($0, 6)
+      j = 0
+      while ((i = index(substr(line, j + 1), ": caught ")) > 0) j += i
+      if (j == 0) next
+      n = split(substr(line, j + 9), ks, " ")
+      for (x = 1; x <= n; x++) {
+        if (ks[x] == k) { print substr(line, 1, j - 1); break }
+      }
+    }
+  ' "$1"
+}
+
+catches=
+[ "$screen" = false ] || catches=$(earlier_catches)
+
 # 6. Each patch.
+total=0
+for k in $ks; do
+  total=$((total + 1))
+done
+carried=0
 caught=0
 survived=0
 invalid=0
@@ -714,6 +887,7 @@ for k in $ks; do
   name="task-$n-mutant-$k.patch"
   patch="$dir/$name"
   sha=$(file_sha256 "$patch")
+  catch=$(earlier_catch "$sha")
   status='-'
   verdict='INVALID'
   detail=''
@@ -733,6 +907,24 @@ EOF
       detail=" reason: touches a test file: $touched"
     elif ! git -C "$top" apply --check --whitespace=nowarn "$patch" > /dev/null 2>&1; then
       detail=' reason: does not apply'
+    elif [ -n "$catch" ]; then
+      # Carried: an earlier run caught these bytes under this command, so
+      # nothing is applied and the command does not run. catch is "<file
+      # name> <K there> <tests>".
+      from=${catch%% *}
+      catch=${catch#* }
+      verdict='CAUGHT'
+      carried=$((carried + 1))
+      detail=" carried: $from tests: ${catch#* }"
+      # The pairs come from that file's tests section, one ID to a line. With
+      # no line there, the mutant adds no pair and still counts as caught.
+      ids=$(carried_ids "$dir/$from" "${catch%% *}")
+      while IFS= read -r id; do
+        [ -n "$id" ] || continue
+        pairs="$pairs$id"$'\t'"$k"$'\n'
+      done <<EOF
+$ids
+EOF
     else
       write_marker "$name" "$patch"
       if ! git -C "$top" apply --whitespace=nowarn "$patch"; then
@@ -834,6 +1026,7 @@ fi
 
 # 8. Write the run file.
 result="result: caught $caught, survived $survived, invalid $invalid"
+[ "$screen" = false ] || screen_line="screen: carried $carried of $total from earlier runs"
 next_run_file
 {
   write_header
@@ -867,7 +1060,9 @@ next_run_file
 } > "$run_file"
 rm -f "$base_out" ${ran_outs[@]+"${ran_outs[@]}"} ${revert_out:+"$revert_out"}
 
-printf '%s\n' "$result" "${mutant_lines[@]}" "$revert"
+printf '%s\n' "$result"
+[ -z "$screen_line" ] || printf '%s\n' "$screen_line"
+printf '%s\n' "${mutant_lines[@]}" "$revert"
 echo "run: $run_file"
 
 # 9. Exit.

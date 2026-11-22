@@ -1,0 +1,14 @@
+c6f186ac11f1fc5589ab78d2f5e14fe22388c6c0
+task 1 input shape
+
+Test the free limit and hour boundaries
+
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+6279b0ea4ddd0e92cde38a05614d10e5be5a6d55
+
+Add the parking fee
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+

@@ -1,0 +1,89 @@
+mutant-run: Task 1, run 1
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_loyalty.py
+head: 5c4245566e67c2ee3e3dc7437e4e27271d19f752
+base: eda59877deaa86a22193d150185eefbbc97ab546
+tree: clean
+result: caught 3, survived 0, invalid 0
+revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 2
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 7b1fb990fd22dc593e4c0e2aef4b5c68e450f22fba77f9cece0c5be95a868448 tests: tests.test_loyalty::test_double_points_from_100_dollars tests.test_loyalty::test_exactly_100_dollars_earns_double_points
+mutant 2: CAUGHT exit 1 sha256 109bacafba9e4e85532bfeb57fb09c351b31e9b4c92018cee1464974165b6e9e tests: tests.test_loyalty::test_exactly_100_dollars_earns_double_points
+mutant 3: CAUGHT exit 1 sha256 85b7cf3d7b9fd939322f2395fc3cd691bdd0a1f316137ac68231cb01210054fe tests: tests.test_loyalty::test_just_under_100_dollars_earns_single_points
+--- tests ---
+test tests.test_loyalty::test_double_points_from_100_dollars: caught 1
+test tests.test_loyalty::test_exactly_100_dollars_earns_double_points: caught 1 2
+test tests.test_loyalty::test_just_under_100_dollars_earns_single_points: caught 3
+--- revert ---
+path: loyalty.py
+sha256: 109bacafba9e4e85532bfeb57fb09c351b31e9b4c92018cee1464974165b6e9e
+passed tests.test_loyalty::test_double_points_from_100_dollars
+failed tests.test_loyalty::test_exactly_100_dollars_earns_double_points: AssertionError: assert 100 == 200
+passed tests.test_loyalty::test_just_under_100_dollars_earns_single_points
+--- output: baseline ---
+...                                                                      [100%]
+3 passed in 0.01s
+--- output: mutant 1 ---
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_____________________ test_double_points_from_100_dollars ______________________
+
+    def test_double_points_from_100_dollars():
+>       assert points(15000) == 300
+E       assert 150 == 300
+E        +  where 150 = points(15000)
+
+tests/test_loyalty.py:5: AssertionError
+_________________ test_exactly_100_dollars_earns_double_points _________________
+
+    def test_exactly_100_dollars_earns_double_points():
+>       assert points(10000) == 200
+E       assert 100 == 200
+E        +  where 100 = points(10000)
+
+tests/test_loyalty.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_double_points_from_100_dollars - assert 15...
+FAILED tests/test_loyalty.py::test_exactly_100_dollars_earns_double_points - ...
+2 failed, 1 passed in 0.01s
+--- output: mutant 2 ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_exactly_100_dollars_earns_double_points _________________
+
+    def test_exactly_100_dollars_earns_double_points():
+>       assert points(10000) == 200
+E       assert 100 == 200
+E        +  where 100 = points(10000)
+
+tests/test_loyalty.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_exactly_100_dollars_earns_double_points - ...
+1 failed, 2 passed in 0.01s
+--- output: mutant 3 ---
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+_______________ test_just_under_100_dollars_earns_single_points ________________
+
+    def test_just_under_100_dollars_earns_single_points():
+>       assert points(9999) == 99
+E       assert 198 == 99
+E        +  where 198 = points(9999)
+
+tests/test_loyalty.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_just_under_100_dollars_earns_single_points
+1 failed, 2 passed in 0.01s
+--- output: revert ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_exactly_100_dollars_earns_double_points _________________
+
+    def test_exactly_100_dollars_earns_double_points():
+>       assert points(10000) == 200
+E       assert 100 == 200
+E        +  where 100 = points(10000)
+
+tests/test_loyalty.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_exactly_100_dollars_earns_double_points - ...
+1 failed, 2 passed in 0.01s

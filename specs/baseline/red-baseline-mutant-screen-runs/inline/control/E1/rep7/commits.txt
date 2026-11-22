@@ -1,0 +1,10 @@
+82a54d762c14b594adbe525e3311416f9a16aab6
+
+Cover ticket price age boundaries
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+16a7fabadccf3b3313150e1f083a31c119eab35d
+
+Add ticket prices
+

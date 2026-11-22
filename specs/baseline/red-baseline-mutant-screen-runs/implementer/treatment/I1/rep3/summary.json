@@ -1,0 +1,460 @@
+{
+  "fixture": "I1",
+  "rep": 3,
+  "role": "implementer",
+  "arm": "treatment",
+  "model": "sonnet",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/msr104/rep3",
+  "skill_root": "/private/tmp/msr104-skill/implementer",
+  "venv": "/private/tmp/msr104-venv",
+  "base": "04845cb1bda8b79a16a6348bebaa751681c6d83a",
+  "start": "04845cb1bda8b79a16a6348bebaa751681c6d83a",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan104/implementer/treatment/I1/rep3.jsonl",
+  "prompt_sha256": "ae5d8614fd1ab4a41bfa97379ad3c1894a633c76aed4cdfbfd135e7c268e373c",
+  "claude_exit": 0,
+  "wall_seconds": 32,
+  "init": {
+    "cwd": "/private/tmp/msr104/rep3/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 36,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 10,
+    "duration_ms": 30981,
+    "total_cost_usd": 0.13157270000000001,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 20,
+        "outputTokens": 4066,
+        "cacheReadInputTokens": 171327,
+        "cacheCreationInputTokens": 18435,
+        "webSearchRequests": 0,
+        "costUSD": 0.13157270000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 376,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 18435,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commits:**\n  - `c168260` Add the parking fee\n  - `abfef00` Test the fee at its boundaries (carries the `Mutant-step: task 1 input shape` trailer)\n- **Tests:** 8/8 passing, output pristine. The plan's 2 tests failed first with `ModuleNotFoundError` for `parking`, then passed. Mutants (screen): caught 7, survived 0, invalid 0, with 6 of the 7 carried from the first screen. On the revert, the test file can't load, so every test fails there.\n- **Concerns:** none. `fee(150) == 6` agrees with `specs/parking.md:9`.\n- **Report:** `/private/tmp/msr104/rep3/repo/.sdd/plan/task-1-report.md`\n\nThe mutants file and patches are in `.sdd/plan/`. `git status` shows nothing to commit, so they're either ignored or untracked-hidden; I didn't check which.",
+  "tool_calls": [
+    {
+      "id": "toolu_014jmqoyCSHSrg4AFKX8Hrvd",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; git ls-files; cat /private/tmp/msr104-skill/implementer/references/mutants.md"
+      }
+    },
+    {
+      "id": "toolu_01Mu6ArVoLSSJqywPLQ7TcaG",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; cat specs/parking.md; cat .gitignore; ls .sdd/plan"
+      }
+    },
+    {
+      "id": "toolu_01YThhQGEzj1SQXi4iVLzrbv",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; mkdir -p tests; cat > tests/test_parking.py <<'E'\nfrom parking import fee\n\n\ndef test_a_short_stay_is_free():\n    assert fee(20) == 0\n\n\ndef test_each_started_hour_costs_2():\n    assert fee(150) == 6\nE\nP=/private/tmp/msr104-venv/bin/python\n$P -m pytest -q tests/test_parking.py 2>&1 | tail -8\ncat > parking.py <<'E'\nFREE_MINUTES = 30\nRATE_PER_HOUR = 2\n\n\ndef fee(minutes: int) -> int:\n    if minutes <= FREE_MINUTES:\n        return 0\n    started_hours = -(-minutes // 60)\n    return RATE_PER_HOUR * started_hours\nE\n$P -m pytest -q tests/test_parking.py 2>&1 | tail -3"
+      }
+    },
+    {
+      "id": "toolu_015681w8JTgqQjLHmmcuv3z6",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; git add parking.py tests/test_parking.py; git commit -q -m \"Add the parking fee\" -m \"Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -2"
+      }
+    },
+    {
+      "id": "toolu_012YHDCEA3QmzjXmH1y6FgYn",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; cat >> tests/test_parking.py <<'E'\n\n\ndef test_exactly_30_minutes_is_free():\n    assert fee(30) == 0\n\n\ndef test_zero_minutes_is_free():\n    assert fee(0) == 0\n\n\ndef test_31_minutes_costs_one_started_hour():\n    assert fee(31) == 2\n\n\ndef test_exactly_one_hour_costs_2():\n    assert fee(60) == 2\n\n\ndef test_one_minute_into_the_second_hour_costs_4():\n    assert fee(61) == 4\n\n\ndef test_exactly_two_hours_costs_4():\n    assert fee(120) == 4\nE\n/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_parking.py 2>&1 | tail -2\ngit add tests; git commit -q -m \"Test the fee at its boundaries\" --trailer 'Mutant-step: task 1 input shape' --trailer 'Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>'\nW=.sdd/plan\nmk(){ sed \"$2\" parking.py > $TMPDIR/p.py; cp $TMPDIR/p.py parking.py; git diff -- parking.py > $W/task-1-mutant-$1.patch; wc -l $W/task-1-mutant-$1.patch; git checkout -- parking.py; }\nmk 1 's/minutes <= FREE/minutes < FREE/'\nmk 2 's/-(-minutes \\/\\/ 60)/minutes \\/\\/ 60/'\nmk 3 's/-(-minutes \\/\\/ 60)/minutes \\/\\/ 60 + 1/'\nmk 4 's/^RATE_PER_HOUR = 2/RATE_PER_HOUR = 3/'\nmk 5 's/minutes <= FREE_MINUTES/minutes <= 60/'\nmk 6 's/minutes <= FREE_MINUTES/minutes <= FREE_MINUTES + 1/'\ncat > $W/task-1-mutants.md <<'E'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/parking.md:7 | well inside the free period | test_a_short_stay_is_free |\n| specs/parking.md:7 | zero minutes | test_zero_minutes_is_free |\n| specs/parking.md:7 | exactly 30 minutes | test_exactly_30_minutes_is_free |\n| specs/parking.md:9 | 31 minutes, just over | test_31_minutes_costs_one_started_hour |\n| specs/parking.md:9 | exact hour multiple | test_exactly_one_hour_costs_2, test_exactly_two_hours_costs_4 |\n| specs/parking.md:9 | one minute past an hour | test_one_minute_into_the_second_hour_costs_4 |\n| specs/parking.md:9 | a partial hour | test_each_started_hour_costs_2 |\n\n## Mutants\n\nMutant 1: specs/parking.md:7, test_exactly_30_minutes_is_free \u2014 30 minutes is no longer free \u2014 task-1-mutant-1.patch\nMutant 2: specs/parking.md:9, test_each_started_hour_costs_2 \u2014 started hours rounded down \u2014 task-1-mutant-2.patch\nMutant 3: specs/parking.md:9, test_exactly_one_hour_costs_2 \u2014 always adds an hour, so exact hours overcharge \u2014 task-1-mutant-3.patch\nMutant 4: specs/parking.md:9, test_each_started_hour_costs_2 \u2014 rate is 3 \u2014 task-1-mutant-4.patch\nMutant 5: specs/parking.md:7, test_31_minutes_costs_one_started_hour \u2014 free period is 60 minutes \u2014 task-1-mutant-5.patch\nMutant 6: specs/parking.md:7, test_31_minutes_costs_one_started_hour, test_a_short_stay_is_free \u2014 free period is 31 minutes \u2014 task-1-mutant-6.patch\nE\ngit status --short"
+      }
+    },
+    {
+      "id": "toolu_01K2vYHzcJKe5nbADhQGDq7G",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; /private/tmp/msr104-skill/implementer/scripts/mutant-run --screen plan.md 1 04845cb1bda8b79a16a6348bebaa751681c6d83a -- /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_parking.py 2>&1 | tail -30"
+      },
+      "result_lines": [
+        "result: caught 6, survived 0, invalid 0",
+        "screen: carried 0 of 6 from earlier runs",
+        "revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0",
+        "run: /private/tmp/msr104/rep3/repo/.sdd/plan/task-1-screen.log"
+      ],
+      "result_is_error": false
+    },
+    {
+      "id": "toolu_016BRrHcG7ff4Hk56Srg5Q1n",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; W=.sdd/plan\nsed 's/minutes <= FREE_MINUTES/minutes <= 0/' parking.py > $TMPDIR/p.py; cp $TMPDIR/p.py parking.py; git diff -- parking.py > $W/task-1-mutant-7.patch; git checkout -- parking.py\necho \"Mutant 7: specs/parking.md:7, test_a_short_stay_is_free \u2014 only zero minutes is free \u2014 task-1-mutant-7.patch\" >> $W/task-1-mutants.md\n/private/tmp/msr104-skill/implementer/scripts/mutant-run --screen plan.md 1 04845cb1bda8b79a16a6348bebaa751681c6d83a -- /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_parking.py 2>&1 | grep -E \"result|screen:|mutant 7|revert|run:\"\n/private/tmp/msr104-venv/bin/python -m pytest -q 2>&1 | tail -2; git status --short"
+      },
+      "result_lines": [
+        "result: caught 7, survived 0, invalid 0",
+        "screen: carried 6 of 7 from earlier runs",
+        "revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0",
+        "run: /private/tmp/msr104/rep3/repo/.sdd/plan/task-1-screen-2.log"
+      ],
+      "result_is_error": false
+    },
+    {
+      "id": "toolu_01UJzv7vDuwTvFWMxr6mefqH",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; cat > .sdd/plan/task-1-report.md <<'E'\n# Task 1 report\n\nImplemented `fee` in `parking.py` (free up to 30 min; else 2 per started hour) and plan tests in `tests/test_parking.py`.\n\n## TDD\n- RED: `pytest -q tests/test_parking.py` -> ModuleNotFoundError: No module named 'parking' (collection error), as expected.\n- GREEN: 2 passed; after added boundary tests 8 passed, full suite 8 passed, output pristine.\n\n## Commits\n- Add the parking fee\n- Test the fee at its boundaries (Mutant-step: task 1 input shape): 30, 0, 31, 60, 61, 120\n\nMutants: /private/tmp/msr104/rep3/repo/.sdd/plan/task-1-screen-2.log \u2014 caught 7, survived 0, invalid 0 (6 carried from screen 1, task-1-screen.log).\nRevert: tests not loaded on the revert (parking missing), so every test fails on it.\n\nFiles: parking.py, tests/test_parking.py (+ .sdd/plan mutants files)\nConcerns: none. No spec/plan-test conflict (fee(150)==6 matches the spec).\nE"
+      }
+    },
+    {
+      "id": "toolu_01VZCVCYYW7365Ex3TXFdAu7",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep3/repo; git status --short; git log --oneline | head -3"
+      }
+    }
+  ],
+  "commits": [
+    {
+      "sha": "c168260ce752280689255d6740b78b6f831dc2e4",
+      "subject": "Add the parking fee",
+      "message": "Add the parking fee\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\n\n",
+      "trailers": [],
+      "paths": [
+        "parking.py",
+        "tests/test_parking.py"
+      ],
+      "seeded": false
+    },
+    {
+      "sha": "abfef003817ee8295a797f1d2bff7cc3d683c17e",
+      "subject": "Test the fee at its boundaries",
+      "message": "Test the fee at its boundaries\n\nMutant-step: task 1 input shape\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\n\n",
+      "trailers": [
+        "task 1 input shape"
+      ],
+      "paths": [
+        "tests/test_parking.py"
+      ],
+      "seeded": false
+    }
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-brief.md",
+    "task-1-mutant-1.patch",
+    "task-1-mutant-2.patch",
+    "task-1-mutant-3.patch",
+    "task-1-mutant-4.patch",
+    "task-1-mutant-5.patch",
+    "task-1-mutant-6.patch",
+    "task-1-mutant-7.patch",
+    "task-1-mutants.md",
+    "task-1-report.md",
+    "task-1-revert.patch",
+    "task-1-screen-2.log",
+    "task-1-screen.log",
+    "task-1-spec.md"
+  ],
+  "workspace": [
+    {
+      "name": "task-1-brief.md",
+      "sha256": "38b3b2da92fd830aaa38c2b20d76e43595fce1ecd05ff7413adeb53579360b10",
+      "mtime_ns": 1795333654695235994,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-1.patch",
+      "sha256": "7e40bd07a2af3094be9610b7c8fed27ca384b14f5e3705d5d0a71089a556cb0e",
+      "mtime_ns": 1795333670144865618,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-2.patch",
+      "sha256": "4a2db896596ca8b038eb34c0ee33d0720f6485c97935f3658646408a268773b0",
+      "mtime_ns": 1795333670164502370,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-3.patch",
+      "sha256": "84dd0fb52668f51c78db550dbb37a5e1188604c6fbaf36aedf618229da16c4ab",
+      "mtime_ns": 1795333670183661163,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-4.patch",
+      "sha256": "255173f7ed8d78faf135ceda095f1a69f48d4bdf0178c7ce0f4d75563902e9ac",
+      "mtime_ns": 1795333670203152706,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-5.patch",
+      "sha256": "d38f8ba8861c480935309c40543b1f5e59a599d9bf6362eb616b7f62e8524e8c",
+      "mtime_ns": 1795333670222151623,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-6.patch",
+      "sha256": "5d869d92791119000c21799873d0c4b39c59ffac3f1684d46ba3df4b6d02b5b6",
+      "mtime_ns": 1795333670241342749,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-7.patch",
+      "sha256": "8b525acca257fc028536e75314f2bb425653876168134e33ad9d62ee863edd22",
+      "mtime_ns": 1795333678075684307,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutants.md",
+      "sha256": "7e122a9b0f4a7b248ef9fb34c3d443bae3dcfdcc79470d890a1cbceb67407c8d",
+      "mtime_ns": 1795333678086327330,
+      "seeded": false
+    },
+    {
+      "name": "task-1-report.md",
+      "sha256": "8d185e97cd90b5516e08836c6e44d7a2aef3fd39de65b3db67440369f50f5d43",
+      "mtime_ns": 1795333682496174266,
+      "seeded": false
+    },
+    {
+      "name": "task-1-revert.patch",
+      "sha256": "5d119ee4b24f4a5c1d76e641be2b3d9aadc2a8a10d4d629d1acdf76af38194c6",
+      "mtime_ns": 1795333678724205500,
+      "seeded": false
+    },
+    {
+      "name": "task-1-screen-2.log",
+      "sha256": "1a1e102e2e147b104ea8aba0647797db74e2b007d86f9dac0f30d262430196e4",
+      "mtime_ns": 1795333678922985192,
+      "seeded": false
+    },
+    {
+      "name": "task-1-screen.log",
+      "sha256": "febdb463c4ace76017d38a7507fa4f6e53708f682d2b7bd3e3a3cab22196aadc",
+      "mtime_ns": 1795333674103287968,
+      "seeded": false
+    },
+    {
+      "name": "task-1-spec.md",
+      "sha256": "025ffaa1b9a615b577030bb1fe318663fb8bb0034100380136510ba639696daf",
+      "mtime_ns": 1795333654697062915,
+      "seeded": true
+    }
+  ],
+  "run_files": [
+    {
+      "first_line": "mutant-run: Task 1, screen 1",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_parking.py",
+        "head": "abfef003817ee8295a797f1d2bff7cc3d683c17e",
+        "base": "04845cb1bda8b79a16a6348bebaa751681c6d83a",
+        "tree": "clean",
+        "result": "caught 6, survived 0, invalid 0",
+        "screen": "carried 0 of 6 from earlier runs",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "7e40bd07a2af3094be9610b7c8fed27ca384b14f5e3705d5d0a71089a556cb0e",
+          "carried": null,
+          "line": "mutant 1: CAUGHT exit 1 sha256 7e40bd07a2af3094be9610b7c8fed27ca384b14f5e3705d5d0a71089a556cb0e tests: tests.test_parking::test_exactly_30_minutes_is_free"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "4a2db896596ca8b038eb34c0ee33d0720f6485c97935f3658646408a268773b0",
+          "carried": null,
+          "line": "mutant 2: CAUGHT exit 1 sha256 4a2db896596ca8b038eb34c0ee33d0720f6485c97935f3658646408a268773b0 tests: tests.test_parking::test_each_started_hour_costs_2 tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_one_minute_into_the_second_hour_costs_4"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "84dd0fb52668f51c78db550dbb37a5e1188604c6fbaf36aedf618229da16c4ab",
+          "carried": null,
+          "line": "mutant 3: CAUGHT exit 1 sha256 84dd0fb52668f51c78db550dbb37a5e1188604c6fbaf36aedf618229da16c4ab tests: tests.test_parking::test_exactly_one_hour_costs_2 tests.test_parking::test_exactly_two_hours_costs_4"
+        },
+        {
+          "k": 4,
+          "verdict": "CAUGHT",
+          "sha256": "255173f7ed8d78faf135ceda095f1a69f48d4bdf0178c7ce0f4d75563902e9ac",
+          "carried": null,
+          "line": "mutant 4: CAUGHT exit 1 sha256 255173f7ed8d78faf135ceda095f1a69f48d4bdf0178c7ce0f4d75563902e9ac tests: tests.test_parking::test_each_started_hour_costs_2 tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_exactly_one_hour_costs_2 tests.test_parking::test_one_minute_into_the_second_hour_costs_4 tests.test_parking::test_exactly_two_hours_costs_4"
+        },
+        {
+          "k": 5,
+          "verdict": "CAUGHT",
+          "sha256": "d38f8ba8861c480935309c40543b1f5e59a599d9bf6362eb616b7f62e8524e8c",
+          "carried": null,
+          "line": "mutant 5: CAUGHT exit 1 sha256 d38f8ba8861c480935309c40543b1f5e59a599d9bf6362eb616b7f62e8524e8c tests: tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_exactly_one_hour_costs_2"
+        },
+        {
+          "k": 6,
+          "verdict": "CAUGHT",
+          "sha256": "5d869d92791119000c21799873d0c4b39c59ffac3f1684d46ba3df4b6d02b5b6",
+          "carried": null,
+          "line": "mutant 6: CAUGHT exit 1 sha256 5d869d92791119000c21799873d0c4b39c59ffac3f1684d46ba3df4b6d02b5b6 tests: tests.test_parking::test_31_minutes_costs_one_started_hour"
+        }
+      ],
+      "name": "task-1-screen.log",
+      "mtime_ns": 1795333674103287968,
+      "seeded": false,
+      "tests_at_head": [
+        "test_31_minutes_costs_one_started_hour",
+        "test_a_short_stay_is_free",
+        "test_each_started_hour_costs_2",
+        "test_exactly_30_minutes_is_free",
+        "test_exactly_one_hour_costs_2",
+        "test_exactly_two_hours_costs_4",
+        "test_one_minute_into_the_second_hour_costs_4",
+        "test_zero_minutes_is_free"
+      ]
+    },
+    {
+      "first_line": "mutant-run: Task 1, screen 2",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_parking.py",
+        "head": "abfef003817ee8295a797f1d2bff7cc3d683c17e",
+        "base": "04845cb1bda8b79a16a6348bebaa751681c6d83a",
+        "tree": "clean",
+        "result": "caught 7, survived 0, invalid 0",
+        "screen": "carried 6 of 7 from earlier runs",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "7e40bd07a2af3094be9610b7c8fed27ca384b14f5e3705d5d0a71089a556cb0e",
+          "carried": "task-1-screen.log",
+          "line": "mutant 1: CAUGHT exit - sha256 7e40bd07a2af3094be9610b7c8fed27ca384b14f5e3705d5d0a71089a556cb0e carried: task-1-screen.log tests: tests.test_parking::test_exactly_30_minutes_is_free"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "4a2db896596ca8b038eb34c0ee33d0720f6485c97935f3658646408a268773b0",
+          "carried": "task-1-screen.log",
+          "line": "mutant 2: CAUGHT exit - sha256 4a2db896596ca8b038eb34c0ee33d0720f6485c97935f3658646408a268773b0 carried: task-1-screen.log tests: tests.test_parking::test_each_started_hour_costs_2 tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_one_minute_into_the_second_hour_costs_4"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "84dd0fb52668f51c78db550dbb37a5e1188604c6fbaf36aedf618229da16c4ab",
+          "carried": "task-1-screen.log",
+          "line": "mutant 3: CAUGHT exit - sha256 84dd0fb52668f51c78db550dbb37a5e1188604c6fbaf36aedf618229da16c4ab carried: task-1-screen.log tests: tests.test_parking::test_exactly_one_hour_costs_2 tests.test_parking::test_exactly_two_hours_costs_4"
+        },
+        {
+          "k": 4,
+          "verdict": "CAUGHT",
+          "sha256": "255173f7ed8d78faf135ceda095f1a69f48d4bdf0178c7ce0f4d75563902e9ac",
+          "carried": "task-1-screen.log",
+          "line": "mutant 4: CAUGHT exit - sha256 255173f7ed8d78faf135ceda095f1a69f48d4bdf0178c7ce0f4d75563902e9ac carried: task-1-screen.log tests: tests.test_parking::test_each_started_hour_costs_2 tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_exactly_one_hour_costs_2 tests.test_parking::test_one_minute_into_the_second_hour_costs_4 tests.test_parking::test_exactly_two_hours_costs_4"
+        },
+        {
+          "k": 5,
+          "verdict": "CAUGHT",
+          "sha256": "d38f8ba8861c480935309c40543b1f5e59a599d9bf6362eb616b7f62e8524e8c",
+          "carried": "task-1-screen.log",
+          "line": "mutant 5: CAUGHT exit - sha256 d38f8ba8861c480935309c40543b1f5e59a599d9bf6362eb616b7f62e8524e8c carried: task-1-screen.log tests: tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_exactly_one_hour_costs_2"
+        },
+        {
+          "k": 6,
+          "verdict": "CAUGHT",
+          "sha256": "5d869d92791119000c21799873d0c4b39c59ffac3f1684d46ba3df4b6d02b5b6",
+          "carried": "task-1-screen.log",
+          "line": "mutant 6: CAUGHT exit - sha256 5d869d92791119000c21799873d0c4b39c59ffac3f1684d46ba3df4b6d02b5b6 carried: task-1-screen.log tests: tests.test_parking::test_31_minutes_costs_one_started_hour"
+        },
+        {
+          "k": 7,
+          "verdict": "CAUGHT",
+          "sha256": "8b525acca257fc028536e75314f2bb425653876168134e33ad9d62ee863edd22",
+          "carried": null,
+          "line": "mutant 7: CAUGHT exit 1 sha256 8b525acca257fc028536e75314f2bb425653876168134e33ad9d62ee863edd22 tests: tests.test_parking::test_a_short_stay_is_free tests.test_parking::test_exactly_30_minutes_is_free"
+        }
+      ],
+      "name": "task-1-screen-2.log",
+      "mtime_ns": 1795333678922985192,
+      "seeded": false,
+      "tests_at_head": [
+        "test_31_minutes_costs_one_started_hour",
+        "test_a_short_stay_is_free",
+        "test_each_started_hour_costs_2",
+        "test_exactly_30_minutes_is_free",
+        "test_exactly_one_hour_costs_2",
+        "test_exactly_two_hours_costs_4",
+        "test_one_minute_into_the_second_hour_costs_4",
+        "test_zero_minutes_is_free"
+      ]
+    }
+  ],
+  "final_tests": [
+    "test_31_minutes_costs_one_started_hour",
+    "test_a_short_stay_is_free",
+    "test_each_started_hour_costs_2",
+    "test_exactly_30_minutes_is_free",
+    "test_exactly_one_hour_costs_2",
+    "test_exactly_two_hours_costs_4",
+    "test_one_minute_into_the_second_hour_costs_4",
+    "test_zero_minutes_is_free"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

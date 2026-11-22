@@ -1,0 +1,27 @@
+diff --git a/parking.py b/parking.py
+new file mode 100644
+index 0000000..2e1cbb5
+--- /dev/null
++++ b/parking.py
+@@ -0,0 +1,6 @@
++def fee(minutes: int) -> int:
++    """Stays up to 30 minutes are free; otherwise 2 per started hour."""
++    if minutes <= 30:
++        return 0
++    started_hours = (minutes + 59) // 60
++    return 2 * started_hours
+diff --git a/tests/test_parking.py b/tests/test_parking.py
+new file mode 100644
+index 0000000..3fba661
+--- /dev/null
++++ b/tests/test_parking.py
+@@ -0,0 +1,9 @@
++from parking import fee
++
++
++def test_a_short_stay_is_free():
++    assert fee(20) == 0
++
++
++def test_each_started_hour_costs_2():
++    assert fee(150) == 6

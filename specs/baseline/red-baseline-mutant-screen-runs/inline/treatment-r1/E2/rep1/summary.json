@@ -1,0 +1,465 @@
+{
+  "fixture": "E2",
+  "rep": 1,
+  "role": "inline",
+  "arm": "treatment-r1",
+  "model": "opus",
+  "cap": "4",
+  "rep_dir": "/private/tmp/msr104/rep1",
+  "skill_root": "/private/tmp/msr104-skill/inline",
+  "venv": "/private/tmp/msr104-venv",
+  "base": "b4f75d791df621908c5c677567bdf8c50026bf62",
+  "start": "bf836debdd036122e1349ee924744c177d5352fa",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan104/inline/treatment-r1/E2/rep1.jsonl",
+  "prompt_sha256": "80884d444339e6ac5bc44dd7c77d3dd92af468c35dbe185f149de32be0c7a803",
+  "claude_exit": 0,
+  "wall_seconds": 58,
+  "init": {
+    "cwd": "/private/tmp/msr104/rep1/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 38,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 11,
+    "duration_ms": 57102,
+    "total_cost_usd": 0.36087579999999997,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 22,
+        "outputTokens": 4177,
+        "cacheReadInputTokens": 248599,
+        "cacheCreationInputTokens": 28441,
+        "webSearchRequests": 0,
+        "costUSD": 0.36087579999999997,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 721,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 28441,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "Task 1 is finished and recorded in the ledger. `task-done` accepted it on the first try:\n\n`Task 1: complete (commits b4f75d7..3ee63dd, mutants: 4/4, tests: /private/tmp/msr104-venv/bin/python -m pytest -q \u2192 4 passed in 0.00s)`\n\n- **The surviving mutant:** in the first run, mutant 2 (the first person pays every cent left over) got through the tests. The plan's tests only ever leave one cent over, and in that case the mutant gives the same answer as the real code.\n- **New tests:** I added two, and both passed straight away against the existing code:\n  - `split(1001, 3) == [334, 334, 333]` checks that several leftover cents go one each to different people (`specs/split.md:9`). This one catches mutant 2.\n  - `split(2, 3) == [1, 1, 0]` checks that a total smaller than the number of people gives a share of zero (`specs/split.md:7`).\n- **New mutant:** I added mutant 4, which rounds the share to the nearest cent instead of down, aimed at the zero-share test. I also updated the mutants file to list the new cases and what each mutant targets.\n- **Commit:** `3ee63dd`, with the trailers `Mutant-step: task 1 input shape` and `Mutant-step: task 1 survivor 2`. The plan's two original tests are unchanged.\n- **Runs:** a screen and then a full run at HEAD (`.sdd/plan/task-1-mutants-2.log`) both caught all 4 mutants, with none invalid. With `bills.py` removed (the task's code taken back out), the test file can't import, so every test fails without the task's change. That means nothing else was needed there.\n\nAs instructed, I stopped here and did not start the final review. This work was committed directly on `main`, because that is how the earlier session set things up.",
+  "tool_calls": [
+    {
+      "id": "toolu_01PAxdVVL8wEP4H2e47Tgw3q",
+      "name": "Bash",
+      "input": {
+        "command": "cat /private/tmp/msr104-skill/inline/executing-plans/SKILL.md; ls -la /private/tmp/msr104/rep1/repo/.sdd/plan; cat /private/tmp/msr104/rep1/repo/.sdd/plan/progress.md; cd /private/tmp/msr104/rep1/repo && git log --oneline",
+        "description": "Read skill, workspace, ledger, log"
+      }
+    },
+    {
+      "id": "toolu_01QC21rbB6bNiMVrhp2df6o9",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep1/repo/.sdd/plan && cat /private/tmp/msr104-skill/inline/subagent-driven-development/references/mutants.md; for f in task-1-brief.md task-1-spec.md task-1-mutants.md task-1-mutant-*.patch task-1-revert.patch task-1-mutants.log; do echo \"=== $f\"; cat $f; done",
+        "description": "Read mutants reference and workspace files"
+      }
+    },
+    {
+      "id": "toolu_01NGSYAPGNXbn36zdqx1LjzY",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/msr104/rep1/home/.claude/projects/-private-tmp-msr104-rep1-repo/30715107-aba8-46b8-bb7a-a7ac0cfbed11/tool-results/b5o06w0a1.txt"
+      }
+    },
+    {
+      "id": "toolu_01ShtBD7HxxXXsBzdLUNvhJG",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep1/repo && cat -n specs/split.md; cat tests/test_bills.py bills.py; git status --short",
+        "description": "Read spec, tests, code"
+      }
+    },
+    {
+      "id": "toolu_01LReMqTiDsufqo4V4mQmSzE",
+      "name": "Bash",
+      "input": {
+        "command": "cat >> tests/test_bills.py <<'EOF'\n\n\ndef test_each_cent_left_over_goes_to_a_different_person():\n    assert split(1001, 3) == [334, 334, 333]\n\n\ndef test_a_total_below_the_head_count_rounds_the_share_down_to_zero():\n    assert split(2, 3) == [1, 1, 0]\nEOF\n/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py 2>&1 | tail -3",
+        "description": "Add input-shape tests and run them"
+      }
+    },
+    {
+      "id": "toolu_01UesXfUne5XgBvFQfrfcvrz",
+      "name": "Bash",
+      "input": {
+        "command": "W=.sdd/plan && git commit -q -am \"Test several cents left over and a share that rounds down to zero\" --trailer 'Mutant-step: task 1 input shape' --trailer 'Mutant-step: task 1 survivor 2' --trailer 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>' && \\\nsed -i '' 's/    share, left_over = divmod(total_cents, people)/    share = round(total_cents \\/ people)\\n    left_over = total_cents - share * people/' bills.py && cat bills.py && git diff -- bills.py > $W/task-1-mutant-4.patch && git checkout -- bills.py && wc -c $W/task-1-mutant-4.patch && git log --format='%h %B' -1",
+        "description": "Commit tests, write mutant 4 patch"
+      }
+    },
+    {
+      "id": "toolu_01QSZGcGAKNiC7C7Dyb1mNNY",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/msr104/rep1/repo/.sdd/plan/task-1-mutants.md",
+        "content": "# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/split.md:7 | a total that divides evenly | test_an_even_bill_splits_equally |\n| specs/split.md:7 | a total below the number of people (share rounds down to zero) | test_a_total_below_the_head_count_rounds_the_share_down_to_zero |\n| specs/split.md:9 | one cent left over | test_the_first_person_pays_the_cent_left_over |\n| specs/split.md:9 | several cents left over, one each | test_each_cent_left_over_goes_to_a_different_person |\n\n## Mutants\n\nMutant 1: specs/split.md:9, test_the_first_person_pays_the_cent_left_over \u2014 no one pays the cents left over \u2014 task-1-mutant-1.patch\nMutant 2: specs/split.md:9, test_the_first_person_pays_the_cent_left_over, test_each_cent_left_over_goes_to_a_different_person \u2014 the first person pays every cent left over \u2014 task-1-mutant-2.patch\nMutant 3: specs/split.md:9, test_an_even_bill_splits_equally, test_the_first_person_pays_the_cent_left_over \u2014 one person too many pays a cent \u2014 task-1-mutant-3.patch\nMutant 4: specs/split.md:7, test_a_total_below_the_head_count_rounds_the_share_down_to_zero \u2014 the share is rounded to the nearest cent, not down \u2014 task-1-mutant-4.patch\n"
+      }
+    },
+    {
+      "id": "toolu_01ArzWDQSatx1XPj2bVoxwDD",
+      "name": "Bash",
+      "input": {
+        "command": "/private/tmp/msr104-skill/inline/subagent-driven-development/scripts/mutant-run --screen plan.md 1 b4f75d791df621908c5c677567bdf8c50026bf62 -- /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py; echo EXIT $?; f=$(ls -t .sdd/plan/task-1-screen*.log | head -1); sed -n '/--- revert ---/,/--- output/p' $f",
+        "description": "Run mutant screen and show revert section",
+        "timeout": 300000
+      },
+      "result_lines": [
+        "result: caught 4, survived 0, invalid 0",
+        "screen: carried 2 of 4 from earlier runs",
+        "revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0",
+        "run: /private/tmp/msr104/rep1/repo/.sdd/plan/task-1-screen.log"
+      ],
+      "result_is_error": false
+    },
+    {
+      "id": "toolu_01773E5Hf7aZihyk7eZzcbFu",
+      "name": "Bash",
+      "input": {
+        "command": "/private/tmp/msr104-skill/inline/subagent-driven-development/scripts/mutant-run plan.md 1 b4f75d791df621908c5c677567bdf8c50026bf62 -- /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py; echo EXIT $?; git status --short",
+        "description": "Run final full mutant run",
+        "timeout": 300000
+      },
+      "result_lines": [
+        "result: caught 4, survived 0, invalid 0",
+        "revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0",
+        "run: /private/tmp/msr104/rep1/repo/.sdd/plan/task-1-mutants-2.log"
+      ],
+      "result_is_error": false
+    },
+    {
+      "id": "toolu_01K1RYST1nTvTSLhZdWCg8R8",
+      "name": "Bash",
+      "input": {
+        "command": "/private/tmp/msr104-skill/inline/executing-plans/scripts/task-done plan.md 1 b4f75d791df621908c5c677567bdf8c50026bf62 -- /private/tmp/msr104-venv/bin/python -m pytest -q; echo EXIT $?; tail -2 .sdd/plan/progress.md",
+        "description": "Complete Task 1 and check ledger",
+        "timeout": 300000
+      }
+    }
+  ],
+  "commits": [
+    {
+      "sha": "bf836debdd036122e1349ee924744c177d5352fa",
+      "subject": "Add bill splits",
+      "message": "Add bill splits\n\n",
+      "trailers": [],
+      "paths": [
+        "bills.py",
+        "tests/test_bills.py"
+      ],
+      "seeded": true
+    },
+    {
+      "sha": "3ee63dd1795405a7ca9d2a9072729dd0d7831c4d",
+      "subject": "Test several cents left over and a share that rounds down to zero",
+      "message": "Test several cents left over and a share that rounds down to zero\n\nMutant-step: task 1 input shape\nMutant-step: task 1 survivor 2\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n",
+      "trailers": [
+        "task 1 input shape",
+        "task 1 survivor 2"
+      ],
+      "paths": [
+        "tests/test_bills.py"
+      ],
+      "seeded": false
+    }
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "progress.md",
+    "task-1-brief.md",
+    "task-1-mutant-1.patch",
+    "task-1-mutant-2.patch",
+    "task-1-mutant-3.patch",
+    "task-1-mutant-4.patch",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md",
+    "task-1-revert.patch",
+    "task-1-screen.log",
+    "task-1-spec.md",
+    "task-1-tests.log"
+  ],
+  "workspace": [
+    {
+      "name": "progress.md",
+      "sha256": "1a953bdf94a644dc5c5a59ae19d8ee063d892e9b8d3e96305bc81c78a74fcd55",
+      "mtime_ns": 1795338163294981791,
+      "seeded": true
+    },
+    {
+      "name": "task-1-brief.md",
+      "sha256": "8a26a9bd26f0e1199fad7d340be98a11219c33d7eccdc0503569f992027928d3",
+      "mtime_ns": 1795338112530730421,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-1.patch",
+      "sha256": "f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c",
+      "mtime_ns": 1795338112648941676,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-2.patch",
+      "sha256": "e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae",
+      "mtime_ns": 1795338112664540891,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-3.patch",
+      "sha256": "5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff",
+      "mtime_ns": 1795338112680270980,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-4.patch",
+      "sha256": "1a1badf1f7983de75c80d9c1eb6f3892699710afa9236f6bf73bc204345344f6",
+      "mtime_ns": 1795338144548875240,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutants-2.log",
+      "sha256": "e9bda115b56c850b4d50d3616cfca1e141c299fe93da7292f6f1926403e4d99c",
+      "mtime_ns": 1795338159560724217,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutants.log",
+      "sha256": "9c89b4497f9b964d60eb5dc27d6e21e2add6062280ded957dbad23312c8c44bb",
+      "mtime_ns": 1795338113648940261,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutants.md",
+      "sha256": "9b51f13be5bd129187528cf5591bbca977fe6b25f8c6d34880f41ed621a66e36",
+      "mtime_ns": 1795338150119089211,
+      "seeded": true
+    },
+    {
+      "name": "task-1-revert.patch",
+      "sha256": "dd65b2713bf2eb7f99173cb833520978123ee920c56fcec1476633bd7ff4b0b0",
+      "mtime_ns": 1795338159365544157,
+      "seeded": true
+    },
+    {
+      "name": "task-1-screen.log",
+      "sha256": "d375f38aa509b240eb562483d2a26ec408f06c77e76d81289623eb31ca03ee8c",
+      "mtime_ns": 1795338154840086725,
+      "seeded": false
+    },
+    {
+      "name": "task-1-spec.md",
+      "sha256": "d9a45b4378cda15ffa78b0c44d28eaf4cb85af126f49b6210a08483b18a235d7",
+      "mtime_ns": 1795338112532406273,
+      "seeded": true
+    },
+    {
+      "name": "task-1-tests.log",
+      "sha256": "44a8baecd6c47e7433e0a16bbe493795acb0cc058665a7a6f6e0201051c77c3d",
+      "mtime_ns": 1795338163217590064,
+      "seeded": false
+    }
+  ],
+  "run_files": [
+    {
+      "first_line": "mutant-run: Task 1, run 1",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py",
+        "head": "bf836debdd036122e1349ee924744c177d5352fa",
+        "base": "b4f75d791df621908c5c677567bdf8c50026bf62",
+        "tree": "clean",
+        "result": "caught 2, survived 1, invalid 0",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c",
+          "carried": null,
+          "line": "mutant 1: CAUGHT exit 1 sha256 f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c tests: tests.test_bills::test_the_first_person_pays_the_cent_left_over"
+        },
+        {
+          "k": 2,
+          "verdict": "SURVIVED",
+          "sha256": "e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae",
+          "carried": null,
+          "line": "mutant 2: SURVIVED exit 0 sha256 e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff",
+          "carried": null,
+          "line": "mutant 3: CAUGHT exit 1 sha256 5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff tests: tests.test_bills::test_an_even_bill_splits_equally tests.test_bills::test_the_first_person_pays_the_cent_left_over"
+        }
+      ],
+      "name": "task-1-mutants.log",
+      "mtime_ns": 1795338113648940261,
+      "seeded": true,
+      "tests_at_head": [
+        "test_an_even_bill_splits_equally",
+        "test_the_first_person_pays_the_cent_left_over"
+      ]
+    },
+    {
+      "first_line": "mutant-run: Task 1, screen 1",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py",
+        "head": "3ee63dd1795405a7ca9d2a9072729dd0d7831c4d",
+        "base": "b4f75d791df621908c5c677567bdf8c50026bf62",
+        "tree": "clean",
+        "result": "caught 4, survived 0, invalid 0",
+        "screen": "carried 2 of 4 from earlier runs",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c",
+          "carried": "task-1-mutants.log",
+          "line": "mutant 1: CAUGHT exit - sha256 f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c carried: task-1-mutants.log tests: tests.test_bills::test_the_first_person_pays_the_cent_left_over"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae",
+          "carried": null,
+          "line": "mutant 2: CAUGHT exit 1 sha256 e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae tests: tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff",
+          "carried": "task-1-mutants.log",
+          "line": "mutant 3: CAUGHT exit - sha256 5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff carried: task-1-mutants.log tests: tests.test_bills::test_an_even_bill_splits_equally tests.test_bills::test_the_first_person_pays_the_cent_left_over"
+        },
+        {
+          "k": 4,
+          "verdict": "CAUGHT",
+          "sha256": "1a1badf1f7983de75c80d9c1eb6f3892699710afa9236f6bf73bc204345344f6",
+          "carried": null,
+          "line": "mutant 4: CAUGHT exit 1 sha256 1a1badf1f7983de75c80d9c1eb6f3892699710afa9236f6bf73bc204345344f6 tests: tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero"
+        }
+      ],
+      "name": "task-1-screen.log",
+      "mtime_ns": 1795338154840086725,
+      "seeded": false,
+      "tests_at_head": [
+        "test_a_total_below_the_head_count_rounds_the_share_down_to_zero",
+        "test_an_even_bill_splits_equally",
+        "test_each_cent_left_over_goes_to_a_different_person",
+        "test_the_first_person_pays_the_cent_left_over"
+      ]
+    },
+    {
+      "first_line": "mutant-run: Task 1, run 2",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py",
+        "head": "3ee63dd1795405a7ca9d2a9072729dd0d7831c4d",
+        "base": "b4f75d791df621908c5c677567bdf8c50026bf62",
+        "tree": "clean",
+        "result": "caught 4, survived 0, invalid 0",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c",
+          "carried": null,
+          "line": "mutant 1: CAUGHT exit 1 sha256 f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c tests: tests.test_bills::test_the_first_person_pays_the_cent_left_over tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae",
+          "carried": null,
+          "line": "mutant 2: CAUGHT exit 1 sha256 e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae tests: tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff",
+          "carried": null,
+          "line": "mutant 3: CAUGHT exit 1 sha256 5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff tests: tests.test_bills::test_an_even_bill_splits_equally tests.test_bills::test_the_first_person_pays_the_cent_left_over tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero"
+        },
+        {
+          "k": 4,
+          "verdict": "CAUGHT",
+          "sha256": "1a1badf1f7983de75c80d9c1eb6f3892699710afa9236f6bf73bc204345344f6",
+          "carried": null,
+          "line": "mutant 4: CAUGHT exit 1 sha256 1a1badf1f7983de75c80d9c1eb6f3892699710afa9236f6bf73bc204345344f6 tests: tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero"
+        }
+      ],
+      "name": "task-1-mutants-2.log",
+      "mtime_ns": 1795338159560724217,
+      "seeded": false,
+      "tests_at_head": [
+        "test_a_total_below_the_head_count_rounds_the_share_down_to_zero",
+        "test_an_even_bill_splits_equally",
+        "test_each_cent_left_over_goes_to_a_different_person",
+        "test_the_first_person_pays_the_cent_left_over"
+      ]
+    }
+  ],
+  "final_tests": [
+    "test_a_total_below_the_head_count_rounds_the_share_down_to_zero",
+    "test_an_even_bill_splits_equally",
+    "test_each_cent_left_over_goes_to_a_different_person",
+    "test_the_first_person_pays_the_cent_left_over"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,396 @@
+{
+  "fixture": "C1",
+  "rep": 4,
+  "role": "controller",
+  "arm": "control",
+  "model": "sonnet",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/msr104/rep4",
+  "skill_root": "/private/tmp/msr104-skill/controller",
+  "venv": "/private/tmp/msr104-venv",
+  "base": "c2e54c746a51fde1a511751f0e5fae18c5e0d6f2",
+  "start": "09b5b6d47fd9565e92aa71bae8cb9ac6d136d298",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan104/controller/control/C1/rep4.jsonl",
+  "prompt_sha256": "f8fd13bdc6118a55d4401bd3822b9b5dcd68d3a0e28f7a8f67a71a2064a7891f",
+  "claude_exit": 0,
+  "wall_seconds": 14,
+  "init": {
+    "cwd": "/private/tmp/msr104/rep4/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 16,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 13280,
+    "total_cost_usd": 0.0575072,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 1397,
+        "cacheReadInputTokens": 57732,
+        "cacheCreationInputTokens": 9435,
+        "webSearchRequests": 0,
+        "costUSD": 0.0575072,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 49,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 9435,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "Task 1's test run passed and the mutant run caught every mutant, so I wrote the two run files to `task-1-dispatch.txt` for the reviewer and stopped. I did not dispatch a reviewer.\n\n- **Test run:** the brief's focused command and the full suite both passed, 4 tests each. The run file shows `head: 09b5b6d\u2026` and `tree: clean`. That is the HEAD under review.\n- **Mutant run:** it exited 0. The run file shows `base: c2e54c7\u2026`, the BASE I recorded, with `head:` the same and a clean tree. All 3 mutants were caught, 0 survived and 0 were invalid.\n- **Revert:** it ran with exit 1, 0 failed, 1 not loaded and 0 passed. This is the expected shape, since the test file cannot import `bands` without the task's code.\n\nThe mutant run's command was only the brief's focused `tests/test_bands.py` call, not the full suite.\n\nLine 1 of `/private/tmp/msr104/rep4/repo/.sdd/plan/task-1-dispatch.txt` is the run file, `/private/tmp/msr104/rep4/repo/.sdd/plan/task-1-tests.log`. Line 2 is the mutant run file, `/private/tmp/msr104/rep4/repo/.sdd/plan/task-1-mutants.log`.",
+  "tool_calls": [
+    {
+      "id": "toolu_016ZBP5B154GMKPw2fcH9Sdm",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/msr104-skill/controller/references/test-run.md"
+      }
+    },
+    {
+      "id": "toolu_017h6v1nfeRpqtEBnW3FXYZq",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep4/repo; cat .sdd/plan/task-1-brief.md; ls .sdd/plan; grep -n -i -A5 \"mutant\" /private/tmp/msr104-skill/controller/references/mutants.md | head -60"
+      }
+    },
+    {
+      "id": "toolu_01DEktRMyX8xu8eKA9Dwbsuq",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep4/repo; git status --porcelain --untracked-files=normal; git log --oneline -3; S=/private/tmp/msr104-skill/controller/scripts; $S/test-run plan.md 1 -- sh -c '(/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py) && (/private/tmp/msr104-venv/bin/python -m pytest -q)'"
+      }
+    },
+    {
+      "id": "toolu_01MUuJib8HhnDjKYn7nDBpVx",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep4/repo; grep -n -E \"^(head|tree|base|exit)\" .sdd/plan/task-1-tests.log; git rev-parse HEAD; S=/private/tmp/msr104-skill/controller/scripts; $S/mutant-run plan.md 1 c2e54c746a51fde1a511751f0e5fae18c5e0d6f2 -- /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py; echo exit=$?"
+      },
+      "result_lines": [
+        "result: caught 3, survived 0, invalid 0",
+        "revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0",
+        "run: /private/tmp/msr104/rep4/repo/.sdd/plan/task-1-mutants.log"
+      ],
+      "result_is_error": false
+    },
+    {
+      "id": "toolu_01LnYEhue2MUv3S1DyGA634g",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep4/repo; grep -n -E \"^(head|base|tree)\" .sdd/plan/task-1-mutants.log; git status --porcelain --untracked-files=normal\nprintf '%s\\n%s\\n' /private/tmp/msr104/rep4/repo/.sdd/plan/task-1-tests.log /private/tmp/msr104/rep4/repo/.sdd/plan/task-1-mutants.log > .sdd/plan/task-1-dispatch.txt; cat .sdd/plan/task-1-dispatch.txt"
+      }
+    }
+  ],
+  "commits": [
+    {
+      "sha": "af4327b813364bc5006bfc3519c2baaaef8e974a",
+      "subject": "Add the parcel bands",
+      "message": "Add the parcel bands\n\n",
+      "trailers": [],
+      "paths": [
+        "bands.py",
+        "tests/test_bands.py"
+      ],
+      "seeded": true
+    },
+    {
+      "sha": "09b5b6d47fd9565e92aa71bae8cb9ac6d136d298",
+      "subject": "Test a small parcel at its upper edge",
+      "message": "Test a small parcel at its upper edge\n\n",
+      "trailers": [],
+      "paths": [
+        "tests/test_bands.py"
+      ],
+      "seeded": true
+    }
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-brief.md",
+    "task-1-dispatch.txt",
+    "task-1-mutant-1.patch",
+    "task-1-mutant-2.patch",
+    "task-1-mutant-3.patch",
+    "task-1-mutants.log",
+    "task-1-mutants.md",
+    "task-1-report.md",
+    "task-1-revert.patch",
+    "task-1-screen-2.log",
+    "task-1-screen.log",
+    "task-1-spec.md",
+    "task-1-tests.log"
+  ],
+  "workspace": [
+    {
+      "name": "task-1-brief.md",
+      "sha256": "cb701cddcc000b994580d878072eda7e3e04438316d6847b94995bd44ee747b2",
+      "mtime_ns": 1795327968075316146,
+      "seeded": true
+    },
+    {
+      "name": "task-1-dispatch.txt",
+      "sha256": "ecacdd33c25364280e3d4907f8c042c6b635d05d9076d4dbb605086c756f1ab7",
+      "mtime_ns": 1795327980665926307,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-1.patch",
+      "sha256": "336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f",
+      "mtime_ns": 1795327968221823765,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-2.patch",
+      "sha256": "31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45",
+      "mtime_ns": 1795327968240823192,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-3.patch",
+      "sha256": "3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476",
+      "mtime_ns": 1795327968260556203,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutants.log",
+      "sha256": "143438afbdc11f9adb9bc3e2e554549533ef9650a332ee6327550f5935dd94e0",
+      "mtime_ns": 1795327978955854653,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutants.md",
+      "sha256": "67bb9ebfc5f6b6dfed940cb6126aefd200bc77abcce553d5d93a118aa05fb24f",
+      "mtime_ns": 1795327969598173952,
+      "seeded": true
+    },
+    {
+      "name": "task-1-report.md",
+      "sha256": "61769708fc96bca502e378496c62b90a712624753f4289e091ddf8d3871e48c5",
+      "mtime_ns": 1795327970415851593,
+      "seeded": true
+    },
+    {
+      "name": "task-1-revert.patch",
+      "sha256": "62e5455818d36c8bcda58dc6525d1fc07ec6b7da5d9e9357dbe7c6b30c525235",
+      "mtime_ns": 1795327978726492656,
+      "seeded": true
+    },
+    {
+      "name": "task-1-screen-2.log",
+      "sha256": "c569f97ac9d72b1863eb5b26db4bfdcac00c3d7c3020f21c056631770ed3bc03",
+      "mtime_ns": 1795327970404443628,
+      "seeded": true
+    },
+    {
+      "name": "task-1-screen.log",
+      "sha256": "60cdeea331cc8f5193e7467cb9c1bb1d0bc0edc60ab08c69287340f5c6d5277c",
+      "mtime_ns": 1795327969467352008,
+      "seeded": true
+    },
+    {
+      "name": "task-1-spec.md",
+      "sha256": "b89289294c9ff8c6e6dbcc2996a7a4065e1b5d961b7182d4b440d3e58c852eee",
+      "mtime_ns": 1795327968077132064,
+      "seeded": true
+    },
+    {
+      "name": "task-1-tests.log",
+      "sha256": "80cadaf57e39ba6ab2f40660aef1c97e5cabf305f2a5f229a059d0db7a2404e1",
+      "mtime_ns": 1795327975320291354,
+      "seeded": false
+    }
+  ],
+  "run_files": [
+    {
+      "first_line": "mutant-run: Task 1, screen 1",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py",
+        "head": "af4327b813364bc5006bfc3519c2baaaef8e974a",
+        "base": "c2e54c746a51fde1a511751f0e5fae18c5e0d6f2",
+        "tree": "clean",
+        "result": "caught 2, survived 1, invalid 0",
+        "screen": "carried 0 of 3 from earlier runs",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "SURVIVED",
+          "sha256": "336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f",
+          "carried": null,
+          "line": "mutant 1: SURVIVED exit 0 sha256 336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45",
+          "carried": null,
+          "line": "mutant 2: CAUGHT exit 1 sha256 31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45 tests: tests.test_bands::test_band_medium"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476",
+          "carried": null,
+          "line": "mutant 3: CAUGHT exit 1 sha256 3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476 tests: tests.test_bands::test_band_large"
+        }
+      ],
+      "name": "task-1-screen.log",
+      "mtime_ns": 1795327969467352008,
+      "seeded": true,
+      "tests_at_head": [
+        "test_band_large",
+        "test_band_medium",
+        "test_band_small"
+      ]
+    },
+    {
+      "first_line": "mutant-run: Task 1, screen 2",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py",
+        "head": "09b5b6d47fd9565e92aa71bae8cb9ac6d136d298",
+        "base": "c2e54c746a51fde1a511751f0e5fae18c5e0d6f2",
+        "tree": "clean",
+        "result": "caught 3, survived 0, invalid 0",
+        "screen": "carried 2 of 3 from earlier runs",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f",
+          "carried": null,
+          "line": "mutant 1: CAUGHT exit 1 sha256 336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f tests: tests.test_bands::test_band_small_at_its_upper_edge"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45",
+          "carried": "task-1-screen.log",
+          "line": "mutant 2: CAUGHT exit - sha256 31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45 carried: task-1-screen.log tests: tests.test_bands::test_band_medium"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476",
+          "carried": "task-1-screen.log",
+          "line": "mutant 3: CAUGHT exit - sha256 3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476 carried: task-1-screen.log tests: tests.test_bands::test_band_large"
+        }
+      ],
+      "name": "task-1-screen-2.log",
+      "mtime_ns": 1795327970404443628,
+      "seeded": true,
+      "tests_at_head": [
+        "test_band_large",
+        "test_band_medium",
+        "test_band_small",
+        "test_band_small_at_its_upper_edge"
+      ]
+    },
+    {
+      "first_line": "mutant-run: Task 1, run 1",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py",
+        "head": "09b5b6d47fd9565e92aa71bae8cb9ac6d136d298",
+        "base": "c2e54c746a51fde1a511751f0e5fae18c5e0d6f2",
+        "tree": "clean",
+        "result": "caught 3, survived 0, invalid 0",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f",
+          "carried": null,
+          "line": "mutant 1: CAUGHT exit 1 sha256 336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f tests: tests.test_bands::test_band_small_at_its_upper_edge"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45",
+          "carried": null,
+          "line": "mutant 2: CAUGHT exit 1 sha256 31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45 tests: tests.test_bands::test_band_medium"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476",
+          "carried": null,
+          "line": "mutant 3: CAUGHT exit 1 sha256 3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476 tests: tests.test_bands::test_band_large"
+        }
+      ],
+      "name": "task-1-mutants.log",
+      "mtime_ns": 1795327978955854653,
+      "seeded": false,
+      "tests_at_head": [
+        "test_band_large",
+        "test_band_medium",
+        "test_band_small",
+        "test_band_small_at_its_upper_edge"
+      ]
+    }
+  ],
+  "final_tests": [
+    "test_band_large",
+    "test_band_medium",
+    "test_band_small",
+    "test_band_small_at_its_upper_edge"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

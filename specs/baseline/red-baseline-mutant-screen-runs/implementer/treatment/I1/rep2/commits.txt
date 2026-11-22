@@ -1,0 +1,14 @@
+e6850c97e314d37fccadfd49fcd1591d4ee18b30
+task 1 input shape
+
+Test the fee at its boundaries
+
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+ea6968ce7f0cfafda80813116b2035dc675035bf
+
+Add the parking fee
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+

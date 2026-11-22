@@ -1,0 +1,12 @@
+diff --git a/bands.py b/bands.py
+index 68f0930..78114c9 100644
+--- a/bands.py
++++ b/bands.py
+@@ -9,6 +9,6 @@ def is_large(grams: int) -> bool:
+ def band(grams: int) -> str:
+     if is_large(grams):
+         return 'large'
+-    if grams > SMALL_LIMIT:
++    if grams > SMALL_LIMIT + 1:
+         return 'medium'
+     return 'small'

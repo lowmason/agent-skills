@@ -1,0 +1,14 @@
+You are executing the plan `@REPO@/plan.md` inline, under the executing-plans skill. Its text is `@SKILL@/executing-plans/SKILL.md`, so `<this-skill-dir>` is `@SKILL@/executing-plans`, and the subagent-driven-development files that it points to are under `@SKILL@/subagent-driven-development`.
+
+Setup is done: you work in this repository, `@REPO@`; the workspace is `@REPO@/.sdd/plan`; the ledger `@REPO@/.sdd/plan/progress.md` exists; you read the plan and its spec; and you loaded the sub-skills that SKILL.md loads before Task 1. Do not look for those sub-skills on disk.
+
+Task 1 is under way. `task-start` printed:
+
+```text
+brief: @REPO@/.sdd/plan/task-1-brief.md
+base: @BASE@
+```
+
+You worked the brief's steps: the tests and the code are committed, and the tests pass. `/private/tmp/msr104-venv/bin/python` has pytest installed, and the project's documented test command is `/private/tmp/msr104-venv/bin/python -m pytest -q`. Keep any scratch file in `$TMPDIR` or in the workspace, never directly under `/tmp`, which other runs share.
+
+Do only this: Task 1's mutant step (SKILL.md, "Prove the tests"), then `task-done` for Task 1 (SKILL.md, "Complete the task"). Stop when `task-done` records Task 1 in the ledger, or after `task-done` refuses three times. Do not start the final review.

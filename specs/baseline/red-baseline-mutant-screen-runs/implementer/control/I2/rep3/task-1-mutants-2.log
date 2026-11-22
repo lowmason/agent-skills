@@ -1,0 +1,22 @@
+mutant-run: Task 1, run 2
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py
+head: 445306b9addae370fc4761178c2f7635f8760422
+base: 4b014f9b333105158e144d844f4081fb6e1d156f
+tree: clean
+result: baseline failed, exit 1
+--- output: baseline ---
+....F..                                                                  [100%]
+=================================== FAILURES ===================================
+______________________ test_band_medium_at_its_upper_edge ______________________
+
+    def test_band_medium_at_its_upper_edge():
+>       assert band(2000) == 'medium'
+E       AssertionError: assert 'large' == 'medium'
+E         
+E         - medium
+E         + large
+
+tests/test_bands.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bands.py::test_band_medium_at_its_upper_edge - AssertionErr...
+1 failed, 6 passed in 0.01s

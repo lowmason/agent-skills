@@ -11,6 +11,8 @@ A passing test proves little until a wrong version of the code makes it fail. He
 - **Input shape:** one form of input that a stated rule's words cover, such as a quoted, nested, empty or repeated form, or a value at a boundary.
 - **Survived:** with the mutant applied, the tests pass. Some test is too weak, or an input is missing.
 - **Invalid:** the patch does not apply, touches a test file, or makes the run fail for another reason (pytest exit 2, 3, 4 or 5: a collection error, an internal error, a usage error, no tests).
+- **Screen:** a call of the script with `--screen` as its first argument. It runs the tests only with the mutants that no earlier run of the task caught, and it carries the rest. It runs the baseline and the revert as every run does. Its run file is `task-<N>-screen.log`, then `task-<N>-screen-<K>.log`. A call without `--screen` is a **full run**: it runs the tests with every mutant, and its run file is `task-<N>-mutants.log`, then `task-<N>-mutants-<K>.log`.
+- **Carried mutant:** a mutant that a screen does not run, because an earlier run of the task, with the same test command, caught a patch with the same bytes (the same sha256). The screen counts it as caught.
 - **Stated rule:** a sentence in the spec, or in the task's own text, that says what the code must do for some class of inputs. An example is "a form inside code never matches".
 - **Unproven test:** a test that the task adds or changes and that catches no mutant.
 - **Mutant task:** a task whose brief has a focused pytest command that tests code the task changes. Lints, link checks and checks over Markdown do not count. A task that is not a mutant task skips this file and reports `mutants: none: <why>`.
@@ -35,18 +37,22 @@ Cite an excerpt by its `path:line`, and a rule from the brief as `brief: <requir
 `<workspace>` is the plan's workspace: the directory your dispatch names, or the one `<this-skill-dir>/scripts/sdd-workspace PLAN_FILE` prints. `<N>` is the task number. `<K>` numbers the mutants 1, 2, 3 and so on.
 
 1. **List the stated rules,** from the places above. When an excerpt and a plan test's assertion cannot both hold, keep the rule on the plan test's reading: add no test that takes the spec's side of that assertion, cover the rule's other shapes as usual (step 2), and aim a mutant at the rule as the plan test pins it, so that the plan test catches it (step 3). Report the conflict as "Plan tests" says.
-2. **Cover each rule's input shapes.** For each rule, list the input shapes its words cover: for example quoted, nested, empty, at a boundary, repeated, or at the start or end. For each shape, name the test that uses it. For each shape with no test, add a test, and fix the code if that test fails. Commit. Only shapes that the rule's words cover count. If every shape has a test, add nothing. This step comes first because a mutant cannot find a missing branch: a mutant changes code that exists, and no change reaches a shape the code never handles (the example at the end shows one).
+2. **Cover each rule's input shapes.** For each rule, list the input shapes its words cover: for example quoted, nested, empty, at a boundary, repeated, or at the start or end. For each shape, name the test that uses it. For each shape with no test, add a test, and fix the code if that test fails. Commit. Give that commit `--trailer 'Mutant-step: task <N> input shape'` ("The trailer"). Only shapes that the rule's words cover count. If every shape has a test, add nothing. This step comes first because a mutant cannot find a missing branch: a mutant changes code that exists, and no change reaches a shape the code never handles (the example at the end shows one).
 3. **Write mutants:** at least one aimed at each stated rule, and enough that each test the task adds or changes, plan tests included, is aimed at by one. One mutant may serve several targets. For each test, ask what wrong version of the code it would let through, and write that version. Each mutant is a plausible mistake, not a syntax break. To make one, edit the code and save `git diff -- <file> > <workspace>/task-<N>-mutant-<K>.patch`. Check that the patch is not empty: an empty patch means the edit never changed the file. Then restore the file with `git checkout -- <file>`, not from a copy. Keep any scratch file in `<workspace>`, never in `/tmp`, where another run can overwrite it.
 4. **Write the mutants file,** `<workspace>/task-<N>-mutants.md`, in the form below.
-5. **Run the script** from the repository root, on the brief's focused test command (its `Run:` steps that run tests and expect a pass): `<this-skill-dir>/scripts/mutant-run PLAN_FILE N BASE -- <the brief's focused test command>`. Use the same BASE on every run, so that the revert covers the whole task. The command starts pytest once, with no `-x` and no `--maxfail`, so that every test runs on the revert: when the brief's steps start pytest more than once, write one pytest call that runs the tests of every step. When your dispatch gives the script's absolute path, use that path. Read the result as "Reading the run" says.
-6. **Answer each survivor and each invalid mutant.** For a survivor, strengthen the test it is aimed at (a new assertion, or a new input that the rule covers) or add a test, commit, and run the script again. When that test is a plan test, add a new test, as "Plan tests" says. For an invalid mutant, act on its reason ("Reading the run") and run again. Repeat until the run shows no survivor and no invalid mutant. When every mutant is caught, change no test.
+5. **Run the script** from the repository root, on the brief's focused test command (its `Run:` steps that run tests and expect a pass): `<this-skill-dir>/scripts/mutant-run PLAN_FILE N BASE -- <the brief's focused test command>`.
+   - **If a controller dispatched you** to implement the task, pass `--screen` on every call: `<this-skill-dir>/scripts/mutant-run --screen PLAN_FILE N BASE -- <the brief's focused test command>`. Every call means the first run, each run again in steps 6 and 7, and each run in a fix round. Your controller makes the task's full runs.
+   - **If you implement the task yourself** (executing-plans), the first run and the last run are full runs, with no `--screen`, and the runs in between are screens. Once a screen shows no survivor and no invalid mutant, and step 7 leaves nothing to commit, run the script once more without `--screen`, after your last commit. A clean full run at HEAD ends the step: `task-done` reads only full runs. `SKILL.md` gives the same order.
+
+   Use the same BASE on every run, so that the revert covers the whole task. The command starts pytest once, with no `-x` and no `--maxfail`, so that every test runs on the revert: when the brief's steps start pytest more than once, write one pytest call that runs the tests of every step. When your dispatch gives the script's absolute path, use that path. Read the result as "Reading the run" says.
+6. **Answer each survivor and each invalid mutant.** For a survivor, strengthen the test it is aimed at (a new assertion, or a new input that the rule covers) or add a test, commit, and run the script again. Give that commit `--trailer 'Mutant-step: task <N> survivor <K>'`, one for each survivor that it answers ("The trailer"). When that test is a plan test, add a new test, as "Plan tests" says. For an invalid mutant, act on its reason ("Reading the run") and run again. Repeat until the run shows no survivor and no invalid mutant. When every mutant is caught, change no test. Each run again in this step and in step 7 passes `--screen`, even when you expect it to be clean: a screen runs only the mutants that no run has caught yet, and the task's full run comes later.
 7. **The revert.** Once the run shows no survivor and no invalid mutant, read its revert section ("Reading the run"). Each test that the task adds or changes (`git diff BASE HEAD` shows them), plan tests included, must fail on the revert (Terms). A test that the task neither adds nor changes needs nothing. A test with no entry did not run: run the script again on a command that runs it. For each test that the task adds or changes and that passed on the revert, read the brief and the excerpts, and take the path that fits:
    - **It is not a plan test, and it checks behavior that the task changes.** Strengthen it so that it fails on the revert. Then commit and run the script again.
    - **It is a plan test, and it checks behavior that the task changes.** Leave every line of it as the plan wrote it. Add a new test that checks the same behavior and fails on the revert, commit, run the script again, and write `Strengthened: <plan test> — by <new test>`. If a test that you added in step 2 or 6 already checks that behavior and fails on the revert, name it in the `Strengthened:` line and add no other.
    - **It checks behavior from before the task that the task keeps on purpose,** such as the normal case beside a bug's fix. Make the check for a `Keeps:` line ("The mutants file") first. Then leave the test as it is, and write `Keeps: <test> — <the behavior it checks>`.
 
-   A test that you add here is a test the task adds: aim a mutant at it (step 3) before you commit, and answer each new run from step 6 again. When every test that the task adds or changes fails on the revert, change no test and write no line.
-8. **Report** the last run's path and its counts.
+   A test that you add here is a test the task adds: aim a mutant at it (step 3) before you commit, and answer each new run from step 6 again. Each test that you add here gets a new mutant patch with its own number, whatever the test checks, and the `Mutant` line for that patch names the test. A mutant that a run has caught keeps its targets: do not re-aim it at the new test, and do not write its patch again to do so. Give each commit that you make in this step `--trailer 'Mutant-step: task <N> revert'` ("The trailer"). When every test that the task adds or changes fails on the revert, change no test and write no line. If you implement the task yourself (executing-plans), end the step with the full run that step 5 gives, after your last commit.
+8. **Report** the last run's path and its counts. If a controller dispatched you, that run is your newest screen: give its path and the counts on its `result:` line.
 
 ## The mutants file
 
@@ -82,9 +88,38 @@ A `Keeps:` or `Strengthened:` line is a claim too, and a reviewer checks it agai
 - **`Keeps:`** Read the brief and the excerpts. If the task changes the behavior that the test checks, the test is weak: take step 7's path for a test of changed behavior (for a plan test, a new test and a `Strengthened:` line), and write no `Keeps:` line. Write the line only when the test checks behavior from before the task that the task keeps on purpose.
 - **`Strengthened:`** Write the line only when a run after the new test's commit shows that the new test fails on the revert.
 
+## The trailer
+
+A commit that answers the mutant step ends its message with one `Mutant-step:` line for each cause that it answers. `<N>` is the task number, as in the task's file names:
+
+```text
+Mutant-step: task <N> survivor <K>
+Mutant-step: task <N> input shape
+Mutant-step: task <N> revert
+Mutant-step: task <N> review
+```
+
+- `survivor <K>`: the commit answers survivor K (step 6).
+- `input shape`: the commit adds a test for an input shape that had no test, and fixes the code if that test fails (step 2).
+- `revert`: the commit answers a test that passed on the revert (step 7).
+- `review`: the commit answers a review finding about the mutant step, from a task review or a final review.
+
+The lines go in the message's last paragraph, with any other trailer, such as `Co-Authored-By:`. Git reads trailers only from the last paragraph, and each `-m` of `git commit` starts a new paragraph. So add each line with `--trailer`, which puts it in the last paragraph beside the other trailers:
+
+```bash
+git commit -m "Test a form inside a quoted fence" --trailer 'Mutant-step: task 4 input shape' --trailer 'Mutant-step: task 4 review'
+```
+
+A commit that answers no cause, such as the task's own commit before step 1, gets no `Mutant-step:` line.
+
 ## Reading the run
 
 The script prints its `result:` line, one line for each mutant, and `run: <path>` last. The run file at that path is the verdict, not your report. It holds each run's output. Just before `run:`, the script prints the `revert:` line.
+
+A screen prints the same lines, with its `screen:` line right after the `result:` line. Its run file is `task-<N>-screen.log`, then `task-<N>-screen-<K>.log`, numbered apart from the full runs:
+
+- `screen: carried <m> of <total> from earlier runs`: m of the run's mutants were carried, so the tests did not run with them. The `result:` line and the exit status count each carried mutant as caught.
+- `mutant <K>: CAUGHT exit - sha256 <hex> carried: <file name of the earlier run> tests: <that line's tests>`: a carried mutant. `carried:` names the earlier run file that caught a patch with the same bytes, and `tests:` gives the tests from that file's line. A carried mutant has no output section.
 
 Each mutant line reads CAUGHT, SURVIVED or INVALID:
 

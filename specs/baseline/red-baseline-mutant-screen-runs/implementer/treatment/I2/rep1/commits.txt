@@ -1,0 +1,18 @@
+054f0f9cff4cfe1adb97eb94f8d5680abc54e93c
+task 1 review
+task 1 input shape
+
+Fix a medium parcel at its upper edge
+
+Mutant-step: task 1 review
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+87671d9c72b7ae3b9d542610069ca0605221be54
+
+Test a small parcel at its upper edge
+
+a0c7680740bee760da8e50712741218ab36cc9f6
+
+Add the parcel bands
+

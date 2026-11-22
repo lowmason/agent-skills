@@ -1,0 +1,20 @@
+diff --git a/bands.py b/bands.py
+deleted file mode 100644
+index 68f0930..0000000
+--- a/bands.py
++++ /dev/null
+@@ -1,14 +0,0 @@
+-SMALL_LIMIT = 500
+-MEDIUM_LIMIT = 2000
+-
+-
+-def is_large(grams: int) -> bool:
+-    return grams > MEDIUM_LIMIT
+-
+-
+-def band(grams: int) -> str:
+-    if is_large(grams):
+-        return 'large'
+-    if grams > SMALL_LIMIT:
+-        return 'medium'
+-    return 'small'

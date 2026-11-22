@@ -1,0 +1,47 @@
+diff --git a/bands.py b/bands.py
+new file mode 100644
+index 0000000..68f0930
+--- /dev/null
++++ b/bands.py
+@@ -0,0 +1,14 @@
++SMALL_LIMIT = 500
++MEDIUM_LIMIT = 2000
++
++
++def is_large(grams: int) -> bool:
++    return grams > MEDIUM_LIMIT
++
++
++def band(grams: int) -> str:
++    if is_large(grams):
++        return 'large'
++    if grams > SMALL_LIMIT:
++        return 'medium'
++    return 'small'
+diff --git a/tests/test_bands.py b/tests/test_bands.py
+new file mode 100644
+index 0000000..fa6c6d9
+--- /dev/null
++++ b/tests/test_bands.py
+@@ -0,0 +1,21 @@
++from bands import band
++
++
++def test_band_small():
++    assert band(100) == 'small'
++
++
++def test_band_medium():
++    assert band(1200) == 'medium'
++
++
++def test_band_large():
++    assert band(5000) == 'large'
++
++
++def test_band_small_at_its_upper_edge():
++    assert band(500) == 'small'
++
++
++def test_band_medium_at_its_upper_edge():
++    assert band(2000) == 'medium'

@@ -1,0 +1,36 @@
+mutant-run: Task 1, screen 1
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_loyalty.py
+head: 25ed77e4bd1fa97bed356079a5042e453a0e904e
+base: 38c2fc0314309ac22b4cec8a5fa0bafb7a5ad39f
+tree: clean
+result: caught 1, survived 0, invalid 0
+screen: carried 0 of 1 from earlier runs
+revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 1
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 7b1fb990fd22dc593e4c0e2aef4b5c68e450f22fba77f9cece0c5be95a868448 tests: tests.test_loyalty::test_double_points_from_100_dollars
+--- tests ---
+test tests.test_loyalty::test_double_points_from_100_dollars: caught 1
+--- revert ---
+path: loyalty.py
+sha256: 109bacafba9e4e85532bfeb57fb09c351b31e9b4c92018cee1464974165b6e9e
+passed tests.test_loyalty::test_double_points_from_100_dollars
+--- output: baseline ---
+.                                                                        [100%]
+1 passed in 0.00s
+--- output: mutant 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________ test_double_points_from_100_dollars ______________________
+
+    def test_double_points_from_100_dollars():
+>       assert points(15000) == 300
+E       assert 150 == 300
+E        +  where 150 = points(15000)
+
+tests/test_loyalty.py:5: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_double_points_from_100_dollars - assert 15...
+1 failed in 0.01s
+--- output: revert ---
+.                                                                        [100%]
+1 passed in 0.00s

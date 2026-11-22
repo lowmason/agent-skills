@@ -1,0 +1,54 @@
+diff --git a/tests/test_tickets.py b/tests/test_tickets.py
+new file mode 100644
+index 0000000..b41bf01
+--- /dev/null
++++ b/tests/test_tickets.py
+@@ -0,0 +1,33 @@
++from tickets import price
++
++
++def test_a_child_pays_half_price():
++    assert price(5) == 10
++
++
++def test_an_adult_pays_full_price():
++    assert price(30) == 20
++
++
++def test_a_newborn_pays_half_price():
++    assert price(0) == 10
++
++
++def test_an_eleven_year_old_pays_half_price():
++    assert price(11) == 10
++
++
++def test_a_twelve_year_old_pays_full_price():
++    assert price(12) == 20
++
++
++def test_a_sixty_four_year_old_pays_full_price():
++    assert price(64) == 20
++
++
++def test_a_sixty_five_year_old_pays_half_price():
++    assert price(65) == 10
++
++
++def test_an_older_senior_pays_half_price():
++    assert price(90) == 10
+diff --git a/tickets.py b/tickets.py
+new file mode 100644
+index 0000000..ecbb3a3
+--- /dev/null
++++ b/tickets.py
+@@ -0,0 +1,9 @@
++FULL_PRICE = 20
++CHILD_UNDER = 12
++SENIOR_FROM = 65
++
++
++def price(age: int) -> int:
++    if age < CHILD_UNDER or age >= SENIOR_FROM:
++        return FULL_PRICE // 2
++    return FULL_PRICE

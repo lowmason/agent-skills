@@ -1,0 +1,181 @@
+mutant-run: Task 1, run 2
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bills.py
+head: 3ee63dd1795405a7ca9d2a9072729dd0d7831c4d
+base: b4f75d791df621908c5c677567bdf8c50026bf62
+tree: clean
+result: caught 4, survived 0, invalid 0
+revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 f3e487b66fd53b4bcfb7333b2cb6dd7c755cb8cb44f607cf80342b5fd04d094c tests: tests.test_bills::test_the_first_person_pays_the_cent_left_over tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+mutant 2: CAUGHT exit 1 sha256 e77c4cd906d594ca1fa9583a99b90a0eb3b45ab877d9e05c209a9ed10c30eeae tests: tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+mutant 3: CAUGHT exit 1 sha256 5aab856e194a563256e644279d75b6315c7675c6be68bb5e47fe853bfeec4dff tests: tests.test_bills::test_an_even_bill_splits_equally tests.test_bills::test_the_first_person_pays_the_cent_left_over tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+mutant 4: CAUGHT exit 1 sha256 1a1badf1f7983de75c80d9c1eb6f3892699710afa9236f6bf73bc204345344f6 tests: tests.test_bills::test_each_cent_left_over_goes_to_a_different_person tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+--- tests ---
+test tests.test_bills::test_the_first_person_pays_the_cent_left_over: caught 1 3
+test tests.test_bills::test_each_cent_left_over_goes_to_a_different_person: caught 1 2 3 4
+test tests.test_bills::test_a_total_below_the_head_count_rounds_the_share_down_to_zero: caught 1 2 3 4
+test tests.test_bills::test_an_even_bill_splits_equally: caught 3
+--- revert ---
+path: bills.py
+sha256: dd65b2713bf2eb7f99173cb833520978123ee920c56fcec1476633bd7ff4b0b0
+not loaded tests.test_bills: ModuleNotFoundError: No module named 'bills'
+--- output: baseline ---
+....                                                                     [100%]
+4 passed in 0.00s
+--- output: mutant 1 ---
+.FFF                                                                     [100%]
+=================================== FAILURES ===================================
+________________ test_the_first_person_pays_the_cent_left_over _________________
+
+    def test_the_first_person_pays_the_cent_left_over():
+>       assert split(1000, 3) == [334, 333, 333]
+E       assert [333, 333, 333] == [334, 333, 333]
+E         
+E         At index 0 diff: 333 != 334
+E         Use -v to get more diff
+
+tests/test_bills.py:9: AssertionError
+_____________ test_each_cent_left_over_goes_to_a_different_person ______________
+
+    def test_each_cent_left_over_goes_to_a_different_person():
+>       assert split(1001, 3) == [334, 334, 333]
+E       assert [333, 333, 333] == [334, 334, 333]
+E         
+E         At index 0 diff: 333 != 334
+E         Use -v to get more diff
+
+tests/test_bills.py:13: AssertionError
+_______ test_a_total_below_the_head_count_rounds_the_share_down_to_zero ________
+
+    def test_a_total_below_the_head_count_rounds_the_share_down_to_zero():
+>       assert split(2, 3) == [1, 1, 0]
+E       assert [0, 0, 0] == [1, 1, 0]
+E         
+E         At index 0 diff: 0 != 1
+E         Use -v to get more diff
+
+tests/test_bills.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bills.py::test_the_first_person_pays_the_cent_left_over - a...
+FAILED tests/test_bills.py::test_each_cent_left_over_goes_to_a_different_person
+FAILED tests/test_bills.py::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+3 failed, 1 passed in 0.01s
+--- output: mutant 2 ---
+..FF                                                                     [100%]
+=================================== FAILURES ===================================
+_____________ test_each_cent_left_over_goes_to_a_different_person ______________
+
+    def test_each_cent_left_over_goes_to_a_different_person():
+>       assert split(1001, 3) == [334, 334, 333]
+E       assert [335, 333, 333] == [334, 334, 333]
+E         
+E         At index 0 diff: 335 != 334
+E         Use -v to get more diff
+
+tests/test_bills.py:13: AssertionError
+_______ test_a_total_below_the_head_count_rounds_the_share_down_to_zero ________
+
+    def test_a_total_below_the_head_count_rounds_the_share_down_to_zero():
+>       assert split(2, 3) == [1, 1, 0]
+E       assert [2, 0, 0] == [1, 1, 0]
+E         
+E         At index 0 diff: 2 != 1
+E         Use -v to get more diff
+
+tests/test_bills.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bills.py::test_each_cent_left_over_goes_to_a_different_person
+FAILED tests/test_bills.py::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+2 failed, 2 passed in 0.01s
+--- output: mutant 3 ---
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_______________________ test_an_even_bill_splits_equally _______________________
+
+    def test_an_even_bill_splits_equally():
+>       assert split(900, 3) == [300, 300, 300]
+E       assert [301, 300, 300] == [300, 300, 300]
+E         
+E         At index 0 diff: 301 != 300
+E         Use -v to get more diff
+
+tests/test_bills.py:5: AssertionError
+________________ test_the_first_person_pays_the_cent_left_over _________________
+
+    def test_the_first_person_pays_the_cent_left_over():
+>       assert split(1000, 3) == [334, 333, 333]
+E       assert [334, 334, 333] == [334, 333, 333]
+E         
+E         At index 1 diff: 334 != 333
+E         Use -v to get more diff
+
+tests/test_bills.py:9: AssertionError
+_____________ test_each_cent_left_over_goes_to_a_different_person ______________
+
+    def test_each_cent_left_over_goes_to_a_different_person():
+>       assert split(1001, 3) == [334, 334, 333]
+E       assert [334, 334, 334] == [334, 334, 333]
+E         
+E         At index 2 diff: 334 != 333
+E         Use -v to get more diff
+
+tests/test_bills.py:13: AssertionError
+_______ test_a_total_below_the_head_count_rounds_the_share_down_to_zero ________
+
+    def test_a_total_below_the_head_count_rounds_the_share_down_to_zero():
+>       assert split(2, 3) == [1, 1, 0]
+E       assert [1, 1, 1] == [1, 1, 0]
+E         
+E         At index 2 diff: 1 != 0
+E         Use -v to get more diff
+
+tests/test_bills.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bills.py::test_an_even_bill_splits_equally - assert [301, 3...
+FAILED tests/test_bills.py::test_the_first_person_pays_the_cent_left_over - a...
+FAILED tests/test_bills.py::test_each_cent_left_over_goes_to_a_different_person
+FAILED tests/test_bills.py::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+4 failed in 0.01s
+--- output: mutant 4 ---
+..FF                                                                     [100%]
+=================================== FAILURES ===================================
+_____________ test_each_cent_left_over_goes_to_a_different_person ______________
+
+    def test_each_cent_left_over_goes_to_a_different_person():
+>       assert split(1001, 3) == [334, 334, 333]
+E       assert [334, 334, 334] == [334, 334, 333]
+E         
+E         At index 2 diff: 334 != 333
+E         Use -v to get more diff
+
+tests/test_bills.py:13: AssertionError
+_______ test_a_total_below_the_head_count_rounds_the_share_down_to_zero ________
+
+    def test_a_total_below_the_head_count_rounds_the_share_down_to_zero():
+>       assert split(2, 3) == [1, 1, 0]
+E       assert [1, 1, 1] == [1, 1, 0]
+E         
+E         At index 2 diff: 1 != 0
+E         Use -v to get more diff
+
+tests/test_bills.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bills.py::test_each_cent_left_over_goes_to_a_different_person
+FAILED tests/test_bills.py::test_a_total_below_the_head_count_rounds_the_share_down_to_zero
+2 failed, 2 passed in 0.01s
+--- output: revert ---
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_bills.py _____________________
+ImportError while importing test module '/private/tmp/msr104/rep1/repo/tests/test_bills.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+<REAL-HOME>/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_bills.py:1: in <module>
+    from bills import split
+E   ModuleNotFoundError: No module named 'bills'
+=========================== short test summary info ============================
+ERROR tests/test_bills.py
+1 error in 0.01s

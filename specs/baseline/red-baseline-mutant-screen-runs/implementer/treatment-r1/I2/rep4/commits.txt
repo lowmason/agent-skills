@@ -1,0 +1,16 @@
+ded6e275219ce4e4834902a2c6af77a8a4bdc56d
+task 1 review
+
+Test a medium parcel at its upper edge, and make 2000 grams medium
+
+Mutant-step: task 1 review
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+e4c7ef9161502051495462459af80d36547aaeed
+
+Test a small parcel at its upper edge
+
+4a7901919f8f8172f28b61b5b7ccdd32143d1853
+
+Add the parcel bands
+

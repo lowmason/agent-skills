@@ -1,0 +1,13 @@
+diff --git a/bands.py b/bands.py
+index 68f0930..5efcbde 100644
+--- a/bands.py
++++ b/bands.py
+@@ -3,7 +3,7 @@ MEDIUM_LIMIT = 2000
+ 
+ 
+ def is_large(grams: int) -> bool:
+-    return grams > MEDIUM_LIMIT
++    return grams >= MEDIUM_LIMIT
+ 
+ 
+ def band(grams: int) -> str:

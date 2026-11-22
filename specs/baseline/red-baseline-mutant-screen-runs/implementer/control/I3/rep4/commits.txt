@@ -1,0 +1,10 @@
+8f3d584fdf521d294b3095a682fc44328eeaeb7a
+
+Test the $100 boundary and just below it
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+08fd04870e7acade48c2337de736f8bba4814bdb
+
+Give double points from 100 dollars
+

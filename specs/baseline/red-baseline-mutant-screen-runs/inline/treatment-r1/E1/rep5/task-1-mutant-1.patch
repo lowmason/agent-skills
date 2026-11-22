@@ -1,0 +1,10 @@
+diff --git a/tickets.py b/tickets.py
+index ecbb3a3..d14c720 100644
+--- a/tickets.py
++++ b/tickets.py
+@@ -1,4 +1,4 @@
+-FULL_PRICE = 20
++FULL_PRICE = 24
+ CHILD_UNDER = 12
+ SENIOR_FROM = 65
+ 

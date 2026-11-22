@@ -1,0 +1,11 @@
+diff --git a/parking.py b/parking.py
+index 6cea4f0..3b303db 100644
+--- a/parking.py
++++ b/parking.py
+@@ -6,5 +6,5 @@ def fee(minutes: int) -> int:
+     """Return the parking fee for a stay of the given whole minutes."""
+     if minutes <= FREE_MINUTES:
+         return 0
+-    started_hours = -(-minutes // 60)
++    started_hours = minutes // 60
+     return RATE_PER_HOUR * started_hours

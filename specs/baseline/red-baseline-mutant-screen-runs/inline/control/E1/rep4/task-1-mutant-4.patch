@@ -1,0 +1,12 @@
+diff --git a/tickets.py b/tickets.py
+index ecbb3a3..f8b8ea7 100644
+--- a/tickets.py
++++ b/tickets.py
+@@ -4,6 +4,6 @@ SENIOR_FROM = 65
+ 
+ 
+ def price(age: int) -> int:
+-    if age < CHILD_UNDER or age >= SENIOR_FROM:
++    if age < CHILD_UNDER or age >= SENIOR_FROM - 1:
+         return FULL_PRICE // 2
+     return FULL_PRICE

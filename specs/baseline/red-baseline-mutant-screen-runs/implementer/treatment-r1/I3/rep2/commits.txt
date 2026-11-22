@@ -1,0 +1,12 @@
+7d1b7cd024919de6444e790bc2845f077a9f1fa2
+task 1 revert
+
+Test the exact $100 boundary and just under it
+
+Mutant-step: task 1 revert
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+47d707c5476e1d2dd8762f781abfb97523a7a1a1
+
+Give double points from 100 dollars
+

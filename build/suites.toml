@@ -132,6 +132,12 @@ notes = [
 ]
 
 [[suite]]
+name = 'mutant-screen-runs-kit'
+dir = 'specs/baseline/red-baseline-mutant-screen-runs/kit'
+with = ['pytest']
+notes = ['Plan 104 micro-test kit: runner, rep_tools.py and grade.py tests with a stub claude and no model. bash, git and uv required.']
+
+[[suite]]
 name = 'recommend-probabilistic-model'
 dir = 'skills/recommend-probabilistic-model/scripts'
 with = ['pytest', 'numpy', 'polars']

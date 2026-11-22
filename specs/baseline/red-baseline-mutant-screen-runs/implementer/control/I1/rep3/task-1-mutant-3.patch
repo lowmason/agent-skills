@@ -1,0 +1,11 @@
+diff --git a/parking.py b/parking.py
+index 67ca322..924a6f3 100644
+--- a/parking.py
++++ b/parking.py
+@@ -5,5 +5,5 @@ PRICE_PER_HOUR = 2
+ def fee(minutes: int) -> int:
+     if minutes <= FREE_MINUTES:
+         return 0
+-    started_hours = -(-minutes // 60)
++    started_hours = minutes // 60 + 1
+     return PRICE_PER_HOUR * started_hours

@@ -1,0 +1,20 @@
+7ea2056fe6b04d321e57bcf194f727732513d264
+task 1 review
+task 1 input shape
+
+Test a medium parcel at its upper edge
+
+A weight of 2000 grams is medium, not large (specs/bands.md:9).
+
+Mutant-step: task 1 review
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+5e37e9aac2fefa92eac73f69edbc75d0aea2b066
+
+Test a small parcel at its upper edge
+
+8613897a84074289df0a29be8ddd553c8aa8e65a
+
+Add the parcel bands
+

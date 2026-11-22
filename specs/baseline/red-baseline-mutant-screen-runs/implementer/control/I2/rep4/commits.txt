@@ -1,0 +1,14 @@
+d42fff5190b99d9eb01e3e3ae2e2927c5c783ca2
+
+Fix the medium upper edge: 2000 grams is medium
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+40d16ec4e681aeb4390500d7f982337ead0f2d62
+
+Test a small parcel at its upper edge
+
+7dea0a34b11ac868d43a9b7d1c7c6e7f7b6c7ca7
+
+Add the parcel bands
+

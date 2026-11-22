@@ -43,7 +43,8 @@ Subagent (general-purpose):
     4. Commit your work
     5. Prove your tests: in a mutant task, follow [MUTANTS_GUIDE]. Your plan
        file is [PLAN_FILE], your workspace [WORKSPACE], the script
-       [MUTANT_RUN], and BASE [BASE].
+       [MUTANT_RUN], and BASE [BASE]. Pass `--screen` as the script's
+       first argument on every call.
     6. Self-review (see below)
     7. Report back
 
@@ -150,10 +151,17 @@ Subagent (general-purpose):
 
     In a mutant task, a fix that adds or changes a test needs a mutant aimed
     at it. Write one as [MUTANTS_GUIDE] says, run [MUTANT_RUN] again, and
-    append the run's path and counts to your fix report. Pass it the same
+    append the run's path and counts to your fix report. Pass `--screen` as
+    that run's first argument, as on every call, and give the screen's path
+    and counts on a `Mutants:` line of the fix report. Pass it the same
     BASE, [BASE], so that the revert covers the whole task, and answer the
     revert for each test that the fix adds or changes, as the guide's step
     "The revert" says.
+
+    When a reviewer's finding is about the mutant step (the mutants file,
+    its Inputs table, a mutant or the revert), give each commit that
+    answers it `--trailer 'Mutant-step: task <N> review'`, where <N> is
+    your task's number, as the guide's "The trailer" says.
 
     ## Report Format
 

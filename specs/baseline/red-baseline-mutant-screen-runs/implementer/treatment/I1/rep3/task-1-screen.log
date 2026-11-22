@@ -1,0 +1,201 @@
+mutant-run: Task 1, screen 1
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_parking.py
+head: abfef003817ee8295a797f1d2bff7cc3d683c17e
+base: 04845cb1bda8b79a16a6348bebaa751681c6d83a
+tree: clean
+result: caught 6, survived 0, invalid 0
+screen: carried 0 of 6 from earlier runs
+revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 7e40bd07a2af3094be9610b7c8fed27ca384b14f5e3705d5d0a71089a556cb0e tests: tests.test_parking::test_exactly_30_minutes_is_free
+mutant 2: CAUGHT exit 1 sha256 4a2db896596ca8b038eb34c0ee33d0720f6485c97935f3658646408a268773b0 tests: tests.test_parking::test_each_started_hour_costs_2 tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_one_minute_into_the_second_hour_costs_4
+mutant 3: CAUGHT exit 1 sha256 84dd0fb52668f51c78db550dbb37a5e1188604c6fbaf36aedf618229da16c4ab tests: tests.test_parking::test_exactly_one_hour_costs_2 tests.test_parking::test_exactly_two_hours_costs_4
+mutant 4: CAUGHT exit 1 sha256 255173f7ed8d78faf135ceda095f1a69f48d4bdf0178c7ce0f4d75563902e9ac tests: tests.test_parking::test_each_started_hour_costs_2 tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_exactly_one_hour_costs_2 tests.test_parking::test_one_minute_into_the_second_hour_costs_4 tests.test_parking::test_exactly_two_hours_costs_4
+mutant 5: CAUGHT exit 1 sha256 d38f8ba8861c480935309c40543b1f5e59a599d9bf6362eb616b7f62e8524e8c tests: tests.test_parking::test_31_minutes_costs_one_started_hour tests.test_parking::test_exactly_one_hour_costs_2
+mutant 6: CAUGHT exit 1 sha256 5d869d92791119000c21799873d0c4b39c59ffac3f1684d46ba3df4b6d02b5b6 tests: tests.test_parking::test_31_minutes_costs_one_started_hour
+--- tests ---
+test tests.test_parking::test_exactly_30_minutes_is_free: caught 1
+test tests.test_parking::test_each_started_hour_costs_2: caught 2 4
+test tests.test_parking::test_31_minutes_costs_one_started_hour: caught 2 4 5 6
+test tests.test_parking::test_one_minute_into_the_second_hour_costs_4: caught 2 4
+test tests.test_parking::test_exactly_one_hour_costs_2: caught 3 4 5
+test tests.test_parking::test_exactly_two_hours_costs_4: caught 3 4
+--- revert ---
+path: parking.py
+sha256: 5d119ee4b24f4a5c1d76e641be2b3d9aadc2a8a10d4d629d1acdf76af38194c6
+not loaded tests.test_parking: ModuleNotFoundError: No module named 'parking'
+--- output: baseline ---
+........                                                                 [100%]
+8 passed in 0.00s
+--- output: mutant 1 ---
+..F.....                                                                 [100%]
+=================================== FAILURES ===================================
+_______________________ test_exactly_30_minutes_is_free ________________________
+
+    def test_exactly_30_minutes_is_free():
+>       assert fee(30) == 0
+E       assert 2 == 0
+E        +  where 2 = fee(30)
+
+tests/test_parking.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parking.py::test_exactly_30_minutes_is_free - assert 2 == 0
+1 failed, 7 passed in 0.01s
+--- output: mutant 2 ---
+.F..F.F.                                                                 [100%]
+=================================== FAILURES ===================================
+________________________ test_each_started_hour_costs_2 ________________________
+
+    def test_each_started_hour_costs_2():
+>       assert fee(150) == 6
+E       assert 4 == 6
+E        +  where 4 = fee(150)
+
+tests/test_parking.py:9: AssertionError
+____________________ test_31_minutes_costs_one_started_hour ____________________
+
+    def test_31_minutes_costs_one_started_hour():
+>       assert fee(31) == 2
+E       assert 0 == 2
+E        +  where 0 = fee(31)
+
+tests/test_parking.py:21: AssertionError
+_________________ test_one_minute_into_the_second_hour_costs_4 _________________
+
+    def test_one_minute_into_the_second_hour_costs_4():
+>       assert fee(61) == 4
+E       assert 2 == 4
+E        +  where 2 = fee(61)
+
+tests/test_parking.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parking.py::test_each_started_hour_costs_2 - assert 4 == 6
+FAILED tests/test_parking.py::test_31_minutes_costs_one_started_hour - assert...
+FAILED tests/test_parking.py::test_one_minute_into_the_second_hour_costs_4 - ...
+3 failed, 5 passed in 0.01s
+--- output: mutant 3 ---
+.....F.F                                                                 [100%]
+=================================== FAILURES ===================================
+________________________ test_exactly_one_hour_costs_2 _________________________
+
+    def test_exactly_one_hour_costs_2():
+>       assert fee(60) == 2
+E       assert 4 == 2
+E        +  where 4 = fee(60)
+
+tests/test_parking.py:25: AssertionError
+________________________ test_exactly_two_hours_costs_4 ________________________
+
+    def test_exactly_two_hours_costs_4():
+>       assert fee(120) == 4
+E       assert 6 == 4
+E        +  where 6 = fee(120)
+
+tests/test_parking.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parking.py::test_exactly_one_hour_costs_2 - assert 4 == 2
+FAILED tests/test_parking.py::test_exactly_two_hours_costs_4 - assert 6 == 4
+2 failed, 6 passed in 0.01s
+--- output: mutant 4 ---
+.F..FFFF                                                                 [100%]
+=================================== FAILURES ===================================
+________________________ test_each_started_hour_costs_2 ________________________
+
+    def test_each_started_hour_costs_2():
+>       assert fee(150) == 6
+E       assert 9 == 6
+E        +  where 9 = fee(150)
+
+tests/test_parking.py:9: AssertionError
+____________________ test_31_minutes_costs_one_started_hour ____________________
+
+    def test_31_minutes_costs_one_started_hour():
+>       assert fee(31) == 2
+E       assert 3 == 2
+E        +  where 3 = fee(31)
+
+tests/test_parking.py:21: AssertionError
+________________________ test_exactly_one_hour_costs_2 _________________________
+
+    def test_exactly_one_hour_costs_2():
+>       assert fee(60) == 2
+E       assert 3 == 2
+E        +  where 3 = fee(60)
+
+tests/test_parking.py:25: AssertionError
+_________________ test_one_minute_into_the_second_hour_costs_4 _________________
+
+    def test_one_minute_into_the_second_hour_costs_4():
+>       assert fee(61) == 4
+E       assert 6 == 4
+E        +  where 6 = fee(61)
+
+tests/test_parking.py:29: AssertionError
+________________________ test_exactly_two_hours_costs_4 ________________________
+
+    def test_exactly_two_hours_costs_4():
+>       assert fee(120) == 4
+E       assert 6 == 4
+E        +  where 6 = fee(120)
+
+tests/test_parking.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parking.py::test_each_started_hour_costs_2 - assert 9 == 6
+FAILED tests/test_parking.py::test_31_minutes_costs_one_started_hour - assert...
+FAILED tests/test_parking.py::test_exactly_one_hour_costs_2 - assert 3 == 2
+FAILED tests/test_parking.py::test_one_minute_into_the_second_hour_costs_4 - ...
+FAILED tests/test_parking.py::test_exactly_two_hours_costs_4 - assert 6 == 4
+5 failed, 3 passed in 0.01s
+--- output: mutant 5 ---
+....FF..                                                                 [100%]
+=================================== FAILURES ===================================
+____________________ test_31_minutes_costs_one_started_hour ____________________
+
+    def test_31_minutes_costs_one_started_hour():
+>       assert fee(31) == 2
+E       assert 0 == 2
+E        +  where 0 = fee(31)
+
+tests/test_parking.py:21: AssertionError
+________________________ test_exactly_one_hour_costs_2 _________________________
+
+    def test_exactly_one_hour_costs_2():
+>       assert fee(60) == 2
+E       assert 0 == 2
+E        +  where 0 = fee(60)
+
+tests/test_parking.py:25: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parking.py::test_31_minutes_costs_one_started_hour - assert...
+FAILED tests/test_parking.py::test_exactly_one_hour_costs_2 - assert 0 == 2
+2 failed, 6 passed in 0.01s
+--- output: mutant 6 ---
+....F...                                                                 [100%]
+=================================== FAILURES ===================================
+____________________ test_31_minutes_costs_one_started_hour ____________________
+
+    def test_31_minutes_costs_one_started_hour():
+>       assert fee(31) == 2
+E       assert 0 == 2
+E        +  where 0 = fee(31)
+
+tests/test_parking.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parking.py::test_31_minutes_costs_one_started_hour - assert...
+1 failed, 7 passed in 0.01s
+--- output: revert ---
+
+==================================== ERRORS ====================================
+____________________ ERROR collecting tests/test_parking.py ____________________
+ImportError while importing test module '/private/tmp/msr104/rep3/repo/tests/test_parking.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+<REAL-HOME>/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_parking.py:1: in <module>
+    from parking import fee
+E   ModuleNotFoundError: No module named 'parking'
+=========================== short test summary info ============================
+ERROR tests/test_parking.py
+1 error in 0.01s

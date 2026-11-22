@@ -1,0 +1,10 @@
+diff --git a/parking.py b/parking.py
+index 669e0d4..c2205e7 100644
+--- a/parking.py
++++ b/parking.py
+@@ -1,4 +1,4 @@
+ def fee(minutes: int) -> int:
+     if minutes <= 30:
+         return 0
+-    return 2 * -(-minutes // 60)
++    return 2 * minutes // 60

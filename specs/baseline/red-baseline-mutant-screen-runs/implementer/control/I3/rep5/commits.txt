@@ -1,0 +1,10 @@
+e7277f0e321d6522c5194eaa4f84e45507121efa
+
+Test the 100 dollar boundary
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+86386e4ec8c104537191f040797e932c1efe68c5
+
+Give double points from 100 dollars
+

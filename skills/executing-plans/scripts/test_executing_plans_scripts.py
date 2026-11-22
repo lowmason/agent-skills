@@ -960,3 +960,49 @@ def test_task_done_accepts_a_run_that_mutant_run_wrote(repo):
     assert result.returncode == 0, result.stdout + result.stderr
     last = (workspace(repo) / 'progress.md').read_text().splitlines()[-1]
     assert 'mutants: 1/1' in last
+
+
+def calc_task(repo):
+    '''Commit the demo module and its tests, write mutant 1 and its mutants file, and return the task's BASE.'''
+    base = head(repo)
+    (repo / 'calc.py').write_text(CALC)
+    (repo / 'test_calc.py').write_text(TEST_CALC)
+    git('add', 'calc.py', 'test_calc.py', cwd=repo)
+    git('commit', '-q', '-m', 'calc', cwd=repo)
+    made = run(SDD_WORKSPACE, 'plan.md', cwd=repo)
+    assert made.returncode == 0, made.stderr
+    (repo / 'calc.py').write_text(CALC.replace('return a + b', 'return a - b'))
+    patch = git('diff', '--', 'calc.py', cwd=repo).stdout
+    assert patch
+    git('checkout', '--', 'calc.py', cwd=repo)
+    (workspace(repo) / 'task-1-mutant-1.patch').write_text(patch)
+    write_mutants(repo, [1])
+    return base
+
+
+def test_task_done_refuses_an_older_full_run_beside_a_newer_screen(repo):
+    base = calc_task(repo)
+    full = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    h1 = head(repo)
+    commit_work(repo)
+    h2 = head(repo)
+    screen = run(MUTANT_RUN, '--screen', 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert screen.returncode == 0, screen.stdout + screen.stderr
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert result.returncode == 4
+    assert f'the mutant run is at {h1}, not HEAD {h2}' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_records_a_clean_full_run_beside_a_newer_screen_with_a_survivor(repo):
+    base = calc_task(repo)
+    full = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    screen = run(MUTANT_RUN, '--screen', 'plan.md', 1, base, '--', *PYTEST, '-k', 'neg', cwd=repo, env=PY_ENV)
+    assert screen.returncode == 1, screen.stdout + screen.stderr
+    assert 'result: caught 0, survived 1, invalid 0' in (workspace(repo) / 'task-1-screen.log').read_text().splitlines()
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    last = (workspace(repo) / 'progress.md').read_text().splitlines()[-1]
+    assert 'mutants: 1/1' in last
