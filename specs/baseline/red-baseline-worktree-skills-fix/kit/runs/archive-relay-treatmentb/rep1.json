@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 5810,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0461715,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 9590,
+    "cache_read_input_tokens": 1675,
+    "output_tokens": 764,
+    "output_tokens_details": {
+      "thinking_tokens": 251
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 9590,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 764,
+      "cacheReadInputTokens": 1675,
+      "cacheCreationInputTokens": 9590,
+      "webSearchRequests": 0,
+      "costUSD": 0.0461715,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 251,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 9590,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Step 6 doesn't remove anything here. Step 2 recorded MADE_BY `launcher`, so I won't remove the worktree or delete `claude/rate-limit-4f2a`. Git refuses to delete a branch that a worktree still has checked out.\n\nSAY: The merge is done. `main` fast-forwarded to 9b50e40 and the tests pass on the merged result (2 passed). The merge is local only and hasn't been pushed.\n\nSAY: I'm leaving the worktree at `/work/atlas/.claude/worktrees/rate-limit` and its branch `claude/rate-limit-4f2a` in place. The desktop app started this session, so the app handles the worktree when you archive it. It may reuse it. Archiving can discard uncommitted changes in the worktree, usually after asking. If the archive leaves the worktree on disk, it is removed about 30 days later. The branch can outlive the archive.\n\nSAY: Before you archive, note that the worktree has an untracked file, `notes.md`. It isn't part of the merge, and archiving could discard it. If you want it, copy it out or tell me where to put it. I haven't touched it.\n\nSAY: To clean up by hand instead, run these from `/work/atlas`:\nSAY: `git worktree remove /work/atlas/.claude/worktrees/rate-limit` (this will refuse because of `notes.md` unless you move or delete it first)\nSAY: `git branch -d claude/rate-limit-4f2a`\n\nI'll wait for your answer on `notes.md` before you archive.",
+  "ttft_ms": 2543,
+  "type": "result",
+  "duration_ms": 5938,
+  "ttft_stream_ms": 589,
+  "time_to_request_ms": 129,
+  "first_content_frame_ms": 589,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

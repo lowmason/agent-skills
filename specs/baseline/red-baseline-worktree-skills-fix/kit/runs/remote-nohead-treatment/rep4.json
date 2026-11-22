@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 7052,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.011329900000000002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 6639,
+    "output_tokens": 921,
+    "output_tokens_details": {
+      "thinking_tokens": 472
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 921,
+      "cacheReadInputTokens": 6639,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.011329900000000002,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 472,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "SAY: The base check couldn't run: `origin/HEAD` isn't set, and `git fetch` fails because the remote at `/work/mirror/atlas.git` isn't reachable. So I can't confirm that `EnterWorktree` would keep your local commits. It might branch from the remote's default branch and drop them. To be safe, I'll create the worktree with git from your current HEAD, then switch the session into it. `.worktrees/` already exists and is gitignored.\n\nRUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit\n\nRUN: git -C .worktrees/feat/rate-limit log --oneline\n\nSAY: The worktree is created at `/work/atlas/.worktrees/feat/rate-limit` on `feat/rate-limit`, branched from `main` at `af80652`. I'm now switching the session into it. Claude Code will ask you to approve this, because the path is outside `.claude/worktrees/`.\n\nTOOL: EnterWorktree path=\"/work/atlas/.worktrees/feat/rate-limit\"\n\nI'll wait here for your approval. Once the session is in the worktree, I'll run project setup, run the baseline tests, and then start on the rate limit. If you decline, the worktree stays at that path and I'll ask whether to retry, remove it with `git worktree remove`, or work in place.",
+  "ttft_ms": 4033,
+  "type": "result",
+  "duration_ms": 7135,
+  "ttft_stream_ms": 505,
+  "time_to_request_ms": 80,
+  "first_content_frame_ms": 505,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

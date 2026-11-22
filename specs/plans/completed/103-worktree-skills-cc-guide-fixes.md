@@ -1,5 +1,7 @@
 # Worktree Skills Guide Fixes Implementation Plan
 
+**Status: COMPLETE (2026-11-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix the two claims in finishing-a-development-branch and using-git-worktrees that contradict the Claude Code guide, cite both files, and apply the result of the option b live check to `rules/pr-lifecycle.md`.
@@ -76,7 +78,7 @@ The planning session writes this into the execution handoff brief, under the hea
 - Produces: `build_prompts.py <case> <arm> <ref>` writes the prompt file for one case and arm. The full SKILL.md text at `<ref>` comes first, then the case's fixture.
 - Produces: the record's sections `Cases`, `Control`, and a `Treatment: <case>` section that Tasks 2 and 3 append.
 
-- [ ] **Step 1: Check the anchors and record the base**
+- [x] **Step 1: Check the anchors and record the base**
 
 Run from the worktree root, on the execution branch before any edit. Record `git rev-parse HEAD` as BASE in the record.
 
@@ -89,7 +91,9 @@ git grep -c "It leaves a desktop-app worktree and its branch for the app's archi
 
 Expected: each prints `<path>:1`. A miss means the text moved: stop and report.
 
-- [ ] **Step 2: Write the failing self-test**
+> Deviation: anchors 3 and 4 used replacement commands (`git grep -cF 'git rev-list --count <headRefOid>..<branch>' -- rules/pr-lifecycle.md` and `git grep -c 'detaches the worktree' -- README.md`), because Task 5 (`33259a9`) had already changed the text that the plan's anchors match. Both print `:1`.
+
+- [x] **Step 2: Write the failing self-test**
 
 `kit/test_postprocess.py`, three tests on synthetic dicts:
 - `test_a_peer_turn_voids_the_rep`: `result_index` 1 and `origin` None. Expect `void` True, `reason` `'result_index'`.
@@ -98,13 +102,17 @@ Expected: each prints `<path>:1`. A miss means the text moved: stop and report.
 
 Run: `uv run python build/run_suites.py worktree-skills-fix-kit`. Expected: FAIL, `postprocess` not found.
 
-- [ ] **Step 3: Implement `postprocess` and wire it into `run_reps.sh`**
+- [x] **Step 3: Implement `postprocess` and wire it into `run_reps.sh`**
 
-- [ ] **Step 4: Run the self-test and the scrub check**
+> Deviation: `postprocess` also drops `session_id` and `uuid` at any depth and voids a `result_index` that is not a whole number. `run_reps.sh` writes `rep<N>.VOID` and exits 3 for a void rep, refuses that rep number again, and leaves the replacement rep to the caller (ledger ruling).
+
+- [x] **Step 4: Run the self-test and the scrub check**
 
 Run: `uv run python build/run_suites.py worktree-skills-fix-kit`, then `uv run python specs/baseline/red-baseline-worktree-skills-fix/kit/check_scrub.py`. Expected: `suite runs passed` (+3 tests), and `PASS`.
 
-- [ ] **Step 5: Write the cases into the record, then commit before any rep runs**
+> Deviation: the self-test is +57 tests, not +3: the input-shape, runner-wiring, isolation, prompt-builder and sheet tests that the task review added. The mutant run caught 76 of 76 (`task-1-mutants-3.log`).
+
+- [x] **Step 5: Write the cases into the record, then commit before any rep runs**
 
 Each rep's prompt asks it to list, in order, each command (`RUN:`), each tool call (`TOOL:` name and arguments) and each thing it says to its partner (`SAY:`), and to stop where it would wait for the partner. A rep has no tools, so the fixture states the output of every command the skill has it run before the scored call. Build that output from a real scratch repository, outside every repository, and paste it in.
 
@@ -129,15 +137,19 @@ git add build/suites.toml specs/baseline/red-baseline-worktree-skills-fix.md spe
 git commit -m "test(baseline): add the worktree skills fix kit and its cases"
 ```
 
-- [ ] **Step 6: Pilot**
+> Deviation: the Step 5 commit came after two earlier commits (`d0671ae`, `8eec5a2`: `postprocess` and its tests), and an interim commit (`9dcd0e4`) pinned the grading edges after the pilot and before any scored rep. The kit also holds `show_reps.py`, `fixtures/` and five more test files.
+
+- [x] **Step 6: Pilot**
 
 Run `probe.sh` with `isolation_probe.txt` on the installed binary, then one control rep per case. Read each rep in full. Expected: the probe's lines 1 to 6 read NO, and each rep answers in the `RUN:`/`TOOL:`/`SAY:` form. Line 7, the user's identity, may read YES. That is the open item "Account identity reaches the isolated micro-test runs", and it does not block: no case depends on who the user is, and the identity scrub runs on every rep (plan 97's controller ruling, 2026-11-13). Any other YES stops the task.
 
-- [ ] **Step 7: Run the control arms**
+- [x] **Step 7: Run the control arms**
 
 Five scored reps per case at BASE. Record each score and the cost in the record's `Control` section.
 
-- [ ] **Step 8: Commit**
+> Deviation: `archive-relay` control rep 4 was graded PASS at first and FAIL after task review, by reading rule 7, so the control is 0 of 5, not the 1 of 5 first recorded. The prediction held for all five reps.
+
+- [x] **Step 8: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-worktree-skills-fix.md specs/baseline/red-baseline-worktree-skills-fix/
@@ -154,32 +166,34 @@ git commit -m "test(baseline): record the worktree skills fix control arms"
 **Interfaces:**
 - Consumes: Task 1's kit, cases `noremote` and `remote-nohead`, and their control scores.
 
-- [ ] **Step 1: Run the failing check**
+- [x] **Step 1: Run the failing check**
 
 Run: `git grep -c 'With no remote, it branches from HEAD' -- skills/using-git-worktrees/SKILL.md`
 Expected: exit 1, no match.
 
-- [ ] **Step 2: Replace the claim**
+- [x] **Step 2: Replace the claim**
 
 Old (match key): `HEAD may have commits that the default branch lacks, whether pushed or not, and the native tool leaves them out. Create the worktree`
 
 New: ``HEAD may have commits that the default branch lacks, whether pushed or not. With a remote, the native tool can leave them out, even when `origin/HEAD` is unset. With no remote, it branches from HEAD, but a failed check looks the same in both cases. Create the worktree``
 
-- [ ] **Step 3: Run the check again**
+- [x] **Step 3: Run the check again**
 
 Run the Step 1 command, then `git grep -c 'and the native tool leaves them out' -- skills/using-git-worktrees/SKILL.md`.
 Expected: `skills/using-git-worktrees/SKILL.md:1`, then exit 1.
 
-- [ ] **Step 4: Run the treatment arms**
+- [x] **Step 4: Run the treatment arms**
 
 Five scored reps each for `noremote` and `remote-nohead`, with the edited text from `git stash create`. Apply the non-regression bar. Append the scores, the cost and the verdict to the record.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/using-git-worktrees/SKILL.md specs/baseline/red-baseline-worktree-skills-fix.md
 git commit -m "fix(using-git-worktrees): say the native tool keeps HEAD with no remote"
 ```
+
+> Deviation: the commit also holds the treatment prompts, the treatment runs and the manifest lines.
 
 ### Task 3: finishing-a-development-branch — what archiving does, at Step 6
 
@@ -191,18 +205,20 @@ git commit -m "fix(using-git-worktrees): say the native tool keeps HEAD with no 
 **Interfaces:**
 - Consumes: Task 1's kit, case `archive-relay`, and its control score.
 
-- [ ] **Step 1: Run the failing check**
+- [x] **Step 1: Run the failing check**
 
 Run: `git grep -c 'a kept worktree is removed about 30 days later' -- skills/finishing-a-development-branch/SKILL.md`
 Expected: exit 1, no match.
 
-- [ ] **Step 2: Replace the claim**
+- [x] **Step 2: Replace the claim**
 
 Old (match key): `Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a worktree it started when that session is archived.`
 
 New: `Tell your partner where the worktree is and what removes it. If the desktop app started it, tell them that the app handles it when that session is archived, and may reuse it. Archiving can discard uncommitted changes in it, usually after asking, and a kept worktree is removed about 30 days later. The branch can outlive the archive.`
 
-- [ ] **Step 3: Run the check again, and measure the body**
+> Deviation: at the completion gate the owner chose to reword the new text (commit `42776cb`). Line 379 now reads "For such a worktree, archiving can discard uncommitted changes in it, usually after asking, and a worktree that the archive leaves on disk is removed about 30 days after the archive." `rules/pr-lifecycle.md` step 3 and the Task 4 NOTICE bullet carry the same clause.
+
+- [x] **Step 3: Run the check again, and measure the body**
 
 Run the Step 1 command, then `git grep -c 'cleans up or reuses' -- skills/finishing-a-development-branch/SKILL.md`, then, from `build/`:
 
@@ -212,16 +228,18 @@ uv run --with pyyaml python -c "import check_conformance as c; print(len(c.skill
 
 Expected: `skills/finishing-a-development-branch/SKILL.md:1`, then exit 1, then a number of at most 20,000.
 
-- [ ] **Step 4: Run the treatment arm**
+- [x] **Step 4: Run the treatment arm**
 
 Five scored reps for `archive-relay`, from `git stash create`. Apply the factual bar. Append the scores, the cost and the verdict to the record.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md specs/baseline/red-baseline-worktree-skills-fix.md
 git commit -m "fix(finishing-a-development-branch): say what archiving a desktop session does"
 ```
+
+> Deviation: the commit also holds the treatment prompt, the treatment runs and the manifest line.
 
 ### Task 4: NOTICE bullet and citation stamps
 
@@ -233,12 +251,12 @@ git commit -m "fix(finishing-a-development-branch): say what archiving a desktop
 **Interfaces:**
 - Consumes: the final bytes of Tasks 2 and 3.
 
-- [ ] **Step 1: Run the failing check**
+- [x] **Step 1: Run the failing check**
 
 Run: `uv run python build/cc_guide/cli.py lint 2>&1 | /usr/bin/grep -cE 'STALE skills/(finishing-a-development-branch|using-git-worktrees)/'`
 Expected: `2`.
 
-- [ ] **Step 2: Add the NOTICE bullet**
+- [x] **Step 2: Add the NOTICE bullet**
 
 ```text
   - finishing-a-development-branch's Step 6 and using-git-worktrees' Step 1a
@@ -252,16 +270,20 @@ Expected: `2`.
     goes to Step 1b's git commands.
 ```
 
-- [ ] **Step 3: Stamp both files**
+> Deviation: the bullet's clause "a kept worktree is removed about 30 days later" became "a worktree that the archive leaves on disk is removed about 30 days after the archive" at the completion gate (commit `42776cb`).
+
+- [x] **Step 3: Stamp both files**
 
 Run: `uv run python build/cc_guide/cli.py baseline cite skills/finishing-a-development-branch/SKILL.md skills/using-git-worktrees/SKILL.md`
 Expected: one `stamped <path> @<release>` line per file. Plan 102 changes `build/cc_guide/` before this runs, so read the output. If cite refuses, stop and report it.
 
-- [ ] **Step 4: Run the check again**
+> Deviation: `baseline cite` wrote the four-part label `@2.1.326.1` (rule R2.4 of `build/cc_guide/baseline.py`), not a three-part one.
+
+- [x] **Step 4: Run the check again**
 
 Run the Step 1 command. Expected: `0`. The `subagent-driven-development` STALE line is out of scope and stays.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add NOTICE build/cc_guide/baseline.json skills/finishing-a-development-branch/SKILL.md skills/using-git-worktrees/SKILL.md
@@ -336,6 +358,8 @@ Add this note under the item, and leave its box open:
 ```
 
 Run: `git diff --quiet HEAD -- rules/pr-lifecycle.md README.md`. Expected: exit 0.
+
+> Skipped: the verdict was pass, so this fail branch did not apply.
 
 - [x] **Step 5: Commit**
 

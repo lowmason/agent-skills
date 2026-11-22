@@ -4861,6 +4861,9 @@
   "skills/executing-plans/SKILL.md": {
    "subagents.frontmatter": "sha256:aa8449f54fac046103fa842471f04994dfa2b784e127f35bff7d7d8b897a3c0d"
   },
+  "skills/finishing-a-development-branch/SKILL.md": {
+   "subagents.worktrees": "sha256:66911364a12a0f53af7c34187325d99ee5b55f784d973266b08ec955f4090982"
+  },
   "skills/llm-wiki/INSTALL.md": {
    "skills.locations": "sha256:df2ebadb677ff51dc92458ca523316cb01bf162ec31eabe3f6df37ca903abefb"
   },
@@ -4895,6 +4898,9 @@
   },
   "skills/tune-hyperparameters/SKILL.md": {
    "skills.frontmatter": "sha256:0552041796f1bfb07744a4b7963a8a68737ca230d383206591eef67949641b55"
+  },
+  "skills/using-git-worktrees/SKILL.md": {
+   "subagents.worktrees": "sha256:66911364a12a0f53af7c34187325d99ee5b55f784d973266b08ec955f4090982"
   },
   "skills/write-with-asd-ste100/SKILL.md": {
    "skills.arguments": "sha256:13efde1baa9538f828fe757144cc9b6bd5c6932b139ed45eafda5e53ebfdea87",

@@ -713,3 +713,25 @@ Differences from the design:
 - Deviation (Task 8): round 0 missed B2 on I3 (3 of 5), so round 1 restored step 7's half of the dropped B2 sentence (`20c279d`, `00e657b`) and met every bar. Source: plan, Task 8.
 - Deviation (Task 9): the final review's three screen limits became watch items, accepted by the owner at the gate. Source: plan, Task 9.
 - Deferred: 5 items. Source: specs/deferred_items.md, § 104-mutant-screen-runs.
+
+## 103-worktree-skills-cc-guide-fixes — 2026-11-22
+Plan: specs/plans/completed/103-worktree-skills-cc-guide-fixes.md · Spec: none
+
+Differences from the design:
+- Ruling: run_reps.sh does not run the replacement rep itself — the plan's "runs a replacement rep" is met by the VOID rule: the script writes rep<N>.VOID, exits 3, names the void reps and refuses the void number, so the caller runs the replacement under a new number; the backlog item's done-when asks only for void, drop and a self-test; an automatic rerun would need rep-number allocation and a retry cap against repeated peer messages — if wrong, a Task 2 or 3 implementer runs one replacement rep by hand when a void happens.
+- Ruling: Task 6 treatmentb rep 4 is graded PASS (close call) — rule 7 counts a delete-the-branch instruction that does not depend on the app failing to clean up ("Once the worktree is gone, you can delete the branch"), which is the line between it and the control's fallback shape; the controller's own read and the reviewer's agree — if wrong, the second arm is 3 of 5 and below the bar, so the wording edit would need another round (the first arm stays 4 of 5 and rule 8 shows 0 false 30-day claims, down from 1).
+- Ruling (final review): line 379's 30-day wording changes in all three places — after both final-review seats found that "a kept worktree is removed about 30 days later" reads two ways (treatment rep 5 told a partner a deadline for a never-archived worktree) and is not tied to the desktop-app case, the owner answered "fix it now"; the desktop docs page says the worktree "stays on disk with its changes" and Desktop removes it about 30 days after the session is archived or last opened, so the skill, rules/pr-lifecycle.md step 3 and the NOTICE bullet now say "a worktree that the archive leaves on disk is removed about 30 days after the archive", and line 379 opens that sentence with "For such a worktree," (commits f3549cb and 42776cb; second treatment arm 4 of 5, no false 30-day claim) — the owner chose it; if wrong, the three sentences revert together.
+- Deviation (Task 1): anchors 3 and 4 used replacement `git grep` commands, because Task 5 (`33259a9`) had changed the text that the plan's anchors match. Source: plan, Task 1.
+- Deviation (Task 1): `postprocess` also drops `session_id` and `uuid` and voids a `result_index` that is not a whole number. `run_reps.sh` writes `rep<N>.VOID`, exits 3 and leaves the replacement rep to the caller. Source: plan, Task 1.
+- Deviation (Task 1): the self-test is +57 tests, not +3, and the mutant run caught 76 of 76. Source: plan, Task 1.
+- Deviation (Task 1): two commits (`d0671ae`, `8eec5a2`) came before the Step 5 commit, and an interim commit (`9dcd0e4`) pinned the grading edges before any scored rep. Source: plan, Task 1.
+- Deviation (Task 1): `archive-relay` control rep 4 was regraded from PASS to FAIL at task review, so the control is 0 of 5. Source: plan, Task 1.
+- Deviation (Tasks 2 and 3): each commit also holds its treatment prompts, runs and manifest lines. Source: plan, Tasks 2 and 3.
+- Deviation (Task 3): at the completion gate the owner reworded line 379 (`42776cb`): "For such a worktree, …" and "a worktree that the archive leaves on disk is removed about 30 days after the archive". `rules/pr-lifecycle.md` step 3 and the Task 4 NOTICE bullet match it. Source: plan, Task 3.
+- Deviation (Task 4): `baseline cite` wrote the four-part label `@2.1.326.1` (rule R2.4). Source: plan, Task 4.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 103-worktree-skills-cc-guide-fixes.
+
+Closed earlier deferred items:
+- "Rule on the held `/cc-guide files` reviews of the two worktree skills, then cite them. On 2026-11-17" (deferred by cc-guide-2.1.326-worktree-isolation).
+- "**Void a no-tools rep that took a peer message (next-kit fix).** A message sent to a busy `claude -p` rep with `--tools ""` arrives as an extra turn after its answer. The rep's JSON `result` then holds its reply to the message, not the answer the kit scores. Committed kits stay frozen, so this is a fix for the next kit. Its tally voids a rep whose JSON has `result_index` above 0 or an `origin` that is not null. Its scrub step drops `origin`, which holds the sender's session title, session id and socket path. This is the same class of leak as `credential_expires_at`, which plan 101's `kit/scrub_json.py` already drops. Size: quick-fix. Done when: the next kit built after 2026-11-18 voids such a rep and drops `origin`, and its self-test covers both." (deferred by peer-session-inbound-probe).
+- "**Free a desktop-app worktree's branch before the archive (F2 option b; owner ruling 2026-11-19: adopt it" (deferred by pr-lifecycle-worktree-and-push).

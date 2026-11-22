@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 5934,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0290155,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 5201,
+    "cache_read_input_tokens": 1675,
+    "output_tokens": 804,
+    "output_tokens_details": {
+      "thinking_tokens": 294
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 5201,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 804,
+      "cacheReadInputTokens": 1675,
+      "cacheCreationInputTokens": 5201,
+      "webSearchRequests": 0,
+      "costUSD": 0.0290155,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 294,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 5201,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The base check failed with exit 128 because there is no remote and no `origin/HEAD`. The skill treats that like a nonzero count: `EnterWorktree` might branch from somewhere other than HEAD and drop my three local commits. So I'll create the worktree with git, which branches from HEAD. Then I'll enter it with `EnterWorktree` using its `path` form. `.worktrees/` already exists and is ignored, so no .gitignore change is needed.\n\nSAY: The base check couldn't find `origin/HEAD` because there's no remote. To keep your three local commits on `main`, I'm creating the worktree with git (branching from HEAD) at `.worktrees/feat/rate-limit` on a new branch `feat/rate-limit`. Then I'll switch the session into it.\n\nRUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit\n\nTOOL: EnterWorktree path=\"/work/atlas/.worktrees/feat/rate-limit\"\n\nSAY: The worktree is created at `/work/atlas/.worktrees/feat/rate-limit`. Entering it needs your approval, because the path is outside `.claude/worktrees/`. Please approve the `EnterWorktree` request. Once I'm inside, I'll run project setup and the baseline tests. If you decline, I'll leave the worktree where it is and ask whether to retry the approval, remove it with `git worktree remove .worktrees/feat/rate-limit`, or work in place on `main`.\n\nI'm waiting for your approval.",
+  "ttft_ms": 2713,
+  "type": "result",
+  "duration_ms": 6035,
+  "ttft_stream_ms": 544,
+  "time_to_request_ms": 99,
+  "first_content_frame_ms": 544,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

@@ -190,6 +190,12 @@ notes = [
 ]
 
 [[suite]]
+name = 'worktree-skills-fix-kit'
+dir = 'specs/baseline/red-baseline-worktree-skills-fix/kit'
+with = ['pytest']
+notes = ['Plan 103 micro-test kit: postprocess.py tests (void and keep of a rep JSON) and run_reps.sh wiring tests with a stub claude and no model. bash and uv required.']
+
+[[suite]]
 name = 'write-with-asd-ste100'
 dir = 'skills/write-with-asd-ste100/scripts'
 with = ['pytest']
