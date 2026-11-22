@@ -14,7 +14,7 @@
 
 ## Labels used in this plan
 
-- **BASE**: the commit that `git rev-parse HEAD` prints at Task 1 Step 1. **A**: the commit of Task 2 Step 3. **B**: the commit of Task 3 Step 5.
+- **BASE**: the commit that `git rev-parse HEAD` prints at Task 1 Step 1. **A**: the commit of Task 2 Step 3. **B**: the commit of Task 3 Step 4, the last of four.
 - **The shipped copy**: `skills/brainstorming/SKILL.md` at BASE. Its body (the text after the frontmatter) equals plan 86's NEW-R1 (`9761c88`) body: 19,524 characters, sha256 `f6067e3a10f9e2ec46a6ec11cb861abb9fcc1d6c60a97ca3995f311487542f7a`. Only the frontmatter's cc-guide stamp changed since.
 - **`<rec>`**: `specs/baseline/red-baseline-brainstorming-improvements`. `<rec>.md` is the record, `<rec>/` its folder, `<rec>/kit/` the kit.
 - **`<v702>`**: `specs/baseline/red-baseline-brainstorming-v7-0-2`, plan 86's record folder. It is frozen: read it, never write it.
@@ -23,7 +23,7 @@
 
 ## Global Constraints
 
-- **Execution start.** This is a domain execution. It starts only after plan 103 (`specs/plans/103-worktree-skills-cc-guide-fixes.md`, the machinery stream) has merged, and only when no other running execution edits `NOTICE`, `build/suites.toml` or `skills/brainstorming/`. Execute from a worktree.
+- **Execution start.** This is a domain execution. It starts only after plan 103 (`specs/plans/103-worktree-skills-cc-guide-fixes.md`, the machinery stream) has merged, and only when no other running execution edits `skills/brainstorming/`. Under default 8, another domain execution may also edit `NOTICE`, `build/suites.toml`, `specs/deferred_items.md` or `specs/history.md`. Execute from a worktree.
 - **Anchors.** Line numbers in this plan were read at `07ea574` and are hints only. Each replacement's old text is its match key, and each must match exactly once (`git grep -c -F` prints `<path>:1`). A miss means the text moved: stop and report.
 - **One owner per file.** `skills/brainstorming/SKILL.md` changes only in Tasks 2 and 3. `skills/brainstorming/visual-companion.md` changes only in Task 4. `NOTICE` changes only in Task 5. `build/suites.toml` changes only in Task 1. Task 1 creates `<rec>.md`, and Tasks 2 to 4 append their sections to it.
 - **Compaction window.** The SKILL.md body stays at most 19,700 characters (the `compaction-window` check, `build/cc_guide/conformance.toml`: 5,000 tokens × 4 − 300). Expected body lengths: 19,524 at BASE, 19,054 after Task 2, 19,385 after Task 3. No Red Flags or HARD-GATE heading may start past the window. If an owner gate reverts a hunk or adds a wording round, the later expected lengths and hashes no longer hold: recompute them with the same function and record the new figures in `<rec>.md`.
@@ -34,7 +34,7 @@
 - **Spend.** Keep a running total of `total_cost_usd` over every rep and vote in `<rec>.md`, Spend. Stop for the owner before the total passes $3.00 at the end of Task 2, and before it passes $8.00 at any point.
 - **Commit gate.** Before each commit, `bash build/run_commit_lints.sh` prints `commit lints passed`. Messages follow Conventional Commits in plain technical English and end with the attribution trailer the executing session is given. State test counts as deltas.
 - **Upstream.** No step opens or drafts an upstream pull request. Whether item 2 goes upstream is the owner's separate question after this plan.
-- **Shared files at merge.** Plan 105 (writing-skills, planned in parallel) and plan 103's Task 4 add bullets to `NOTICE`'s superpowers change list. Plan 103's Task 1 adds a suite to `build/suites.toml`. Before the merge, re-read both files on `origin/main` and keep every side.
+- **Shared files at merge.** Plan 105 (writing-skills, planned in parallel) and plan 103's Task 4 add bullets to `NOTICE`'s superpowers change list. Plan 103's Task 1 adds a suite to `build/suites.toml`. Before the merge, re-read both files on `origin/main`, keep every side, and run the merge-order check (chain the merges with `git merge-tree --write-tree`, then check that no conflict marker is left and no line of either side is lost).
 - **Leave alone.** Findings items 3 (T7 wording) and 7 (builder check, in the backlog). The frozen `<v702>/` folder and `<v702>.md`. The findings' Scope line: derive-roadmap, writing-plans, `/deferred` and `install.py`. The Copilot CLI block of `visual-companion.md`. Step 1 of the ordered list in SKILL.md ("have your human partner pick one"): approving your one sensible way, or handing you the how, is their pick.
 
 ## Review Focus
@@ -60,6 +60,7 @@ These are the planning session's defaults. The owner rules on each at plan revie
 5. **P3's round-A bar.** The shipped copy scores P3 at 3 of 5, a known gap. Round A holds P3 to at least 3 of 5. Round B holds it to 4 of 5, because item 4 targets it.
 6. **Spend.** About $2.10 for the pilot and round A, and about $4.20 for round B with its panel, so about $6.30 before any diagnostic. Stop points at $3.00 (end of Task 2) and $8.00 (any time).
 7. **Execution mode.** Inline (executing-plans), as plan 86 ran. The hand scoring and the owner gates after each round tie the tasks to one controller context.
+8. **Overlap with plan 105.** The owner's rule lets domain executions run at once only when their files do not overlap. Plan 105 (writing-skills) also edits `NOTICE`'s superpowers change list, in other bullets. Default: `NOTICE`, like `specs/deferred_items.md` and `specs/history.md`, counts as a file that merges as keep-both. So the two executions may overlap, and Task 5 runs last, re-reads `NOTICE` and keeps both sides. If wrong: this execution waits until plan 105's execution has merged.
 
 ## Files
 
@@ -93,6 +94,7 @@ These are the planning session's defaults. The owner rules on each at plan revie
   - the SKILL.md body at BASE is 19,524 characters with sha256 `f6067e3a10f9e2ec46a6ec11cb861abb9fcc1d6c60a97ca3995f311487542f7a`;
   - each old text of edits I1a to I1c, I6, I2a to I2d, I4 and I5 (Tasks 2 and 3) matches once in `skills/brainstorming/SKILL.md`;
   - plan 103's kit is on `origin/main`: `git log -1 --format=%H origin/main -- specs/baseline/red-baseline-worktree-skills-fix/kit/postprocess.py` prints a sha. Record it as the source commit.
+  - plan 103's `postprocess` has the interface in Interfaces: `git grep -n "def postprocess(raw" -- specs/baseline/red-baseline-worktree-skills-fix/kit/postprocess.py` prints one line, the file names both reasons `'result_index'` and `'origin'`, and `uv run python build/run_suites.py worktree-skills-fix-kit` passes.
   A failed check stops the task for the owner.
 
 - [ ] **Step 2: Copy the kit.** Copy the files that Files names, unchanged except for these edits:
@@ -364,16 +366,18 @@ uv run python specs/baseline/red-baseline-brainstorming-improvements/kit/panel.p
 
 - [ ] **Step 11: Stop on a T7 regression.** A T7 regression goes to the owner before Step 12. Present the panel figures and the fail forms.
 
-- [ ] **Step 12: Re-run a regressing case on the revert arms.** For each item N in 2, 4 and 5, build the arm without leaving a stash entry:
+- [ ] **Step 12: Re-run a regressing case on the revert arms.** For each item N in 2, 4 and 5, build the arm as a commit object, without touching the working tree, the index or the stash (`<N>` is item N's commit from Step 5):
 
 ```bash
-git revert --no-commit <item N commit>
-ARM=$(git stash create)
-git revert --abort
-test -n "$ARM" && git diff --stat B "$ARM"
+T=$(mktemp)
+GIT_INDEX_FILE=$T git read-tree B
+git diff <N>^ <N> -- skills/brainstorming/SKILL.md | GIT_INDEX_FILE=$T git apply --cached -R
+ARM=$(git commit-tree "$(GIT_INDEX_FILE=$T git write-tree)" -p B -m "plan 106 arm: B without item N")
+rm -f "$T"
+git diff --name-only B "$ARM"
 ```
 
-  `git diff B "$ARM"` must show only item N's hunks reversed in `skills/brainstorming/SKILL.md`. Record `$ARM` and its SKILL.md blob sha in `<rec>.md`. Never run `git stash push` or `git stash pop`. Build `build_prompts.py skill "$ARM" <rec>/prompts/no-item<N>`, and run the regressing case at 5 reps into `<rec>/bisect/no-item<N>/<case>/`. Report which arm restores the bar. Then the owner gate applies (Bars, Outcomes).
+  The last command must print only `skills/brainstorming/SKILL.md`, and `git diff B "$ARM"` must show only item N's hunks reversed. Record `$ARM` and its SKILL.md blob sha in `<rec>.md`. The planning session tested this recipe on a scratch clone with a tracked edit in the working tree: the arm reversed only the item, and the edit and the stash list stayed as they were. Build `build_prompts.py skill "$ARM" <rec>/prompts/no-item<N>`, and run the regressing case at 5 reps into `<rec>/bisect/no-item<N>/<case>/`. Report which arm restores the bar. Then the owner gate applies (Bars, Outcomes).
 
 - [ ] **Step 13: Write the results and commit.** Append `## Round B` to `<rec>.md`: a table of T10 to T13 and the twelve guards (shipped figure, round B tally, verdict); the rep verdicts; one line per FAIL and VOID; the descriptive counts that plan 86's Rules keep, the T11 and T13 call/ask/skip tables among them; the T7 panel table (panel majority and hand score with Wilson intervals for each arm, both Fisher p values, where hand and panel differ, and the fail forms); the diagnostics and the revert-arm results; and the owner's rulings, quoted. Run the privacy sweep on the new folders and the commit gate. Commit with `test(specs): record plan 106 round B`.
 
@@ -388,9 +392,9 @@ test -n "$ARM" && git diff --stat B "$ARM"
 
 - [ ] **Step 1: Read agy's docs.** Read `agy --help`, `agy changelog`, `specs/guides/antigravity-customization-guide.md` and agy's online docs (https://antigravity.google/docs, its CLI headless, terminal and sandbox pages) for a way to keep a shell process alive across turns, like Gemini CLI's `is_background: true` or Codex's foreground mode. Note each page or command read and what it says, with `agy --version`.
 
-- [ ] **Step 2: Ask the owner before the live run.** The run spends agy plan quota and approves shell calls inside one new scratch folder under `/tmp`, outside every repository. Name the mechanism from Step 1, or say none was found and the run tests `start-server.sh`'s default mode and `--foreground`.
+- [ ] **Step 2: Ask the owner before the live run.** The run spends agy plan quota and approves shell calls inside one new scratch folder under `/tmp`, outside every repository. It may need a second run with the terminal sandbox off (Step 3), and the owner approves that run in the same answer. Name the mechanism from Step 1, or say none was found and the run tests `start-server.sh`'s default mode and `--foreground`.
 
-- [ ] **Step 3: The live run.** In the scratch folder, run one `agy -p` session with `--input-format stream-json --output-format stream-json`, two turns. Turn 1: start `<repo>/skills/brainstorming/scripts/start-server.sh --project-dir <scratch>` (with `--foreground` and the Step 1 mechanism when there is one) and print the JSON it returns. Leave out `--open`, so no browser opens. Turn 2: run `test -f <state_dir>/server-info && ! test -e <state_dir>/server-stopped && kill -0 "$(cat <state_dir>/server.pid)" && echo ALIVE || echo DEAD`. The server is kept when turn 2 prints ALIVE. Then stop the server with `stop-server.sh <session_dir>` and delete the scratch folder. Append `## agy probe (item 8)` to `<rec>.md`: the docs read, the agy version, the commands, turn 2's output and the verdict.
+- [ ] **Step 3: The live run.** In the scratch folder, run one `agy -p` session with `--input-format stream-json --output-format stream-json`, two turns. Turn 1: start `<repo>/skills/brainstorming/scripts/start-server.sh --project-dir <scratch>` (with `--foreground` and the Step 1 mechanism when there is one) and print the JSON it returns. Leave out `--open`, so no browser opens. Turn 2: run `test -f <state_dir>/server-info && ! test -e <state_dir>/server-stopped && kill -0 "$(cat <state_dir>/server.pid)" && echo ALIVE || echo DEAD`. The server is kept when turn 2 prints ALIVE. Then stop the server with `stop-server.sh <session_dir>` and delete the scratch folder. Append `## agy probe (item 8)` to `<rec>.md`: the docs read, the agy version, the execution mode and the terminal sandbox setting the run used (agy's auto mode turns the sandbox on), the commands, turn 2's output and the verdict. If turn 2 prints DEAD with the sandbox on, run once more with it off before the verdict, since a sandbox can block a localhost server. Form 1 then names the mode and the sandbox setting that the recipe needs.
 
 - [ ] **Step 4: Add the agy block.** Put it after the `**Gemini CLI:**` block and before `**Copilot CLI:**`, with a blank line on each side. Use the first form only when Step 3 printed ALIVE, with the mechanism and flags exactly as the live run used them. Otherwise use the second form.
 
@@ -430,7 +434,7 @@ test -n "$ARM" && git diff --stat B "$ARM"
 
 - [ ] **Step 2: Update plan 70's entry (item 6).** In the bullet that starts `brainstorming was rebased on upstream v7.0.1`, replace the sentence `Look Before You Ask also checks specs/deferred_items.md.` with `Look Before You Ask also searches specs/deferred_items.md for the idea's terms.`
 
-- [ ] **Step 3: Extend plan 86's entry (items 1, 2 and 4).** In the bullet that starts `Plan 86 (2026-11-10) took upstream v7.0.2's brainstorming retune`, append after its last sentence (the one that ends `and is recorded as a known gap.`), with `<date>` and the P3 sentence filled from round B:
+- [ ] **Step 3: Extend plan 86's entry (items 1, 2 and 4).** In the bullet that starts `Plan 86 (2026-11-10) took upstream v7.0.2's brainstorming retune`, append after its last sentence, whose last two lines read `    round, as it does on the copy before the port, and is recorded as a` and `    known gap.`, with `<date>` and the P3 sentence filled from round B:
 
 ```text
 Plan 106 (<date>) changed four parts of that text. The Visual
