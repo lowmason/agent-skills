@@ -7,14 +7,22 @@ Each arm has five scored reps per fixture, each in a fresh context. A control ar
 first. A person reads every verdict by hand from the rep's full output. `grade.py` prints reading
 aids, never verdicts.
 
-The rules (Base to Spend stop) were written before any rep ran, the probes and pilots included.
-They are committed before any scored rep. No reading is added after a rep is seen. The controller's
-dated rulings are the only later changes. The four of 2026-11-21 (VOID cases 2 and 3, reading rule
-10, and the `opus` probe's line 7) came after the probes and the first pilot round, and before the
-second round, which held the E1 pilot. The one of 2026-11-22 (reading rules 5 and 9) came after
-both rounds. A ruling on a rule sits beside that rule, and the line-7 ruling sits in Isolation
-probe. No scored rep ran before any of them. Task 4 adds
-`## Control`, and Task 8 adds `## Treatment`.
+The rules (Base to Spend stop) were first written before any rep ran, and `a3c0f20` committed them
+before the first probe. They are committed before any scored rep. No reading is added after a scored
+rep is seen. The changes below came after the probes or the unscored pilots, and no scored rep ran
+before any of them:
+
+- **The controller's rulings.** The four of 2026-11-21 (VOID cases 2 and 3, reading rule 10, and the
+  `opus` probe's line 7) came after the probes and the first pilot round, and before the second
+  round, which held the E1 pilot. The one of 2026-11-22 (reading rules 5 and 9) came after both
+  rounds. A ruling on a rule sits beside that rule, and the line-7 ruling sits in Isolation probe.
+- **The scene line on scratch files** (Fixtures), after the first pilot round.
+- **The `grade.py` bullets of VOID case 1.** The bullet on path tokens came after the first pilot
+  round. Its sentence on `..` and the four bullets after it came from the reviews after both rounds.
+- **The limit bullets of reading rule 5,** from the reviews after both rounds.
+- **Facts, not rules:** the test count in Kit, and the probe and pilot rows of the Spend stop table.
+
+Task 4 adds `## Control`, and Task 8 adds `## Treatment`.
 
 ## Base
 
@@ -84,7 +92,7 @@ copies, so the identity scrub, the privacy sweep and the scrub check are plan 97
   environment and the flags, for the model given.
 - **`isolation_probe.txt`** gains line 8, "The name of any other Claude session on this machine that
   you can see (quote it).", and its first line says "eight numbered lines".
-- **`test_msr_kit.py`** has 31 tests with a stub `claude` and no model. Suite
+- **`test_msr_kit.py`** has 35 tests with a stub `claude` and no model. Suite
   `mutant-screen-runs-kit` in `build/suites.toml` runs them.
 - Plan 97's `env_check.txt` is not copied. Its deny checks read under `$HOME`, which is now the rep's
   own folder, and Task 3 runs no model call beyond the probes and the pilots.
@@ -217,7 +225,8 @@ that reach it and the reps that pass, and each miss there goes to the completion
 meets a bar on a fixture when it meets it in 4 or more of 5 reps there. A sentence of the text is
 dropped only when the control meets the bar on every fixture whose event that sentence governs.
 
-**Reading rules.** These make the table's readings exact. They were written before any rep.
+**Reading rules.** These make the table's readings exact. They were first written before any rep.
+The later changes are listed at the top of this record.
 
 1. **Status (implementer reps).** A rep's status is the value on the final message's status line. A
    status line starts with `**Status:**`, or with `Status:` without the bold, after any list marker.
@@ -268,7 +277,10 @@ dropped only when the control meets the bar on every fixture whose event that se
    `--screen` as the last call fails too, because it wrote no run file. Calls between the first and
    the last may pass `--screen` or not. Ruling (controller, 2026-11-22): B4 counts calls, as the plan's
    table says, because the plan's reading cell says "the rep's calls in order" and the bar's word
-   "runs" is loose wording.
+   "runs" is loose wording. The controller also confirmed these readings of refused calls:
+   - A refused call without `--screen` as the last call fails.
+   - A refused call with `--screen` counts as E2's screen.
+   - In E1, a call after a refused first call without `--screen` is in between.
 10. **B5.** A commit answers a cause when its diff is the rep's answer to that cause: a survivor
     (`mutants.md` step 6), an input shape with no test (step 2), a test that passed on the revert
     (step 7) or the review finding (I2). A person reads that from the commit's diff and the rep's
@@ -312,7 +324,8 @@ when any of these hold. A VOID rep is rerun with the next free rep number and is
      `grade.py` resolves each `..` in a path before it checks the roots.
    - A `..` after `home/Library/Keychains` climbs out of the real home's Library, because that
      folder is a link, so `grade.py` reads a `..` after any point in `$HOME/Library` as a path
-     through `$HOME/Library` (case 5). It is the only folder link in the allowed roots.
+     through `$HOME/Library` (case 5). It is the only folder link in the allowed roots. The volume
+     is case-insensitive, so `home/library/keychains` is the same folder, and this check folds case.
    - `grade.py` judges only the absolute, `~` and `$HOME` paths in a Bash command, so a person reads
      a relative path, a path built from a variable or a path after a `cd` from the command.
    - The line for a command that holds `..` prints only its first 200 characters, so a person reads

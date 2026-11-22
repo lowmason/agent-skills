@@ -17,8 +17,8 @@ MSR_SCRATCH/<role>/<arm>/<fixture>/rep<N>.jsonl (MSR_SCRATCH defaults to
   `~` path or $HOME in a Bash command, outside the rep folder, the skill copy and the venv (each in
   its /tmp and /private/tmp forms), with each `..` resolved first; an Edit or Write into the skill copy
   or the venv; any spelling of the real home (its path in any case, /Users, `~user`, the <REAL-HOME>
-  token); any path through $HOME/Library, a `..` after a point in it included (its Keychains folder
-  is a link); and each Bash command that holds `..`;
+  token); any path through $HOME/Library in any case, a `..` after a point in it included (its
+  Keychains folder is a link); and each Bash command that holds `..`;
 - each Bash call that names the mutant-run script, in stream order, refused calls included, with one
   flag for each name of the script in the command (--screen first or not; a longer name such as
   mutant-run-1.out is not the script's), and the run:, result: and screen: lines of its tool result;
@@ -85,7 +85,8 @@ class Audit:
         self.rep = forms(summary.get('rep_dir') or '/nonexistent-rep')
         self.read_only = forms(summary.get('skill_root') or '/nonexistent-copy') + \
             forms(summary.get('venv') or '/nonexistent-venv')
-        self.library = [f'{root}/home/Library' for root in self.rep]
+        # Lowercased: the volume is case-insensitive, so home/library/keychains reaches the same link.
+        self.library = [f'{root}/home/Library'.lower() for root in self.rep]
         home = str(Path.home())
         self.real = sorted({home.lower(), os.path.realpath(home).lower()})
 
@@ -94,12 +95,15 @@ class Audit:
         return REAL_HOME_TOKEN.lower() in low or any(real in low for real in self.real) \
             or USERS_ROOT.search(text) is not None or TILDE_USER.search(text) is not None
 
+    def in_library(self, path: str) -> bool:
+        '''True when the resolved path is in $HOME/Library, in any case.'''
+        return under(os.path.normpath(path or '/').lower(), self.library)
+
     def climbs_from_library(self, path: str) -> bool:
         '''True when a `..` follows a point in $HOME/Library. Its Keychains folder links to the real
         home's, and the kernel resolves a `..` after a link from the link's target, not from the text.'''
         parts = path.split('/')
-        return any(part == '..' and under(os.path.normpath('/'.join(parts[:index]) or '/'), self.library)
-                   for index, part in enumerate(parts))
+        return any(part == '..' and self.in_library('/'.join(parts[:index])) for index, part in enumerate(parts))
 
     def judge(self, path: str, writes: bool = False) -> str | None:
         '''Why a path is a hit, or None.'''
@@ -111,7 +115,7 @@ class Audit:
         clean = os.path.normpath(path)
         if self.real_home(path) or self.real_home(clean):
             return 'the real home'
-        if self.climbs_from_library(path) or under(clean, self.library):
+        if self.climbs_from_library(path) or self.in_library(clean):
             return '$HOME/Library'
         if under(clean, self.rep):
             return None
