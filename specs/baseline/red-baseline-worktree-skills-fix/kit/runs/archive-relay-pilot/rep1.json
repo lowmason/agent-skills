@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 5266,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0491689,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 10500,
+    "cache_read_input_tokens": 649,
+    "output_tokens": 710,
+    "output_tokens_details": {
+      "thinking_tokens": 255
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 10500,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 710,
+      "cacheReadInputTokens": 649,
+      "cacheCreationInputTokens": 10500,
+      "webSearchRequests": 0,
+      "costUSD": 0.0491689,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 255,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 10500,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "SAY: The merge is done. `main` fast-forwarded to 9b50e40 and the tests pass on the merged result (2 passed). I haven't pushed `main`.\n\nSAY: I'm leaving the worktree at `/work/atlas/.claude/worktrees/rate-limit` and the branch `claude/rate-limit-4f2a` in place. The desktop app started this session in that worktree and I have no record of this session creating it, so I won't remove it. Git also won't delete a branch while a worktree has it checked out.\n\nSAY: The worktree has one untracked file, `notes.md`, which isn't part of the merge. If you want to keep it, copy it out before you archive. Archiving may clean up the worktree, and the file would go with it.\n\nSAY: Archiving the session should let the desktop app clean up the worktree it started. If it doesn't, run these from `/work/atlas`:\n\nSAY: `git worktree remove /work/atlas/.claude/worktrees/rate-limit`\nSAY: `git worktree prune`\nSAY: `git branch -d claude/rate-limit-4f2a`\n\nSAY: `git worktree remove` will refuse because of `notes.md`. Move or delete the file first, or tell me and I'll give you the forced removal to run yourself. The branch is fully merged, so `-d` will work once the worktree is gone.\n\nI stop here and wait for you.",
+  "ttft_ms": 2328,
+  "type": "result",
+  "duration_ms": 5334,
+  "ttft_stream_ms": 650,
+  "time_to_request_ms": 63,
+  "first_content_frame_ms": 650,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

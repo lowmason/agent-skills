@@ -122,6 +122,31 @@ Fixture sources:
    a treatment arm is graded, one of its sheets is diffed against a control sheet of the same case.
    Only the rep's answer may differ.
 
+The grading edges below came after the pilot (Pilot) and before any scored rep. The pilot reps are not
+scored, and no edge was changed after a scored rep was seen.
+
+5. **`noremote` and `remote-nohead`, the PASS call.** It has two parts, in this order. First a `RUN:`
+   line of `git worktree add` that creates a new branch (`-b <branch>`) with no start point, or with
+   `HEAD` as the start point. Then a `TOOL:` line of `EnterWorktree` with a `path` argument that names
+   that worktree. A start point that is `origin/<name>` or another default-branch ref misses HEAD's
+   commits, so it is not a PASS. The worktree's folder is free (`.worktrees/...` or another).
+6. **`noremote` and `remote-nohead`, the FAIL cases.** An `EnterWorktree` with `name` is the FAIL call,
+   also when `git worktree add` runs as well. An answer that runs `git worktree add` and then stops
+   before the `EnterWorktree` `path` call, or enters the worktree with `cd` only, or calls the tool
+   before the git command, lacks the PASS call. It is a FAIL by rule 3.
+7. **`archive-relay`, the two facts.** PASS needs both, told to the partner in the answer's `SAY:` text,
+   and no unhedged claim that archiving removes the worktree at once or deletes the branch. A hedged
+   claim ("may", "can", "should", "if it does not") does not trigger the FAIL column by itself.
+   - **Fact 1: archiving can discard uncommitted changes in the worktree.** The answer links the
+     archive to the loss of `notes.md` or of uncommitted work. "Copy `notes.md` out before you archive,
+     because archiving may clean up the worktree and the file goes with it" counts. "Commit or move
+     `notes.md`" with no link to the archive does not count.
+   - **Fact 2: the branch can outlive the archive.** The answer says the branch can or will still exist
+     after the archive, or tells the partner to delete it after archiving without making that depend on
+     the app failing to clean up. A branch command that appears only as a fallback ("if the app does not
+     clean up, run ...") does not count. A report of the agent's own choice to leave the branch in place
+     now does not count either.
+
 ## Bars
 
 - **Non-regression** (`noremote`, `remote-nohead`): the treatment passes at least the control's count
@@ -168,11 +193,38 @@ These are the owner's stop rules. A run that cannot ask the owner ends BLOCKED a
 
 ## Isolation probe
 
-Not run at the commit of these rules.
+`probe.sh` ran `isolation_probe.txt` on the installed binary (Claude Code 2.1.323, model
+`claude-sonnet-5-5`) with the reps' flags, after the commit of the cases. The JSON is in the scratch
+folder `probe/`. Its `is_error` is false, `num_turns` is 1, `result_index` is 0 and `origin` is null
+(the probe does not go through `postprocess.py`, so these were read by hand). It cost $0.008.
+
+| Line | Answer |
+|---|---|
+| 1. CLAUDE.md text | NO |
+| 2. Output style | NO |
+| 3. "Plain technical English" or "AWS Guidance" rule | NO |
+| 4. SessionStart hook context | NO |
+| 5. Auto-memory or `MEMORY.md` | NO |
+| 6. Skill or slash command list | NO |
+| 7. The user's name or email address | YES, with the quote of an email address (not recorded here: this repository is public) |
+
+Lines 1 to 6 read NO, so the task goes on. Line 7 is the open item "Account identity reaches the isolated
+micro-test runs". It does not block (Spend stop), and the identity scrub runs on every rep.
 
 ## Pilot
 
-Not run at the commit of these rules.
+One control rep for each case, at BASE, into `kit/runs/<case>-pilot/rep1.json`. The pilot reps are not
+scored. Each ran with the reps' flags. Each answered in the `RUN:`/`TOOL:`/`SAY:` form, in one turn, with
+no tool, no error and no peer turn. Their cost: `noremote` $0.034, `remote-nohead` $0.036,
+`archive-relay` $0.049. Read in full, by the rules above:
+
+- **`noremote` pilot:** a `git worktree add .worktrees/feat/rate-limit -b feat/rate-limit`, then
+  `EnterWorktree` with `path`. It would be a PASS.
+- **`remote-nohead` pilot:** the same two calls. It would be a PASS.
+- **`archive-relay` pilot:** it told the partner that "Archiving may clean up the worktree, and the file
+  would go with it" (fact 1). It named the branch commands only as a fallback ("If it doesn't, run
+  these"), and it said it left the branch in place now. By reading rule 7 that leaves out fact 2. It
+  would be a FAIL, and this is why rule 7 names the fallback case.
 
 ## Control
 
