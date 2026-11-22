@@ -256,8 +256,23 @@ mutants file as `path:line`. The command is
 `<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N BASE -- <the brief's focused test command>`,
 with the task's BASE: the one `task-start` printed on its `base:` line,
 or, for a resumed task, the kept one (Take the task).
+The task's first run and its last run are full runs, with that command,
+and only the runs in between are screens.
+Each re-run while you answer survivors, invalid mutants and the revert
+(steps 6 and 7) is a screen, even when you expect it to be clean. Pass
+`--screen` as the script's first argument:
+`<this-skill-dir>/../subagent-driven-development/scripts/mutant-run --screen PLAN_FILE N BASE -- <the brief's focused test command>`.
+Once a screen shows no survivor and no invalid mutant, and step 7 leaves
+nothing to commit, run the command once more without `--screen`.
 The last run comes after the task's last commit: `task-done` refuses a run
 whose `head:` is not HEAD.
+A clean full run at HEAD ends the step: `task-done` reads only full runs,
+so a screen can neither satisfy nor block it.
+Every commit that answers the mutant step gets
+`--trailer 'Mutant-step: task <N> <cause>'`, once for each cause, as that
+file's "The trailer" says. So does a commit in the final review's fix pass
+that answers a finding about a task's mutant step: its cause is `review`,
+and `<N>` is that task's number.
 
 ### 3. The completion contract
 
@@ -271,8 +286,8 @@ in this session — not inferred from the diff looking right:
   "other tests"), not only the files the brief names.
 - Every `Expected:` line in the brief was compared against real output.
 - Every deviation from the brief has a `Ruling:` line in the ledger.
-- The task's newest mutant run shows no survivor and no invalid mutant,
-  or the task is not a mutant task and `task-done` gets
+- The task's newest full mutant run shows no survivor and no invalid
+  mutant, or the task is not a mutant task and `task-done` gets
   `--no-mutants '<why>'`.
 
 **REQUIRED SUB-SKILL:** verification-before-completion governs
@@ -292,7 +307,8 @@ the ledger:
 
 `Task <N>: complete (commits <base7>..<head7>, mutants: <caught>/<total>, tests: <command> → <result>)`
 
-The gate reads the task's newest mutant run: it is at HEAD, no mutant
+The gate reads the task's newest full run (`task-<N>-mutants*.log`,
+never a screen): it is at HEAD, no mutant
 survived or is invalid, each `Mutant K:` line in the mutants file is
 in the run or has a `Withdrawn: K` line, and each patch that is not
 withdrawn still has the bytes the run measured. With `--no-mutants`, the gate is
