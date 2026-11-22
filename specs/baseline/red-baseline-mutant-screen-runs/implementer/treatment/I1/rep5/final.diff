@@ -1,0 +1,55 @@
+diff --git a/parking.py b/parking.py
+new file mode 100644
+index 0000000..cb6e30c
+--- /dev/null
++++ b/parking.py
+@@ -0,0 +1,10 @@
++FREE_MINUTES = 30
++RATE_PER_HOUR = 2
++
++
++def fee(minutes: int) -> int:
++    """Return the fee for a stay of `minutes` whole minutes."""
++    if minutes <= FREE_MINUTES:
++        return 0
++    started_hours = -(-minutes // 60)
++    return RATE_PER_HOUR * started_hours
+diff --git a/tests/test_parking.py b/tests/test_parking.py
+new file mode 100644
+index 0000000..0b7e2ab
+--- /dev/null
++++ b/tests/test_parking.py
+@@ -0,0 +1,33 @@
++from parking import fee
++
++
++def test_a_short_stay_is_free():
++    assert fee(20) == 0
++
++
++def test_each_started_hour_costs_2():
++    assert fee(150) == 6
++
++
++def test_a_stay_of_exactly_30_minutes_is_free():
++    assert fee(30) == 0
++
++
++def test_a_zero_minute_stay_is_free():
++    assert fee(0) == 0
++
++
++def test_one_minute_over_the_free_limit_costs_one_hour():
++    assert fee(31) == 2
++
++
++def test_a_stay_of_exactly_one_hour_costs_one_hour():
++    assert fee(60) == 2
++
++
++def test_one_minute_into_a_second_hour_costs_two_hours():
++    assert fee(61) == 4
++
++
++def test_a_stay_of_exact_whole_hours_is_not_rounded_up():
++    assert fee(180) == 6

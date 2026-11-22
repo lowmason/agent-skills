@@ -1,0 +1,10 @@
+diff --git a/parking.py b/parking.py
+deleted file mode 100644
+index 669e0d4..0000000
+--- a/parking.py
++++ /dev/null
+@@ -1,4 +0,0 @@
+-def fee(minutes: int) -> int:
+-    if minutes <= 30:
+-        return 0
+-    return 2 * -(-minutes // 60)

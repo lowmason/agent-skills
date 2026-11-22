@@ -1,0 +1,14 @@
+36d6b7dfbe715f5c983182727ee0f48d190e827b
+task 1 input shape
+task 1 survivor 2
+
+Test a bill with several cents left over
+
+Mutant-step: task 1 input shape
+Mutant-step: task 1 survivor 2
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+d7a2830b45ec8602f03f2c5f885b684e0cec03fe
+
+Add bill splits
+

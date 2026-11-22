@@ -1,0 +1,12 @@
+972216f71bf41be6145602174c269456088f41ba
+task 1 survivor 2
+
+Test a split with several cents left over
+
+Mutant-step: task 1 survivor 2
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+6bd0b5a1c1905a08953d282e446ea66f0b6782f8
+
+Add bill splits
+

@@ -1,0 +1,18 @@
+1676c6147718891a0a0331af6a9489eea9b75825
+task 1 review
+
+Keep a weight of 2000 grams medium
+
+Test a medium parcel at its upper edge, and fix the large limit.
+
+Mutant-step: task 1 review
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+f6fd292ba65c8c79e2323d7999a9ec4cf7809ad5
+
+Test a small parcel at its upper edge
+
+819f0e5ed5584d3ac890d9f59c6c25965a389ab8
+
+Add the parcel bands
+

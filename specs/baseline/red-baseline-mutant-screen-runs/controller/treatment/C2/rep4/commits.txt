@@ -1,0 +1,12 @@
+5f318238aa4edd7ee49c82499199dda096197266
+
+Put a 2000 gram parcel in the medium band
+
+a6e31a5f5d3facd0b83b05470f21bed6bc6852bc
+
+Test a small parcel at its upper edge
+
+b0bf49dcbac720896f0d623654b96cac2985d84d
+
+Add the parcel bands
+

@@ -1,0 +1,26 @@
+8cc27075071c269b95cfcd6f79fc0b2d4ccdf804
+task 1 review
+
+Make 2000 grams medium, not large
+
+Mutant-step: task 1 review
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+4b08d1f2226e27619e02e7f43b4523308f2cd8e6
+task 1 review
+
+Test a medium parcel at its upper edge
+
+A weight of 2000 grams is medium; band returned large for it.
+
+Mutant-step: task 1 review
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+4f2f78acd36f3ee6e98bb490dc83abd57cb7e1de
+
+Test a small parcel at its upper edge
+
+3bd864f0a4eb17c33c7525ac5fde6d4f02338efa
+
+Add the parcel bands
+

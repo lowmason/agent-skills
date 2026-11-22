@@ -1,0 +1,10 @@
+test-run: Task 1, run 1
+command: sh -c '(/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py) && (/private/tmp/msr104-venv/bin/python -m pytest -q)'
+head: 5c3918e77d84f46b3d01c80e3e5a4480930e4091
+tree: clean
+exit: 0
+--- output ---
+....                                                                     [100%]
+4 passed in 0.00s
+....                                                                     [100%]
+4 passed in 0.00s

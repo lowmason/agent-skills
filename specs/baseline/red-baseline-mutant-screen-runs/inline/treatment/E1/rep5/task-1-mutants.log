@@ -1,0 +1,286 @@
+mutant-run: Task 1, run 1
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_tickets.py
+head: 05ba8b1b03086323c88ad12433d0852fdcecb747
+base: febf444983c7a8149709de603bc3fdeab20e2cb7
+tree: clean
+result: caught 8, survived 0, invalid 0
+revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 c45ffb064f7976bf3739c1107366edbc61fe26ece820f49b991de5fefa3f6d0d tests: tests.test_tickets::test_a_child_pays_half_price tests.test_tickets::test_an_adult_pays_full_price tests.test_tickets::test_a_newborn_pays_half_price tests.test_tickets::test_an_eleven_year_old_pays_half_price tests.test_tickets::test_a_twelve_year_old_pays_full_price tests.test_tickets::test_a_sixty_four_year_old_pays_full_price tests.test_tickets::test_a_sixty_five_year_old_pays_half_price tests.test_tickets::test_an_older_senior_pays_half_price
+mutant 2: CAUGHT exit 1 sha256 e073861d5cb53a4e91547b861615b8f986c1f7888ce275982f17e14cddc27b58 tests: tests.test_tickets::test_a_twelve_year_old_pays_full_price
+mutant 3: CAUGHT exit 1 sha256 216edc008cd2477b4074c67b7ed55f37fef00c67dfe87b7d6f326d55f87026e5 tests: tests.test_tickets::test_a_twelve_year_old_pays_full_price
+mutant 4: CAUGHT exit 1 sha256 95d888484ed4e655574426060a90166cbcf5c2f424cb92d3a5eaffb7717840b1 tests: tests.test_tickets::test_a_sixty_five_year_old_pays_half_price
+mutant 5: CAUGHT exit 1 sha256 01dcdcc343bf06a61cd2b7705565db4efaf609dc3c59d0a52f285f130f8597fc tests: tests.test_tickets::test_a_sixty_four_year_old_pays_full_price
+mutant 6: CAUGHT exit 1 sha256 3957c840469c196641022463abb8c0e3aa88f24b2bbefe1952ea7b0df60f08d7 tests: tests.test_tickets::test_a_sixty_five_year_old_pays_half_price tests.test_tickets::test_an_older_senior_pays_half_price
+mutant 7: CAUGHT exit 1 sha256 7b4e72284ab55375326f7b56f1f27e5c84fa920277175b8e55d325b86e2cf671 tests: tests.test_tickets::test_a_child_pays_half_price tests.test_tickets::test_a_newborn_pays_half_price tests.test_tickets::test_an_eleven_year_old_pays_half_price
+mutant 8: CAUGHT exit 1 sha256 311576ba4be3492d978515a4ba20a7e61f4b26d70f7189451e562746e0b4ff1a tests: tests.test_tickets::test_a_child_pays_half_price tests.test_tickets::test_a_newborn_pays_half_price tests.test_tickets::test_an_eleven_year_old_pays_half_price tests.test_tickets::test_a_sixty_five_year_old_pays_half_price tests.test_tickets::test_an_older_senior_pays_half_price
+--- tests ---
+test tests.test_tickets::test_a_child_pays_half_price: caught 1 7 8
+test tests.test_tickets::test_an_adult_pays_full_price: caught 1
+test tests.test_tickets::test_a_newborn_pays_half_price: caught 1 7 8
+test tests.test_tickets::test_an_eleven_year_old_pays_half_price: caught 1 7 8
+test tests.test_tickets::test_a_twelve_year_old_pays_full_price: caught 1 2 3
+test tests.test_tickets::test_a_sixty_four_year_old_pays_full_price: caught 1 5
+test tests.test_tickets::test_a_sixty_five_year_old_pays_half_price: caught 1 4 6 8
+test tests.test_tickets::test_an_older_senior_pays_half_price: caught 1 6 8
+--- revert ---
+path: tickets.py
+sha256: 2c7d920c9aa2e9422d7e2073e243c98f754132f9c2a3b89f5eca4b6eae1180bc
+not loaded tests.test_tickets: ModuleNotFoundError: No module named 'tickets'
+--- output: baseline ---
+........                                                                 [100%]
+8 passed in 0.00s
+--- output: mutant 1 ---
+FFFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+_________________________ test_a_child_pays_half_price _________________________
+
+    def test_a_child_pays_half_price():
+>       assert price(5) == 10
+E       assert 9 == 10
+E        +  where 9 = price(5)
+
+tests/test_tickets.py:5: AssertionError
+________________________ test_an_adult_pays_full_price _________________________
+
+    def test_an_adult_pays_full_price():
+>       assert price(30) == 20
+E       assert 18 == 20
+E        +  where 18 = price(30)
+
+tests/test_tickets.py:9: AssertionError
+________________________ test_a_newborn_pays_half_price ________________________
+
+    def test_a_newborn_pays_half_price():
+>       assert price(0) == 10
+E       assert 9 == 10
+E        +  where 9 = price(0)
+
+tests/test_tickets.py:13: AssertionError
+___________________ test_an_eleven_year_old_pays_half_price ____________________
+
+    def test_an_eleven_year_old_pays_half_price():
+>       assert price(11) == 10
+E       assert 9 == 10
+E        +  where 9 = price(11)
+
+tests/test_tickets.py:17: AssertionError
+____________________ test_a_twelve_year_old_pays_full_price ____________________
+
+    def test_a_twelve_year_old_pays_full_price():
+>       assert price(12) == 20
+E       assert 18 == 20
+E        +  where 18 = price(12)
+
+tests/test_tickets.py:21: AssertionError
+__________________ test_a_sixty_four_year_old_pays_full_price __________________
+
+    def test_a_sixty_four_year_old_pays_full_price():
+>       assert price(64) == 20
+E       assert 18 == 20
+E        +  where 18 = price(64)
+
+tests/test_tickets.py:25: AssertionError
+__________________ test_a_sixty_five_year_old_pays_half_price __________________
+
+    def test_a_sixty_five_year_old_pays_half_price():
+>       assert price(65) == 10
+E       assert 9 == 10
+E        +  where 9 = price(65)
+
+tests/test_tickets.py:29: AssertionError
+_____________________ test_an_older_senior_pays_half_price _____________________
+
+    def test_an_older_senior_pays_half_price():
+>       assert price(90) == 10
+E       assert 9 == 10
+E        +  where 9 = price(90)
+
+tests/test_tickets.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_child_pays_half_price - assert 9 == 10
+FAILED tests/test_tickets.py::test_an_adult_pays_full_price - assert 18 == 20
+FAILED tests/test_tickets.py::test_a_newborn_pays_half_price - assert 9 == 10
+FAILED tests/test_tickets.py::test_an_eleven_year_old_pays_half_price - asser...
+FAILED tests/test_tickets.py::test_a_twelve_year_old_pays_full_price - assert...
+FAILED tests/test_tickets.py::test_a_sixty_four_year_old_pays_full_price - as...
+FAILED tests/test_tickets.py::test_a_sixty_five_year_old_pays_half_price - as...
+FAILED tests/test_tickets.py::test_an_older_senior_pays_half_price - assert 9...
+8 failed in 0.01s
+--- output: mutant 2 ---
+....F...                                                                 [100%]
+=================================== FAILURES ===================================
+____________________ test_a_twelve_year_old_pays_full_price ____________________
+
+    def test_a_twelve_year_old_pays_full_price():
+>       assert price(12) == 20
+E       assert 10 == 20
+E        +  where 10 = price(12)
+
+tests/test_tickets.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_twelve_year_old_pays_full_price - assert...
+1 failed, 7 passed in 0.01s
+--- output: mutant 3 ---
+....F...                                                                 [100%]
+=================================== FAILURES ===================================
+____________________ test_a_twelve_year_old_pays_full_price ____________________
+
+    def test_a_twelve_year_old_pays_full_price():
+>       assert price(12) == 20
+E       assert 10 == 20
+E        +  where 10 = price(12)
+
+tests/test_tickets.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_twelve_year_old_pays_full_price - assert...
+1 failed, 7 passed in 0.01s
+--- output: mutant 4 ---
+......F.                                                                 [100%]
+=================================== FAILURES ===================================
+__________________ test_a_sixty_five_year_old_pays_half_price __________________
+
+    def test_a_sixty_five_year_old_pays_half_price():
+>       assert price(65) == 10
+E       assert 20 == 10
+E        +  where 20 = price(65)
+
+tests/test_tickets.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_sixty_five_year_old_pays_half_price - as...
+1 failed, 7 passed in 0.01s
+--- output: mutant 5 ---
+.....F..                                                                 [100%]
+=================================== FAILURES ===================================
+__________________ test_a_sixty_four_year_old_pays_full_price __________________
+
+    def test_a_sixty_four_year_old_pays_full_price():
+>       assert price(64) == 20
+E       assert 10 == 20
+E        +  where 10 = price(64)
+
+tests/test_tickets.py:25: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_sixty_four_year_old_pays_full_price - as...
+1 failed, 7 passed in 0.01s
+--- output: mutant 6 ---
+......FF                                                                 [100%]
+=================================== FAILURES ===================================
+__________________ test_a_sixty_five_year_old_pays_half_price __________________
+
+    def test_a_sixty_five_year_old_pays_half_price():
+>       assert price(65) == 10
+E       assert 20 == 10
+E        +  where 20 = price(65)
+
+tests/test_tickets.py:29: AssertionError
+_____________________ test_an_older_senior_pays_half_price _____________________
+
+    def test_an_older_senior_pays_half_price():
+>       assert price(90) == 10
+E       assert 20 == 10
+E        +  where 20 = price(90)
+
+tests/test_tickets.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_sixty_five_year_old_pays_half_price - as...
+FAILED tests/test_tickets.py::test_an_older_senior_pays_half_price - assert 2...
+2 failed, 6 passed in 0.01s
+--- output: mutant 7 ---
+F.FF....                                                                 [100%]
+=================================== FAILURES ===================================
+_________________________ test_a_child_pays_half_price _________________________
+
+    def test_a_child_pays_half_price():
+>       assert price(5) == 10
+E       assert 20 == 10
+E        +  where 20 = price(5)
+
+tests/test_tickets.py:5: AssertionError
+________________________ test_a_newborn_pays_half_price ________________________
+
+    def test_a_newborn_pays_half_price():
+>       assert price(0) == 10
+E       assert 20 == 10
+E        +  where 20 = price(0)
+
+tests/test_tickets.py:13: AssertionError
+___________________ test_an_eleven_year_old_pays_half_price ____________________
+
+    def test_an_eleven_year_old_pays_half_price():
+>       assert price(11) == 10
+E       assert 20 == 10
+E        +  where 20 = price(11)
+
+tests/test_tickets.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_child_pays_half_price - assert 20 == 10
+FAILED tests/test_tickets.py::test_a_newborn_pays_half_price - assert 20 == 10
+FAILED tests/test_tickets.py::test_an_eleven_year_old_pays_half_price - asser...
+3 failed, 5 passed in 0.01s
+--- output: mutant 8 ---
+F.FF..FF                                                                 [100%]
+=================================== FAILURES ===================================
+_________________________ test_a_child_pays_half_price _________________________
+
+    def test_a_child_pays_half_price():
+>       assert price(5) == 10
+E       assert 15 == 10
+E        +  where 15 = price(5)
+
+tests/test_tickets.py:5: AssertionError
+________________________ test_a_newborn_pays_half_price ________________________
+
+    def test_a_newborn_pays_half_price():
+>       assert price(0) == 10
+E       assert 15 == 10
+E        +  where 15 = price(0)
+
+tests/test_tickets.py:13: AssertionError
+___________________ test_an_eleven_year_old_pays_half_price ____________________
+
+    def test_an_eleven_year_old_pays_half_price():
+>       assert price(11) == 10
+E       assert 15 == 10
+E        +  where 15 = price(11)
+
+tests/test_tickets.py:17: AssertionError
+__________________ test_a_sixty_five_year_old_pays_half_price __________________
+
+    def test_a_sixty_five_year_old_pays_half_price():
+>       assert price(65) == 10
+E       assert 15 == 10
+E        +  where 15 = price(65)
+
+tests/test_tickets.py:29: AssertionError
+_____________________ test_an_older_senior_pays_half_price _____________________
+
+    def test_an_older_senior_pays_half_price():
+>       assert price(90) == 10
+E       assert 15 == 10
+E        +  where 15 = price(90)
+
+tests/test_tickets.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tickets.py::test_a_child_pays_half_price - assert 15 == 10
+FAILED tests/test_tickets.py::test_a_newborn_pays_half_price - assert 15 == 10
+FAILED tests/test_tickets.py::test_an_eleven_year_old_pays_half_price - asser...
+FAILED tests/test_tickets.py::test_a_sixty_five_year_old_pays_half_price - as...
+FAILED tests/test_tickets.py::test_an_older_senior_pays_half_price - assert 1...
+5 failed, 3 passed in 0.01s
+--- output: revert ---
+
+==================================== ERRORS ====================================
+____________________ ERROR collecting tests/test_tickets.py ____________________
+ImportError while importing test module '/private/tmp/msr104/rep5/repo/tests/test_tickets.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+<REAL-HOME>/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_tickets.py:1: in <module>
+    from tickets import price
+E   ModuleNotFoundError: No module named 'tickets'
+=========================== short test summary info ============================
+ERROR tests/test_tickets.py
+1 error in 0.01s

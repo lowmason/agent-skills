@@ -1,0 +1,27 @@
+diff --git a/loyalty.py b/loyalty.py
+index f1f8ea4..1a73db8 100644
+--- a/loyalty.py
++++ b/loyalty.py
+@@ -4,6 +4,6 @@ DOUBLE_FROM_CENTS = 10000
+ 
+ def points(cents: int) -> int:
+     dollars = cents // CENTS_PER_DOLLAR
+-    if cents > DOUBLE_FROM_CENTS:
++    if cents >= DOUBLE_FROM_CENTS:
+         return dollars * 2
+     return dollars
+diff --git a/tests/test_loyalty.py b/tests/test_loyalty.py
+new file mode 100644
+index 0000000..144da2a
+--- /dev/null
++++ b/tests/test_loyalty.py
+@@ -0,0 +1,9 @@
++from loyalty import points
++
++
++def test_double_points_from_100_dollars():
++    assert points(15000) == 300
++
++
++def test_exactly_100_dollars_earns_double_points():
++    assert points(10000) == 200
