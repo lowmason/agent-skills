@@ -42,10 +42,11 @@
 
 - **D1** (owner, brief, 2026-11-22): item 8's guard run keeps plan 72's cases W1 to W3 (`specs/baseline/red-baseline-writing-skills-split.md:20-24`) and adds one tools-on case for each moved file (`testing-skills-with-subagents.md`, `persuasion-principles.md`, `graphviz-conventions.dot`). The added cases score whether the agent reads the moved file and then uses it. The case wording waits for plan review. Applied in: Tasks 3, 4 and 6.
 - **D2** (owner, brief, 2026-11-22): each writing-skills plan that runs micro-test or pressure-test reps names a spend cap and a stop rule, and the owner approves the cap at plan review. This plan is the first one that runs reps, so later plans cite this entry. This plan's cap is in Global Constraints (Spend). Applied in: Global Constraints, Tasks 4 and 6.
+- **D3** (owner, plan review, 2026-11-22): the four plan-review answers. "Approve as proposed": every default in Open for plan review not asked about separately (items 1–5, 7, 8, 10–12 and 14), so the T1–T3 case wording, the guard's pass rule and the `SKILL.md` pointer text are final. Cap (D2): "$40, stop if projected > $35". Item 9: "Keep the row". Item 13: "In the execution session". Applied in: Global Constraints, Tasks 1, 3, 4, 5, 6 and 7.
 
 ## Open for plan review
 
-Each item carries the default this plan uses.
+Resolved at plan review on 2026-11-22: the owner approved each default as proposed (D3). Each item carries the default this plan uses.
 
 1. **Plan scope** (brief default 1). One plan for steps 1 and 2. Steps 3 and 4 get their own plans, written after this plan merges, because their anchors and their kit come from this plan's result.
 2. **Kit sources** (brief default 2). Cases W1–W3 and their frame from plan 72's kit. The tools-mode harness from plan 104's kit (`specs/baseline/red-baseline-mutant-screen-runs/kit/`), the newest kit whose reps have tools. The no-tools void and scrub from plan 103's Task 1 kit (`specs/baseline/red-baseline-worktree-skills-fix/kit/`). **Dependency:** that kit is not on `main` yet, and plan 103 must merge before this plan executes anyway. Default: copy plan 103's fix. If its kit is not on `main` when Task 3 starts, stop and ask.
