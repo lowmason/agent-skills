@@ -1,6 +1,6 @@
 # brainstorming: suggested changes
 
-**Status:** findings only. No skill text was edited. This document lists ranked changes to `skills/brainstorming/` for the owner to pick from.
+**Status:** findings, owner rulings recorded and approved for planning (2026-11-22). No skill text was edited. This document lists ranked changes to `skills/brainstorming/`. The owner picked six of them (see Owner decisions), and this document is the input for writing-plans, with no spec in between.
 
 **Date:** 2026-11-22. **Scope:** `skills/brainstorming/` and its NOTICE entry. No change is proposed for derive-roadmap, writing-plans, `/deferred` or `install.py`.
 
@@ -13,18 +13,44 @@
 
 ## Ranked list
 
-| Rank | Item | Body change (characters) | Re-run cost | NOTICE |
-|---|---|---|---|---|
-| 1 | Free body room | about −450 | about $1.80 | yes |
-| 2 | Make Size the Work agree with the first-message design | about +60 to +120 | about $2.70 | yes |
-| 3 | T7: target the form the last wording round did not reach | about +80 | about $3.00 | yes |
-| 4 | P3: "just write it up" does not hand over the how | about +90 | about $0.60 | yes |
-| 5 | Red Flags quick-task cell points back to the size rules | about +50 | about $0.30 | no |
-| 6 | Search the backlog, do not read it whole | about +10 | none possible | update one sentence |
-| 7 | Let the builder check read the project | 0 | by hand | yes |
-| 8 | Fix three defects in `visual-companion.md` | 0 | server suite | yes |
+| Rank | Item | Body change (characters) | Re-run cost | NOTICE | Owner ruling |
+|---|---|---|---|---|---|
+| 1 | Free body room | about −450 | about $1.80 | yes | carry |
+| 2 | Make Size the Work agree with the first-message design | about +60 to +120 | about $2.70 | yes | carry |
+| 3 | T7: target the form the last wording round did not reach | about +80 | about $3.00 | yes | known gap |
+| 4 | P3: "just write it up" does not hand over the how | about +90 | about $0.60 | yes | carry |
+| 5 | Red Flags quick-task cell points back to the size rules | about +50 | about $0.30 | no | carry |
+| 6 | Search the backlog, do not read it whole | about +10 | none possible | update one sentence | carry |
+| 7 | Let the builder check read the project | 0 | by hand | yes | backlog, prove first |
+| 8 | Fix three defects in `visual-companion.md` | 0 | server suite | yes | carry |
 
 Items 1 to 5 change wording that the micro-tests measure. Items 6 to 8 do not. Items 2 to 5 together add about 280 to 340 characters, which is more than the 176 free. So item 1 must come first, or the changes must be split across rounds.
+
+## Owner decisions
+
+The owner ruled in chat on 2026-11-22 on the item set, on the three owner calls that items 1, 5 and 8 name, and on approval for planning.
+
+1. **The item set.** Which items go into the plan?
+   Ruling: carry items 1, 2, 4, 5, 6 and 8 in one plan. Item 3 stays a known gap, as the owner ruled on
+   2026-11-06 and at plan 86's final review. Item 7 goes to the backlog with a prove-first note
+   (`specs/deferred_items.md`, section `brainstorming-improvements`).
+   Item 4 guards item 2: item 2 lets the agent make the pick when the partner "handed you the how", and P3
+   fails through that same branch. P3 runs in item 2's re-run already. Item 2's re-run also measures T7 as a
+   no-regression check, so leaving item 3 out keeps a T7 shift traceable to one edit.
+2. **Item 1, the per-question paragraph.** Delete it from the body, given the compaction trade-off?
+   Ruling: delete it. All three cuts go ahead, about −450 characters.
+3. **Item 5, the wording.** Decision D18 set today's text, so the owner picks the new text.
+   Ruling: keep today's cell and append "If the look shows a wider reach, step up a size." (about +49
+   characters).
+4. **Item 8, the Copilot CLI block.** Drop it, or keep it as upstream text?
+   Ruling: keep it as upstream text, unchanged. A smaller diff against upstream makes the next superpowers
+   port easier.
+5. **Approval.** Is this document the input for writing-plans, with no spec in between?
+   Ruling: approved for planning.
+
+Not decided here: whether item 2's fix also goes upstream. Item 2 names it as the owner's choice, and it needs its own ask.
+
+**Plan scope.** One plan. Item 1 frees the room first, and items 1, 2, 4 and 5 then share one micro-test round. Items 6 and 8 need no micro-test. Free room goes from 176 to about 625 characters, and items 2, 4, 5 and 6 add about 210 to 270, which leaves about 355 to 415. Run separately, the re-runs of items 1, 2, 4 and 5 cost about $5.40. One round costs less, because their case lists overlap.
 
 ## 1. Free body room first
 
