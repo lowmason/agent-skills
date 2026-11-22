@@ -50,7 +50,12 @@ The owner ruled in chat on 2026-11-22 on the item set, on the three owner calls 
 
 Not decided here: whether item 2's fix also goes upstream. Item 2 names it as the owner's choice, and it needs its own ask.
 
-**Plan scope.** One plan. Item 1 frees the room first, and items 1, 2, 4 and 5 then share one micro-test round. Items 6 and 8 need no micro-test. Free room goes from 176 to about 625 characters, and items 2, 4, 5 and 6 add about 210 to 270, which leaves about 355 to 415. Run separately, the re-runs of items 1, 2, 4 and 5 cost about $5.40. One round costs less, because their case lists overlap.
+## Planning notes (not owner rulings)
+
+The planning session wrote these notes after the owner's rulings. The owner did not rule on them. The plan settles the open one at plan review.
+
+- **Room.** Item 1 frees about 450 characters, so free room goes from 176 to about 625. Items 2, 4, 5 and 6 add about 210 to 270, which leaves about 355 to 415.
+- **Test rounds (open).** Items 1, 2, 4 and 5 change measured text, and items 6 and 8 need no micro-test. Whether items 1, 2, 4 and 5 share one micro-test round or run in more than one is not decided. Item 1's Re-run asks for its own run of the twelve guards. Run separately, the re-runs of items 1, 2, 4 and 5 cost about $5.40. A shared round costs less, because their case lists overlap.
 
 ## 1. Free body room first
 
