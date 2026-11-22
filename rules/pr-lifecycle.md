@@ -50,8 +50,8 @@ opening a follow-up PR.
      `git branch -D <branch>`. If it prints more, or either command fails, stop and report the
      output, and run no other form of either command. The app handles the worktree when the
      session is archived (step 4). Archiving can discard uncommitted changes in it, usually after
-     asking, and a kept worktree is removed about 30 days later. Report the worktree's path, and
-     the branch if it is still there.
+     asking, and a worktree that the archive leaves on disk is removed about 30 days after the
+     archive. Report the worktree's path, and the branch if it is still there.
    - **Any other worktree**, such as one from `claude --worktree`, or one whose making this
      conversation no longer shows: switch the main checkout to the default branch, fast-forward
      it, and prune. Do not remove the worktree or delete its branch. Give the user

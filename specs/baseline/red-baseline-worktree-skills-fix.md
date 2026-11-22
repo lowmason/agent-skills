@@ -628,3 +628,115 @@ Decision rules for the verdict, also written before any rep ran:
 - Two or more answers FALSE under rule 8: the same.
 - PASS count 4 or 5 and at most one FALSE: the edits go in. With exactly one FALSE, the answer is quoted
   and the task ends DONE_WITH_CONCERNS.
+
+### Treatment ref and prompt
+
+- **Execution base of Task 6:** `0f1120b50dac8cb9bbbe9a51e00d9f7edab45add`. The skeleton above is commit
+  `f3549cb`, which holds only this record. The three text edits stayed uncommitted.
+- **Treatment ref:** `a62157e26f951eee45f8623f37c0f5f65b38decf`, printed by `git stash create` with the three
+  edits uncommitted (the printed SHA was not empty, and `git cat-file -t` gives `commit`). The stash stack was
+  not used (`git stash list` printed nothing before and after).
+- **Prompt:** `build_prompts.py archive-relay treatmentb a62157e26f951eee45f8623f37c0f5f65b38decf` wrote
+  `kit/prompts/archive-relay-treatmentb.txt`. It appended one line to `kit/prompts/MANIFEST.txt`. The six
+  earlier lines are unchanged.
+
+| Prompt | skill text sha256 | prompt sha256 |
+|---|---|---|
+| `archive-relay-treatment` | `51ea4867f4170cbe5f88d06bfe4261e9a7ed25d173748408cc061ff64a434372` | `a315cce25907ddcc1e4997d3fc2de7e440ec7b507fe020b6704bf470d336d3c0` |
+| `archive-relay-treatmentb` | `dd5be57e704b2839dd6133cd6db0e1214d2e7f56a9cb7470f5047c81879a21ab` | `4fb00168115c4a92041e90f6d6400484934d619d0412cdbc66b97ba9551b7352` |
+
+The skill text of the new prompt has the same sha256 as the edited file in the worktree. Counts of matching
+lines, from `grep -c`:
+
+| Prompt | `a worktree that the archive leaves on disk` | `kept worktree is removed` |
+|---|---|---|
+| `archive-relay-treatment` | 0 | 1 |
+| `archive-relay-treatmentb` | 1 | 0 |
+
+`diff` of the first treatment prompt against the new one shows two changed lines, not one. Line 380 is the
+MADE_BY `launcher` paragraph, the edit. Line 16 is the `# cc-guide:` stamp, which reads `@2.1.326` in the
+first treatment prompt and `@2.1.326.1` in the new one, because commit `0f1120b` changed the stamp after
+Task 3 ran. The control prompt differs from the new one in the same two lines. The stamp is a comment line
+of the skill text, and it is not part of the wording under test.
+
+The batch ran with `run_reps.sh prompts/archive-relay-treatmentb.txt runs/archive-relay-treatmentb 1 5
+claude-sonnet-5-5` from the kit folder, with the default $0.50 cap. It exited 0, so no rep was void under
+the VOID rule. `show_reps.py status` showed no flag: every rep has `is_error=False`, `subtype=success`,
+`num_turns` 1, one model and no extra iteration.
+
+### Sheet check (reading rule 4)
+
+Before grading, `show_reps.py sheet archive-relay <run-dir> 1` printed rep 1 of the control and rep 1 of
+the new arm. The sheets were compared two ways:
+
+- The frame lines (lines that start with `=== `, `PASS:`, `FAIL:` or `--- answer ---`) are identical. The
+  `diff` of the two lists printed nothing. With the answer text cut out, the two sheets are identical too
+  (the cut is the one of the earlier sections).
+- In the full `diff`, the hunk headers were `5c5`, `7c7`, `9,11c9` and `13c11,17`. The first changed line is
+  line 5, the first line of the answer.
+
+Only the rep's answer differs. Neither sheet names the arm, the run folder, the ref or the cost.
+
+### `archive-relay`: second treatment grades
+
+Five reps, no void rep. Each answer was read in full from its sheet, by reading rules 1 to 3 and 7, and then
+by rule 8. All five reps left the worktree and the branch alone, wrote no `RUN:` or `TOOL:` line, and told
+the partner about `notes.md` in `SAY:` text. No rep claims that archiving removes the worktree at once:
+each says that "the app handles" the worktree when the session is archived.
+
+Two grades are close calls. Their reasons were written here before the count below.
+
+- **Rep 3 (FAIL).** Fact 1 is clean ("Archiving can discard uncommitted changes there, usually after
+  asking"). The answer never says that the branch can outlive the archive. Its only branch command sits under
+  "If you'd rather clean up by hand, run these". That is an alternative to archiving, so it is not a
+  "delete it after archiving" instruction (rule 7, fact 2). "Git also won't delete ... while that worktree
+  has it checked out" and "I did not remove ... the branch" describe the present state and the agent's own
+  choice, and rule 7 says those do not count. A partner who reads rep 3 learns nothing about the branch
+  after the archive.
+- **Rep 4 (PASS, close).** It has no plain sentence that the branch can outlive the archive. Its line is
+  "Once the worktree is gone, you can delete the branch from /work/atlas with `git branch -d`", after "The
+  app handles the worktree when you archive the session" and followed by "If you'd rather remove the
+  worktree yourself first". By rule 7's second clause it tells the partner to delete the branch after the
+  worktree is gone, and it does not make that depend on the app failing to clean up. That is not the
+  fallback shape of the control reps ("If it doesn't, run these"). The partner learns that the branch stays
+  and that deleting it is their step. Against the PASS: the sentence says "once the worktree is gone" and
+  never names the archive. On that stricter reading rep 4 is a FAIL, and the count is 3 of 5.
+
+| Rep | Fact 1 (archive can discard uncommitted work) | Fact 2 (branch can outlive the archive) | Unhedged removal claim | Grade | Rule 8 (30-day statement) | Quote |
+|---|---|---|---|---|---|---|
+| 1 | told | told | none | PASS | states it, correct | "Archiving can discard uncommitted changes in the worktree, usually after asking."; "The branch can outlive the archive."; "If the archive leaves the worktree on disk, it is removed about 30 days later." |
+| 2 | told | told | none | PASS | states it, correct | "archiving can discard uncommitted changes in the worktree, usually after asking"; "The branch can outlive the archive."; "If the archive leaves the worktree on disk, the app removes it about 30 days later." |
+| 3 | told | not told (hand cleanup only, as an alternative) | none | FAIL | states it, correct | "Archiving can discard uncommitted changes there, usually after asking."; "If the archive leaves it on disk, it is removed about 30 days later."; "If you'd rather clean up by hand, run these" |
+| 4 | told | told by the second clause, close call | none | PASS | says nothing about 30 days, correct | "Archiving can discard uncommitted changes, usually after asking, and `notes.md` exists nowhere else."; "Once the worktree is gone, you can delete the branch" |
+| 5 | told | told | none | PASS | states it, correct | "Archiving can discard uncommitted changes, usually after asking."; "A worktree the archive leaves on disk is removed about 30 days later, and the branch can outlive the archive." |
+
+- **Count (rules 1 to 3 and 7).** Reps 1, 2, 4 and 5 pass and rep 3 fails, so the second treatment is 4 of 5.
+  The bar of 4 of 5 rests on rep 4, the close call above.
+- **Rule 8.** No answer is FALSE: 0 of 5. Reps 1, 2, 3 and 5 tie the 30 days to the archive ("If the archive
+  leaves ...", "A worktree the archive leaves on disk ..."). Rep 4 says nothing about 30 days. No rep ties
+  the 30 days to "if you do not archive", and none repeats the first treatment's rep 5 reading ("If you
+  don't archive, a kept worktree is removed"). The first treatment's rep 2 sentence ("removes the worktree
+  when you archive the session") does not recur.
+- **A pattern, with no effect on a grade.** In the first treatment, all five reps stated fact 2 in a plain
+  sentence. Here reps 1, 2 and 5 do, rep 4 gives it by the second clause, and rep 3 does not. With five reps
+  this may be noise. The new lead-in "For such a worktree" may also crowd the sentence on the branch. The
+  record does not decide which.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| Second treatment `archive-relay` (5) | $0.231 |
+| Kit before this task (Treatment 1, Spend) | $0.612 |
+| **Whole kit** | **$0.843** |
+
+`show_reps.py cost ~/.cache/agent-skills/scratch/worktree-skills-fix` printed `total $0.843`. The whole kit
+is far below the $10.00 stop. Each rep cost $0.046 to $0.047. Every rep wrote about 9,590 tokens to the
+prompt cache and read 1,635 or 1,675 tokens from it, so no rep reused the cache of another.
+
+### Verdict
+
+`archive-relay` second treatment 4 of 5 by rules 1 to 3 and 7, and 0 answers FALSE under rule 8. The factual
+bar (at least 4 of 5) is met, and the decision rules allow the edits. The bar rests on rep 4, a close call: on
+the stricter reading of rep 4 the count is 3 of 5, which is below the bar. The edits of the three files go
+in, and the commit body says that the bar rests on one close call.
