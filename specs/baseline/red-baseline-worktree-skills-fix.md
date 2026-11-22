@@ -575,3 +575,56 @@ to 5 cost $0.009 to $0.011 each and read 10,843 tokens from it.
 control scored, and the treatment passes at least 4 of 5) is met. All five reps told the partner that
 archiving can discard uncommitted changes and that the branch can outlive the archive. The five control
 reps never said the branch can outlive it. The edit stays.
+
+## Treatment 2: archive-relay (wording follow-up)
+
+Task 6 of plan 103 is a follow-up that the plan does not list. The owner chose it at the plan-completion gate
+on 2026-11-22. It reworks one sentence of the first treatment (Treatment: archive-relay) and runs a second
+treatment arm of the factual case `archive-relay`. The arm label is `treatmentb`. The control stays at BASE.
+The first treatment arm stays as recorded above.
+
+### Why this arm runs
+
+Two problems showed in the final review of Task 3. First, "kept" reads two ways: in treatment rep 5 the
+rep told its partner "If you don't archive, a kept worktree is removed after about 30 days", and no such
+deadline exists. The Claude Code desktop docs say that Desktop removes the worktree of a local session
+about 30 days after the session is archived or last opened, whichever is later. They do not use the word
+"kept". Second, the discard and 30-day sentences follow the clause "If the desktop app started it" but are
+not tied to it, and Step 6's MADE_BY `launcher` case also covers a worktree that another tool made, where
+archiving does not apply.
+
+### The edit
+
+Old text (the first treatment's sentence, line 379 of `skills/finishing-a-development-branch/SKILL.md`):
+"Archiving can discard uncommitted changes in it, usually after asking, and a kept worktree is removed
+about 30 days later. The branch can outlive the archive."
+
+New text: "For such a worktree, archiving can discard uncommitted changes in it, usually after asking, and a
+worktree that the archive leaves on disk is removed about 30 days after the archive. The branch can
+outlive the archive."
+
+The "and may reuse it" clause before it is unchanged. The same wording change goes into `rules/pr-lifecycle.md`
+(step 3, the desktop-app case) and into the NOTICE bullet for plan 103. The Claude Code guide carries the old
+sentence too. It is not edited here, and the owner handles it through `/cc-guide`.
+
+### Bar
+
+The same factual bar as the first treatment arm: at least 4 of 5 PASS by reading rules 1 to 3 and 7
+(Reading rules, Bars). Below 4 of 5, the SKILL.md, rule and NOTICE edits do not go in.
+
+### Reading rule 8, written before any rep ran
+
+8. **Rule 8 (informational, 30-day statement).** For each answer, record whether it states the 30-day
+   removal and whether the statement is correct. It is correct when it ties the removal to the archive
+   (for example, "about 30 days after the archive"), or when the answer says nothing about 30 days. It is
+   FALSE when it says that a worktree is removed after 30 days if the partner does not archive, or ties
+   the 30 days to anything but the archive. Rule 8 changes no PASS or FAIL grade. Rules 1 to 3 and 7 grade
+   PASS and FAIL exactly as for the control and the first treatment arm.
+
+Decision rules for the verdict, also written before any rep ran:
+
+- PASS count below 4 of 5: the SKILL.md, rule and NOTICE edits stay out. The grades are recorded and the
+  task ends BLOCKED.
+- Two or more answers FALSE under rule 8: the same.
+- PASS count 4 or 5 and at most one FALSE: the edits go in. With exactly one FALSE, the answer is quoted
+  and the task ends DONE_WITH_CONCERNS.
