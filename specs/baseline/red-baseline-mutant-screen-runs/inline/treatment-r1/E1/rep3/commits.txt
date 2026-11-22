@@ -1,0 +1,12 @@
+7354bff4907104c6c91b622867cd6155c6ad7305
+task 1 input shape
+
+Test the senior rule and the age boundaries
+
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+d759fb7c1b6a5d55766bc979c451db07e567d381
+
+Add ticket prices
+

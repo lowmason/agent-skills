@@ -1,0 +1,8 @@
+0b2f74079ac6054ea01532e6a297b7d54544d50e
+
+Test a small parcel at its upper edge
+
+0576b8e81d6a2c1e7eee1b3b6737b7473ca8c7a2
+
+Add the parcel bands
+

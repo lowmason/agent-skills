@@ -1,0 +1,10 @@
+diff --git a/parking.py b/parking.py
+index 643d359..dc5211c 100644
+--- a/parking.py
++++ b/parking.py
+@@ -1,4 +1,4 @@
+-FREE_MINUTES = 30
++FREE_MINUTES = 31
+ RATE_PER_HOUR = 2
+ 
+ 

@@ -1,0 +1,14 @@
+28cb3b40d6ee999ae69fe0a8e622f90afe286955
+task 1 input shape
+task 1 revert
+
+Test double points at exactly 100 dollars
+
+Mutant-step: task 1 input shape
+Mutant-step: task 1 revert
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+22d72188f6dde7a79be454dbb8403ce0659e8d48
+
+Give double points from 100 dollars
+

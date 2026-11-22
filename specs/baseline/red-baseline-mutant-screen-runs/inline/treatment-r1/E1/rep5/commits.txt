@@ -1,0 +1,12 @@
+4513e0ff82cb440e74665a2e781d8deb0f676d35
+task 1 input shape
+
+Test the age boundaries and senior price
+
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+f1fda4d42674c7779bddd562840f820627db28ad
+
+Add ticket prices
+

@@ -1,0 +1,18 @@
+096a0c27758f649efde2235fdf6e5a3e810af261
+task 1 review
+
+Fix a medium parcel at its upper edge
+
+band(2000) returned large; the spec says 2000 grams is medium.
+
+Mutant-step: task 1 review
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+4cc21537f7b6006e236f3657876a33b83b170c95
+
+Test a small parcel at its upper edge
+
+581c05afaa5259bf302aac3ae6eb429a0f553769
+
+Add the parcel bands
+

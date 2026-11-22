@@ -1,0 +1,10 @@
+diff --git a/bills.py b/bills.py
+index eb4c96b..cc2fd0c 100644
+--- a/bills.py
++++ b/bills.py
+@@ -1,3 +1,4 @@
+ def split(total_cents: int, people: int) -> list[int]:
+-    share, left_over = divmod(total_cents, people)
++    share = round(total_cents / people)
++    left_over = total_cents - share * people
+     return [share + 1 if person < left_over else share for person in range(people)]

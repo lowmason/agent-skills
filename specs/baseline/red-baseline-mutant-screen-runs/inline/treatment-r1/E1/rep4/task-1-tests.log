@@ -1,0 +1,8 @@
+test-run: Task 1, run 1
+command: /private/tmp/msr104-venv/bin/python -m pytest -q
+head: bd7ee3b4cd6372c3d5fc1e7f09588cd3f9ae0eec
+tree: clean
+exit: 0
+--- output ---
+........                                                                 [100%]
+8 passed in 0.00s

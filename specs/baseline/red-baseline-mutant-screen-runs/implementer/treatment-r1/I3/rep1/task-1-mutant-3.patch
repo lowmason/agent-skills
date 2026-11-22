@@ -1,0 +1,11 @@
+diff --git a/loyalty.py b/loyalty.py
+index 1a73db8..b0eb0ce 100644
+--- a/loyalty.py
++++ b/loyalty.py
+@@ -1,5 +1,5 @@
+ CENTS_PER_DOLLAR = 100
+-DOUBLE_FROM_CENTS = 10000
++DOUBLE_FROM_CENTS = 9000
+ 
+ 
+ def points(cents: int) -> int:

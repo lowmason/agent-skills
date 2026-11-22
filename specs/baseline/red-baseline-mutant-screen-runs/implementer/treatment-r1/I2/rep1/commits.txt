@@ -1,0 +1,32 @@
+1614d18d0a932d1c6cf1e74d48e9f8e9e13adb82
+task 1 review
+task 1 input shape
+
+Fix the upper edge of medium
+
+2000 grams is medium, not large.
+
+Mutant-step: task 1 review
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+96eda2c3182e6639fcccee15dc4eb7bb0d3b525c
+task 1 review
+task 1 input shape
+
+Make 2000 grams medium
+
+Weight at the upper edge of medium was returned as large.
+
+Mutant-step: task 1 review
+Mutant-step: task 1 input shape
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+1d47b2de53424d039c432514f977a7d100627877
+
+Test a small parcel at its upper edge
+
+35856dd10c3c07b0a64ff2c613a19962754c4c24
+
+Add the parcel bands
+

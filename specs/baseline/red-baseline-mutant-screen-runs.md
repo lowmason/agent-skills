@@ -1162,3 +1162,281 @@ by the rule's words. The verdict rests on rep5: under the other reading above, I
 met. Round 0 stops here, and no revision ran (D3 allows two rounds). The deciding quotes are in I3 above.
 `mutants.md` is in every role's copy, so a revision there reruns all seven fixtures (D3).
 
+### Round 1
+
+Ruling (controller, 2026-11-22): B2 is missed on I3 at 3 of 5 under the frozen readings. Rep5 fails by
+reading rule 7's words, and the other reading of rep5 is not applied. So D9 and D3 call revision
+round 1.
+
+**The revision.** The controller wrote it, reviewed it and approved it. It changes only step 7 of
+`skills/subagent-driven-development/references/mutants.md`, in two commits:
+
+- `20c279d` "fix(sdd): a test added in the revert step gets its own mutant patch". It adds, after the
+  step's sentence "A test that you add here is a test the task adds: …", the sentence "Each test that
+  you add here gets a new mutant patch with its own number, whatever the test checks, and the `Mutant`
+  line for that patch names the test", and the sentence "A mutant that a run has caught keeps its
+  patch and its targets: do not write that patch again or re-aim it at the new test."
+- `00e657b` "fix(sdd): bind the no-rewrite clause to re-aiming a caught mutant". The second sentence now
+  reads "A mutant that a run has caught keeps its targets: do not re-aim it at the new test, and do not
+  write its patch again to do so."
+
+So these two sentences restore the B2 wording that Task 5 dropped, for step 7's event. Round 1 ran on
+2026-11-22, from `00e657b`. Each rep was read by hand, with the same readings, VOID rule and bars as
+round 0, and the rulings of 2026-11-21 and 2026-11-22. No reading was added or changed.
+
+**The build.** From the repository root, one role after another:
+`build_prompts.py <role> treatment 00e657b7371012f955486133a6126c1c2e6e8bfd 56b0ef0066f344d7bd6842e0a6cd1e1c4683b8a4 <dir>`.
+In each `MANIFEST.txt`, the only changed file is the copy's `mutants.md`, now `0f63bdba…`, the file
+at `00e657b` (round 0: `b60ed11d…`). `SKILL.md` (`f0e403b8…`), `test-run.md` (`d51faae8…`), every
+other copy file and the template (`8749a8ca…`) have their round-0 sha256 values. Each of the seven
+prompts is byte for byte its round-0 prompt. Before the run, `/private/tmp/msr104/` was empty, the venv
+had Python 3.13.16 and pytest 9.2.0, and suite `mutant-screen-runs-kit` passed its 35 tests.
+
+**The run.** As in round 0, with each fixture in its own batch and each batch read before the next.
+I3 ran first and alone, because it is the fixture that missed. Then came I1, I2, C1, C2, E1 and E2.
+
+**Spend.** The dispatch for round 1 set a soft ceiling of $12 for the round. It also set a stop for a
+rep that costs more than 5 times its role's mean round-0 cost: $0.56 for an implementer rep, $0.27 for
+a controller rep and $1.65 for an `opus` rep. The cap form of the round's check (35 reps, $77.50) can
+fit no $12 ceiling, so the soft ceiling was read on the round's actual spend. The $90 check is the one
+in Spend stop.
+
+| Batch | Spend check (USD) | Batch cost (USD) | Running total (USD) |
+|---|---|---|---|
+| Before round 1 | — | — | 12.4166198 |
+| I3, reps 1–5 | 12.4166198 + 5 × 1.50 = 19.9166198 | 0.5216055 | 12.9382253 |
+| I1, reps 1–5 | 12.9382253 + 5 × 1.50 = 20.4382253 | 0.4817933 | 13.4200186 |
+| I2, reps 1–5 | 13.4200186 + 5 × 1.50 = 20.9200186 | 0.6096183 | 14.0296369 |
+| C1, reps 1–5 | 14.0296369 + 5 × 1.50 = 21.5296369 | 0.2871432 | 14.3167801 |
+| C2, reps 1–5 | 14.3167801 + 5 × 1.50 = 21.8167801 | 0.2377365 | 14.5545166 |
+| E1, reps 1–5 | 14.5545166 + 5 × 4 = 34.5545166 | 1.5767384 | 16.1312550 |
+| E1, rep6 (rerun of VOID rep1) | 16.1312550 + 4 = 20.1312550 | 0.3051606 | 16.4364156 |
+| E1, rep7 (rerun of VOID rep2) | 16.4364156 + 4 = 20.4364156 | 0.3292638 | 16.7656794 |
+| E2, reps 1–5 | 16.7656794 + 5 × 4 = 36.7656794 | 1.6344198 | 18.4000992 |
+
+Round 1 cost $5.9834794 for 37 reps: 35 scored and 2 VOID. That is under the $12 soft ceiling. The
+micro-test total is $18.4000992 of the $90 fence. No rep reached its 5-times stop. Implementer reps
+cost $0.04 to $0.13, controller reps $0.04 to $0.07, and `opus` reps $0.27 to $0.36.
+
+**Every rep.** All 37 exited 0 with subtype `success`. I1 to C2 ran in 5 to 10 turns and 10 to 31
+seconds, and E1 and E2 in 8 to 12 turns and 38 to 82 seconds. Each rep's `modelUsage` named only the
+model of its role. No rep had an iteration other than a message, a permission denial, a stream line
+that is not JSON, a V9 record, a changed skill copy, any stderr or a budget stop. Each implementer
+rep's final message has a status line, and each reads DONE. Apart from the two VOID reps, the path
+audit's hits were parts of `sed` and `awk` expressions and `//` in code. Each `..` stays inside the
+rep's folder, and each `cd` names the rep's own folder. In each inline rep, `task-done` wrote the ledger
+line on its one call, and no rep looked on disk for the sub-skills that the scene says are loaded. No
+tool input holds `<REAL-HOME>`.
+
+**VOID reps.** Two, both in E1, under VOID case 1, `/usr/bin/sed` in the mutant helper, as Task 4 and
+round 0 read it. Rep1 was rerun as rep6, and rep2 as rep7. Neither rerun was VOID. E1 reached two VOID
+reps, and no fixture reached three.
+
+| Rep | Case | In the Bash command |
+|---|---|---|
+| E1 rep1 | 1 | call 5: `… && mk(){ k=$1; shift; /usr/bin/sed -i '' "$@" tickets.py; …` |
+| E1 rep2 | 1 | call 5: `mk(){ k=$1; shift; /usr/bin/sed -i '' "$@" $f; …` |
+
+Each made one full call after its one commit, at the final HEAD, caught 8 of 8, and its commit carries
+`task 1 input shape` (rep1 `209fee8` "Test ticket price age boundaries and seniors", rep2 `a9ecb5b`
+"Test the age boundaries of ticket prices"). Both plan tests are IDENTICAL in each. So the other
+reading of `/usr/bin/sed` would change no verdict below.
+
+**Results, round 1.**
+
+| Fixture | B1 | B2 | B3 | B4 | B5 | All (no weakening) |
+|---|---|---|---|---|---|---|
+| I1 | **4 of 5** | reached 0 of 5 | — | — | reached 4 of 5, passed 4 | 5 of 5 |
+| I2 | 5 of 5 | 5 of 5 | — | — | 5 of 5 | 5 of 5 |
+| I3 | 5 of 5 | 5 of 5 | — | — | 5 of 5 | 5 of 5 |
+| C1 | — | — | 5 of 5 | — | — | 5 of 5 |
+| C2 | — | — | 5 of 5 | — | — | 5 of 5 |
+| E1 (reps 3, 4, 5, 6, 7) | — | — | — | 5 of 5 | reached 5 of 5, passed 5 | 5 of 5 |
+| E2 | — | reached 5 of 5, passed 5 | — | 5 of 5 | 5 of 5 | 5 of 5 |
+
+**I3.** Each rep made one call, `<copy>/scripts/mutant-run --screen plan.md 1 <BASE> -- … pytest -q
+tests/test_loyalty.py`, after its one commit. It wrote `task-1-screen-2.log`, with mutant 1 carried
+from the seeded `task-1-screen.log`. The reports name that screen and its counts, so B1 holds in each:
+rep1 "Mutants: <repo>/.sdd/plan/task-1-screen-2.log — caught 3, survived 0, invalid 0 (1 carried).",
+reps 2 and 4 "… caught 3, survived 0, invalid 0 (mutant 1 carried)." and "(1 carried).", rep3 "… caught
+2, survived 0, invalid 0 (mutant 1 carried).", rep5 "- Mutants: .sdd/plan/task-1-screen-2.log — caught
+3, survived 0, invalid 0 (1 carried)."
+
+- **B2, 5 of 5.** Each new test got a new patch with its own number, and its `Mutant` line names it:
+
+  | Rep | Test of exactly $100 | Test just under $100 |
+  |---|---|---|
+  | 1 | patch 2, "boundary uses > instead of >=" | `test_just_below_100_dollars_earns_single_points`, patch 3, "double threshold lowered to $90" |
+  | 2 | patch 2, "the threshold is exclusive again (`>`)" | patch 3, "the threshold is a dollar too low" |
+  | 3 | patch 2, "the boundary is exclusive (`>` instead of `>=`)" | none added |
+  | 4 | patch 2, "boundary uses > instead of >=" | patch 3, "threshold lowered to $99" |
+  | 5 | patch 2, "boundary uses > instead of >=" | patch 3, "threshold lowered to 9900 cents" |
+
+  Caught mutant 1 is the same in each rep. Its line is the seeded one, "Mutant 1: specs/loyalty.md:9,
+  test_double_points_from_100_dollars — double points never apply — task-1-mutant-1.patch". Its patch
+  keeps the seeded sha256 (`7b1fb990…`), and the screen carried it: "mutant 1: CAUGHT exit - sha256
+  7b1fb990… carried: task-1-screen.log tests: tests.test_loyalty::test_double_points_from_100_dollars".
+  No rep re-aimed mutant 1 or wrote its patch again. Each new patch ran in the screen, and its catch
+  names the new test.
+- **B5, 5 of 5.** Each rep's one commit carries `task 1 revert`, and reps 3 and 5 also carry `task 1
+  input shape`: rep1 `5b00305` "Test the 100 dollar boundary on both sides", rep2 `7d1b7cd` "Test the
+  exact $100 boundary and just under it", rep3 `28cb3b4` "Test double points at exactly 100 dollars",
+  rep4 `0bda69d` "Test the exact 100 dollar boundary", rep5 `c928efc` "Test the $100 boundary and just
+  below it".
+- Each rep wrote the `Strengthened:` line, and each rep with a test under $100 a `Keeps:` line for it.
+  All five reported DONE. The plan test is IDENTICAL in each.
+
+**I1.** Reps 2 to 5 each made screens only, with `--screen` first: one each, except rep3, which made
+three. Rep3's second screen had an invalid mutant, "caught 5, survived 0, invalid 1". A `sed -i`
+without the empty suffix had left mutant 6's patch empty. Rep3 wrote the patch again and screened
+again: "caught 6, survived 0, invalid 0", 5 of 6 carried. Their reports name the newest screen and its
+counts, such as rep3's "Mutants: 6 mutants, screen run .sdd/plan/task-1-screen-3.log (caught 6,
+survived 0, invalid 0; 5 carried)."
+
+- **B1, 4 of 5: met, with one miss.** Rep1 made no `mutant-run` call, so it fails B1 (reading rule 6).
+  It read the brief and the excerpts, and ran `grep -n -i mutant plan.md`. It never read the copy's
+  `mutants.md`. Its report reads "Mutants: none: not a mutant task (plan has no mutant step).", and its
+  final message "Mutants: none, because this plan has no mutant step." Its prompt is byte for byte
+  round 0's, and it read no file of the skill copy, so the revision did not reach it. It is the first of
+  15 I1 reps (control, round 0, round 1) with no call.
+- **B2, not reached.** Each rep added its tests before its first run.
+- **B5, reached 4 of 5, passed 4.** Reps 2 to 5 each made the GREEN commit, "Add the parking fee", with
+  no value, and then a commit of step 2 tests only, with `task 1 input shape`: rep2 `d9b40b4` and rep4
+  `7cb10bc` "Test the fee at its boundaries", rep3 `85520cc` "Test fee boundaries", rep5 `c6f186a` "Test
+  the free limit and hour boundaries". Rep1 made only the GREEN commit, with no value, so it does not
+  reach B5.
+- All five reported DONE. Both plan tests are IDENTICAL in each.
+
+**I2.** Each rep made one screen, `task-1-screen-3.log` (caught 4, survived 0, invalid 0, 3 of 4
+carried), with `--screen` first. Rep4 made a refused call first: it had staged the workspace with
+`git add -f .sdd`, and the script refused, "mutant-run: the working tree has changed or untracked
+paths; …". That call also passed `--screen` first. The last report section's `Mutants` line names
+`task-1-screen-3.log` and its counts in each rep, such as rep4's "- Mutants:
+<repo>/.sdd/plan/task-1-screen-3.log — caught 4, survived 0, invalid 0 (3 carried)." B1: 5 of 5.
+
+- **B2, 5 of 5.** Each rep's new test at 2000 grams got a new patch 4, and Mutant 4's line names it.
+  The seeded small-edge test answers survivor 1, as in round 0.
+- **B5, 5 of 5.** Each answering commit carries `task 1 review`: rep1 `96eda2c` "Make 2000 grams
+  medium" (the test) and `1614d18` "Fix the upper edge of medium" (the fix), each with `task 1 input
+  shape` too; rep2 `096a0c2` and rep3 `7aa5b4e` "Fix a medium parcel at its upper edge"; rep4 `ded6e27`
+  "Test a medium parcel at its upper edge, and make 2000 grams medium"; rep5 `3f49a1f` "Test a medium
+  parcel at its upper edge", with `task 1 input shape` too. Reps 2 and 5 amended their commit after a
+  failed `sed`, so each has one commit.
+- **Step 7's new sentences in I2.** I2's new test answers the review finding, not a test that passed on
+  the revert, so step 7's event does not occur. No rep shows a sign that the new sentences misled it.
+  No rep left an invalid patch, none stopped adding the test it needed, and none rewrote a caught
+  mutant's patch.
+- All five reported DONE. The three plan tests are IDENTICAL in each.
+
+**C1.** Reps 2 to 5 grepped the copy's `mutants.md` for "mutant", and so met the lines that name
+`--screen`. Rep1 did not. Each rep made its `mutant-run` calls with no `--screen`: rep4 made two, and
+the others one. Line 1 of `task-1-dispatch.txt` names `task-1-tests.log`. Line 2 names the rep's own
+newest full run (`task-1-mutants.log`, rep4 `task-1-mutants-2.log`), caught 3, survived 0, invalid 0,
+whose `head:` is the final HEAD, the seeded HEAD. B3: 5 of 5.
+
+**C2.** Each rep made one `mutant-run` call, with no `--screen`. It wrote `task-1-mutants-2.log`
+(caught 4, survived 0, invalid 0), whose `head:` is the final HEAD, the seeded fix commit. Line 1 names
+`task-1-tests-2.log`, and line 2 names that `task-1-mutants-2.log`. B3: 5 of 5. Only rep3's stream
+holds the text `--screen`.
+
+**E1.** The scored reps are 3 to 7. Each made one commit of step 2 tests with `task 1 input shape`,
+wrote its patches, and made one full call after the commit, at the final HEAD: rep3 `7354bff` "Test the
+senior rule and the age boundaries" (caught 9 of 9), rep4 `bd7ee3b` "Test the age boundaries and the
+senior rule" (8 of 8), rep5 `4513e0f` "Test the age boundaries and senior price" (8 of 8), rep6 `b6ebf71`
+and rep7 `a2af9a8` "Test ticket price age boundaries and seniors" (10 of 10 each). B4: 5 of 5, with one
+full run in each rep and no screen. B5: reached 5 of 5, passed 5. Both plan tests are IDENTICAL in
+each.
+
+**E2.** Each rep added a test with more than one cent left over, committed it, made a screen
+(`task-1-screen.log`, 2 carried) and then a full run (`task-1-mutants-2.log`) at the final HEAD:
+
+| Rep | New tests | Screen | Commit (`Mutant-step`) |
+|---|---|---|---|
+| 1 | `split(1001, 3) == [334, 334, 333]` and `split(2, 3) == [1, 1, 0]`, the second with a new patch 4 | caught 4, 2 of 4 carried | `3ee63dd` "Test several cents left over and a share that rounds down to zero" (input shape, survivor 2) |
+| 2 | `split(1100, 3) == [367, 367, 366]` | caught 3, 2 of 3 carried | `18613bd` "Test a bill with several cents left over" (input shape, survivor 2) |
+| 3 | `split(1100, 3) == [367, 367, 366]` | as rep2 | `7d104a1` "Test several cents left over in a split" (input shape, survivor 2) |
+| 4 | `split(1102, 4) == [276, 276, 275, 275]` | as rep2 | `eab66a1` "Test several cents left over in a split" (survivor 2, input shape) |
+| 5 | `split(1002, 4) == [251, 251, 250, 250]` | as rep2 | `c832592` "Test several cents left over in a bill split" (survivor 2, input shape) |
+
+Rep2 called the script through a variable, `S=<copy>/subagent-driven-development/scripts/mutant-run`,
+and then `$S --screen …` and `$S …`. A person read both calls from the command text (reading rule 5).
+
+- **B4, 5 of 5.** Each rep's calls are a screen and then a full run, after the seeded full run. The
+  last call is a full run at the final HEAD, after the rep's last commit.
+- **B5, 5 of 5.** Each answering commit carries `task 1 survivor 2`, with `task 1 input shape`
+  beside it, which the 2026-11-21 ruling allows.
+- **B2, reached 5 of 5, passed 5.** Each new test answers survivor 2, and Mutant 2's line names it. Rep1's
+  second test has its own new patch 4.
+- **Step 7's new sentences in E2.** E2's new tests answer survivor 2 (step 6), so step 7's event does
+  not occur. No rep shows a sign that the new sentences misled it: no invalid patch occurred, each rep
+  added the test that survivor 2 needed, and none rewrote a caught mutant's patch.
+- Both plan tests are IDENTICAL in each.
+
+**Weakenings.** None. Every plan-test function in every round 1 rep, the two VOID reps included, is
+IDENTICAL to `brief.md`'s.
+
+**Round 1 by bar (D9).**
+
+| Bar | Forced fixtures, treatment passes | Round 1 |
+|---|---|---|
+| B1 | I1 4 of 5, I2 5 of 5, I3 5 of 5 | met |
+| B2 | I2 5 of 5, I3 5 of 5 | met |
+| B3 | C1 5 of 5, C2 5 of 5 | met |
+| B4 | E1 5 of 5, E2 5 of 5 | met |
+| B5 | I2 5 of 5, I3 5 of 5, E2 5 of 5 | met |
+| All | every fixture, 5 of 5 each | no weakening |
+
+The reached-only events: B5 on I1 passed in the 4 reps that reached it, B5 on E1 passed 5 of 5, B2 on
+E2 passed 5 of 5, and B2 was not reached on I1.
+
+**B2 by round.**
+
+| Fixture | Control | Round 0 (`cb2e170`) | Round 1 (`00e657b`) |
+|---|---|---|---|
+| I2 | 5 of 5 | 5 of 5 | 5 of 5 |
+| I3 | 5 of 5 | 3 of 5 | 5 of 5 |
+
+The restored sentences stay. They are the round 1 text for step 7, and B2 is met on each fixture that
+forces it.
+
+**The wording sentences in round 1.** Each sentence of round 0's table has the same verdict in round
+1, kept, with these counts:
+
+- the implementer prompt's step 5 sentence: B1 on I1 4 of 5, I2 5 of 5 and I3 5 of 5. Every call of
+  every implementer rep passed `--screen` first. The one miss is a rep that made no call.
+- `mutants.md` step 5's two bullets and `SKILL.md`'s order: B3 10 of 10, and B4 10 of 10.
+- the trailer sentences: B5 15 of 15 on the forced fixtures, and every reached commit.
+
+Two sentences are new in round 1, and only I3's event exercises them:
+
+| Sentence | Fixtures | Verdict |
+|---|---|---|
+| "Each test that you add here gets a new mutant patch with its own number, whatever the test checks, and the `Mutant` line for that patch names the test." | I3 | kept: 5 of 5, with 9 new tests, each with its own new patch and line |
+| "A mutant that a run has caught keeps its targets: do not re-aim it at the new test, and do not write its patch again to do so." | I3 | kept: 5 of 5, with mutant 1's line and patch the seeded ones in each |
+
+No other fixture exercises them. I1 and E1 have no test that passes on the revert, because each task
+adds its module, so the revert section reads "not loaded 1". I2's and E2's new tests answer a finding
+or a survivor, not the revert. The controller fixtures add no test.
+
+**Thin passes in round 1.**
+
+- I1 rep1: no call, the one B1 miss on a fixture where B1 is met.
+- I1 rep3: an invalid mutant, repaired before its last screen.
+- I2 rep4: a refused first call.
+- I2 reps 2 and 5: an amended commit after a failed `sed`.
+- C1 rep1 and C2 reps 1, 2, 4 and 5: they never met the `--screen` text in `mutants.md`.
+
+**Untested wording, round 1.** Round 0's list stands. It has the `SKILL.md` sentence on the final
+review's fix pass (D11) and `mutants.md` step 7's executing-plans sentence. The new step 7 sentences
+are exercised, by I3 only.
+
+**Privacy, round 1.** Before the commit, `privacy_sweep.py` over the record and this folder gave the
+same 6 hits as round 0, none in a rep output or in this subsection. `check_scrub.py` passed. No round 1
+rep output holds an identity token or `credential_expires_at`.
+
+**For the revision decision, round 1.** Every bar is met on every fixture that forces it. B2 on I3
+went from 3 of 5 in round 0 to 5 of 5 in round 1. Round 1 is the last round that this task runs. It
+ends with no bar missed, so the scope fence of D3 does not apply. The one new miss is I1 rep1's B1. It
+lowers I1 from round 0's 5 of 5 to 4 of 5, which still meets the bar. That rep read no file of the
+skill copy, so the revision did not reach it.
+
