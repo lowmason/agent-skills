@@ -1577,7 +1577,8 @@ and Round 1).
 
 - **(a) The control arm never saw `--screen`.** No record in any of the 37 control raw streams holds the
   text, whether in a prompt, a tool input or a tool result, and no control rep read `mutant-run`'s usage
-  line or header. So the control's passes on B2, B3 and B4 never met a screen. The controller ruled
+  line or header. So no control rep made a screen or met the `--screen` option. B3's other half did
+  meet a seeded screen, which the report cited and no rep handed to a reviewer. The controller ruled
   (2026-11-22) that D9's three drops stand, as provisional. Task 8 measured them on the treatment arm,
   the first arm whose text names `--screen`. The results are in the first three bullets of "The dropped
   wording".
@@ -1608,9 +1609,10 @@ Plan-completion protocol step 3 appends these two items to `specs/deferred_items
 for plan 104. This task does not edit that file.
 
 ```markdown
-- [ ] **Re-measure the mutant step after about 5 more code plans that have a Codex final review (plan 104 spec, Design 6).**
-      Plan 104 added `mutant-run --screen` to the mutant step, so that a run does not repeat a mutant that an
-      earlier run caught. It also tags each commit that answers the step with a `Mutant-step:` trailer. Only
+- [ ] **Re-measure the mutant step after about 5 more code plans that have a Codex final review (`specs/completed/mutant-screen-runs.md`, Design 6).**
+      Plan 104 (`specs/plans/completed/104-mutant-screen-runs.md`, micro-test record
+      `specs/baseline/red-baseline-mutant-screen-runs.md`) added `mutant-run --screen` to the mutant step, so
+      that a run does not repeat a mutant that an earlier run caught. It also tags each commit that answers the step with a `Mutant-step:` trailer. Only
       plans that execute after plan 104 carry the trailer, so the re-measure waits for about 5 more code plans
       that have a Codex final review. The owner chooses, for each repository, whether it runs that review.
       Then, for each task: list its `Mutant-step:` commits with
@@ -1620,10 +1622,11 @@ for plan 104. This task does not edit that file.
       task's final-review findings with agent-skills' pre-mutant rate of 0.56 code-behavior findings for each
       task (plans 69-96). Then decide whether to keep the step, shrink it (a mutant cap, `-x` screens) or make the
       mutant runs opt-in. Size: design. Done when: the tally and the decision are recorded.
-- [ ] **A reviewer raises a finding about a screen file (plan 104 spec, Design 4 and D12).** Plan 104 leaves the
-      reviewer text as it is. The reviewers read only the controller's or the inline agent's full run, never a
-      screen file (`task-<N>-screen*.log`), and no review in plan 104 read one, so the fallback could not fire
-      inside the plan. If a reviewer raises a finding about a screen file, the fix is one sentence in the shared
+- [ ] **A reviewer raises a finding about a screen file (`specs/completed/mutant-screen-runs.md`, Design 4; D12 of
+      `specs/plans/completed/104-mutant-screen-runs.md`).** Plan 104 leaves the reviewer text as it is. The
+      reviewers read only the controller's or the inline agent's full run, never a screen file
+      (`task-<N>-screen*.log`), and no task review in plan 104 read one, so the fallback did not fire in the
+      plan's task reviews. If a reviewer raises a finding about a screen file, the fix is one sentence in the shared
       reviewer block, which runs from `## Review scope` to the end of `## Declined to judge`.
       `build/check_reviewer_block.py` keeps that block equal in its four copies: `agents/code-reviewer.md`,
       `agents/task-reviewer.md`, `skills/requesting-code-review/code-reviewer.md` and
