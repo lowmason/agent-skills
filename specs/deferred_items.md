@@ -5501,6 +5501,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the constant. Size: quick-fix. Revisit if: the owner wants the pointer, or a later pressure
       test shows a rep that edits after a check found a wider reach. The owner chooses the wording.
       Owner decision D18 set the current wording in Task 8.
+      → planned 2026-11-22: specs/plans/106-brainstorming-improvements.md
 
 ## 71-sdd-bayesian-compaction-window — 2026-10-29
 - [x] Nothing resolves relative links inside `skills/**/references/` (plan 71 final review,
@@ -6325,6 +6326,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       budget." Size: design. Done when: Size the Work and the first-message path agree in
       `skills/brainstorming/SKILL.md`, micro-tests on T11, T13 and the approach guards show no regression, and
       `NOTICE` names the divergence.
+      → planned 2026-11-22: specs/plans/106-brainstorming-improvements.md
 
 ## 84-spec-derived-acceptance-tests — 2026-11-10
 - [x] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
