@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 4237,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0084546,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 10786,
+    "output_tokens": 592,
+    "output_tokens_details": {
+      "thinking_tokens": 180
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 592,
+      "cacheReadInputTokens": 10786,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.0084546,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 180,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Step 6 is where I stop: the worktree was not made by this session, so I won't remove it or delete its branch. I run no more commands.\n\nSAY: The merge is done. `main` fast-forwarded from d7f6143 to 9b50e40 in /work/atlas, and the 2 tests passed on the merged result.\n\nSAY: I did not remove the worktree at /work/atlas/.claude/worktrees/rate-limit. The desktop app started this session inside it, and I have no record of creating it. Because the worktree still has `claude/rate-limit-4f2a` checked out, git would refuse to delete the branch, so I left the branch in place too. The desktop app normally cleans up or reuses a worktree it started when you archive the session. If it doesn't, you can remove both from /work/atlas:\n\nSAY: `git worktree remove /work/atlas/.claude/worktrees/rate-limit`, then `git branch -d claude/rate-limit-4f2a`. The branch is fully merged, so `-d` will work.\n\nSAY: One thing to check before you archive: the worktree has an untracked file, `notes.md`. It was not part of the merge and exists nowhere else. If you want to keep it, copy or commit it first, since removing the worktree would delete it.",
+  "ttft_ms": 1684,
+  "type": "result",
+  "duration_ms": 4323,
+  "ttft_stream_ms": 457,
+  "time_to_request_ms": 85,
+  "first_content_frame_ms": 457,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

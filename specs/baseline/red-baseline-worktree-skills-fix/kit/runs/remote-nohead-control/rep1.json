@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 8088,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0321215,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 5320,
+    "cache_read_input_tokens": 1675,
+    "output_tokens": 1067,
+    "output_tokens_details": {
+      "thinking_tokens": 512
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 5320,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1067,
+      "cacheReadInputTokens": 1675,
+      "cacheCreationInputTokens": 5320,
+      "webSearchRequests": 0,
+      "costUSD": 0.0321215,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 512,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 5320,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The base check failed because `origin/HEAD` doesn't exist, and the remote at `/work/mirror/atlas.git` can't be reached. So I can't confirm that HEAD matches the default branch. `origin/main..HEAD` shows 2 commits, which suggests `EnterWorktree` would leave out local work. Following Step 1a, I create the worktree with git so it branches from HEAD, then enter it with `EnterWorktree` by path. `.worktrees/` already exists and is ignored, so no `.gitignore` change is needed.\n\nSAY: The remote `origin` is unreachable and `origin/HEAD` isn't set, so I can't confirm the default branch matches your local `main`. A native worktree could leave out local commits. I'll create `feat/rate-limit` from your current HEAD with git, in `.worktrees/`, which is already git-ignored. Then I'll switch the session into it.\n\nRUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit\n\nTOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit\n\nSAY: The worktree is at `/work/atlas/.worktrees/feat/rate-limit` on the new branch `feat/rate-limit`, based on `af80652`. It's outside `.claude/worktrees/`, so Claude Code should ask you to approve entering it. Please approve. If you'd rather not, I can remove it with `git worktree remove .worktrees/feat/rate-limit` or work in place on `main`. Once I'm inside, I'll run project setup and the baseline tests before adding the rate limit.\n\nI stop here and wait for your approval.",
+  "ttft_ms": 4654,
+  "type": "result",
+  "duration_ms": 8180,
+  "ttft_stream_ms": 601,
+  "time_to_request_ms": 92,
+  "first_content_frame_ms": 602,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

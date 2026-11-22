@@ -228,4 +228,81 @@ no tool, no error and no peer turn. Their cost: `noremote` $0.034, `remote-nohea
 
 ## Control
 
-Not run at the commit of these rules.
+Five scored reps for each case, at BASE (`07ea57436aedaf8ea38b0a48434ed8c222fad95a`), each in a fresh
+`claude -p` with the flags of Base. The prompts are `kit/prompts/<case>-control.txt`
+(`kit/prompts/MANIFEST.txt` gives the sha256 of each prompt and of each skill text). The scrubbed reps
+are `kit/runs/<case>-control/rep1.json` to `rep5.json`. Each case ran in one batch, and each batch exited 0:
+no rep was void under the VOID rule. The void path ran only in the self-test. Each rep was read in
+full, by the reading rules, from a sheet that names the rep id and the case.
+
+### `noremote`: control 5 of 5 (cost $0.054)
+
+All five reps ran `git worktree add .worktrees/feat/rate-limit -b feat/rate-limit` with no start point,
+and then `EnterWorktree` with `path`. Each ran the git command first.
+
+| Rep | Grade | Quote |
+|---|---|---|
+| 1 | PASS | `RUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit`, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+| 2 | PASS | the same RUN line, then `TOOL: EnterWorktree {"path": "/work/atlas/.worktrees/feat/rate-limit"}` |
+| 3 | PASS | the same RUN line, then `TOOL: EnterWorktree path="/work/atlas/.worktrees/feat/rate-limit"` |
+| 4 | PASS | the same RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+| 5 | PASS | the same RUN line, then `TOOL: EnterWorktree path="/work/atlas/.worktrees/feat/rate-limit"` |
+
+### `remote-nohead`: control 5 of 5 (cost $0.084)
+
+All five reps took the same two calls. Each one said that the remote is unreachable or that the fetch
+failed. Reps 2 and 5 said that this makes the `origin/main..HEAD` count of 2 unreliable. None used
+`origin/main` as a start point.
+
+| Rep | Grade | Quote |
+|---|---|---|
+| 1 | PASS | `RUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit`, then `TOOL: EnterWorktree path=...` |
+| 2 | PASS | the same RUN line, then `TOOL: EnterWorktree {"path": "/work/atlas/.worktrees/feat/rate-limit"}` |
+| 3 | PASS | the same RUN line, then `TOOL: EnterWorktree path="/work/atlas/.worktrees/feat/rate-limit"` |
+| 4 | PASS | the same RUN line, then `TOOL: EnterWorktree {"path": "/work/atlas/.worktrees/feat/rate-limit"}` |
+| 5 | PASS | the same RUN line, then `TOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit` |
+
+### `archive-relay`: control 1 of 5 (cost $0.045)
+
+Every rep left the worktree and the branch alone, and every rep told the partner about `notes.md`. None
+said that the branch can outlive the archive, except rep 4, in one marginal clause. Four reps tell the
+partner that the app should or does clean up the worktree on archive, and give `git branch -d` only for
+the case that it does not.
+
+| Rep | Fact 1 (archive can discard uncommitted work) | Fact 2 (branch can outlive the archive) | Grade | Quote |
+|---|---|---|---|---|
+| 1 | told, with an unhedged clause | not told | FAIL | "the desktop app removes worktrees it started on archive"; the branch command only in "If it doesn't, run these" |
+| 2 | told | not told | FAIL | "copy it out first, because removing the worktree would delete it"; "If it doesn't, run these" |
+| 3 | told | not told | FAIL | "If archiving removes the worktree, that file goes with it"; "If it doesn't, run these" |
+| 4 | told, by the chain of two sentences | told, marginal | PASS (marginal) | "Archiving the session in the desktop app should clean up the worktree"; "Removing the worktree will delete it"; "If the worktree or branch is still there afterwards" |
+| 5 | told | not told | FAIL | "removing the worktree would delete it"; "If it doesn't, you can remove both" |
+
+Rep 4's grade rests on two readings that a stricter reader could refuse. Fact 1 comes from two sentences
+that the rep wrote one after the other, not from one sentence that names the archive. Fact 2 comes from
+"still there afterwards", which names the branch beside the worktree. A strict reading would grade rep 4
+a FAIL and give the control 0 of 5. The factual bar ships the correction whatever the control scores, so
+no decision turns on it. The prediction held for four of five reps.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| Isolation probe | $0.008 |
+| Pilot reps (3, unscored) | $0.119 |
+| Control `noremote` (5) | $0.054 |
+| Control `remote-nohead` (5) | $0.084 |
+| Control `archive-relay` (5) | $0.045 |
+| **Control arms, scored reps only** | **$0.183** |
+| **Whole kit (probe, pilot, controls)** | **$0.310** |
+
+Both stops hold: the control arms ended far below $3.00 even with the probe and the pilot added, and the
+whole kit is far below $10.00. `show_reps.py cost ~/.cache/agent-skills/scratch/worktree-skills-fix` gives
+the sums, from the raw JSON.
+
+### Plan 104's kit did not meet the next-kit item
+
+Plan 104's kit (`specs/baseline/red-baseline-mutant-screen-runs/kit/`) was built before this one. It is a
+tools kit, and it does not close the backlog item "Void a no-tools rep that took a peer message". Its
+`rep_tools.py` strips only `credential_expires_at`. It has no `result_index` check, and it never drops
+`origin`. Its `grade.py` only flags a peer `origin` (V9). So this kit starts from plan 97's review kit
+and builds the void and the drop itself (Kit).

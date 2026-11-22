@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 5345,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.009574599999999999,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 10786,
+    "output_tokens": 704,
+    "output_tokens_details": {
+      "thinking_tokens": 238
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 704,
+      "cacheReadInputTokens": 10786,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.009574599999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 238,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Step 6 for a `launcher` worktree: I did not record that this session created it, so I don't remove it and I leave the branch.\n\nSAY: The merge is done. `claude/rate-limit-4f2a` fast-forwarded into `main` in /work/atlas (d7f6143..9b50e40), and the tests pass on the merged result (2 passed). I haven't pushed `main`, so it is ahead of `origin/main`.\n\nSAY: I did not remove the worktree at /work/atlas/.claude/worktrees/rate-limit or delete the branch `claude/rate-limit-4f2a`. The desktop app started this session in that worktree, and I have no record of this session creating it. Git also won't delete a branch while a worktree has it checked out.\n\nSAY: Before you archive, note that the worktree has an untracked file, `notes.md`, that is not in the merge. If archiving removes the worktree, that file goes with it. Copy it out or commit it first if you want to keep it.\n\nSAY: Archiving the session should clean up the worktree, since the desktop app started it. If it doesn't, run these from /work/atlas: `git worktree remove /work/atlas/.claude/worktrees/rate-limit`, then `git branch -d claude/rate-limit-4f2a`. Git will refuse the removal while `notes.md` is untracked, which is the safety check you want. I won't force it.\n\nI'm waiting on you.",
+  "ttft_ms": 2424,
+  "type": "result",
+  "duration_ms": 5425,
+  "ttft_stream_ms": 639,
+  "time_to_request_ms": 80,
+  "first_content_frame_ms": 639,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

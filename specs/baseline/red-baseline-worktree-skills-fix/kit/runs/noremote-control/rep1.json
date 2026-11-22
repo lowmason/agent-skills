@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 5402,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0099187,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 6427,
+    "output_tokens": 782,
+    "output_tokens_details": {
+      "thinking_tokens": 394
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 782,
+      "cacheReadInputTokens": 6427,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.0099187,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 394,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "SAY: I'm continuing with the worktree setup. `origin/HEAD` doesn't exist and there is no remote, so Claude Code's native `EnterWorktree` could branch from somewhere other than your current HEAD and leave out your three local commits. I'll create the worktree with git so it branches from HEAD, then switch the session into it. `.worktrees/` already exists and is git-ignored, so I'll use it.\n\nRUN: git worktree add .worktrees/feat/rate-limit -b feat/rate-limit\n\nTOOL: EnterWorktree path=/work/atlas/.worktrees/feat/rate-limit\n\nSAY: The worktree is at `/work/atlas/.worktrees/feat/rate-limit` on a new branch `feat/rate-limit`, based on `8e052ad`. It's outside `.claude/worktrees/`, so Claude Code is asking you to approve switching into it. Please approve. If you'd rather not, I can retry, remove it with `git worktree remove .worktrees/feat/rate-limit`, or work in place on `main`. Once I'm inside, I'll run project setup and the baseline tests before starting the rate limit.",
+  "ttft_ms": 3176,
+  "type": "result",
+  "duration_ms": 5462,
+  "ttft_stream_ms": 460,
+  "time_to_request_ms": 59,
+  "first_content_frame_ms": 460,
+  "queued_turn_count": 0,
+  "result_index": 0
+}
