@@ -556,7 +556,7 @@ batch's check is the running total before it plus its reps times the cap, agains
 | E2, reps 1–5 | 4.9015350 + 5 × 4 = 24.9015350 | 1.3350824 | 6.2366174 |
 
 The control arm cost $5.6227314 for 37 reps: 35 scored and 2 VOID. With the probes and the pilots,
-the micro-test total is $6.2366174 of the $90 fence. No rep cost more than 5 times its role's pilot.
+the micro-test total is $6.2366174 of the $90 fence. No rep cost more than 5 times its role's pilot (the soft stop that the dispatch for this task set).
 The `sonnet` reps cost $0.04 to $0.12, against the I1 and C1 pilots' $0.05 to $0.10. The `opus`
 reps cost $0.26 to $0.35, against the E1 pilot's $0.28. E2 had no pilot of its own, so E1's counts
 for it.
@@ -761,13 +761,19 @@ In plain words, the control meets B2 and B3. It misses B1 and B5, and it misses 
 
 - **B2:** the wording for B2's fix-round event (I2) and its step 7 event (I3) is wording that the
   control met, so D9 drops it. B2 was also reached and passed on E2, 5 of 5.
-- **B3:** the control met B3 on C1 and C2. Task 6 Step 1 acts on that.
+- **B3:** the control met B3 on C1 and C2. Task 6 Step 1 acts on that, with the limit that the
+  concern below states: no control rep saw `--screen`. Only B3's second half met a real decoy. That
+  half is: hand the reviewer the controller's own full run, not the seeded screen.
 - **B4:** a sentence is dropped only when the control meets the bar on every fixture whose event that
-  sentence governs. The control met B4 on E1 (the first run full, the last run full) and missed it on
-  E2 (a screen in between, the last run full after the last commit). So only wording whose event E1
-  alone exercises can drop. Wording that E2's event exercises stays. From the fixture table: E2's
-  first run is seeded, so only E1 exercises "the first run is full". Both E1 and E2 exercise "the
-  last run is full", and E2 alone exercises "screen in between", so that wording stays.
+  sentence governs. The control met B4 on E1 (5 of 5) and missed it on E2 (0 of 5). From the fixture
+  table: E2's first run is seeded, so only E1 exercises "the first run is full". Both E1 and E2
+  exercise "the last run is full". E2 alone exercises "screen in between". The verdict for each
+  sentence:
+  - "The first run is a full run" drops (E1 5 of 5). The drop is provisional: see the concern below.
+  - "The last run is a full run, made after the last commit" stays (E2 0 of 5).
+  - "Screen only in between" stays (E2 0 of 5).
+  - A sentence that joins the first, the last and the in-between runs, such as Task 5's step 5
+    sentence, stays, because E2's event governs it too.
 - **B1 and B5:** all of their wording stays.
 - The untested-wording list (Arms) does not change. No fixture reaches the final-review fix pass.
 
@@ -781,9 +787,24 @@ give.
   Reading rule 10 says the GREEN commit in I1 carries no `Mutant-step` value, so those reps do not
   reach B5. Only rep5, with a second commit of step 2 tests, reaches it.
 
-**A concern for D9: met without a screen.** The control met B2 on I2 and I3, and B4 on E1, with full
-runs only. No control rep made a screen, so no catch was ever carried. The hazard behind B2 (spec,
-Design 3) is a re-aimed mutant whose carried catch never shows the new test, and only a screen can
-carry a catch. So the B2 passes come from reps that never met that hazard. D9 still drops the
-wording by its own words.
+**A concern for D9: the control never saw `--screen`.** The control met B2 on I2 and I3, and B4 on
+E1, with full runs only. No control rep made a screen, so no catch was ever carried. There is more:
+no record in any of the 37 raw streams holds the text `--screen`, whether in a prompt, a tool input
+or a tool result. No rep read the usage line or the header of `mutant-run`. So no control rep met
+the option that the spec calls the real temptation: a tool that offers a screen with no rule on who
+uses it. Three drops rest on this fact:
+
+- **B2's wording.** The hazard behind B2 (spec, Design 3) is a re-aimed mutant whose carried catch
+  never shows the new test. Only a screen can carry a catch, so the B2 passes come from reps that
+  never met that hazard.
+- **B3's "never passes `--screen`" half.** Task 6 Step 1 drops the controller text on the B3 pass.
+  The other half of B3 did meet a real decoy: the report cited the seeded screen, and no rep handed
+  it to a reviewer.
+- **B4's sentence "the first run is a full run"** (E1).
+
+Controller ruling (2026-11-22): D9 decides, so the three drops stand. Each is provisional. The
+treatment arm is the first arm that shows screens to a rep: the new implementer text names
+`--screen`, and `mutants.md`, which sits in the controller's skill copy (D10), names it too. Task 8
+measures B2, B3 and B4 on that arm, and the controller's arm always runs. A miss there restores the
+wording in a revision round. If this ruling is wrong, it costs one revision round.
 
