@@ -23,8 +23,9 @@ starts with `id`, blank lines and `#` lines are ignored), and refuses a missing,
 unknown grade. A W rep's verdict is its grade. A T rep passes when both parts of the reading rule hold:
 the read check in the key and the grader's PASS for the marker. It prints each rep's verdict, then for
 each case and model with both arms the old and new pass counts against the bars (new >= old - 1, and
-new >= 4 for a W case), then the guard: PASS when every such cell meets its bars with 5 reps in each
-arm, FAIL when one misses, and incomplete when a cell has another count.
+new >= 4 for a W case), then the guard. The guard is PASS when all 12 cells (6 cases x 2 models) are
+there with 5 reps in each arm and each meets its bars, FAIL when one of them misses, and incomplete
+when a cell is missing or has another count.
 '''
 import json
 import random
@@ -62,6 +63,9 @@ ID_BITS = 24
 GRADES = ('PASS', 'FAIL')
 REPS = 5
 W_BAR = 4
+MODELS = ('claude-opus-5-5', 'claude-sonnet-5-5')
+# Every case and model: the guard passes only when each one meets its bars.
+CELLS = {(case, model) for case in CASE_NAMES for model in MODELS}
 
 
 def mask(text: str) -> str:
@@ -200,7 +204,8 @@ def unblind(grades_path: Path, key_path: Path) -> dict:
         meets = new >= old - 1 and (case not in cases.W_TARGET or new >= W_BAR)
         bars.append({'case': case, 'model': model, 'old': old, 'new': new, 'old_n': len(arms['old']),
                      'new_n': len(arms['new']), 'meets': meets})
-    if not bars or any(cell['old_n'] != REPS or cell['new_n'] != REPS for cell in bars):
+    if {(cell['case'], cell['model']) for cell in bars} != CELLS \
+            or any(cell['old_n'] != REPS or cell['new_n'] != REPS for cell in bars):
         guard = 'incomplete'
     else:
         guard = 'PASS' if all(cell['meets'] for cell in bars) else 'FAIL'

@@ -15,14 +15,15 @@ WSL_SCRATCH/<case>/<arm>/<model>/rep<N>.jsonl (WSL_SCRATCH defaults to
   outside the rep folder and the skill copy (each in its /tmp and /private/tmp forms), with each `..`
   resolved first; an Edit or Write into the skill copy; any spelling of the real home; any path through
   $HOME/Library in any case, a `..` after a point in it included (its Keychains folder is a link). A
-  relative Grep or Glob path is joined to the rep's repository first, the working directory. A Glob
+  relative path (file_path, or a Grep or Glob path) is joined to the rep's repository first, the
+  working directory. A Glob
   pattern counts when it is absolute or climbs with `..`: its literal part, up to the last `/` before
   its first wildcard, is judged, and a `..` after a wildcard is a hit, since it cannot be resolved.
   Plan 104's audit covers Read, Edit, Write and Bash only; these reps have Grep and Glob, so the audit
   also checks their path arguments. The Bash part is plan 104's, kept for a call no rep should make;
 - each Read of the case's moved file (cases.MOVED), marked partial when it has `offset` or `limit` and
   marked error when its tool result is an error, the first Edit or Write of the case's target
-  (cases.TARGET, under the rep's repository), and the read check: PASS when such a Read comes before
+  (cases.TARGET, under the rep's repository; a relative file_path is joined to it), and the read check: PASS when such a Read comes before
   that first Edit or Write, or when the rep never edits or writes the target and has such a Read;
 - the VOID reasons (void_reasons), or `VOID: none`.
 It gives no verdict on the marker: the blind grader reads that from the sheets (sheets.py).
@@ -154,7 +155,7 @@ class Audit:
             args = call.get('input') or {}
             if call.get('name') in ('Read', 'Edit', 'Write'):
                 path = args.get('file_path', '')
-                why = self.judge(path, writes=call.get('name') != 'Read')
+                why = self.judge(self.joined(path) if path else path, writes=call.get('name') != 'Read')
                 if why:
                     found.append(f'call {number} {call["name"]}: {path} ({why})')
             elif call.get('name') in ('Grep', 'Glob'):
@@ -219,7 +220,8 @@ def stream_audit(path: Path) -> dict:
 def read_check(calls: list[dict], case: str, rep_dir: str) -> dict:
     '''The reading rule's Read part: a Read of the moved file before the first Edit or Write of the target.'''
     moved, target = cases.MOVED[case], cases.TARGET[case]
-    targets = {os.path.normpath(f'{root}/repo/{target}') for root in forms(rep_dir or '/nonexistent-rep')}
+    roots = forms(rep_dir or '/nonexistent-rep')
+    targets = {os.path.normpath(f'{root}/repo/{target}') for root in roots}
     reads, first_write = [], None
     for number, call in enumerate(calls, 1):
         args = call.get('input') or {}
@@ -227,8 +229,10 @@ def read_check(calls: list[dict], case: str, rep_dir: str) -> dict:
         if call.get('name') == 'Read' and path.endswith('/' + moved):
             reads.append({'call': number, 'path': path, 'error': bool(call.get('is_error')),
                           'partial': args.get('offset') is not None or args.get('limit') is not None})
-        elif call.get('name') in ('Edit', 'Write') and first_write is None and os.path.normpath(path) in targets:
-            first_write = number
+        elif call.get('name') in ('Edit', 'Write') and first_write is None and path:
+            full = path if path.startswith('/') else f'{roots[0]}/repo/{path}'
+            if os.path.normpath(full) in targets:
+                first_write = number
     before = [read for read in reads if first_write is None or read['call'] < first_write]
     return {'moved': moved, 'target': target, 'reads': reads, 'first_write': first_write,
             'verdict': 'PASS' if before else 'FAIL'}

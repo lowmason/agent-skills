@@ -46,10 +46,11 @@ version, it runs the four probes again first.
 | `build_prompts.py` | new | Writes the six prompts and `MANIFEST.txt`. |
 | `cases.py` | plan 72's `cases.py`, for the W cases | Adds the T frame, the T cases and each case's PASS and FAIL columns. |
 | `fixtures/T1/repo/` to `fixtures/T3/repo/` | new | Each T case's project (Cases). |
-| `test_wsl_kit.py` | plan 103's postprocess and runner tests and plan 104's runner and audit tests, adapted, and the tests that the plan's Task 3 names | 140 tests with a stub `claude` and no model. Suite `writing-skills-layout-kit` in `build/suites.toml` runs them. |
+| `test_wsl_kit.py` | plan 103's postprocess, postprocess-shape and runner tests and plan 104's runner and audit tests, adapted, and the tests that the plan's Task 3 names | 169 tests with a stub `claude` and no model. Suite `writing-skills-layout-kit` in `build/suites.toml` runs them. |
 
-**The arms.** `old` is `SKILL.md`'s body and the skill folder at the last commit before Task 5 (the
-ledger's OLD). `new` is the same at Task 5's commit (the ledger's NEW). Task 6 fills in both shas here:
+**The arms.** `old` is `SKILL.md`'s body and the skill folder at the last commit before Task 5 (Task 5
+Step 1 records it as OLD). `new` is the same at Task 5's commit (Task 5 Step 5 records it as NEW). Task 6
+fills in both shas here:
 
 - OLD: to be filled in by Task 6.
 - NEW: to be filled in by Task 6.
@@ -72,7 +73,8 @@ Python script.
 4. `audit.py <rep-dir> ...` prints each T rep's stream audit, path audit, read check and VOID reasons.
 5. `sheets.py build <runs-root> <sheet-dir> <seed>` writes the sheets and the key. A person grades the
    sheets into `grades.tsv`, in scratch. Then `sheets.py unblind <grades.tsv> <key.json>` prints the
-   verdicts and the bars.
+   verdicts and the bars. It gives the guard PASS or FAIL only when all 12 cells (6 cases × 2 models)
+   are there with 5 scored reps in each arm, and `incomplete` otherwise.
 
 **No-tools reps (W1–W3).** Each rep runs this command, as plan 103's did, from its own new, empty
 folder under `/tmp`, outside every repository. A rep has no tools.
@@ -108,7 +110,7 @@ rep, `/private/tmp/wsl105/` must be empty, and `check-copy` must find the skill 
 included, and `summary.json`, with `check-copy`'s result. A trap parks the rep folder under
 `~/.cache/agent-skills/scratch/plan105/tools/<case>/<arm>/<model>/`, beside the raw stream.
 
-**Out of every rep's reach.** The spec and the plan stay out of each rep's reach (brief trap T7). A
+**Out of every rep's reach.** The spec and the plan stay out of each rep's reach (the plan's Global Constraints, Micro-tests). A
 no-tools rep has no tools. A tools rep's settings deny `Read(//Users/**)`. Its skill copy is
 `git archive <ref> skills/writing-skills`, so it holds no other file of the repository. Its folder holds
 only its case's fixture. The path audit voids a rep whose tool input names a path outside the allowed
@@ -122,11 +124,13 @@ when it is relative. It judges a Glob `pattern` that is an absolute path or that
 part up to the last `/` before the first wildcard. A `..` after a wildcard cannot be resolved, so it is
 a hit too.
 
-**Self-test.** `test_wsl_kit.py` adds 140 tests. They pass through
+**Self-test.** `test_wsl_kit.py` adds 169 tests. They pass through
 `uv run python build/run_suites.py writing-skills-layout-kit`. `privacy_sweep.py` over this record and
 the kit gives 5 hits. Each is the pinned `//Users/**` deny pattern: in `common.sh`, in
 `test_wsl_kit.py`, and on three lines of this record (Kit). The sweep's check for the home's parent
-folder matches that pattern. No hit names the home or the user.
+folder matches that pattern. No hit names the home or the user. These counts are for tracked files: a
+`kit/__pycache__/` or `kit/.pytest_cache/` folder, when a test run leaves one, adds hits from the source
+paths written into it. Git ignores both folders.
 `check_scrub.py` prints PASS.
 
 ## Cases
@@ -208,7 +212,9 @@ A rep passes when both parts hold.
 `audit.py` reads the Read part from the raw stream, in stream order. The moved file is `cases.MOVED`, and
 `ends in /<moved file>` is an exact suffix, so `old-persuasion-principles.md` and
 `persuasion-principles.md.bak` do not count. The target is the case's `cases.TARGET` inside the rep's
-`repo/`, in its `/tmp` and `/private/tmp` forms, with each `..` resolved. `audit.py` also marks a Read
+`repo/`, in its `/tmp` and `/private/tmp` forms, with each `..` resolved. A relative `file_path` in an
+Edit or a Write is joined to `repo/`, the working directory, first. The path audit joins a relative
+`file_path` the same way. `audit.py` also marks a Read
 whose tool result is an error. That mark is descriptive: under this rule such a Read still counts.
 `sheets.py build` puts the read check in the key, and `sheets.py unblind` joins it to the grade.
 

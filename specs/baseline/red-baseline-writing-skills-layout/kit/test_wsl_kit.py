@@ -79,6 +79,74 @@ def test_a_clean_rep_is_kept_without_origin_or_credential_expiry():
     assert rep['result'] == 'ok'
 
 
+# Plan 103's postprocess shapes (test_postprocess_shapes.py), copied. The fake home is /home-for-test/zed,
+# not a path under the real home's parent, so the privacy sweep reads no home in this file.
+CLEAN = {'result': 'ok', 'result_index': 0, 'origin': None}
+
+
+def test_a_later_peer_turn_voids_whatever_the_index():
+    assert postprocess({**CLEAN, 'result_index': 2})['reason'] == 'result_index'
+
+
+def test_index_zero_with_no_origin_is_kept():
+    rep = postprocess(dict(CLEAN))
+    assert rep['void'] is False
+    assert rep['result_index'] == 0
+
+
+def test_a_rep_with_no_result_index_or_origin_key_is_kept():
+    assert postprocess({'result': 'ok'}) == {'void': False, 'result': 'ok'}
+
+
+@pytest.mark.parametrize('origin', [{}, {'kind': 'peer', 'session_title': 'x'}, 'peer'])
+def test_any_origin_that_is_not_null_voids_the_rep(origin):
+    assert postprocess({**CLEAN, 'origin': origin}) == {'void': True, 'reason': 'origin'}
+
+
+@pytest.mark.parametrize('index', ['0', 0.0, 1.0, True, False, None, [0]])
+def test_a_result_index_that_is_not_a_whole_number_voids_the_rep(index):
+    assert postprocess({**CLEAN, 'result_index': index}) == {'void': True, 'reason': 'result_index'}
+
+
+def test_result_index_is_named_first_when_both_fields_show_a_peer_turn():
+    assert postprocess({'result': 'x', 'result_index': 3, 'origin': {'kind': 'peer'}})['reason'] == 'result_index'
+
+
+def test_the_private_keys_go_at_any_depth():
+    raw = {'result': 'ok', 'result_index': 0, 'origin': None, 'session_id': 's', 'uuid': 'u',
+           'credential_expires_at': 1,
+           'modelUsage': {'claude-sonnet-5-5': {'costUSD': 0.01, 'credential_expires_at': 2}},
+           'iterations': [{'type': 'message', 'origin': {'kind': 'x'}, 'uuid': 'u2'}]}
+    assert postprocess(raw) == {'void': False, 'result': 'ok', 'result_index': 0,
+                                'modelUsage': {'claude-sonnet-5-5': {'costUSD': 0.01}},
+                                'iterations': [{'type': 'message'}]}
+
+
+def test_every_string_is_scrubbed_home_tmpdir_and_identity(monkeypatch):
+    import postprocess as module
+    monkeypatch.setenv('HOME', '/home-for-test/zed')
+    monkeypatch.setenv('TMPDIR', '/var/folders/ab/cd/T/')
+    monkeypatch.setattr(module.kit_identity, 'forms', lambda: [('Dana Quill', '<USER-NAME>')])
+    raw = {'result': 'Dana Quill wrote /home-for-test/zed/notes.md in /private/var/folders/ab/cd/T/run1',
+           'modelUsage': {'Dana Quill': {'note': ['see /var/folders/ab/cd/T/x']}}}
+    rep = postprocess(raw)
+    assert rep['result'] == '<USER-NAME> wrote ~/notes.md in $TMPDIR/run1'
+    assert rep['modelUsage'] == {'<USER-NAME>': {'note': ['see $TMPDIR/x']}}
+
+
+@pytest.mark.parametrize('raw_text', [None, '', 'not json', '[1, 2]'])
+def test_the_postprocess_command_voids_an_unreadable_raw_file(tmp_path, capsys, raw_text):
+    import postprocess as module
+    raw = tmp_path / 'raw.json'
+    if raw_text is not None:
+        raw.write_text(raw_text)
+    dest, note = tmp_path / 'rep1.json', tmp_path / 'rep1.VOID'
+    assert module.main([str(raw), str(dest), str(note)]) == 0
+    assert capsys.readouterr().out.strip() == 'unreadable'
+    assert note.read_text().startswith('VOID:')
+    assert not dest.exists()
+
+
 # --- run_json_reps.sh and probe_json.sh: plan 103's runner tests, adapted ----------------------------------
 
 JSON_STUB = r'''#!/bin/bash
@@ -655,6 +723,18 @@ def test_path_audit_resolves_dot_dot_in_a_file_path(tool, path, why):
         assert found == [f'call 1 {tool}: {path} ({why})']
 
 
+@pytest.mark.parametrize(('tool', 'path', 'why'), [
+    ('Edit', 'skills/secrets-scan-gate/SKILL.md', None),
+    ('Read', 'specs/../pyproject.toml', None),
+    ('Read', '../../rep2/repo/x', 'outside the allowed roots'),
+    ('Write', '../../../etc/x', 'outside the allowed roots'),
+    ('Read', '../home/Library/Keychains/x', '$HOME/Library'),
+])
+def test_path_audit_joins_a_relative_file_path_to_the_repository(tool, path, why):
+    found = hits(tool, file_path=path)
+    assert found == ([] if why is None else [f'call 1 {tool}: {path} ({why})'])
+
+
 def test_path_audit_flags_a_real_home_path_in_a_bash_command():
     found = hits('Bash', command=f'for f in {HOME}/.ssh/id_rsa ~/notes.txt; do cat "$f"; done')
     assert len(found) == 1 and 'real home' in found[0]
@@ -750,6 +830,17 @@ def test_the_target_is_the_case_file_in_the_rep_repository_only(case, moved, tar
         assert check['verdict'] == 'PASS'
     late = audit.read_check([call('Write', file_path=f'{REP_DIR}/repo/{target}'), read], case, REP_DIR)
     assert late['verdict'] == 'FAIL'
+
+
+def test_a_relative_write_of_the_target_counts_as_the_first_write():
+    relative = 'skills/secrets-scan-gate/SKILL.md'
+    late = audit.read_check([call('Write', file_path=relative), call('Read', file_path=T2_MOVED_NEW)], 'T2', REP_DIR)
+    assert late['first_write'] == 1 and late['verdict'] == 'FAIL'
+    early = audit.read_check([call('Read', file_path=T2_MOVED_NEW), call('Edit', file_path=f'./{relative}')], 'T2',
+                             REP_DIR)
+    assert early['first_write'] == 2 and early['verdict'] == 'PASS'
+    other = audit.read_check([call('Write', file_path=f'old/{relative}')], 'T2', REP_DIR)
+    assert other['first_write'] is None
 
 
 def test_audit_command_prints_each_rep(world):
@@ -947,7 +1038,35 @@ def test_unblind_checks_the_bars(tmp_path, case, old, new, meets):
     result = sheets.unblind(grades_file(tmp_path, grades), key_file(tmp_path, key))
     [cell] = result['bars']
     assert (cell['case'], cell['model'], cell['old'], cell['new'], cell['meets']) == (case, SONNET, old, new, meets)
-    assert result['guard'] == ('PASS' if meets else 'FAIL')
+    assert result['guard'] == 'incomplete'
+
+
+def full_run(old_passes: dict | None = None, new_passes: dict | None = None, skip: tuple | None = None
+             ) -> tuple[dict, dict]:
+    '''A key and grades for all 12 cells, 5 reps per arm, with the pass counts given per (case, model).'''
+    key, grades = {}, {}
+    for case in ('T1', 'T2', 'T3', 'W1', 'W2', 'W3'):
+        read = 'PASS' if case.startswith('T') else None
+        for model in (SONNET, OPUS):
+            if (case, model) == skip:
+                continue
+            for arm, passes in (('old', old_passes or {}), ('new', new_passes or {})):
+                count = passes.get((case, model), 5)
+                more_key, more_grades = key_entries(case, arm, model, [(read, 'PASS')] * count
+                                                    + [(read, 'FAIL')] * (5 - count))
+                key.update(more_key)
+                grades.update(more_grades)
+    return key, grades
+
+
+def test_unblind_judges_the_guard_over_all_twelve_cells(tmp_path):
+    def guard(key: dict, grades: dict) -> str:
+        return sheets.unblind(grades_file(tmp_path, grades), key_file(tmp_path, key))['guard']
+    assert guard(*full_run()) == 'PASS'
+    assert guard(*full_run(new_passes={('W3', OPUS): 3})) == 'FAIL'
+    assert guard(*full_run(old_passes={('T3', SONNET): 4}, new_passes={('T3', SONNET): 2})) == 'FAIL'
+    assert guard(*full_run(old_passes={('T1', SONNET): 4}, new_passes={('T1', SONNET): 3})) == 'PASS'
+    assert guard(*full_run(skip=('T2', OPUS))) == 'incomplete'
 
 
 def test_unblind_calls_the_guard_incomplete_without_five_and_five(tmp_path):
@@ -1096,6 +1215,23 @@ def test_place_copy_refuses_non_empty_root(repo_env):
     assert done.returncode == 3, done.stdout + done.stderr
     assert 'not empty' in done.stdout + done.stderr
     assert sorted(p.name for p in root.iterdir()) == ['stray.md']
+
+
+def test_place_copy_refuses_a_leftover_empty_folder(repo_env):
+    env, root, _ = repo_env
+    (root / 'writing-skills').mkdir(parents=True)
+    done = place_copy(env)
+    assert done.returncode == 3, done.stdout + done.stderr
+    assert list((root / 'writing-skills').iterdir()) == []
+
+
+def test_build_prompts_refuses_an_out_dir_that_is_a_file(tmp_path, repo_env):
+    env, _, _ = repo_env
+    out = tmp_path / 'prompts-old'
+    out.write_text('not a folder\n')
+    done = build_prompts(env, 'HEAD', 'old', str(out))
+    assert done.returncode != 0 and 'refusing' in done.stdout + done.stderr
+    assert out.read_text() == 'not a folder\n'
 
 
 def test_place_copy_refuses_an_unknown_ref(repo_env):
