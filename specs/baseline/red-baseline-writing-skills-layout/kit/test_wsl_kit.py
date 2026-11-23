@@ -715,6 +715,10 @@ def test_path_audit_flags_grep_and_glob_outside_roots(name, args, whys):
     ('Glob', {'pattern': '*.md', 'path': f'{REP_DIR}/repo/specs'}),
     # Only the literal part is judged: this pattern searches the repository alone.
     ('Glob', {'pattern': f'{REP_DIR}/repo/**{HOME}/notes.md'}),
+    # The recorded Glob limit (Kit, Grep and Glob): a relative brace alternative under an absolute prefix
+    # is not joined to it, so this spelling of $HOME/Library/Keychains is no hit, like a `**` from the
+    # rep folder. The Keychains link holds neither the spec nor the plan.
+    ('Glob', {'pattern': f'{REP_DIR}/{{home/Library/Keychains,x}}/*'}),
     # Brace alternatives inside the allowed roots stay clean.
     ('Glob', {'pattern': f'{{{SKILL}/references,{REP_DIR}/repo/specs}}/*.md'}),
     ('Glob', {'pattern': '{/tmp/wsl105/rep1/repo/specs,skills/*}/*.md'}),
@@ -1436,6 +1440,27 @@ def test_no_t_domain_repeats_plan_72s_cases(case):
         assert domain_hits(word, text) > 0, word
     assert all(domain_hits(word, plan72) for word in W_DOMAIN_WORDS)
     assert {word: domain_hits(word, text) for word in W_DOMAIN_WORDS if domain_hits(word, text)} == {}
+
+
+# The domains of the skill's own worked examples. Chosen once, on 2026-11-22 at commit 8619445, from
+# skills/writing-skills/SKILL.md (lines 79, 82, 178, 233 and 425), references/discovery.md (lines 86-121,
+# 170-175 and 194-200) and testing-skills-with-subagents.md (line 167). Frozen here, so this test never reads the
+# live skill. Distinctive terms only: generic words such as `timeout` or `production` are left out.
+SKILL_EXAMPLE_WORDS = (
+    'condition-based', 'root-cause', 'flatten-with-flags', 'test-invariants', 'defensive-programming', 'flaky',
+    'async-test-helpers', 'race condition', 'race conditions', 'setTimeout', 'React Router', 'ENOTEMPTY',
+    'payment-system', 'debugging-with-logs', 'data-structure-refactoring',
+)
+
+
+@pytest.mark.parametrize('case', ['T1', 'T2', 'T3'])
+def test_no_t_domain_repeats_the_skills_own_examples(case):
+    texts = {f'CASES_T[{case}]': cases.CASES_T[case]}
+    for path in sorted((KIT / 'fixtures' / case).rglob('*')):
+        if path.is_file():
+            texts[str(path.relative_to(KIT))] = path.read_text()
+    found = {(name, word) for name, text in texts.items() for word in SKILL_EXAMPLE_WORDS if domain_hits(word, text)}
+    assert found == set()
 
 
 def test_every_case_has_its_pass_and_fail_columns():
