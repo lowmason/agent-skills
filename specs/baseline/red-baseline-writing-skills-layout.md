@@ -607,9 +607,14 @@ The void rep is not in these counts.
 ### Reading of the result
 
 120 of 120 scored reps passed. Every cell was `old` 5/5 and `new` 5/5, so every bar is met and the guard
-passes. No case had a failing rep in either arm. So the run shows that the move lost nothing in these 12
+passes. No case had a failing rep in either arm. So the run shows no loss from the move in these 12
 cells. It cannot show a gain, because a layout that was neither better nor worse would also have scored
 this way. T2's use part can be met from general knowledge (Predictions), so the Read part carries T2.
+T3's use part can also be met without the read. The void T3 `old` rep 4
+(`runs/T3/old/claude-sonnet-5-5/rep4/summary.json`, call 5) added a `shape=octagon` warning node and
+never read `graphviz-conventions.dot`. So the Read part carries T3 too, and a later plan must not take
+T3's use count as proof that the moved file was used. The blind-sheet diff check ran before grading,
+for each of the six cases, and only the answer differed.
 
 The graders were agents, not a person. Six independent agents graded the sheets, one per case. After the
 grading, a mechanical scan of the sheets agreed with 118 of the 120 grades. The other two are W3 sheets
@@ -714,7 +719,8 @@ Task 6. The check before each pair in Task 6 still applies. The Opus term uses o
 
 ## Deviations
 
-Each was made in Task 3, before any probe or rep, and the task review rules on it.
+Items 1 to 8 were made in Task 3, before any probe or rep, and the task review ruled on each. Item 9
+was made in Task 6, after the reps, and changes no rule.
 
 1. **`run_json_reps.sh`'s scratch path keeps three parts of `<out-dir>`.** Plan 103's runner keeps
    two. Task 6's `<out-dir>` is `runs/<case>/<arm>/<model>/`, so with two parts W1 and W2 of one arm
