@@ -48,10 +48,12 @@ Partner: We want to change one line in `skills/changelog-entry/SKILL.md`. The pr
     'T2': '''
 Partner: Agents never load our `parquet-schema-check` skill, even when they're about to write a parquet file that breaks the schema. Fix it.
 
-[you, tools] You ran the baseline earlier: in 9 of 10 runs the agent wrote the parquet file without loading the skill. The skill is `skills/parquet-schema-check/SKILL.md`. Your partner read the results.
+[you, tools] You ran the baseline earlier. Your partner read the results. The skill is `skills/parquet-schema-check/SKILL.md`.
 ''',
     'R3': '''
 Partner: Rename our `csv-dialect-sniff` skill to `sniffing-csv-dialects`.
+
+[you, tools] You ran the baseline earlier. Your partner read the results.
 ''',
 }
 

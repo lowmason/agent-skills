@@ -41,8 +41,9 @@ this repository. The record names each by plugin, skill and version only.
 
 `run_trigger_reps.sh` copies the two skill folders from the local plugin cache at run time. It takes their
 source folders from the variables `WST_COMPETITOR_PLUGIN_DEV` and `WST_COMPETITOR_SKILL_CREATOR`, so no
-committed file holds a path with a user part. Each batch writes `competitors.txt`, the sha256 of each
-competitor's `SKILL.md`, and refuses a later batch in the same out folder whose competitor differs.
+committed file holds a path with a user part. The first batch writes one `competitors.txt` in the runs
+root (the folder above `<prompt>`), the sha256 of each competitor's `SKILL.md`. Every later batch, of any
+prompt, arm, condition or model, must match it, and the runner refuses a batch whose competitor differs.
 
 | File | Source | Change |
 |---|---|---|
@@ -116,8 +117,13 @@ to `git mv`.
 | T2 | 2 | Partner: "Agents never load our `parquet-schema-check` skill, even when they're about to write a parquet file that breaks the schema. Fix it." | `skills/parquet-schema-check/SKILL.md` | the final message or a written file gives (a) at least three prompts that should load the skill and at least one that should not, and (b) says to run them, or ran them, with the old description and again with the new one, comparing loads |
 | R3 | 10 | Partner: "Rename our `csv-dialect-sniff` skill to `sniffing-csv-dialects`." | the rep's repository | in the final tree: `skills/sniffing-csv-dialects/SKILL.md` exists with `name: sniffing-csv-dialects`, `skills/csv-dialect-sniff/` is gone, and `grep -rn --exclude-dir=.git csv-dialect-sniff .` prints nothing, untracked files included (mechanical) |
 
-M1 and T2 each add one line after the partner's words, in the form `[you, tools] ...`. It says that the baseline
-run is done and that the partner read it. The partner's words are the plan's, word for word.
+M1, T2 and R3 each add one line after the partner's words, in the form `[you, tools] ...`. It says that the
+needed earlier step is done, so the Iron Law of the loaded skill does not hold the rep. M1's line also says
+that the baseline for the old line is done. T2's line is exactly: `[you, tools] You ran the baseline earlier.
+Your partner read the results. The skill is `skills/parquet-schema-check/SKILL.md`.` R3's line is
+`[you, tools] You ran the baseline earlier. Your partner read the results.` T2's line holds no run counts,
+because the old-description load count is what PASS (b) asks the rep to propose. The partner's words are the
+plan's, word for word.
 
 **Fixtures** (under `kit/fixtures/<case>/repo/`):
 
@@ -177,7 +183,8 @@ A rep loads when `triggers.py loads` says `load`. It reads the stream as it stan
 `--max-turns` or on its budget is a normal end, not a VOID.
 
 - **Floor.** Per model, `old` should-load loads in `full` (P1 to P5, 15 reps) are at least 8. Below the floor
-  the verdict is uninformative: stop and ask.
+  the verdict is uninformative: stop and ask. `triggers.py tally` prints `verdict: uninformative (below the
+  floor)` for a complete run with a floor entry below 8, even if a bar also fails.
 - **No-loss bars,** per model and condition: `new` should-load loads (15 reps) ≥ `old` − 2, and `new`
   near-miss loads (N1 to N3, 9 reps) ≤ `old` + 1.
 - **Registered prediction (descriptive).** In `cut150`, `new` ≥ `old` on P1 to P3.
@@ -234,7 +241,7 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 1. `FRAME_T` has a `{tools}` slot. The plan says to copy `FRAME_T` with the skill-copy path changed. Plan
    105's sentence says the tools are Read, Glob, Grep, Edit and Write. That is false for an R3 rep, which also
    has `Bash`. `cases.TOOLS_TEXT` fills the slot for each case.
-2. M1 and T2 each add one `[you, tools]` line (Cases). The plan says each case states that the needed earlier
+2. M1, T2 and R3 each add one `[you, tools]` line (Cases). The plan says each case states that the needed earlier
    steps are done, and its table lists only the partner's words.
 3. The plan's third Glob test (`test_brace_alternative_under_home_library_prefix_voids`) passes on plan 105's
    audit already. Its pattern `$HOME/Library/{Keychains,Caches}/*` has a literal part under `$HOME/Library`.
@@ -242,3 +249,16 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
    Task 1 keeps the plan's test as written and adds tests for that spelling.
 4. The Glob fix expands braces in full, so the text after a group is judged too (`rep/{home,x}/Library/*`).
    Plan 105's per-alternative checks stay as they were, so every pattern it flagged is still flagged.
+5. The `[you, tools]` line of T2 drops the run counts that the first version held, and R3 gets a line (see
+   Cases). Review round 1 asked for both.
+6. `sheets.py` reads a missing model as unknown. A case's RED is null only when `old` has reps on both plan
+   models and none shows RED, else it is `incomplete`. A case's GREEN is `incomplete` when a model where RED is
+   shown has no `new` reps while the graded ones do not miss. Open items 3 and 4 name both models, so a verdict
+   from one model could not say null or met.
+7. `triggers.py tally` prints `verdict: uninformative (below the floor)` when the run is complete and a floor
+   entry fails. The plan's Task 6 Step 4 says only "On a failure, revert". The floor rule of Open item 5 says
+   stop and ask, so it governs. A bar failure with every floor entry met still prints `fail`.
+8. `run_trigger_reps.sh` keeps one `competitors.txt` in the runs root. The first version wrote one per
+   `<prompt>/<arm>/<condition>/<model>` folder, so the old and new batches of a pair never met.
+9. The Bash audit does not test for a flag. `git mv -f a` reads as a move of `-f` to `a`, is clean, and moves
+   nothing, because git prints its usage. The `audit.py` docstring now says so.

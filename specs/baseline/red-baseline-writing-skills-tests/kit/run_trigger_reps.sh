@@ -12,9 +12,9 @@
 #   WST_COMPETITOR_PLUGIN_DEV      the skill-development folder (it holds SKILL.md)
 #   WST_COMPETITOR_SKILL_CREATOR   the skill-creator folder (it holds SKILL.md)
 # The runner refuses a missing variable, a folder without SKILL.md, and a ref whose skills/ already holds a
-# skill of either name. It writes <out-dir>/competitors.txt (each competitor's name and the sha256 of its
-# SKILL.md) on the first rep and refuses a later batch whose competitor differs, so the old and new arms
-# list the same competitors.
+# skill of either name. It keeps one competitors.txt in the runs root, the folder above <prompt> (each
+# competitor's name and the sha256 of its SKILL.md). The first batch writes it and every later batch, of any
+# prompt, arm, condition or model, must match it, so every rep of a run lists the same competitors.
 #
 # Each rep, as plan 100's runner does, from a rep folder WST_TROOT/rep<N>/ with repo/, home/ and tmp/:
 #   1. repo/ is a copy of fixtures/trigger/repo/ (git init, one commit: the rep's BASE);
@@ -109,11 +109,12 @@ while [ "$i" -le "$LAST" ]; do
   [ -e "$SCRATCH/rep$i.jsonl" ] || [ -e "$SCRATCH/rep$i-folder" ] && { echo "refusing: $SCRATCH/rep$i exists"; exit 2; }
   i=$((i + 1))
 done
-if [ -e "$OUT/competitors.txt" ]; then
-  printf '%s' "$NOTES" | cmp -s - "$OUT/competitors.txt" \
-    || { echo "refusing: a competitor skill changed since the first rep of $OUT (see competitors.txt)"; exit 2; }
+RUNS_ROOT="$(dirname "$(dirname "$(dirname "$(dirname "$OUT")")")")"
+if [ -e "$RUNS_ROOT/competitors.txt" ]; then
+  printf '%s' "$NOTES" | cmp -s - "$RUNS_ROOT/competitors.txt" \
+    || { echo "refusing: a competitor skill changed since the first batch of $RUNS_ROOT (see competitors.txt)"; exit 2; }
 else
-  printf '%s' "$NOTES" > "$OUT/competitors.txt"
+  printf '%s' "$NOTES" > "$RUNS_ROOT/competitors.txt"
 fi
 
 trigger_settings() {

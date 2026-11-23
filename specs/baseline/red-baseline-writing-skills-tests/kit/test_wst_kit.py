@@ -594,15 +594,27 @@ def test_trigger_runner_refuses_a_rep_that_exists_in_the_out_folder_or_in_scratc
     assert len(trig.calls()) == 1
 
 
-def test_trigger_runner_records_the_competitor_hashes_and_refuses_a_change(trig):
+def test_trigger_runner_records_the_competitor_hashes_once_in_the_runs_root(trig):
     trigger_ok(trig)
-    notes = (trig.tout() / 'competitors.txt').read_text().split('\n')
+    root = trig.tmp / 'tout'
+    notes = (root / 'competitors.txt').read_text().split('\n')
     want = sorted(f'{name} {sha256((trig.comp[name] / "SKILL.md").read_bytes())}' for name in COMPETITORS)
     assert sorted(line for line in notes if line) == want
-    (trig.comp['skill-creator'] / 'SKILL.md').write_text('---\nname: skill-creator\ndescription: new text\n---\n')
-    done = trig.trun(first=2, last=2)
-    assert done.returncode == 2 and 'competitor' in done.stdout + done.stderr
+    assert not (trig.tout() / 'competitors.txt').exists()
+
+
+def test_trigger_runner_compares_every_batch_with_the_runs_root_file(trig):
+    # The old and the new batch of a pair write to different folders, so a refresh between them must still be seen.
+    trigger_ok(trig, arm='old')
+    (trig.comp['skill-development'] / 'SKILL.md').write_text('---\nname: skill-development\ndescription: new\n---\n')
+    for kwargs in ({'arm': 'new'}, {'arm': 'old', 'first': 2, 'last': 2}, {'prompt': 'N1', 'arm': 'new', 'condition': 'cut150'}):
+        done = trig.trun(**kwargs)
+        assert done.returncode == 2 and 'competitor' in done.stdout + done.stderr, kwargs
     assert len(trig.calls()) == 1
+    assert not (trig.tout(arm='new') / 'rep1').exists()
+    # The same hashes in another batch of the same runs root are accepted.
+    (trig.comp['skill-development'] / 'SKILL.md').write_text('---\nname: skill-development\ndescription: Competitor skill-development\n---\n')
+    assert trig.trun(arm='new').returncode == 0
 
 
 def test_trigger_runner_a_field_left_in_the_summary_is_a_kit_error(trig):
@@ -1496,6 +1508,37 @@ def test_tally_command_prints_the_counts_and_the_verdict(twin):
     assert 'floor' in done.stdout and 'incomplete' in done.stdout
 
 
+def test_the_verdict_is_uninformative_below_the_floor_fail_on_a_bar_and_incomplete_without_the_reps():
+    import triggers
+    low = {(p, 'full', SONNET): 1 for p in ('P1', 'P2', 'P3', 'P4', 'P5')}
+    assert triggers.verdict(triggers.judge(grid(old=low, new=low))) == 'uninformative (below the floor)'
+    # The floor governs even when a bar also fails.
+    assert triggers.verdict(triggers.judge(grid(old=low))) == 'uninformative (below the floor)'
+    bad = {(p, 'cut150', OPUS): 0 for p in ('P1', 'P2', 'P3', 'P4', 'P5')}
+    assert triggers.verdict(triggers.judge(grid(new=bad))) == 'fail'
+    assert triggers.verdict(triggers.judge(grid())) == 'pass'
+    cells = grid(old=low)
+    cells[('P3', 'new', 'cut150', OPUS)]['reps'] = 2
+    assert triggers.verdict(triggers.judge(cells)) == 'incomplete'
+    assert triggers.verdict(triggers.judge({})) == 'incomplete'
+
+
+def test_tally_command_prints_the_uninformative_verdict(twin):
+    runs, tscratch = twin
+    import trigger_prompts
+    for prompt in trigger_prompts.PROMPTS:
+        for arm in ('old', 'new'):
+            for condition in ('full', 'cut150'):
+                for model in (SONNET, OPUS):
+                    for n in (1, 2, 3):
+                        write_trigger_rep(runs, tscratch, prompt=prompt, arm=arm, condition=condition, model=model, n=n,
+                                          calls=[skill_use('writing-skills')] if (prompt == 'P1' and n == 1) else [])
+    env = {**os.environ, 'WST_TRIGGER_SCRATCH': str(tscratch)}
+    done = kit_tool(str(KIT / 'triggers.py'), 'tally', str(runs), env=env)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert 'verdict: uninformative (below the floor)' in done.stdout
+
+
 def test_tally_refuses_an_unknown_folder(twin):
     import triggers
     runs, tscratch = twin
@@ -1800,6 +1843,43 @@ def test_red_only_grading_reports_red_and_no_green(tmp_path):
     assert result['cells'][0]['new_n'] == 0
 
 
+def two_models(tmp_path, opus: tuple, sonnet: tuple, case: str = 'M1') -> dict:
+    key, grades = cell_grades(case, OPUS, *opus)
+    more_key, more_grades = cell_grades(case, SONNET, *sonnet)
+    key.update(more_key)
+    grades.update(more_grades)
+    return unblind(tmp_path, key, grades)['verdicts'][case]
+
+
+def test_green_is_incomplete_when_a_model_where_red_is_shown_has_no_new_reps(tmp_path):
+    # Open item 4: new >= 4 of 5 on each model where RED was shown. Opus alone passing is not enough.
+    assert two_models(tmp_path, (0, 5), (1, None)) == {'red': 'shown', 'green': 'incomplete'}
+    assert two_models(tmp_path, (1, None), (0, 5)) == {'red': 'shown', 'green': 'incomplete'}
+    # A model where RED is not shown needs no new reps.
+    assert two_models(tmp_path, (0, 5), (4, None)) == {'red': 'shown', 'green': 'met'}
+    # A miss on a graded model is a miss, whatever the other model lacks.
+    assert two_models(tmp_path, (0, 2), (1, None)) == {'red': 'shown', 'green': 'missed'}
+    # With no new reps on any such model, nothing ran.
+    assert two_models(tmp_path, (0, None), (1, None)) == {'red': 'shown', 'green': 'not run'}
+
+
+def test_red_is_incomplete_when_the_other_plan_model_has_no_old_reps_and_none_is_shown(tmp_path):
+    # Open item 3: null only when the control passes 3 or more on both models.
+    key, grades = cell_grades('M1', SONNET, 3, None)
+    assert unblind(tmp_path, key, grades)['verdicts']['M1'] == {'red': 'incomplete', 'green': 'n/a'}
+    # RED shown on the one graded model is shown whatever the other lacks.
+    key, grades = cell_grades('M1', SONNET, 2, None)
+    assert unblind(tmp_path, key, grades)['verdicts']['M1']['red'] == 'shown'
+    # Both models graded and neither shown is null.
+    assert two_models(tmp_path, (3, None), (5, None)) == {'red': 'null', 'green': 'n/a'}
+    # A model with new reps only has no old reps either.
+    key, grades = cell_grades('M1', OPUS, 4, None)
+    more_key, more_grades = cell_grades('M1', SONNET, None, 5)
+    key.update(more_key)
+    grades.update(more_grades)
+    assert unblind(tmp_path, key, grades)['verdicts']['M1']['red'] == 'incomplete'
+
+
 def test_unblind_counts_only_the_reps_it_was_given(tmp_path):
     key, grades = key_entries('M1', 'old', SONNET, ['PASS'] * 6)
     more_key, more_grades = key_entries('M1', 'new', SONNET, ['PASS'] * 4)
@@ -2058,7 +2138,7 @@ def test_each_case_names_its_target_and_the_fixture_holds_its_project():
 
 
 def test_the_cases_are_the_plans_conversations():
-    # The partner's words are the plan's. M1 and T2 add one "[you, tools]" line that says the earlier steps are done.
+    # The partner's words are the plan's. Each case adds one "[you, tools]" line that says the earlier steps are done.
     assert cases.CASES['M1'].strip().split('\n\n')[0] == (
         'Partner: We want to change one line in `skills/changelog-entry/SKILL.md`. The proposal is in '
         '`specs/changelog-entry-wording.md`. Before I merge it, design the micro-test that will tell us whether the '
@@ -2066,9 +2146,23 @@ def test_the_cases_are_the_plans_conversations():
     assert cases.CASES['T2'].strip().split('\n\n')[0] == (
         'Partner: Agents never load our `parquet-schema-check` skill, even when they\'re about to write a parquet '
         'file that breaks the schema. Fix it.')
-    assert cases.CASES['R3'].strip() == 'Partner: Rename our `csv-dialect-sniff` skill to `sniffing-csv-dialects`.'
-    for case in ('M1', 'T2'):
-        assert cases.CASES[case].strip().split('\n\n')[1].startswith('[you, tools] ')
+    assert cases.CASES['R3'].strip().split('\n\n')[0] == (
+        'Partner: Rename our `csv-dialect-sniff` skill to `sniffing-csv-dialects`.')
+    for case in ('M1', 'T2', 'R3'):
+        parts = cases.CASES[case].strip().split('\n\n')
+        assert len(parts) == 2 and parts[1].startswith('[you, tools] '), case
+
+
+def test_the_you_tools_lines_state_the_earlier_steps_without_handing_over_a_pass_part():
+    t2 = cases.CASES['T2'].strip().split('\n\n')[1]
+    assert t2 == ('[you, tools] You ran the baseline earlier. Your partner read the results. The skill is '
+                  '`skills/parquet-schema-check/SKILL.md`.')
+    assert not re.search(r'\d+ of \d+|\bwithout loading\b|\bruns?\b.*\bloa', t2.replace('ran the baseline', ''))
+    # M1 keeps its line, and R3 says the needed earlier step is done, in the same form.
+    assert 'in 7 of 10 runs' in cases.CASES['M1']
+    r3 = cases.CASES['R3'].strip().split('\n\n')[1]
+    assert r3.startswith('[you, tools] ') and 'earlier' in r3 and 'read' in r3
+    assert 'discovery' not in r3 and 'grep' not in r3.lower()
 
 
 def test_each_case_states_its_pass_parts():

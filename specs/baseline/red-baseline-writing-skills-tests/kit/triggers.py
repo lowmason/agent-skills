@@ -133,6 +133,15 @@ def tally(runs_root: Path) -> dict:
     return {'cells': cells, 'voids': voids, **judge(cells)}
 
 
+def verdict(result: dict) -> str:
+    '''incomplete without every planned rep, uninformative when a floor entry fails, fail on a bar, else pass.'''
+    if not result['complete']:
+        return 'incomplete'
+    if not all(entry['ok'] for entry in result['floor'].values()):
+        return 'uninformative (below the floor)'
+    return 'pass' if result['ok'] else 'fail'
+
+
 def show_tally(result: dict) -> None:
     for key, cell in sorted(result['cells'].items()):
         print(f'{" ".join(key)}: {cell["loads"]} of {cell["reps"]} (void {cell["void"]})')
@@ -147,7 +156,7 @@ def show_tally(result: dict) -> None:
     for model, entry in sorted(result['prediction'].items()):
         print(f'prediction {model} (cut150, P1-P3): old {entry["old"]}, new {entry["new"]}, '
               f'{"holds" if entry["holds"] else "does not hold"}')
-    print(f'verdict: {"incomplete" if not result["complete"] else "pass" if result["ok"] else "fail"}')
+    print(f'verdict: {verdict(result)}')
 
 
 def main() -> None:

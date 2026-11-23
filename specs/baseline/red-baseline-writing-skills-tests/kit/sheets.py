@@ -25,9 +25,11 @@ with `id`, blank lines and `#` lines are ignored), and refuses a missing, extra,
 rep's verdict is its grade, or for R3 its mechanical verdict. It prints each rep's verdict, then for each case
 and model the old and new pass counts with RED and GREEN, then each case's verdict. RED is shown on a model
 when `old` passes at most RED_MAX of 5. GREEN is met on a model where RED is shown when `new` passes at least
-GREEN_MIN and at least `old` + GREEN_GAP. A case's RED is shown when it is shown on at least one model, else
-null. Its GREEN is met when it is met on every model where RED is shown, missed otherwise, n/a when RED is null
-and not run when no such model has `new` reps.
+GREEN_MIN and at least `old` + GREEN_GAP. A case's RED is shown when it is shown on at least one model. It is
+null only when each of the plan's two models (MODELS) has `old` reps and none shows RED, and it is incomplete
+when a model has none. Its GREEN is n/a unless RED is shown. When RED is shown, GREEN is missed when a graded
+model misses, else incomplete when a model where RED is shown has no `new` reps, else not run when none has
+them, else met on every model where RED is shown.
 '''
 import json
 import random
@@ -45,6 +47,7 @@ CASE_NAMES = sorted(cases.CASES)
 NAMES = ('micro-tests.md', 'discovery.md', 'claude-code.md', 'bulletproofing.md', 'flowcharts.md',
          'persuasion-principles.md', 'testing-skills-with-subagents.md', 'graphviz-conventions.dot',
          'render_graphs.py', 'test_render_graphs.py')
+MODELS = ('claude-opus-5-5', 'claude-sonnet-5-5')
 SHARED = ('LICENSE-superpowers', 'LICENSE', 'SKILL.md')
 MASK = '<skill>/'
 # The characters that end a path token in prose, Markdown, JSON or a diff line.
@@ -190,16 +193,22 @@ def judge_cells(rows: list[dict]) -> list[dict]:
 
 
 def judge_cases(cells: list[dict]) -> dict:
-    '''Each case's RED and GREEN verdict from its cells.'''
+    '''Each case's RED and GREEN verdict from its cells, which need both plan models to be conclusive.'''
     verdicts = {}
     for case in sorted({cell['case'] for cell in cells}):
         mine = [cell for cell in cells if cell['case'] == case]
         shown = [cell for cell in mine if cell['red']]
         if not shown:
-            verdicts[case] = {'red': 'null', 'green': 'n/a'}
+            graded = {cell['model'] for cell in mine if cell['old_n']}
+            verdicts[case] = {'red': 'null' if graded >= set(MODELS) else 'incomplete', 'green': 'n/a'}
             continue
-        run = [cell for cell in shown if cell['new_n']]
-        green = 'not run' if not run else 'met' if all(cell['green'] for cell in run) else 'missed'
+        graded = [cell for cell in shown if cell['new_n']]
+        if any(cell['green'] is False for cell in graded):
+            green = 'missed'
+        elif len(graded) < len(shown):
+            green = 'incomplete' if graded else 'not run'
+        else:
+            green = 'met'
         verdicts[case] = {'red': 'shown', 'green': green}
     return verdicts
 
