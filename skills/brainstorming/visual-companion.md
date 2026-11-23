@@ -83,7 +83,7 @@ On Windows, the script auto-detects and switches to foreground mode (which block
 
 **Antigravity CLI (`agy`):**
 ```bash
-# agy keeps this run_command running as a background task across turns (proven on agy 1.5.14, --mode accept-edits, terminal sandbox off)
+# Needs --mode accept-edits with the terminal sandbox off (auto mode is not proven). agy then keeps this run_command running as a background task across turns (agy 1.5.14).
 <this-skill-dir>/scripts/start-server.sh --project-dir /path/to/project --open --foreground
 ```
 

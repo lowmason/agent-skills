@@ -1,6 +1,6 @@
 # RED baseline — brainstorming improvements (plan 106)
 
-**Date:** 2026-11-22 · **Status:** Registered. No case rep has run yet.
+**Date:** 2026-11-22 · **Status:** Complete. Round A met every bar. Round B met every bar except the T4 platform case on its strict reading (3 of 5), which the owner accepted as a known gap after the diagnostic and the revert arms. P3 met its bar (5 of 5), so its known gap is closed. The T7 panel shows no regression and no gain. The agy probe printed ALIVE, so `visual-companion.md` gives the proven launch line (Form 1). Total spend $8.57.
 **Governs:** plan 106 (`specs/plans/106-brainstorming-improvements.md`), items 1, 2, 4, 5, 6 and 8 of the brainstorming findings (`specs/findings/brainstorming-improvements.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-improvements/` beside it, and plan 106's
@@ -198,7 +198,7 @@ Hand and panel differ on 11 reps. Each is a hand P and a panel F, and each panel
 
 T4 strict missed its bar, which makes it a regression by the Regression line. So the Bars rule ran a diagnostic on the shipped copy, and the Outcomes rule ran each "B without item N" arm, for items 2, 4 and 5. The owner raised the spend stop for the arms first (Owner rulings, below). Each run was 5 reps of T4 on Claude Code 2.1.323.
 
-Each arm was built with the plan's recipe (Task 3 Step 12) as a commit object whose parent is B, without touching the working tree, the index or the stash. For each arm, `git diff --name-only B <arm>` prints only `skills/brainstorming/SKILL.md`, and the diff is the item's own diff reversed. Each arm's T4 prompt differs from B's only in those lines. The arm commits are on no branch. `prompts/no-item<N>/` holds each arm's prompts, and its `MANIFEST.txt` gives the skill text's sha256.
+Each arm was built with the plan's recipe (Task 3 Step 12) as a commit object whose parent is B, without touching the working tree, the index or the stash. For each arm, `git diff --name-only B <arm>` prints only `skills/brainstorming/SKILL.md`, and the diff is the item's own diff reversed. Each arm's T4 prompt differs from B's only in those lines. The arm commits are on no branch or tag, so a clone does not get them. B and each item commit are on the branch, and the recipe is content-addressed. Rebuilt from them, each arm has the same `SKILL.md` blob, and `build_prompts.py skill <arm>` writes prompts byte-identical to `prompts/no-item<N>/`. Only the `sha` line of `MANIFEST.txt` differs, because it names the rebuilt commit (checked on 2026-11-22 for all three arms). `MANIFEST.txt` also gives the skill text's sha256.
 
 | Run | Item commit | Arm commit | `SKILL.md` blob | Hunks reversed | T4 broad | T4 strict |
 |---|---|---|---|---|---|---|
@@ -264,7 +264,7 @@ After runs 1b and 2, the server outlived the session. In run 1b, `ps` still list
 
 ### Verdict
 
-Turn 2 printed ALIVE in run 3, so `visual-companion.md` gets Form 1, with the flag `--foreground`. The mechanism is that agy keeps the `run_command` running as a background task across turns. It is proven on agy 1.5.14, in `--mode accept-edits`, with the terminal sandbox off. Auto mode with the sandbox on is not proven: in run 1b the background task stayed `RUNNING`, but the sandbox blocked the check, and the run cannot show whether a browser reaches the server.
+Turn 2 printed ALIVE in run 3, so `visual-companion.md` gets Form 1, with the flag `--foreground`. The mechanism is that agy keeps the `run_command` running as a background task across turns. It is proven on agy 1.5.14, in `--mode accept-edits`, with the terminal sandbox off. Auto mode with the sandbox on is not proven: in run 1b the background task stayed `RUNNING`, but the sandbox blocked the check, and the run cannot show whether a browser reaches the server. The probe ran headless, where agy denies each action that needs approval. So runs 1b to 3 ran a copy of the server files inside agy's workspace, and runs 2 and 3 had command allow rules. An interactive session, where agy can ask for approval, and the skill's own script path were not tested. `--open` was left out only so that no browser opened, and the launch line keeps it, as every platform's line does.
 
 ## Spend
 
