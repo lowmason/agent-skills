@@ -435,6 +435,17 @@ def test_strip_removes_credential_field_everywhere(tkit):
     assert 'kit_error' not in summary
 
 
+def test_a_field_left_in_a_written_file_is_a_kit_error(tkit):
+    # The strip rewrites JSON only, so a rep that writes the field into its repository leaves it in final.diff.
+    tkit.actions(f"printf '{FIELD}: 1790000000\\n' >> notes.txt\n")
+    done = tkit.run(first=1, last=2)
+    assert done.returncode == 2, done.stdout + done.stderr
+    error = tkit.summary()['kit_error']
+    assert f'the strip left {FIELD} in:' in error and 'final.diff' in error, error
+    assert len(tkit.calls()) == 1
+    assert 'kit error, so the batch stops' in done.stdout
+
+
 @pytest.mark.parametrize('change', ['edit', 'add'])
 def test_runner_refuses_a_changed_skill_copy(tkit, change):
     copy = tkit.skill / 'writing-skills'
@@ -692,6 +703,8 @@ def test_path_audit_flags_grep_and_glob_outside_roots(name, args, whys):
     ('Glob', {'pattern': 'references/*.md', 'path': SKILL}),
     ('Glob', {'pattern': 'specs/../skills/*/SKILL.md'}),
     ('Glob', {'pattern': '*.md', 'path': f'{REP_DIR}/repo/specs'}),
+    # Only the literal part is judged: this pattern searches the repository alone.
+    ('Glob', {'pattern': f'{REP_DIR}/repo/**{HOME}/notes.md'}),
 ])
 def test_path_audit_passes_grep_and_glob_inside_roots(name, args):
     assert hits(name, **args) == []
@@ -1074,6 +1087,18 @@ def test_unblind_calls_the_guard_incomplete_without_five_and_five(tmp_path):
     more_key, more_grades = key_entries('W2', 'new', SONNET, [(None, 'PASS')] * 4)
     result = sheets.unblind(grades_file(tmp_path, {**grades, **more_grades}), key_file(tmp_path, {**key, **more_key}))
     assert result['guard'] == 'incomplete'
+    # All 12 cells are there and meet their bars, but one arm of one cell is a rep short.
+    key, grades = full_run()
+    [short] = [sheet for sheet, entry in key.items()
+               if (entry['case'], entry['arm'], entry['model'], entry['rep']) == ('T3', 'new', OPUS, 5)]
+    del key[short], grades[short]
+    assert sheets.unblind(grades_file(tmp_path, grades), key_file(tmp_path, key))['guard'] == 'incomplete'
+    # Or a rep over.
+    key, grades = full_run()
+    more_key, more_grades = key_entries('W1', 'old', SONNET, [(None, 'PASS')] * 6)
+    key.update(more_key)
+    grades.update(more_grades)
+    assert sheets.unblind(grades_file(tmp_path, grades), key_file(tmp_path, key))['guard'] == 'incomplete'
 
 
 def test_sheets_command_builds_and_unblinds(tmp_path, world):
