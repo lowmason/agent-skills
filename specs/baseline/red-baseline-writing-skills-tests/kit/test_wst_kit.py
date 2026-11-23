@@ -255,6 +255,23 @@ def test_r3_reps_get_bash_limited_to_git_mv_and_the_other_cases_do_not(tmp_path)
         assert args[args.index('--allowedTools') + 1] == allowed, case
 
 
+def test_an_r3_summary_holds_the_tree_check_of_the_finished_repository_and_no_other_case_does(tmp_path):
+    for verdict, extra in (('PASS', ''), ('FAIL', 'echo csv-dialect-sniff > left.txt;')):
+        kit = ToolKit(tmp_path / verdict)
+        kit.fixture('R3')
+        kit.actions('mkdir -p skills/sniffing-csv-dialects; '
+                    'printf -- "---\\nname: sniffing-csv-dialects\\n---\\n" > skills/sniffing-csv-dialects/SKILL.md; '
+                    + extra + '\n')
+        tools_ok(kit, name='R3')
+        check = kit.summary(name='R3')['r3_check']
+        assert check['verdict'] == verdict, check
+        assert (check['problems'] == []) == (verdict == 'PASS')
+    other = ToolKit(tmp_path / 'other')
+    other.fixture('M1')
+    tools_ok(other, name='M1')
+    assert 'r3_check' not in other.summary(name='M1')
+
+
 def test_rep_env_holds_only_the_pinned_names(tkit):
     tools_ok(tkit)
     env = dict(line.split('=', 1) for line in (tkit.stub_dir / 'env.1').read_text().splitlines() if '=' in line)
@@ -1335,6 +1352,14 @@ def test_the_floor_needs_eight_old_should_load_loads_in_full_per_model():
     assert triggers.judge(grid(old=cut, new=cut))['floor'][SONNET]['ok'] is True
 
 
+def test_the_floor_is_missed_by_one_load_below_eight():
+    import triggers
+    seven = {(p, 'full', SONNET): n for p, n in zip(('P1', 'P2', 'P3', 'P4', 'P5'), (2, 2, 1, 1, 1))}
+    assert triggers.judge(grid(old=seven, new=seven))['floor'][SONNET] == {'old_loads': 7, 'ok': False}
+    nine = {(p, 'full', SONNET): n for p, n in zip(('P1', 'P2', 'P3', 'P4', 'P5'), (2, 2, 2, 2, 1))}
+    assert triggers.judge(grid(old=nine, new=nine))['floor'][SONNET] == {'old_loads': 9, 'ok': True}
+
+
 @pytest.mark.parametrize(('new_total', 'ok'), [(8, True), (7, False), (10, True), (0, False)])
 def test_the_should_load_bar_is_new_at_least_old_minus_two(new_total, ok):
     import triggers
@@ -1515,6 +1540,17 @@ def test_sheets_record_whether_the_rep_read_the_reference_in_the_key_only(tmp_pa
     assert sorted(e['reads'] for e in key.values()) == [False, True]
     for sheet in sheet_dir.iterdir():
         assert 'reads' not in sheet.read_text().lower().split('--- final message ---')[0]
+
+
+def test_a_read_that_returned_an_error_does_not_count_as_a_read_of_the_reference(tmp_path, world):
+    runs, scratch = world
+    write_t_rep(runs, scratch, case='T2', calls=[('Read', {'file_path': f'{SKILL}/references/discovery.md'})],
+                errors=(1,))
+    write_t_rep(runs, scratch, case='T2', n=2, calls=[('Read', {'file_path': f'{SKILL}/references/discovery.md'}),
+                                                       ('Read', {'file_path': f'{SKILL}/references/discovery.md'})],
+                errors=(1,))
+    _, key = build(tmp_path, runs)
+    assert {e['rep']: e['reads'] for e in key.values()} == {1: False, 2: True}
 
 
 def test_r3_reps_get_no_sheet_and_carry_the_mechanical_verdict_in_the_key(tmp_path, world):
