@@ -266,6 +266,16 @@ def test_find_blocks_orders_files_by_relative_path(tmp_path, monkeypatch):
     assert [b.source.as_posix() for b in find_blocks(skill)] == ['a/y.md', 'm.md', 'z.md']
 
 
+def test_find_blocks_ignores_a_folder_named_like_a_markdown_file(tmp_path):
+    skill = make_skill(
+        tmp_path, {'SKILL.md': fence('digraph top {}'), 'notes.md/inside.md': fence('digraph in {}')}
+    )
+    assert [(b.source.as_posix(), b.name) for b in find_blocks(skill)] == [
+        ('SKILL.md', 'top'),
+        ('notes.md/inside.md', 'in'),
+    ]
+
+
 def test_anonymous_graphs_are_numbered_among_the_blocks_kept(tmp_path):
     skill = make_skill(
         tmp_path,
@@ -378,6 +388,19 @@ def test_refusal_names_the_out_dir_and_the_reason(tmp_path, no_dot, capsys):
     assert 'refusing' in err
     assert 'ships with the skill' in err
     assert 'graphviz' not in err
+
+
+def test_refuses_a_relative_out_dir_that_resolves_inside_the_skill(
+    tmp_path, no_dot, monkeypatch, capsys
+):
+    skill = make_skill(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    assert main(['my-skill', 'my-skill/diagrams']) == 2
+    assert 'refusing' in capsys.readouterr().err
+    monkeypatch.chdir(skill)
+    assert main(['.', 'diagrams']) == 2
+    assert 'refusing' in capsys.readouterr().err
+    assert not (skill / 'diagrams').exists()
 
 
 def test_a_missing_skill_md_is_reported_before_the_out_dir_is_judged(tmp_path, no_dot, capsys):
