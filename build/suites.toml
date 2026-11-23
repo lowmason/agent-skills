@@ -224,3 +224,9 @@ name = 'writing-skills-layout-kit'
 dir = 'specs/baseline/red-baseline-writing-skills-layout/kit'
 with = ['pytest']
 notes = ['Plan 105 guard kit: runners (stub claude, no model), rep_tools.py, audit.py, sheets.py, build_prompts.py and cases.py tests. bash, git and uv required.']
+
+[[suite]]
+name = 'writing-skills-tests-kit'
+dir = 'specs/baseline/red-baseline-writing-skills-tests/kit'
+with = ['pytest']
+notes = ['Plan 107 micro-test kit: case and trigger runners (stub claude, no model), rep_tools.py, audit.py, triggers.py, sheets.py, build_prompts.py, cases.py and the fixtures. bash, git and uv required.']
