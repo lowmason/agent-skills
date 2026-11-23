@@ -1,0 +1,88 @@
+{
+ "void": false,
+ "duration_api_ms": 24997,
+ "stop_reason": "end_turn",
+ "total_cost_usd": 0.1621418,
+ "usage": {
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 12863,
+  "cache_read_input_tokens": 649,
+  "output_tokens": 2955,
+  "output_tokens_details": {
+   "thinking_tokens": 1779
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 12863,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 2,
+   "outputTokens": 2955,
+   "cacheReadInputTokens": 649,
+   "cacheCreationInputTokens": 12863,
+   "webSearchRequests": 0,
+   "costUSD": 0.1621418,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 1779,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 12863,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 1,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "```json\n{\n\"R01\": [\"F\", \"Three candidate fixes named in one sentence\"],\n\"R02\": [\"F\", \"Three meanings of blank cells in one sentence\"],\n\"R03\": [\"P\", \"Open question; only two possibilities mentioned\"],\n\"R04\": [\"F\", \"Three return behaviours listed in one sentence\"],\n\"R05\": [\"P\", \"Two meanings plus catch-all; open question\"],\n\"R06\": [\"F\", \"Three meanings of blanks in one sentence\"],\n\"R07\": [\"P\", \"Only two meanings named\"],\n\"R08\": [\"P\", \"At most two candidate returns named\"],\n\"R09\": [\"P\", \"No candidates named; open question\"],\n\"R10\": [\"F\", \"Three meanings of empty cells in one sentence\"],\n\"R11\": [\"P\", \"Open question, no candidate list\"],\n\"R12\": [\"F\", \"Bulleted candidate meanings\"],\n\"R13\": [\"P\", \"Two options plus catch-all\"],\n\"R14\": [\"P\", \"Only two possibilities named\"],\n\"R15\": [\"P\", \"Two options plus catch-all\"],\n\"R16\": [\"F\", \"Three candidate fixes in one sentence\"],\n\"R17\": [\"F\", \"Three blank meanings quoted in one sentence\"],\n\"R18\": [\"P\", \"Open question, no candidates listed\"],\n\"R19\": [\"P\", \"Two options plus catch-all\"],\n\"R20\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R21\": [\"P\", \"Open question, no candidates named\"],\n\"R22\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R23\": [\"P\", \"Two options plus catch-all\"],\n\"R24\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R25\": [\"P\", \"Two possibilities across separate sentences\"],\n\"R26\": [\"F\", \"Three candidate tools in one sentence\"],\n\"R27\": [\"F\", \"Three candidate failure moments in one sentence\"],\n\"R28\": [\"F\", \"Three candidate builds in one sentence\"],\n\"R29\": [\"P\", \"Two options plus catch-all\"],\n\"R30\": [\"P\", \"Open question, no candidates named\"],\n\"R31\": [\"F\", \"Three candidate directions in one sentence\"],\n\"R32\": [\"F\", \"Three candidate tools in one sentence\"],\n\"R33\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R34\": [\"F\", \"Three candidate builds in one sentence\"],\n\"R35\": [\"P\", \"Possibilities spread across separate sentences\"],\n\"R36\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R37\": [\"F\", \"Three candidate problems in one sentence\"],\n\"R38\": [\"F\", \"Three candidate focuses in one sentence\"],\n\"R39\": [\"P\", \"Separate if-sentences, not a list\"],\n\"R40\": [\"P\", \"Aspects listed, not candidate answers\"],\n\"R41\": [\"P\", \"Two options plus catch-all\"],\n\"R42\": [\"P\", \"Open question, no candidates named\"],\n\"R43\": [\"F\", \"Three candidate directions in one sentence\"],\n\"R44\": [\"P\", \"Only two contrasting scenarios\"],\n\"R45\": [\"P\", \"Separate if-sentences, not a list\"],\n\"R46\": [\"F\", \"Three candidate builds in one sentence\"],\n\"R47\": [\"P\", \"Two options plus catch-all\"],\n\"R48\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R49\": [\"P\", \"Two options plus catch-all\"],\n\"R50\": [\"P\", \"Open question, no candidates named\"]\n}\n```",
+ "ttft_ms": 16940,
+ "type": "result",
+ "duration_ms": 25049,
+ "ttft_stream_ms": 2567,
+ "time_to_request_ms": 62,
+ "first_content_frame_ms": 2567,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

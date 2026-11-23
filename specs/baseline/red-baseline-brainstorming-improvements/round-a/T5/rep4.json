@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 11786,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.022384800000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8324,
+    "output_tokens": 892,
+    "output_tokens_details": {
+      "thinking_tokens": 345
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 892,
+      "cacheReadInputTokens": 8324,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.022384800000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 345,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's what I've understood so far. Tell me what's wrong or missing.\n\n**What it's for:** a logbook for your amateur radio contacts that replaces the paper notebook and the monthly retyping into a spreadsheet.\n\n**Who reads it:** mostly you. Two jobs matter:\n\n- **Day to day,** you check whether you've worked a station before, so looking up a callsign has to be fast and reliable.\n- **Once a year,** you upload everything to Logbook of The World to confirm contacts for awards. The log has to export clean ADIF that LoTW accepts.\n\n**Volume and conditions:** about thirty contacts a week, at home and at field days. Sometimes there's no internet, so logging and lookup have to work fully offline. Nothing can depend on a server being reachable.\n\n**My proposals** (not things you said, so correct me):\n\n- Your data lives in a file you own on your own machine, not in someone's cloud service. Offline use and a once-a-year export both point that way.\n- Since LoTW is where the awards come from, I'd treat a rejected ADIF file as a failure, even if everything else works. The export should be checked against what LoTW expects, not just written in the general format.\n- At thirty contacts a week, you'll build up a few thousand a year. That's small, so speed and storage won't drive the design.\n\n**Next question:** right now, the notebook is what's next to you while you're on the air, and the typing happens later. When you picture using this, are you entering contacts as you make them, at home and at field day? If so, what are you sitting at: a laptop by the rig, a phone, something else? The answer decides whether this has to be quick enough to use mid-contact, and what it has to run on.",
+  "ttft_ms": 5982,
+  "type": "result",
+  "duration_ms": 11833,
+  "ttft_stream_ms": 2037,
+  "time_to_request_ms": 55,
+  "first_content_frame_ms": 2037,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

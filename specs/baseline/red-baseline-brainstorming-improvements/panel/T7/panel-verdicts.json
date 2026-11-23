@@ -1,0 +1,652 @@
+{
+ "shipped-rep1": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep2": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two blank-cell meanings named.",
+   "Only two candidate meanings named.",
+   "Only two meanings named"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep3": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus catch-all.",
+   "Two named candidates plus 'something else'; no list.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep4": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates spread across separate sentences.",
+   "Candidates in separate sentences, not a list.",
+   "Separate if-sentences, not a list"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep5": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank meanings quoted in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings quoted in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep6": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three problem framings in one sentence.",
+   "Three candidate problems named in one sentence.",
+   "Three candidate problems in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep7": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two contrasted scenarios.",
+   "Only two contrasting scenarios named.",
+   "Only two contrasting scenarios"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep8": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question; no candidate list.",
+   "Open question, no candidates named.",
+   "Open question, no candidate list"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep9": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three meanings of blanks in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep10": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three build candidates in one sentence.",
+   "Three candidate builds named in one sentence.",
+   "Three candidate builds in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep11": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep12": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question; no candidates enumerated.",
+   "Open question, no candidate list.",
+   "Open question; only two possibilities mentioned"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep13": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Blank-cell meanings set out as bullets.",
+   "Candidate meanings set out as bullets.",
+   "Bulleted candidate meanings"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep14": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two candidates named.",
+   "Only two options named.",
+   "Only two possibilities named"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep15": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two concrete candidates plus catch-all; not three.",
+   "Two named options plus unthought-of alternative.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep16": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep17": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two scenarios contrasted.",
+   "Two options spread across separate sentences.",
+   "Two possibilities across separate sentences"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep18": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question; no candidates.",
+   "Open question, no candidates named.",
+   "Open question, no candidates named"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep19": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus catch-all.",
+   "Two named options plus 'something else'.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep20": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Lists aspects, not candidate answers.",
+   "Lists aspects to decide, not candidate answers.",
+   "Aspects listed, not candidate answers"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep21": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three build candidates in one sentence.",
+   "Three candidate fixes named in one sentence.",
+   "Three candidate fixes in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep22": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question; meanings not enumerated.",
+   "Open question, no candidates named.",
+   "Open question, no candidates named"
+  ],
+  "panel": "P"
+ },
+ "shipped-rep23": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three meanings and three tool focuses listed.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three meanings of empty cells in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep24": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three failure points in one sentence.",
+   "Names three candidate failure points in one sentence.",
+   "Three candidate failure moments in one sentence"
+  ],
+  "panel": "F"
+ },
+ "shipped-rep25": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep1": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two concrete candidates plus catch-all.",
+   "Two named options plus 'something else'.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "b-rep2": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate directions in one sentence.",
+   "Three candidate directions named in one sentence.",
+   "Three candidate directions in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep3": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three tool types in one sentence.",
+   "Three candidate tools named in one sentence.",
+   "Three candidate tools in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep4": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus catch-all.",
+   "Two named options plus 'something else'.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "b-rep5": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep6": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus catch-all.",
+   "Two named options plus 'something else entirely'.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "b-rep7": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus catch-all.",
+   "Two named options plus 'something else entirely'.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "b-rep8": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question; no candidate list.",
+   "Open question, no candidate answers listed.",
+   "Open question, no candidates named"
+  ],
+  "panel": "P"
+ },
+ "b-rep9": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three tool types in one sentence.",
+   "Three candidate tool types in one sentence.",
+   "Three candidate focuses in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep10": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Mentions several meanings without naming them.",
+   "Open question, no candidates named.",
+   "Open question, no candidates named"
+  ],
+  "panel": "P"
+ },
+ "b-rep11": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three build candidates in one sentence.",
+   "Three candidate outcomes named in one sentence.",
+   "Three candidate builds in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep12": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates in separate sentences, not a list.",
+   "Options in separate sentences, not a list.",
+   "Separate if-sentences, not a list"
+  ],
+  "panel": "P"
+ },
+ "b-rep13": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three tool candidates in one sentence.",
+   "Three candidate tools named in one sentence.",
+   "Three candidate tools in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep14": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus catch-all per sentence.",
+   "Two named options plus 'something else'; no list.",
+   "Two options plus catch-all"
+  ],
+  "panel": "P"
+ },
+ "b-rep15": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two meanings plus catch-all.",
+   "Two named meanings plus 'something else'.",
+   "Two meanings plus catch-all; open question"
+  ],
+  "panel": "P"
+ },
+ "b-rep16": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three meanings of blank cells in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep17": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three build candidates named in one sentence.",
+   "Three candidate builds named in one sentence.",
+   "Three candidate builds in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep18": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "No candidates named.",
+   "No candidate answers named.",
+   "No candidates named; open question"
+  ],
+  "panel": "P"
+ },
+ "b-rep19": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Says several meanings without naming them.",
+   "Open question, no candidates named.",
+   "Open question, no candidates listed"
+  ],
+  "panel": "P"
+ },
+ "b-rep20": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate fixes in one sentence.",
+   "Three candidate fixes named in one sentence.",
+   "Three candidate fixes named in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep21": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question; no list of three candidates.",
+   "Two candidate outcomes, not three.",
+   "At most two candidate returns named"
+  ],
+  "panel": "P"
+ },
+ "b-rep22": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two meanings per sentence; separate sentences.",
+   "Meanings split across sentences, two per sentence.",
+   "Possibilities spread across separate sentences"
+  ],
+  "panel": "P"
+ },
+ "b-rep23": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three return behaviours named in one sentence.",
+   "Three return behaviours as candidate meanings in one sentence.",
+   "Three return behaviours listed in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep24": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate directions in one sentence.",
+   "Three candidate directions named in one sentence.",
+   "Three candidate directions in one sentence"
+  ],
+  "panel": "F"
+ },
+ "b-rep25": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three blank-cell meanings in one sentence.",
+   "Three candidate meanings of blanks in one sentence.",
+   "Three blank meanings in one sentence"
+  ],
+  "panel": "F"
+ }
+}

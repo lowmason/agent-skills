@@ -31,6 +31,12 @@ with = ['pytest']
 notes = ['Server tests (stdlib only); they need node, else skip.']
 
 [[suite]]
+name = 'brainstorming-improvements-kit'
+dir = 'specs/baseline/red-baseline-brainstorming-improvements/kit'
+with = ['pytest']
+notes = ['Plan 106 micro-test kit: postprocess, runner, reader and panel tests with a stub claude and no model.']
+
+[[suite]]
 name = 'build'
 dir = 'build'
 with = ['pytest', 'numpy', 'polars', 'pyyaml']

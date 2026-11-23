@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 13395,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0247574,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8627,
+    "output_tokens": 1008,
+    "output_tokens_details": {
+      "thinking_tokens": 547
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1008,
+      "cacheReadInputTokens": 8627,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.0247574,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 547,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "No actions this turn.\n\nGood, the scope is set. Next is how an alert gets acknowledged, because it decides what the service has to connect to.\n\nThe repeat-every-15-minutes rule only works if the on-call person has a way to say \"I've got it.\" Here are the ways I can see:\n\n- **Reply to the text** (e.g. \"OK\"). This is the easiest thing to do half-asleep at 3 a.m. The service can check the SMS provider for replies every minute, so nothing in the greenhouse has to be reachable from the internet. The trade-off is that it ties us to a provider that supports two-way texting, like Twilio, and it costs a few dollars a month for a number.\n- **Tap a link in the text.** This gives a clear \"acknowledged\" page. But the link has to reach something, which means either exposing the greenhouse machine to the internet or running a small hosted piece. That's more setup and more to keep secure.\n- **Acknowledge on the machine itself** (a command or a local page). This needs no extra provider features, but it's useless if the on-call person is at home and away from the greenhouse network.\n\nI'd pick replying to the text, with the service checking for replies. It works from anywhere and adds no exposure.\n\nThere's a related question your answer may settle. If nobody acknowledges after, say, 30 minutes, should the alert go to a second person, or keep texting the on-call person? Which acknowledgement way fits how your team works?",
+  "ttft_ms": 8005,
+  "type": "result",
+  "duration_ms": 13447,
+  "ttft_stream_ms": 1779,
+  "time_to_request_ms": 52,
+  "first_content_frame_ms": 1779,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

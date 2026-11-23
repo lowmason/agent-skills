@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 26895,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0555606,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 8763,
+    "output_tokens": 2546,
+    "output_tokens_details": {
+      "thinking_tokens": 987
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2546,
+      "cacheReadInputTokens": 8763,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.0555606,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 987,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `skills/brainstorming/builder-check-prompt.md`\n\nACTION: Write `specs/release-notes-breaking-flag.md`\n```markdown\n# Breaking-change flag in release notes\n\nSource: `specs/deferred_items.md` item 7 (picked via /deferred, disposition Design).\n\n## Intent and why\n`release-notes` writes one bullet per merged pull request. Nothing in a bullet\nsays whether the change is breaking. Two audiences need that:\n- **People reading the notes** should spot breaking changes at a glance.\n- **`announce`** should put breaking changes first in its post.\n\n`changelog-check` (`skills/changelog-check/parse.py`) and `announce` both parse\n`release-notes` output, so they must accept the flag.\n\n## Goals\n- A breaking pull request's bullet visibly carries a `[breaking]` tag.\n- `parse.py` recognizes the tag and records it on the parsed entry.\n- `announce` lists breaking entries before all others.\n- Every bullet `parse.py` accepts today still parses, with the same result.\n\n## Non-goals\n- Other tags (security, deprecation, and so on).\n- Rewriting or re-tagging release notes that already exist.\n- Inferring \"breaking\" from anything except the pull request label.\n\n## Anti-goals\n- Release notes written before this change fail `changelog-check`.\n- A bullet's title text changes meaning because of the tag (for example, the\n  tag leaks into the title `announce` posts).\n\n## Constraints\n- `parse.py` today splits each bullet on \" — \" and rejects any bullet with more\n  than two parts. That rule stays as it is.\n\n## Approaches\n1. **Third part:** append \" — breaking: yes\" and let `parse.py` accept three\n   parts. Trade-off: widens the split rule, and the flag sits at the end of the\n   line where a reader sees it last.\n2. **Leading tag:** start the bullet with `[breaking]`; `parse.py` strips it\n   before splitting. Trade-off: one more prefix rule in the parser, but untagged\n   bullets parse exactly as before and the tag is the first thing a reader sees.\n\n**Picked: 2**, by the partner, on my recommendation, because older notes stay\nvalid unchanged and the tag is visible first.\n\n## Decided\n- `release-notes`: when the pull request carries the `breaking` label, the\n  bullet starts with `[breaking] ` followed by the bullet exactly as it is\n  written today.\n- `parse.py`: if a bullet starts with `[breaking]`, strip it (and the space\n  after it), set `breaking=True` on the entry, then split and validate the rest\n  as today. Otherwise `breaking=False`.\n- `announce`: breaking entries come first in the post.\n- A test in `skills/changelog-check/` covers a tagged and an untagged bullet.\n\n## My calls (partner can override)\n- Within the breaking group and within the rest, `announce` keeps the original\n  order of the notes.\n- The tag match is exact and case-sensitive (`[breaking]`, lowercase); anything\n  else is treated as part of the title, as today.\n- The test also checks that a tagged bullet with more than two parts after the\n  tag is still rejected.\n\n## Left to the builder\n- Where in `release-notes` the label is read, and how `announce` marks breaking\n  entries in its post (beyond ordering them first), following each skill's\n  existing style.\n```\n\nACTION: Dispatch a fresh general-purpose subagent with `model: opus`, using the prompt from `builder-check-prompt.md`, pointed at `specs/release-notes-breaking-flag.md`\n\nI should correct something first. Because this came from `/deferred`, it's a project, not a small change. \"Looks good\" approved the approach, but the design needs to be written up and committed to `specs/`, and then planned in a fresh session. So I'm not building anything yet.\n\nI've written the design to `specs/release-notes-breaking-flag.md`. It records approach 2 as your pick, plus a few calls I made:\n\n- `announce` keeps the original order within the breaking group and within the rest.\n- The `[breaking]` match is exact and lowercase.\n- The test also checks that a tagged bullet with too many parts is still rejected.\n\nA reviewer is reading the design now, as someone who'd have to plan from it. I may come back once with a few questions before I hand it over.\n\nOne snag: this directory isn't a git repository, so I can't commit the spec. The same commit should also mark item 7 in `specs/deferred_items.md` as `→ planned 2026-11-22: specs/release-notes-breaking-flag.md`. Should I `git init` here, or does the project live in a repository somewhere else?",
+  "ttft_ms": 13263,
+  "type": "result",
+  "duration_ms": 26933,
+  "ttft_stream_ms": 2501,
+  "time_to_request_ms": 44,
+  "first_content_frame_ms": 2501,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

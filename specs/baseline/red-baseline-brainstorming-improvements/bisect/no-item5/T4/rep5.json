@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 22532,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.042373400000000006,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8667,
+    "output_tokens": 1888,
+    "output_tokens_details": {
+      "thinking_tokens": 1374
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1888,
+      "cacheReadInputTokens": 8667,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.042373400000000006,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1374,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write it up, there's one more choice about how this gets built. The museum's site is static pages on Netlify, so the question is where volunteers upload recordings and where the cleanup runs.\n\n**(A) Inside the existing website.** Volunteers log in to an editing page added to the site, choose the exhibit and language, and upload the recording. The file goes into the site's repository. The next site rebuild cleans up the audio and publishes a page for each exhibit, which is where the scan code points.\n- No new services or accounts.\n- Every upload, including every replaced one, stays in the repository's history. With 120 recordings now and about 20 more a year, the repository keeps growing.\n- Each new recording takes a few minutes to go live, while the site rebuilds.\n\n**(B) A separate upload page with its own audio storage.** Volunteers use a simple upload page. A small background service cleans up each file and stores it in a cloud storage account. The exhibit pages stay on the existing site and play the audio from storage.\n- Recordings go live within a minute or so.\n- The website's repository holds only the website.\n- It costs one extra storage account, for pennies a month at this size, and one more thing to keep running.\n\nI recommend **(B)**. Volunteers will replace recordings over time, and (B) keeps that quick and keeps the website untouched. (A) is the better choice if adding any outside service is a problem for the museum.\n\nOn size, this is a project, so I'll write a full design document and save it with the site's code. A reviewer will read it before I hand it over, and I may come back once with a few questions.\n\nWhich way do you want to go?",
+  "ttft_ms": 17384,
+  "type": "result",
+  "duration_ms": 22579,
+  "ttft_stream_ms": 2139,
+  "time_to_request_ms": 47,
+  "first_content_frame_ms": 2139,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

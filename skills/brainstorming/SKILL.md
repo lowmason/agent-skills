@@ -43,17 +43,15 @@ Before you start implementing, you must, in order:
 4. Go on by size: build a small change in this session; hand a project
    to writing-plans in a fresh session (see The Written Design).
 
-If nothing is open when you write your first message and there's one
-sensible way, steps 1 to 3 happen in that message for a small change,
-and step 1 does for a project (see Your First Message).
+If nothing is open when you write your first message, step 1 happens
+in that message, and for a small change with one sensible way, steps 2
+and 3 do too (see Your First Message).
 
 Besides a quick, clear task, two things aren't implementing: a spike
 they said yes to (see Spike to feel things out), and doing what they
 asked once they've opted out of the questions.
 
-One kind of work takes a different path. A new project of several stages,
-with nothing built yet, goes to derive-roadmap's New-Project Entry once its
-outcomes are clear, in place of steps 1 to 4 (see Size the Work).
+A new project of several stages takes another path (see Size the Work).
 
 ## Look Before You Ask
 
@@ -62,7 +60,8 @@ a handoff, files they pointed at, earlier conversation), dig in before your
 first message. Read what they referred to and the code or material it
 connects to, and keep reading until you can explain how the relevant
 parts work today and what this change would touch. If the project has
-a `specs/deferred_items.md`, check it for deferred work the idea touches.
+a `specs/deferred_items.md`, search it for the idea's terms to find
+deferred work the idea touches.
 Never ask what the project or their context already answers, or reopen
 what they've already decided.
 
@@ -86,8 +85,10 @@ Move the work forward, with one of these:
   and the project leave open something whose answer would change what
   gets built, ask about the one that would change it most; when its
   choices can be named, sketch each concretely, with what it trades off
-  and which you'd pick. If nothing like that is open, there's one
-  sensible way. For a small change, end with the short design itself
+  and which you'd pick. If nothing like that is open and several ways
+  fit, end by laying them out (see Lay out the approaches). If one
+  does, there's one sensible way. For a small change, end with the
+  short design itself
   (the approach, a line on why the others don't fit, and the design in a
   few lines) and ask them to approve it. Their approval covers the
   approach and the design: build it in this session. For a project, end
@@ -184,7 +185,9 @@ three that remain concretely enough to picture, grounded in what the
 project actually does, with what each trades off. Recommend one and say
 why, then ask which way they want to go; if they've handed you the how,
 say you'll go with your pick instead, and write the design in the next
-message. When there's genuinely one sensible way, say so in that message
+message. A push to hurry doesn't hand you the how: the approaches still
+go first, in a message of their own. When there's genuinely one
+sensible way, say so in that message
 and explain why the others don't fit; the design comes in the next one.
 This is for how it gets built; for what they want, get them describing
 first.
@@ -233,7 +236,7 @@ message. Once they've accepted, put a mockup next to the description.
 
 ## Size the Work
 
-Once you understand what they want and they've picked an approach, say
+Once you understand what they want and an approach is picked, say
 how big the work is in plain words. They can override it.
 
 | Size | The design | After they approve it |
@@ -244,8 +247,9 @@ how big the work is in plain words. They can override it.
 
 Short or full, the design has an **Approaches** part: the two or
 three ways you considered building it, what each trades off, which one
-they picked, and why. They pick in the conversation, before you write
-the design.
+was picked, by whom, and why. The pick comes in the conversation,
+before you write the design; only a small change with one sensible way
+may carry both in one message.
 
 **A small change stays here.** Play the short design back in chat (the
 approaches, the pick, the how) and get their approval there. Then build
@@ -270,8 +274,7 @@ If it grows mid-task, stop, say so, and step up a size.
 
 If this is really several independent projects, say so, agree on an
 order, and brainstorm them one at a time. A new project of several
-stages with nothing built goes to the New-Project Entry whole, and it
-splits unrelated outcomes into tracks.
+stages with nothing built goes to the New-Project Entry whole.
 
 ## The Written Design
 
@@ -373,7 +376,7 @@ nothing.
 | "I should explain the process first" | Ask your question. The process shows itself. |
 | "They said 'sounds good' to the idea" | Approval covers what you showed them. A design doc you haven't written isn't approved. |
 | "The spike works, I'll keep building on it" | Keeping it is a new request. Back through the gate. |
-| "I want to check one thing that could widen the change" | Reading is fine. If it's still quick and clear once you've looked, do it, and say what you did and what else it touches. |
+| "I want to check one thing that could widen the change" | Reading is fine. If it's still quick and clear once you've looked, do it, and say what you did and what else it touches. If the look shows a wider reach, step up a size. |
 
 ## Visual Companion
 
@@ -388,11 +391,6 @@ else in it:
 > "This might be easier if I show you. Want me to open a browser tab with some mockups? It's still new and can be token-intensive."
 
 If they decline, stay in text and don't offer again unless they raise it.
-
-**Per question, ask: would they understand this better by seeing it?**
-Mockups, layouts, diagrams, and side-by-side designs go in the browser.
-Requirements, scope, tradeoffs, and conceptual choices stay in text. A
-question about a UI topic isn't automatically a visual question.
 
 If they accept, read `visual-companion.md` in this directory before
 starting the server.

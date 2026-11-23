@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 27019,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0563308,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8654,
+    "output_tokens": 2586,
+    "output_tokens_details": {
+      "thinking_tokens": 982
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2586,
+      "cacheReadInputTokens": 8654,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0563308,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 982,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Write `specs/release-notes-breaking-flag.md`\n\n```markdown\n# Breaking-change flag in release notes\n\nSource: `specs/deferred_items.md` item 7 (picked via /deferred, disposition Design).\n\n## Intent and why\n\n`release-notes` writes one bullet per merged pull request. Nothing in a bullet says\nwhether the change is breaking. Two audiences need that:\n\n- **People reading the notes** should see breaking changes at a glance.\n- **`announce`** should put breaking changes first in its post.\n\n`changelog-check` and `announce` both parse `release-notes` output, so the flag must\nbe something they can read without rejecting existing notes.\n\n## Goals\n\n- A bullet for a pull request with the `breaking` label is visibly marked as breaking.\n- `changelog-check/parse.py` reads the mark and exposes it on the parsed entry.\n- `announce` lists breaking entries before all others.\n- Release notes written before this change still parse exactly as they do today.\n\n## Non-goals\n\n- Any other per-bullet metadata. Only this one flag.\n- Deciding what counts as breaking. The `breaking` label on the pull request is the\n  only source.\n- Rewriting or migrating existing release notes.\n\n## Anti-goals\n\n- Any change that makes a currently valid bullet fail `parse.py`.\n- A mark that readers can't see in the rendered notes, such as hidden metadata or a\n  comment.\n\n## Constraints\n\n- `parse.py` splits each bullet on \" — \" and rejects a bullet with more than two\n  parts. That rule stays as it is for the text after the tag.\n\n## Approaches\n\n1. **Third part:** append \" — breaking: yes\" to the bullet and let `parse.py`\n   accept three parts. This loosens the parts-count check for every bullet, and it\n   puts the flag at the end of the line, where readers are least likely to see it.\n2. **Leading tag (picked):** start the bullet with `[breaking]`. `parse.py` strips\n   the tag before it splits. Untagged bullets take the same path as today, so older\n   notes stay valid, and readers see the tag first.\n\nThe partner picked 2.\n\n## Design (as agreed)\n\n- **`skills/release-notes`:** when a merged pull request carries the `breaking` label,\n  start its bullet with `[breaking] ` and then write the existing bullet text\n  unchanged. Other bullets are unchanged.\n- **`skills/changelog-check/parse.py`:** if a bullet's text starts with `[breaking]`,\n  strip the tag and the whitespace after it, then apply the existing \" — \" split and\n  the two-part check to the rest. Set `breaking=True` on the entry. Any other bullet\n  gets `breaking=False`.\n- **`skills/announce`:** list breaking entries first in the post, then the rest.\n- **Test** in `skills/changelog-check/`: one tagged bullet and one untagged bullet.\n  Check that each parses and that `breaking` is set correctly on each.\n\n## My calls (not discussed; correct if wrong)\n\n- The tag is matched only at the very start of the bullet text, and the match is\n  case-sensitive (`[breaking]` only). A `[breaking]` anywhere else is ordinary text.\n- `announce` keeps the original order inside each group (breaking first, then the\n  rest), and does not otherwise reorder entries.\n- `announce` keeps the `[breaking]` text, or an equivalent visible marker, on those\n  entries in its post, so readers of the post can spot them as well.\n\n## Left to the builder\n\n- How `release-notes` reads pull request labels today. Use the mechanism that is\n  already there.\n- Where the `breaking` field lives on the parsed entry, following the structure\n  `parse.py` already uses.\n```\n\nACTION: Read `skills/brainstorming/builder-check-prompt.md`\n\nACTION: Dispatch a general-purpose subagent with `model: opus`, using the builder-check prompt pointed at `specs/release-notes-breaking-flag.md`\n\nGlad the design works for you. It touches three skills, and the next step after a /deferred Design pick is a plan built from a spec file. So I'm treating this as a project and not building it right here.\n\nHere's what I've done so far:\n- Wrote the design up as `specs/release-notes-breaking-flag.md`. It includes the two options we considered and your pick.\n- Listed the few small calls I made on my own. For example, `announce` keeps entries in their original order within the breaking and non-breaking groups.\n\nA reviewer is reading the spec now, as if they had to build from it. I may come back once with a few questions from that.\n\nOne snag: this directory isn't a git repository, so I can't commit the spec yet. The note on item 7 in `specs/deferred_items.md` also waits on that commit. Should I run `git init` here, or does the real repo live somewhere else?",
+  "ttft_ms": 12851,
+  "type": "result",
+  "duration_ms": 27087,
+  "ttft_stream_ms": 2089,
+  "time_to_request_ms": 68,
+  "first_content_frame_ms": 2089,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

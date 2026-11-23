@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 7031,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0642702,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 6990,
+    "cache_read_input_tokens": 1711,
+    "output_tokens": 400,
+    "output_tokens_details": {
+      "thinking_tokens": 188
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 6990,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 400,
+      "cacheReadInputTokens": 1711,
+      "cacheCreationInputTokens": 6990,
+      "webSearchRequests": 0,
+      "costUSD": 0.0642702,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 188,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 6990,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I'd reply without taking any actions first.\n\n---\n\nThanks for pasting the spreadsheet. With the Seed, Packets, Borrower, Date out and Date back columns, you can see a lot at a glance already. One thing stood out: about a third of the Date back cells are empty.\n\nBefore I suggest anything, I'd like to understand what's going wrong with the spreadsheet now. Tell me about a time it let you down, or about a question you couldn't get answered from it. That will decide what we build. It might need to fix how lending gets recorded, how returns get chased, or what \"came back\" even means for seeds. I don't want to guess which and build the wrong thing.",
+  "ttft_ms": 4781,
+  "type": "result",
+  "duration_ms": 7179,
+  "ttft_stream_ms": 2407,
+  "time_to_request_ms": 149,
+  "first_content_frame_ms": 2407,
+  "queued_turn_count": 0,
+  "result_index": 0
+}
