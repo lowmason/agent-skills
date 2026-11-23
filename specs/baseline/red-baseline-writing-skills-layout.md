@@ -734,3 +734,8 @@ Each was made in Task 3, before any probe or rep, and the task review rules on i
 8. **A Read whose tool result is an error does not count toward the Read part** (Reading rule, T
    cases). The Task 3 review ruled on it before any rep ran. A failed Edit or Write of the target still
    counts as the first write.
+9. **Grader agents graded the sheets** (Task 6, after the reps ran). The Kit and Blind grading sections
+   say that a person grades the sheets. In Task 6, six grader agents did it, one for each case: 20
+   sheets, with both arms and both models mixed, and no key. Sonnet graded W1 to W3 and Opus graded
+   T1 to T3. A sheet shows no arm, so the blind rule holds. A mechanical scan of the sheets agreed
+   with 118 of the 120 grades (Results, Reading of the result).
