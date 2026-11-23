@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 9334,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.013494700000000002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 9087,
+    "output_tokens": 1113,
+    "output_tokens_details": {
+      "thinking_tokens": 446
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1113,
+      "cacheReadInputTokens": 9087,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.013494700000000002,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 446,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` (the writing-skills skill requires it before adding a flowchart: when one earns its place, graphviz style rules, render tool).\n\nACTION: Read `specs/cache-invalidation-baseline.md` to get the 11 purge-instead-of-expire reasons verbatim, so the decision nodes are keyed to what agents actually got wrong.\n\nACTION: Read `skills/cache-invalidation/SKILL.md` to see where the purge-vs-expire guidance sits now and whether it conflicts with the flowchart.\n\nI'm not drafting the edit yet because its text depends on those three reads.\n\nMessage to partner:\n\nBefore I edit, I'm reading three things: the flowchart style rules from the writing-skills references, the baseline reasons in `specs/cache-invalidation-baseline.md`, and the current `skills/cache-invalidation/SKILL.md`.\n\nHere's my plan after that:\n\n1. **Build the flowchart from the baseline.** Each decision node will be a question the agent can answer from what it can observe, such as \"is stale data harmful if served until TTL?\" or \"is the key's remaining TTL short?\". I'll pick the questions from the 11 failing reps so the chart targets the real reasons for over-purging. I won't use generic cache advice.\n2. **Keep it small.** It will be one purge-or-expire chart placed next to the existing guidance, with labels that say what each branch means. I'll remove or reconcile any existing prose that points the other way, so the skill doesn't contradict itself.\n3. **Re-run the same three scenarios, 5 reps each, with the flowchart in place.** The baseline is 11 of 15 wrong purges. I'll report the new count, including any reps that still purge wrongly and why. If the flowchart doesn't move the number, I'll adjust the form (for example, a required-check step instead of a chart) and not just add words.\n\nI'll show you the diff and the re-run results when they're done.",
+  "ttft_ms": 4330,
+  "type": "result",
+  "duration_ms": 9422,
+  "ttft_stream_ms": 509,
+  "time_to_request_ms": 85,
+  "first_content_frame_ms": 509,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

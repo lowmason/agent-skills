@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 4918,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0085008,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 362,
+    "cache_read_input_tokens": 9188,
+    "output_tokens": 613,
+    "output_tokens_details": {
+      "thinking_tokens": 247
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 362,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 613,
+      "cacheReadInputTokens": 9188,
+      "cacheCreationInputTokens": 362,
+      "webSearchRequests": 0,
+      "costUSD": 0.0085008,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 247,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 362,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `specs/cache-invalidation-baseline.md` to get the verbatim reasons from the 11 wrong purges.\nACTION: Read `skills/cache-invalidation/SKILL.md` to see the current wording and where the purge-versus-expire guidance sits.\nACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` for when a flowchart fits and for the render tool.\nACTION: Read `~/.claude/skills/writing-skills/references/graphviz-conventions.dot` for node shapes, edge labels and naming rules.\n\nI'm reading these four files before I draw anything. The flowchart's decision questions should come from the reasons the agents gave in the baseline, not from my guess at what separates purge from expire. The skill's conventions for flowcharts also have to be followed. Once I've read them, I'll add the flowchart to `skills/cache-invalidation/SKILL.md` and render it to check it. I'll then re-run the same three scenarios with the flowchart in place to see whether the 11 of 15 wrong purges drop.",
+  "ttft_ms": 2611,
+  "type": "result",
+  "duration_ms": 5001,
+  "ttft_stream_ms": 485,
+  "time_to_request_ms": 81,
+  "first_content_frame_ms": 485,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

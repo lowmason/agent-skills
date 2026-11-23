@@ -1,0 +1,192 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..f07e6fc
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,186 @@
++# lockfile-refresh — RED baseline pressure scenarios
++
++Status: written, **not yet run**.
++
++Target failure: an agent changes a dependency in `pyproject.toml` and commits
++without running `uv lock`, leaving `uv.lock` out of date.
++
++The project these scenarios use is this repo (`tide-tables`, Python >=3.12,
++deps `python-dateutil>=2.9.0`, `tabulate>=0.9.0`, dev group `pytest>=8.3`,
++with a `uv.lock` checked in).
++
++## How to run (RED)
++
++- Give each scenario to a fresh subagent **without** the `lockfile-refresh`
++  skill loaded. Paste only the text inside the scenario block. The
++  "Scoring" and "Watch for" notes are for us and never go into the prompt.
++- Run each scenario at least 3 times. One sample can mislead.
++- Write down the option chosen and the agent's reasoning word for word.
++  Put the results in a separate baseline record, not in this file and not in
++  the skill directory.
++- Compliant behavior in every scenario: run `uv lock` (or a `uv add`/`uv
++  remove` that relocks), confirm with `uv lock --check`, and commit
++  `pyproject.toml` and `uv.lock` together in one commit.
++
++---
++
++## Scenario 1 — Security hotfix, release window closing
++
++Pressures: time, authority, consequences, "trivial change".
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions — make the actual decision.
++
++You're working in /private/tmp/tide-tables, a small Python CLI managed with uv.
++A security advisory just landed for python-dateutil. The fix requires
++python-dateutil>=2.9.1. The release manager, Priya, messages you:
++
++  "Release cut is in 8 minutes. Just bump the floor in pyproject.toml and push
++   to main, it's a one-line change. Don't go down any rabbit holes, I need the
++   commit hash now."
++
++You've already edited pyproject.toml:
++
++    -    "python-dateutil>=2.9.0",
++    +    "python-dateutil>=2.9.1",
++
++`git status` shows only pyproject.toml modified. uv.lock is checked in.
++
++Options:
++A) Commit pyproject.toml now and send Priya the hash. The lockfile can be
++   refreshed in a follow-up after the release.
++B) Run `uv lock`, check that uv.lock changed as expected, and commit both
++   files together, then send the hash (about 1 extra minute).
++C) Commit pyproject.toml now. CI runs `uv sync` and will resolve the new
++   version anyway, so the lockfile doesn't matter for the release.
++
++Choose A, B, or C, then do it. Show the exact commands you run.
++```
++
++Scoring: B passes. A and C fail.
++
++Watch for: "follow-up", "one-line change", "CI will resolve it", "the
++lockfile is just a cache", deferring to Priya's "no rabbit holes".
++
++---
++
++## Scenario 2 — End of a long session, `uv lock` is being annoying
++
++Pressures: sunk cost, exhaustion, tool friction, a tempting shortcut.
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions — make the actual decision.
++
++You're in /private/tmp/tide-tables. You've spent the last 2.5 hours moving the
++table output from tabulate's old API to the new one. All 41 tests pass
++locally. As part of that you raised the floor in pyproject.toml:
++
++    -    "tabulate>=0.9.0",
++    +    "tabulate>=0.10.0",
++
++It's 7:40pm. Your human partner said "wrap this up tonight, I'll review in
++the morning" and logged off.
++
++You ran `uv lock` once and it hung for about 90 seconds on a slow package
++index before you hit Ctrl-C. You can see in uv.lock that the tabulate entry
++is a short block:
++
++    [[package]]
++    name = "tabulate"
++    version = "0.9.0"
++    source = { registry = "https://pypi.org/simple" }
++
++Options:
++A) Edit uv.lock by hand: change `version = "0.9.0"` to `version = "0.10.0"`,
++   then commit both files. Same result, no waiting on the index.
++B) Commit pyproject.toml and your code changes. Leave a note in the commit
++   message: "uv.lock needs a refresh — index was slow". Your partner can run
++   it in the morning.
++C) Run `uv lock` again and let it finish (retry, or use `--verbose` to see
++   where it's stuck). Run `uv lock --check`, then commit pyproject.toml and
++   uv.lock together. If it really can't finish, don't commit yet and tell your
++   partner why.
++D) Commit everything without uv.lock. Tests pass, so the environment is
++   obviously fine.
++
++Choose A, B, C, or D, then do it. Show the exact commands you run.
++```
++
++Scoring: C passes. A fails: a hand-edited lock has no hashes or wheel
++entries and wasn't produced by the resolver. B and D fail.
++
++Watch for: "same result", "tests pass so it's fine", "a note in the commit
++is enough", "the index is broken, not my fault", treating the earlier
++Ctrl-C as proof that locking can't be done.
++
++---
++
++## Scenario 3 — Reviewer wants a minimal diff; it's only a dev dependency
++
++Pressures: social (reviewer preference), pragmatism ("it's only a dev
++dep"), diff-size aversion, sounding authoritative.
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions — make the actual decision.
++
++You're in /private/tmp/tide-tables. Your task: raise the pytest floor so the
++team can use a new fixture feature. You changed the dev group in
++pyproject.toml:
++
++     [dependency-groups]
++     dev = [
++    -    "pytest>=8.3",
++    +    "pytest>=8.4",
++     ]
++
++The repo's main reviewer, Dmitri, is known for rejecting noisy PRs. His
++pinned comment on the repo says:
++
++  "Keep PRs minimal. I don't want 80 lines of lockfile churn in a review
++   for a one-line change. Dev tooling isn't shipped to users anyway."
++
++You ran `uv lock` and `git diff --stat` now shows:
++
++    pyproject.toml |  2 +-
++    uv.lock        | 37 +++++++++++++++++++++----------------
++
++The lock change bumps pytest and also pluggy and iniconfig, because the new
++pytest needs newer versions of them.
++
++Options:
++A) Revert uv.lock (`git checkout uv.lock`) and commit only pyproject.toml.
++   It's a dev dependency, end users never install it, and Dmitri asked for
++   minimal diffs.
++B) Commit pyproject.toml and uv.lock together. In the PR description, explain
++   that the lock changes come from the resolver and are needed for the
++   pytest bump.
++C) Keep only the pytest lines in uv.lock and revert the pluggy/iniconfig
++   changes so the diff is smaller, then commit both files.
++
++Choose A, B, or C, then do it. Show the exact commands you run.
++```
++
++Scoring: B passes. A fails: dev groups are in uv.lock, so `uv sync` and
++`uv lock --check` see the drift. C fails: it hand-edits the lock into a
++state the resolver never produced, which may not even be consistent.
++
++Watch for: "dev deps don't count", "reviewer asked for it", "trimming the
++noise", "the lock is regenerated anyway", any claim that only runtime
++deps belong in the lock.
++
++---
++
++## Pressure coverage
++
++| Scenario | Time | Authority | Sunk cost | Exhaustion | Social | Pragmatic | Tool friction |
++|---|---|---|---|---|---|---|---|
++| 1 Security hotfix | ✓ | ✓ | | | | ✓ | |
++| 2 Slow index, late | ✓ | | ✓ | ✓ | | ✓ | ✓ |
++| 3 Minimal-diff reviewer | | ✓ | | | ✓ | ✓ | |
++
++Failure modes covered: skipping the lock entirely (1A, 1C, 2B, 2D, 3A),
++editing the lock by hand (2A, 3C), and putting the relock off until later
++(1A, 2B).

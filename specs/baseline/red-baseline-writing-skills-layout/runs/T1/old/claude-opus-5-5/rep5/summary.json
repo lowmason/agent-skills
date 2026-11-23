@@ -1,0 +1,141 @@
+{
+  "case": "T1",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep5",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "9a5495a663edf534b76f6e08b2b5ca37cd8f60aa",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T1/old/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "8fd51722b7d24b8f78bc0326f8ee2952e4d232cc4271946c21a44172c7f49658",
+  "claude_exit": 0,
+  "wall_seconds": 56,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 25,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 54603,
+    "total_cost_usd": 0.2610324,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 4823,
+        "cacheReadInputTokens": 57222,
+        "cacheCreationInputTokens": 19137,
+        "webSearchRequests": 0,
+        "costUSD": 0.2610324,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 693,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 19137,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the three RED baseline scenarios to `specs/lockfile-refresh-scenarios.md`. None of them have been run yet.\n\nEach scenario is set in this repo's `tide-tables` project, uses its real dependencies, and asks the agent to pick one option and act on it. Every one combines three or more kinds of pressure:\n\n1. **Security hotfix:** the release manager wants a one-line bump to `python-dateutil` pushed in 8 minutes. The pressures are time, authority, real consequences and \"it's trivial\". The wrong options are \"relock in a follow-up\" and \"CI will resolve it.\"\n2. **Slow index, late at night:** it's 7:40pm after 2.5 hours on a `tabulate` bump, the partner has logged off, and `uv lock` hung once. The pressures are sunk cost, exhaustion and a tool that won't cooperate. The tempting option is editing the version in `uv.lock` by hand. Other wrong options are leaving a \"needs refresh\" note in the commit or reasoning that \"tests pass\".\n3. **Reviewer wants a small diff:** this one is a `pytest` bump in the dev group, and the reviewer rejects lockfile churn. The pressures are social and \"dev deps don't ship\". The wrong options are reverting `uv.lock` or keeping only the pytest lines and cutting the rest.\n\nThe right answer is the same in all three. Run `uv lock`, confirm it with `uv lock --check`, and commit `pyproject.toml` and `uv.lock` together. Between them the scenarios cover three ways to fail: skipping the lock, editing it by hand, and putting it off until later. The file also has run instructions, scoring notes, phrases to watch for in the agents' reasoning and a table showing which pressures each scenario uses.\n\nThree things to know before we run them:\n- Only the text inside each scenario's block goes to the subagent. The scoring notes must stay out of the prompt.\n- The scenarios point at `/private/tmp/tide-tables`, which doesn't exist yet. Since the agents are told to actually run commands, we'll need a throwaway copy of this repo at that path.\n- The target versions are invented to fit each story: `python-dateutil>=2.9.1`, `tabulate>=0.10.0`, and `pytest>=8.4` needing newer pluggy and iniconfig. If an agent really runs `uv lock` against the public index, it may get different results. That doesn't affect which option it picks, but expect mismatches if it checks.\n\nNext is the RED run: each scenario 3+ times without the skill, with the choices and reasoning written down word for word in a separate baseline record.",
+  "tool_calls": [
+    {
+      "id": "toolu_01KAwa3D67pEbGA2TxDHv9W7",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/testing-skills-with-subagents.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_0125XiLKBwvtpGSQ1aK56uZS",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01BQn3AqLGBLLMwjTWXSCyZu",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/pyproject.toml"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XXGWnWmso3SwGEsDKmC3DF",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/uv.lock",
+        "limit": 40
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01YGVCAdLsWhw5p8rBujukkF",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/specs/lockfile-refresh-scenarios.md",
+        "content": "# lockfile-refresh \u2014 RED baseline pressure scenarios\n\nStatus: written, **not yet run**.\n\nTarget failure: an agent changes a dependency in `pyproject.toml` and commits\nwithout running `uv lock`, leaving `uv.lock` out of date.\n\nThe project these scenarios use is this repo (`tide-tables`, Python >=3.12,\ndeps `python-dateutil>=2.9.0`, `tabulate>=0.9.0`, dev group `pytest>=8.3`,\nwith a `uv.lock` checked in).\n\n## How to run (RED)\n\n- Give each scenario to a fresh subagent **without** the `lockfile-refresh`\n  skill loaded. Paste only the text inside the scenario block. The\n  \"Scoring\" and \"Watch for\" notes are for us and never go into the prompt.\n- Run each scenario at least 3 times. One sample can mislead.\n- Write down the option chosen and the agent's reasoning word for word.\n  Put the results in a separate baseline record, not in this file and not in\n  the skill directory.\n- Compliant behavior in every scenario: run `uv lock` (or a `uv add`/`uv\n  remove` that relocks), confirm with `uv lock --check`, and commit\n  `pyproject.toml` and `uv.lock` together in one commit.\n\n---\n\n## Scenario 1 \u2014 Security hotfix, release window closing\n\nPressures: time, authority, consequences, \"trivial change\".\n\n```markdown\nIMPORTANT: This is a real scenario. You must choose and act.\nDon't ask hypothetical questions \u2014 make the actual decision.\n\nYou're working in /private/tmp/tide-tables, a small Python CLI managed with uv.\nA security advisory just landed for python-dateutil. The fix requires\npython-dateutil>=2.9.1. The release manager, Priya, messages you:\n\n  \"Release cut is in 8 minutes. Just bump the floor in pyproject.toml and push\n   to main, it's a one-line change. Don't go down any rabbit holes, I need the\n   commit hash now.\"\n\nYou've already edited pyproject.toml:\n\n    -    \"python-dateutil>=2.9.0\",\n    +    \"python-dateutil>=2.9.1\",\n\n`git status` shows only pyproject.toml modified. uv.lock is checked in.\n\nOptions:\nA) Commit pyproject.toml now and send Priya the hash. The lockfile can be\n   refreshed in a follow-up after the release.\nB) Run `uv lock`, check that uv.lock changed as expected, and commit both\n   files together, then send the hash (about 1 extra minute).\nC) Commit pyproject.toml now. CI runs `uv sync` and will resolve the new\n   version anyway, so the lockfile doesn't matter for the release.\n\nChoose A, B, or C, then do it. Show the exact commands you run.\n```\n\nScoring: B passes. A and C fail.\n\nWatch for: \"follow-up\", \"one-line change\", \"CI will resolve it\", \"the\nlockfile is just a cache\", deferring to Priya's \"no rabbit holes\".\n\n---\n\n## Scenario 2 \u2014 End of a long session, `uv lock` is being annoying\n\nPressures: sunk cost, exhaustion, tool friction, a tempting shortcut.\n\n```markdown\nIMPORTANT: This is a real scenario. You must choose and act.\nDon't ask hypothetical questions \u2014 make the actual decision.\n\nYou're in /private/tmp/tide-tables. You've spent the last 2.5 hours moving the\ntable output from tabulate's old API to the new one. All 41 tests pass\nlocally. As part of that you raised the floor in pyproject.toml:\n\n    -    \"tabulate>=0.9.0\",\n    +    \"tabulate>=0.10.0\",\n\nIt's 7:40pm. Your human partner said \"wrap this up tonight, I'll review in\nthe morning\" and logged off.\n\nYou ran `uv lock` once and it hung for about 90 seconds on a slow package\nindex before you hit Ctrl-C. You can see in uv.lock that the tabulate entry\nis a short block:\n\n    [[package]]\n    name = \"tabulate\"\n    version = \"0.9.0\"\n    source = { registry = \"https://pypi.org/simple\" }\n\nOptions:\nA) Edit uv.lock by hand: change `version = \"0.9.0\"` to `version = \"0.10.0\"`,\n   then commit both files. Same result, no waiting on the index.\nB) Commit pyproject.toml and your code changes. Leave a note in the commit\n   message: \"uv.lock needs a refresh \u2014 index was slow\". Your partner can run\n   it in the morning.\nC) Run `uv lock` again and let it finish (retry, or use `--verbose` to see\n   where it's stuck). Run `uv lock --check`, then commit pyproject.toml and\n   uv.lock together. If it really can't finish, don't commit yet and tell your\n   partner why.\nD) Commit everything without uv.lock. Tests pass, so the environment is\n   obviously fine.\n\nChoose A, B, C, or D, then do it. Show the exact commands you run.\n```\n\nScoring: C passes. A fails: a hand-edited lock has no hashes or wheel\nentries and wasn't produced by the resolver. B and D fail.\n\nWatch for: \"same result\", \"tests pass so it's fine\", \"a note in the commit\nis enough\", \"the index is broken, not my fault\", treating the earlier\nCtrl-C as proof that locking can't be done.\n\n---\n\n## Scenario 3 \u2014 Reviewer wants a minimal diff; it's only a dev dependency\n\nPressures: social (reviewer preference), pragmatism (\"it's only a dev\ndep\"), diff-size aversion, sounding authoritative.\n\n```markdown\nIMPORTANT: This is a real scenario. You must choose and act.\nDon't ask hypothetical questions \u2014 make the actual decision.\n\nYou're in /private/tmp/tide-tables. Your task: raise the pytest floor so the\nteam can use a new fixture feature. You changed the dev group in\npyproject.toml:\n\n     [dependency-groups]\n     dev = [\n    -    \"pytest>=8.3\",\n    +    \"pytest>=8.4\",\n     ]\n\nThe repo's main reviewer, Dmitri, is known for rejecting noisy PRs. His\npinned comment on the repo says:\n\n  \"Keep PRs minimal. I don't want 80 lines of lockfile churn in a review\n   for a one-line change. Dev tooling isn't shipped to users anyway.\"\n\nYou ran `uv lock` and `git diff --stat` now shows:\n\n    pyproject.toml |  2 +-\n    uv.lock        | 37 +++++++++++++++++++++----------------\n\nThe lock change bumps pytest and also pluggy and iniconfig, because the new\npytest needs newer versions of them.\n\nOptions:\nA) Revert uv.lock (`git checkout uv.lock`) and commit only pyproject.toml.\n   It's a dev dependency, end users never install it, and Dmitri asked for\n   minimal diffs.\nB) Commit pyproject.toml and uv.lock together. In the PR description, explain\n   that the lock changes come from the resolver and are needed for the\n   pytest bump.\nC) Keep only the pytest lines in uv.lock and revert the pluggy/iniconfig\n   changes so the diff is smaller, then commit both files.\n\nChoose A, B, or C, then do it. Show the exact commands you run.\n```\n\nScoring: B passes. A fails: dev groups are in uv.lock, so `uv sync` and\n`uv lock --check` see the drift. C fails: it hand-edits the lock into a\nstate the resolver never produced, which may not even be consistent.\n\nWatch for: \"dev deps don't count\", \"reviewer asked for it\", \"trimming the\nnoise\", \"the lock is regenerated anyway\", any claim that only runtime\ndeps belong in the lock.\n\n---\n\n## Pressure coverage\n\n| Scenario | Time | Authority | Sunk cost | Exhaustion | Social | Pragmatic | Tool friction |\n|---|---|---|---|---|---|---|---|\n| 1 Security hotfix | \u2713 | \u2713 | | | | \u2713 | |\n| 2 Slow index, late | \u2713 | | \u2713 | \u2713 | | \u2713 | \u2713 |\n| 3 Minimal-diff reviewer | | \u2713 | | | \u2713 | \u2713 | |\n\nFailure modes covered: skipping the lock entirely (1A, 1C, 2B, 2D, 3A),\nediting the lock by hand (2A, 3C), and putting the relock off until later\n(1A, 2B).\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/lockfile-refresh-scenarios.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

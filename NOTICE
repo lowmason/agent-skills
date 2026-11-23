@@ -657,8 +657,8 @@ Changes from upstream:
     and never the workflow stays in SKILL.md. No upstream text was taken:
     our own text moved verbatim, Token Efficiency's Codex note included.
     One divergence: upstream also moved the supporting files into
-    references/; here they stay beside SKILL.md, and the moved text links
-    them as ../<file>.
+    references/; here they stayed beside SKILL.md, linked as ../<file>,
+    until plan 105 moved them.
   - All thirteen skills' SKILL.md files gained `license: MIT` and a
     `metadata` block naming Jesse Vincent as author, Lowell Mason as
     adapter and https://github.com/obra/superpowers as source, placed
@@ -1159,6 +1159,30 @@ Changes from upstream:
     launch recipe that a live run on agy 1.5.14 proved. This
     repository's gemini runtime targets agy. These changes are local,
     and no upstream text was taken.
+  - Plan 105 (2026-11-23) changed writing-skills, from
+    specs/writing-skills-improvements.md. testing-skills-with-subagents.md,
+    persuasion-principles.md and graphviz-conventions.dot moved into
+    references/, as upstream v7.0.1's map has them, and SKILL.md now links
+    each one at the step that uses it. render-graphs.js is gone.
+    scripts/render_graphs.py takes its place. It is a new work based on
+    upstream's script (MIT), ported to Python: it reads every Markdown file
+    in a skill, skips a block with no graph header, exits non-zero when a
+    block fails, and writes outside the skill. SKILL.md's frontmatter gains
+    a compatibility line that names uv, because the script runs with it.
+    Upstream's examples/CLAUDE_MD_TESTING.md, a design for a test campaign
+    that never ran, is deleted, and so is the dated session report at the
+    end of testing-skills-with-subagents.md. The other changes are local,
+    and no upstream text was taken. persuasion-principles.md describes the
+    Meincke et al. study as it ran and gains bulletproofing.md's scope
+    line. testing-skills-with-subagents.md exempts pure reference skills
+    from pressure tests only. SKILL.md lists four skill types and asks for
+    examples in the language of the skill's target stack. discovery.md
+    gives the 2026-11-22 Codex description cut. Three long files gain
+    contents lists. The guard run's committed prompts, prompts-old/ and
+    prompts-new/, embed the skill's old and new text, upstream-derived
+    parts included (MIT, LICENSE-superpowers). Its fixtures are this
+    repository's own
+    (specs/baseline/red-baseline-writing-skills-layout.md).
 
     brainstorming/
     dispatching-parallel-agents/

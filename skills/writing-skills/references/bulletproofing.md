@@ -7,7 +7,7 @@ Skills that enforce discipline (like TDD) need to resist rationalization. Agents
 
 **Scope:** this toolkit is for discipline failures — an agent that knows the rule and skips it under pressure. For wrong-shaped output or omitted elements, prohibition-based bulletproofing backfires; use the forms in SKILL.md § Match the Form to the Failure instead.
 
-**Psychology note:** Understanding WHY persuasion techniques work helps you apply them systematically. See [persuasion-principles.md](../persuasion-principles.md) for research foundation (Cialdini, 2021; Meincke et al., 2025) on authority, commitment, scarcity, social proof, and unity principles.
+**Psychology note:** Understanding WHY persuasion techniques work helps you apply them systematically. See [persuasion-principles.md](persuasion-principles.md) for research foundation (Cialdini, 2021; Meincke et al., 2025) on authority, commitment, scarcity, social proof, and unity principles.
 
 ### Close Every Loophole Explicitly
 

@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 24505,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0516758,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 9319,
+    "output_tokens": 2347,
+    "output_tokens_details": {
+      "thinking_tokens": 630
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2347,
+      "cacheReadInputTokens": 9319,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.0516758,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 630,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (frontmatter rules and body template, required before writing either)\nACTION: Read `~/.claude/skills/writing-skills/references/claude-code.md` (the skill will run in Claude Code)\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (the baseline is a discipline failure: agents knew better and skipped the dry run anyway)\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md` (needed to word the counters)\nACTION: Read `specs/migration-dry-run-baseline.md` (so the rationalization table quotes the baseline verbatim)\nACTION: Create `skills/migration-dry-run/SKILL.md` with this content, adjusted to whatever the reference files require:\n\n```markdown\n---\nname: migration-dry-run\ndescription: Use when about to apply, run, or deploy a database migration to staging, production, or any shared database, including when the change looks additive, the environment seems disposable, or a dry run feels too slow.\nlicense: MIT\n---\n\n# Migration Dry Run\n\n## Overview\n\n**Never apply a migration to a shared database until a dry run of that exact migration has succeeded against that environment.**\n\nA dry run shows you what will execute: the SQL, the locks, and the failures. Applying first shows you the same things, but after the damage.\n\n## The Rule\n\n```\nNO APPLY WITHOUT A SUCCESSFUL DRY RUN FIRST\n```\n\nThis applies to staging the same as to production. A dry run against local or CI does not count for staging. Run the dry run against the target environment.\n\n## What Counts as a Dry Run\n\n| Tool | Dry run |\n|------|---------|\n| Alembic | `alembic upgrade head --sql` and review the output |\n| Flyway | `flyway migrate -dryRunOutput=plan.sql` |\n| Prisma | `prisma migrate diff --from-url $TARGET --to-schema-datamodel schema.prisma --script` |\n| Rails | `rails db:migrate` inside a transaction you roll back, or `db:migrate:status` plus the generated SQL |\n| Raw SQL | Run it in `BEGIN; ... ROLLBACK;` against the target |\n\nIf the tool has no dry run, use the transaction-and-rollback form. If the migration can't run in a transaction (for example `CREATE INDEX CONCURRENTLY`), output the SQL and review it statement by statement.\n\n## Procedure\n\n1. Run the dry run against the target environment.\n2. Read the output. Check which tables it touches, which locks it takes, and any errors.\n3. Report what the dry run showed.\n4. Only then apply.\n\nIf the dry run fails or shows something unexpected, stop and report. Do not apply.\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"Staging is disposable\" | Others depend on staging, and a broken staging blocks the release. It's also your only rehearsal for production. |\n| \"The migration is only additive\" | Additive changes still take locks, fail on existing data, and collide with drifted schemas. You can't know it's safe until you've seen it run. |\n| \"The dry run takes too long\" | It takes minutes. Restoring or untangling a half-applied migration takes hours. |\n\n## Red Flags: Stop and Dry Run\n\n- You're about to type the apply command and haven't seen dry-run output for this migration in this environment\n- You're thinking \"it's just staging\"\n- You're thinking \"it only adds a column/table/index\"\n- You're thinking about time pressure\n- You dry-ran an earlier version of the migration, not the current one\n\n## Common Mistakes\n\n- Dry-running locally and applying to staging\n- Running the dry run but not reading its output\n- Editing the migration after the dry run and applying without re-running it\n```\n\nI've drafted `skills/migration-dry-run/SKILL.md`. Before writing the frontmatter and body I read the discovery, Claude Code, bulletproofing and persuasion references.\n\n**How it's built:**\n- **Form.** Your baseline shows agents breaking a rule they know under pressure. That calls for a hard prohibition, a rationalization table and a red flags list, not soft \"prefer to dry-run\" guidance.\n- **Description.** It only lists triggers (applying a migration, \"additive\", \"disposable\", \"too slow\"). It doesn't summarize the procedure, so agents still have to read the body.\n- **Rationalization table.** It answers the three baseline excuses verbatim.\n- **Staging.** The skill says explicitly that a dry run against local doesn't count for staging. That closes an obvious loophole.\n\n**Two things for you to check:**\n- I set `license: MIT`. Tell me if the project uses a different license.\n- The tool table assumes common migration tools. If your agents use only one, I'll cut the table down to that tool.\n\n**Not done yet:** this is untested. Next is the GREEN run: the same four scenarios, 5 reps each, with the skill loaded. After that, a REFACTOR pass for any new rationalizations. Shall I run GREEN now?",
+  "ttft_ms": 8956,
+  "type": "result",
+  "duration_ms": 24562,
+  "ttft_stream_ms": 2046,
+  "time_to_request_ms": 53,
+  "first_content_frame_ms": 2046,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

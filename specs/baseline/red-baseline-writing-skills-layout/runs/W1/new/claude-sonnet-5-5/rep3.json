@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 9309,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0143303,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 9243,
+    "output_tokens": 1195,
+    "output_tokens_details": {
+      "thinking_tokens": 436
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1195,
+      "cacheReadInputTokens": 9243,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.0143303,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 436,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read ~/.claude/skills/writing-skills/references/discovery.md\nACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md\nACTION: Read ~/.claude/skills/writing-skills/references/bulletproofing.md\nACTION: Read ~/.claude/skills/writing-skills/references/persuasion-principles.md\n\nI haven't written `skills/migration-dry-run/SKILL.md` yet. The writing-skills guidance says to read four reference files before drafting the frontmatter, description and body. `discovery.md` has the frontmatter rules and body template. `claude-code.md` covers Claude Code-only keys, since this skill will run there. `bulletproofing.md` and `persuasion-principles.md` cover the rationalization counters. I'm reading them now so the draft follows the rules the first time.\n\nThe plan for the draft:\n\n- **Type and form:** This is a discipline skill. Your baseline shows agents that know better skipping the step under pressure (14 of 20 runs). The right form is a prohibition plus a rationalization table plus a red flags list, not soft \"consider a dry run\" guidance.\n- **Description:** It will start with \"Use when...\" and name only the triggers: applying or running a migration against staging, and the words \"migrate\", \"schema change\" and \"alembic/flyway/prisma\" or similar. It won't summarize the workflow, so agents don't follow the description instead of the body.\n- **Rationalization table:** Each row will use a verbatim excuse from `specs/migration-dry-run-baseline.md`, paired with a counter. The rows so far are \"staging is disposable\", \"the migration is only additive\" and \"the dry run takes too long\".\n- **Body:** It will have an overview with the core principle, the dry-run-before-apply rule, the red flags list, and a short quick reference. I'll write the dry-run step as a concrete recipe, not an open-ended instruction.\n- **Open question:** Which migration tools should the skill's example target? If you don't have a preference, I'll pick the stack your repo uses once I've checked, and include one worked example only.\n\nOnce the draft is written, I'll run the same four scenarios with the skill present to see if agents comply. I'll send you the draft first, since the baseline stays outside the skill directory.",
+  "ttft_ms": 4083,
+  "type": "result",
+  "duration_ms": 9368,
+  "ttft_stream_ms": 512,
+  "time_to_request_ms": 59,
+  "first_content_frame_ms": 512,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

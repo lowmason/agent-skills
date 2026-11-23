@@ -1,0 +1,142 @@
+{
+  "case": "T3",
+  "rep": 4,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep4",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "af08f37936390a468ed23f405171ce6d9549bfd2",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T3/old/claude-sonnet-5-5/rep4.jsonl",
+  "prompt_sha256": "8ca8d2752b039de52355200691bb99f95a43578bc803ab1dd5894444c55e222c",
+  "claude_exit": 0,
+  "wall_seconds": 14,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 18,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 13397,
+    "total_cost_usd": 0.06846379999999999,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1926,
+        "cacheReadInputTokens": 46038,
+        "cacheCreationInputTokens": 11146,
+        "webSearchRequests": 0,
+        "costUSD": 0.06846379999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 278,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 11146,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I added the flowchart to `skills/http-retry-policy/SKILL.md`, in a new \"Retry or fail fast\" section before \"Check the service first\". I haven't rendered it, and I haven't re-run the baseline with the flowchart in place.\n\n**What the flowchart does:**\n- It starts at \"Call failed\" and runs `curl -sf https://status.example.invalid/health` first. If the exit code isn't 0, it fails fast.\n- Next it checks for a POST without an `Idempotency-Key`. That branch goes through a red stop node reading \"Never retry a POST without an idempotency key\", then fails fast.\n- Then it checks for 400, 401, 403, 404, 409 or 422, which also fail fast.\n- Anything else retries with backoff, using the same key for a POST.\n\n**Open issues:**\n- **Untested:** The writing-skills Iron Law wants a failing test before any edit. Your baseline covers the failure (10 of 15 runs retried a keyless POST). But I haven't re-run those three scenarios with the flowchart in place. Until that GREEN run happens, I can't say whether it fixes the problem.\n- **Rationalizations:** The baseline reasons were \"a timeout means the server never got the request\", \"503 is in the retry row of the table\" and \"one more try is cheap\". The flowchart answers them only implicitly. If the re-run still shows retries, the next step is a rationalization table that quotes those three lines.\n- **Code in nodes:** The skill's guidance discourages code in flowchart labels. I kept the `curl` command in the node because you asked for it to be shown. Note that the same command also appears in the \"Check the service first\" section below the chart.\n- **Not covered:** The chart doesn't cover `Retry-After` or the retry cap of 3. Those stay in the table and prose.",
+  "tool_calls": [
+    {
+      "id": "toolu_01THhhLya8ty2wrvePahQVzK",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep4/repo/skills/http-retry-policy/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01MgtJcpcxUSB22Lgq35tV5T",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep4/repo/specs/http-retry-policy-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011a2k9Zgta47uxKxobpDdS2",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/wsl105-skill/writing-skills/references/flowcharts.md"
+      },
+      "is_error": true
+    },
+    {
+      "id": "toolu_01Hsw5UQpW7hCrdzNXG68rTr",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/flowcharts.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012de9bT6Dwi4j1w2ruPRnJH",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep4/repo/skills/http-retry-policy/SKILL.md",
+        "old_string": "## Check the service first",
+        "new_string": "## Retry or fail fast\n\n```dot\ndigraph retry_or_fail_fast {\n    \"Call failed\" [shape=doublecircle];\n    \"Run health check: curl -sf https://status.example.invalid/health\" [shape=box];\n    \"Health check exit 0?\" [shape=diamond];\n    \"POST without Idempotency-Key?\" [shape=diamond];\n    \"Never retry a POST without an idempotency key\" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];\n    \"Status 400, 401, 403, 404, 409 or 422?\" [shape=diamond];\n    \"Fail fast and report\" [shape=box];\n    \"Retry with backoff (same key for POST)\" [shape=box];\n\n    \"Call failed\" -> \"Run health check: curl -sf https://status.example.invalid/health\";\n    \"Run health check: curl -sf https://status.example.invalid/health\" -> \"Health check exit 0?\";\n    \"Health check exit 0?\" -> \"Fail fast and report\" [label=\"no, service down\"];\n    \"Health check exit 0?\" -> \"POST without Idempotency-Key?\" [label=\"yes\"];\n    \"POST without Idempotency-Key?\" -> \"Never retry a POST without an idempotency key\" [label=\"yes\"];\n    \"Never retry a POST without an idempotency key\" -> \"Fail fast and report\";\n    \"POST without Idempotency-Key?\" -> \"Status 400, 401, 403, 404, 409 or 422?\" [label=\"no\"];\n    \"Status 400, 401, 403, 404, 409 or 422?\" -> \"Fail fast and report\" [label=\"yes\"];\n    \"Status 400, 401, 403, 404, 409 or 422?\" -> \"Retry with backoff (same key for POST)\" [label=\"no\"];\n}\n```\n\n## Check the service first"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/http-retry-policy/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

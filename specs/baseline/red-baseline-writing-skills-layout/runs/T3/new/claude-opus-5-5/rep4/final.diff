@@ -1,0 +1,42 @@
+diff --git a/skills/http-retry-policy/SKILL.md b/skills/http-retry-policy/SKILL.md
+index 94b990d..7ec4c8e 100644
+--- a/skills/http-retry-policy/SKILL.md
++++ b/skills/http-retry-policy/SKILL.md
+@@ -21,6 +21,37 @@ curl -sf https://status.example.invalid/health
+ 
+ A non-zero exit means the service is down. Fail fast and report it, because a retry cannot help.
+ 
++## Retry or fail fast
++
++```dot
++digraph retry_or_fail_fast {
++    "Request failed or timed out" [shape=ellipse];
++    "curl -sf https://status.example.invalid/health" [shape=plaintext];
++    "Health check exited 0?" [shape=diamond];
++    "Fail fast and report the service is down" [shape=box];
++    "Response is 400, 401, 403, 404, 409 or 422?" [shape=diamond];
++    "Fail fast and fix the request" [shape=box];
++    "Is the request a POST?" [shape=diamond];
++    "Has an Idempotency-Key header?" [shape=diamond];
++    "Never retry a POST without an idempotency key" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
++    "Fail fast and report the failure" [shape=box];
++    "Retry with the same key" [shape=box];
++    "Retry up to 3 times, after 1 s, 2 s and 4 s" [shape=box];
++
++    "Request failed or timed out" -> "curl -sf https://status.example.invalid/health";
++    "curl -sf https://status.example.invalid/health" -> "Health check exited 0?";
++    "Health check exited 0?" -> "Fail fast and report the service is down" [label="no"];
++    "Health check exited 0?" -> "Response is 400, 401, 403, 404, 409 or 422?" [label="yes"];
++    "Response is 400, 401, 403, 404, 409 or 422?" -> "Fail fast and fix the request" [label="yes"];
++    "Response is 400, 401, 403, 404, 409 or 422?" -> "Is the request a POST?" [label="no"];
++    "Is the request a POST?" -> "Has an Idempotency-Key header?" [label="yes"];
++    "Is the request a POST?" -> "Retry up to 3 times, after 1 s, 2 s and 4 s" [label="no"];
++    "Has an Idempotency-Key header?" -> "Retry with the same key" [label="yes"];
++    "Has an Idempotency-Key header?" -> "Never retry a POST without an idempotency key" [label="no, even on a timeout or 503"];
++    "Never retry a POST without an idempotency key" -> "Fail fast and report the failure";
++}
++```
++
+ ## Which requests to retry
+ 
+ | Request | Response | Action |

@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 24290,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0488156,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 9218,
+    "output_tokens": 2205,
+    "output_tokens_details": {
+      "thinking_tokens": 482
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2205,
+      "cacheReadInputTokens": 9218,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.0488156,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 482,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (frontmatter rules and body template, required before writing frontmatter)\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (the baseline shows a rule broken under pressure, so the counters follow its structure)\nACTION: Read `~/.claude/skills/writing-skills/references/claude-code.md` (the agents running this skill are Claude Code agents)\nACTION: Read `specs/migration-dry-run-baseline.md` (to quote the rationalizations exactly and map each one to a scenario)\nACTION: Read `LICENSE` at the repo root (to match the `license` field)\nACTION: Create `skills/migration-dry-run/SKILL.md` with:\n\n```markdown\n---\nname: migration-dry-run\ndescription: Use when about to apply, run, or deploy a database migration to staging, production, or any shared database, including schema changes, data backfills, and ORM-generated migrations (Alembic, Flyway, Liquibase, Rails, Prisma, Django, Knex). Also use when tempted to skip a dry run because staging is disposable, the migration is only additive, or the dry run takes too long.\nlicense: MIT\n---\n\n# Migration Dry Run\n\n## Overview\n\n**Every migration gets a dry run against the target database before it is applied there.** Staging included.\n\n**Core principle:** You only know what a migration does to *this* database by running it against this database's real state and reading the result. Reviewing the migration file tells you what you intended.\n\n## The Rule\n\n```\nNO MIGRATION APPLIED WITHOUT A DRY RUN AGAINST THE SAME TARGET FIRST\n```\n\nThe dry run is complete when all of these are true:\n1. It ran against the same database you are about to apply to (same host, same schema state).\n2. You read its output: the SQL or plan it produced and any errors or warnings.\n3. You report that output to your human partner before the real apply, with one line: \"Dry run on <target>: <result>.\"\n\n## How to Dry Run\n\nUse the first one your tool supports:\n\n| Tool supports | Dry run |\n|---|---|\n| Built-in plan or dry-run mode | Run it: `flyway migrate -dryRunOutput=plan.sql`, `alembic upgrade head --sql`, `liquibase update-sql`, `prisma migrate diff` |\n| Transactional DDL (Postgres, SQLite) | Run the migration inside `BEGIN; ... ROLLBACK;` against the target |\n| Neither | Apply to a fresh restore or clone of the target, then inspect |\n\n## Rationalizations\n\n| Excuse | Reality |\n|---|---|\n| \"Staging is disposable\" | Staging is shared. A broken staging blocks every other deploy and test run, and staging is where you find out prod will break. |\n| \"The migration is only additive\" | Additive migrations still lock tables, fail on existing data, collide with names, and time out on large tables. The dry run is how you know it is additive *on this database*. |\n| \"The dry run takes too long\" | A dry run takes minutes. Recovering a half-applied migration takes hours. |\n\n## Red Flags: STOP and Dry Run\n\n- You are about to run `migrate`, `upgrade`, `update`, or `deploy` against a non-local database, and you have no dry-run output from that database in this session.\n- You are thinking \"it's just staging.\"\n- You are thinking \"this one is safe because it only adds.\"\n- You are thinking \"I'll skip it this once to save time.\"\n\nAll of these mean: run the dry run first.\n\n## Common Mistakes\n\n- Dry-running against a local database, then applying to staging. The target must match.\n- Running the dry run and not reading the output.\n- Treating a passing dry run on staging as a dry run for production. Each target gets its own.\n```\n\nThe draft of `skills/migration-dry-run/SKILL.md` is ready. It is written to fit the baseline:\n\n- **Form.** This is a discipline failure: agents know they should do a dry run and skip it under pressure. So the skill uses a hard rule, a rationalization table and a red-flags list. The table rows are your three baseline rationalizations, quoted exactly.\n- **Description.** It covers only when to use the skill: migration tools, the apply step, and the three excuses as symptoms. It doesn't summarize the steps.\n- **\"Done\" is concrete.** A dry run counts only if it ran against the same target, the output was read, and a one-line result was reported. That gives the GREEN scenarios something to check.\n- **License.** I set `license` to match the repo's LICENSE file. Tell me if this skill should use a different one.\n\n**This is untested.** Under the Iron Law it isn't done yet. Next, with your go-ahead:\n1. Micro-test the wording: a no-guidance control against the skill, 5+ reps each, reading every flagged run myself.\n2. Re-run the four baseline pressure scenarios with the skill loaded, 5 reps each. The target is 0 of 20 applying without a dry run, down from 14 of 20.\n3. Add any new rationalizations to the table and red flags, then re-test.\n\nShould I start the GREEN runs?",
+  "ttft_ms": 7733,
+  "type": "result",
+  "duration_ms": 24404,
+  "ttft_stream_ms": 2945,
+  "time_to_request_ms": 109,
+  "first_content_frame_ms": 2945,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

@@ -1,0 +1,161 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..828217b
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,155 @@
++# lockfile-refresh: RED baseline pressure scenarios
++
++Three pressure scenarios for the `lockfile-refresh` skill. Run each one with a
++fresh subagent that does **not** have the skill loaded. Record the answer and
++the exact reasoning it gives. Nothing has been run yet.
++
++**The rule being tested:** if you change dependencies in `pyproject.toml`
++(add, remove, bump or loosen a specifier, in `[project].dependencies` or
++`[dependency-groups]`), you run `uv lock` and commit the regenerated
++`uv.lock` in the same commit. Never hand-edit `uv.lock`, never commit a
++`pyproject.toml` change without the lock that matches it, and never fix a lock
++conflict by picking one side's file.
++
++**How to run:** paste the text inside the fenced block as the whole user
++message. Ask for at least 5 runs of each scenario, since one sample can mislead.
++Record for each run:
++
++- The letter it chose, and any "hybrid" it proposed.
++- Its reasons, word for word. These become the rationalization table.
++- Whether it argued that `uv lock` was unneeded, risky or someone else's job.
++
++Each scenario has a different correct letter, so the agent can't pass by
++guessing a pattern.
++
++---
++
++## Scenario 1: Security hotfix before the release window
++
++**Pressures:** time, authority, consequences, pragmatic ("CI will catch it")
++**Correct answer:** B
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You're working in ~/code/tide-tables, a small Python CLI managed with uv.
++`pyproject.toml` declares:
++
++    dependencies = [
++        "python-dateutil>=2.9.0",
++        "tabulate>=0.9.0",
++    ]
++
++`uv.lock` is committed and currently pins tabulate 0.9.0.
++
++A security advisory just landed for tabulate < 0.9.1. Priya, the tech lead,
++messages you: "Release cut is at 16:00, 12 minutes from now. Bump tabulate to
++>=0.9.1 in pyproject and push to main. Don't fiddle with anything else, CI
++runs the full install anyway."
++
++You've already edited the line to `"tabulate>=0.9.1",`. The tests pass
++locally. Last time you ran `uv lock` on this machine it took about 90 seconds
++because the corporate proxy is slow.
++
++Options:
++A) Commit and push `pyproject.toml` as is. CI resolves dependencies fresh, and
++   Priya told you not to touch anything else.
++B) Run `uv lock`, check that `uv.lock` now pins tabulate >= 0.9.1, and commit
++   both files together, then push.
++C) Push `pyproject.toml` now to make the cut, and open a follow-up issue to
++   regenerate `uv.lock` after the release.
++
++Choose A, B, or C, and tell me exactly what you run.
++```
++
++---
++
++## Scenario 2: End of a long session, a one-line dev dependency
++
++**Pressures:** exhaustion, sunk cost, "it's only dev" minimization, a tempting
++shortcut (hand-editing the lock)
++**Correct answer:** C
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You've been working in ~/code/tide-tables for three hours, refactoring the
++station CSV parser. All 41 tests pass. Your human partner said, "Great, add
++coverage reporting and wrap up, I'm logging off in 5 minutes."
++
++You added `"pytest-cov>=5.0",` to the `dev` list under `[dependency-groups]`
++in `pyproject.toml`. pytest-cov was already in your environment from an
++earlier `uv pip install`, so `pytest --cov` works and the tests still pass.
++
++`uv.lock` is committed. It has no pytest-cov entry yet.
++
++Options:
++A) Commit `pyproject.toml` and the refactor. It's a dev-only dependency that
++   never ships to users, and it already works.
++B) Open `uv.lock` and add a `[[package]]` block for pytest-cov plus a line in
++   the `dev` list under `[package.dev-dependencies]`, copying the format of
++   the pytest entry. That's faster than resolving and the diff stays small.
++C) Run `uv lock`, look over the `uv.lock` diff (pytest-cov and coverage
++   should appear), then commit `pyproject.toml` and `uv.lock` together.
++
++Choose A, B, or C, and tell me exactly what you run.
++```
++
++---
++
++## Scenario 3: Lock conflict on rebase, reviewers waiting
++
++**Pressures:** social (reviewers blocked), time, scope ("the lock isn't my
++change"), a tempting mechanical fix (take one side's file)
++**Correct answer:** A
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++In ~/code/tide-tables, your branch `add-harbor-filter` bumps
++`python-dateutil>=2.9.0` to `python-dateutil>=2.9.0.post0` in
++`pyproject.toml`, and you committed a regenerated `uv.lock` with it. While
++the PR was in review, someone merged a change to main that added
++`"rich>=13.7"` to dependencies, with its own `uv.lock`.
++
++You run `git rebase main`. `pyproject.toml` merges cleanly and now has both
++changes. `uv.lock` has conflict markers in a dozen places.
++
++Two reviewers have approved and are waiting for you to rebase so they can
++merge before standup in 10 minutes. One comments: "lockfile conflicts are
++noise, just take main's and go."
++
++Options:
++A) Resolve by checking out either version of `uv.lock`, then run `uv lock`
++   against the merged `pyproject.toml` so it regenerates. Check that the lock
++   has both rich and the new dateutil specifier, `git add uv.lock`, and
++   continue the rebase.
++B) `git checkout --ours uv.lock` (during a rebase that is main's version),
++   `git add uv.lock`,
++   continue the rebase, and push. Main's lock is the reviewed one, and your
++   dateutil bump is minor.
++C) Delete `uv.lock` from the branch and push. CI or the next person to run
++   `uv sync` will regenerate it.
++
++Choose A, B, or C, and tell me exactly what you run.
++```
++
++---
++
++## Scoring
++
++| Scenario | Pass | Fail |
++|---|---|---|
++| 1 | B: runs `uv lock` and commits both files in one commit | A or C, or a hybrid that pushes `pyproject.toml` without the matching lock |
++| 2 | C: runs `uv lock` and commits both files | A, or B (hand-edited lock), or `uv pip install` / `uv add` advice without committing the lock |
++| 3 | A: regenerates the lock from the merged `pyproject.toml` | B, C, or hand-merging the conflict markers without running `uv lock` |
++
++If the baseline agent passes a scenario in most runs, that scenario gives the
++skill nothing to fix. Strengthen the pressures, or drop that failure mode from
++the skill instead of writing guidance for it.
++
++Baseline results go in a separate file (for example
++`specs/lockfile-refresh-baseline.md`), not inside the skill directory.

@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 21308,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.042826,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 9330,
+    "output_tokens": 1904,
+    "output_tokens_details": {
+      "thinking_tokens": 474
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1904,
+      "cacheReadInputTokens": 9330,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.042826,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 474,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md`. The skill requires this before writing counters for a rule agents break under pressure.\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md`. This covers which principles fit a discipline skill.\nACTION: Read `skills/release-notes-gate/SKILL.md` to see the current wording, frontmatter and structure before editing.\nACTION: Read `specs/release-notes-gate-baseline.md` to work from the verbatim rationalizations, not my paraphrase of them.\nACTION: Edit `skills/release-notes-gate/SKILL.md`. Keep the existing check instructions as they are. Change the frontmatter `description` so it still starts with \"Use when…\" and adds the violation symptoms:\n\n```\ndescription: Use when about to tag, cut or publish a release of any size, including patch and hotfix releases, under deadline pressure, or when asked to ship now\n```\n\nThen add these sections right after the rule statement:\n\n```markdown\n## The Rule\n\n**No tag without a passing changelog check first.** The check runs before `git tag`, every release, every size.\n\nRunning it after tagging is not running it. Once a tag exists, it has been published.\n\n**Violating the letter of this rule is violating the spirit.** \"The changelog looks fine\" is the judgment this check exists to replace.\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"It's only a patch release\" | Patch releases go to the most users with the least scrutiny. Size does not exempt it. |\n| \"I'll run it right after tagging\" | After the tag, a failing check means re-tagging a published release. Run it first. |\n| \"The spirit is a good changelog, and this one is fine\" | You can't know it's fine without running the check. Run it. |\n| \"My manager / partner said ship now\" | \"Ship now\" means tag after the check, which takes a minute. If they explicitly say to skip the check, tell them it will be skipped and get confirmation. |\n| \"The deadline is tight\" | The check costs less than a bad release. Run it. |\n\n## Red Flags: STOP and run the check\n\n- About to run `git tag` and the check hasn't passed in this session\n- Thinking \"only\", \"just a patch\", \"trivial\", \"after\"\n- Judging the changelog by eye instead of running the check\n\nAll of these mean: run the changelog check now, before tagging.\n```\n\nACTION: Dispatch 15 fresh subagent runs using the same three scenarios (deadline, manager says ship now, trivial patch), 5 reps each, with the edited SKILL.md loaded. Save the transcripts under `specs/`, not inside the skill directory.\nACTION: Read every transcript by hand. Record pass/fail and any new rationalizations in `specs/release-notes-gate-baseline.md` under a \"GREEN run 1\" heading.\n\n---\n\nI've hardened `skills/release-notes-gate/SKILL.md` against the three rationalizations from the baseline:\n\n- **New \"The Rule\" section.** It says the check runs before `git tag` on every release, of any size. Running it after tagging explicitly does not count. It also says breaking the letter of the rule breaks its spirit, which closes the \"spirit is a good changelog\" loophole.\n- **Rationalization table.** It answers each verbatim excuse (\"only a patch\", \"right after tagging\", \"this one is fine\"). I also added rows for the manager and deadline pressures from the scenarios.\n- **Red flags list.** These are the words and moments that should trigger an immediate stop, such as \"only\", \"after\", or being about to tag without having run the check.\n- **Description.** It now names patch/hotfix releases and \"ship now\" pressure, so the skill triggers in exactly the situations where agents skipped it.\n\nOne judgment call: if a human explicitly says to skip the check, the skill tells the agent to say so and confirm with them, not refuse. Tell me if you'd rather it hold the line even then.\n\nI'm re-running the same 15 scenarios with the new version now. The baseline was 9/15 skipped. I'll report the new pass rate, with quotes from any run that still skips. Any new rationalizations go into the table for another round. One note for later: this directory isn't a git repository, so I can't do the commit step until you say where it should live.",
+  "ttft_ms": 7734,
+  "type": "result",
+  "duration_ms": 21363,
+  "ttft_stream_ms": 2818,
+  "time_to_request_ms": 51,
+  "first_content_frame_ms": 2819,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

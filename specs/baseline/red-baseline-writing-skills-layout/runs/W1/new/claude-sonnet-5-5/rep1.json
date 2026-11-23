@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 6958,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0454929,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 8956,
+    "cache_read_input_tokens": 649,
+    "output_tokens": 960,
+    "output_tokens_details": {
+      "thinking_tokens": 358
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 8956,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 960,
+      "cacheReadInputTokens": 649,
+      "cacheCreationInputTokens": 8956,
+      "webSearchRequests": 0,
+      "costUSD": 0.0454929,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 358,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 8956,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read ~/.claude/skills/writing-skills/references/discovery.md\nACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md\nACTION: Read ~/.claude/skills/writing-skills/references/bulletproofing.md\nACTION: Read ~/.claude/skills/writing-skills/references/persuasion-principles.md\nACTION: Read specs/migration-dry-run-baseline.md\n\nI haven't written `SKILL.md` yet. The skill says to read its frontmatter and description rules (`discovery.md`) first, and the Claude Code keys (`claude-code.md`), since this skill will run there. I'm also reading the two bulletproofing references because this is a discipline skill. In the baseline, agents knew the rule and skipped it anyway.\n\nOnce those reads are done, I'll write `skills/migration-dry-run/SKILL.md` in this shape:\n\n- **Description:** \"Use when...\" with triggers only, such as applying, running or deploying a database migration to staging or any shared environment. It won't summarize the workflow, so agents can't follow the description instead of the body.\n- **Body form:** prohibition plus a rationalization table plus a red flags list, since the failure is skipping a rule under pressure. The table will use the verbatim baseline excuses (\"staging is disposable\", \"only additive\", \"dry run takes too long\"), each with a counter.\n- **Dry run step:** one concrete, runnable example for the dry run itself. I'll pick the tool once I've confirmed from your project which migration tool you use. If it's not in the baseline file, I'll ask you.\n\nAfter the file is written, the next step is the GREEN run. I'll rerun the same four scenarios with the skill present and check that the 14 of 20 skips drop. I won't call it done before that.",
+  "ttft_ms": 3125,
+  "type": "result",
+  "duration_ms": 7012,
+  "ttft_stream_ms": 567,
+  "time_to_request_ms": 53,
+  "first_content_frame_ms": 567,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

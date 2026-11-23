@@ -1,0 +1,142 @@
+{
+  "case": "T2",
+  "rep": 2,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep2",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "14ced4ca21d2e2efb3fce0812803c9092ef59922",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T2/old/claude-sonnet-5-5/rep2.jsonl",
+  "prompt_sha256": "393ac0f9c85fd66966628390d37dc88e8ff2515ec85746b3190f2fac589c6b93",
+  "claude_exit": 0,
+  "wall_seconds": 22,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 27,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 21597,
+    "total_cost_usd": 0.09171679999999999,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 2750,
+        "cacheReadInputTokens": 50368,
+        "cacheCreationInputTokens": 14791,
+        "webSearchRequests": 0,
+        "costUSD": 0.09171679999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 765,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14791,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the rule in `skills/secrets-scan-gate/SKILL.md`, but I haven't tested it, so I can't say yet whether it holds. My tools here can't launch subagents, so I haven't run the GREEN step: the three scenarios from your baseline, 5 reps each, with the new wording. Until that's done, treat this as a draft. The old text called the scan \"a good habit\" and \"optional\" for small changes, so the baseline mostly measured that permission.\n\n**What changed**\n- **The rule:** the \"good habit\" and \"optional\" wording is replaced by a single bright-line rule. Every commit is preceded by `gitleaks protect --staged`, run after the final `git add`, and any later `git add` means scanning again.\n- **Rationalization table:** it has your three verbatim excuses, each with a counter. I added two rows for the lead's merge request and for fatigue, based on the S2 and S3 pressures. Those two excuses weren't recorded verbatim, so I'm inferring them.\n- **Red flags list:** it ends with \"run the scan now, then commit.\"\n- **Scope:** you asked for the rule paragraph, and I went a bit past that by adding the table and red flags inside the same section. The skill's own bulletproofing guidance calls for both when an agent knows the rule and skips it under pressure.\n\n**Principles used**\n- **Authority:** \"Every\u2026 No exceptions,\" plus \"violating the letter is violating the spirit.\" This is aimed at the \"docs only\" and \"CI covers it\" arguments.\n- **Commitment:** the scan output has to be in front of the agent before it types `git commit`, and a stale scan doesn't count. This is a gate on the agent's own prior action.\n- **Scarcity, as sequencing only:** \"after the final `git add`, before the commit, immediately.\" It targets \"I'll scan before I push\" by fixing the step's position. I didn't add any invented deadline.\n- **Social proof, in a mild form:** the red-flags list names these thoughts as known failure patterns. I didn't cite statistics beyond your baseline.\n\n**Left out on purpose**\n- **Liking:** it's a sycophancy risk and the skill says never to use it for compliance.\n- **Reciprocity:** it's rarely needed and can feel manipulative.\n- **Unity:** it fits collaborative skills, not discipline ones.\n- **Fabricated urgency or guilt:** nothing like \"leaks get people fired.\" The cost I cite is real: the secret stays in history and rotation takes hours.\n\nI'd also check one claim in the table. The \"CI runs after the commit exists\" row is true in general. If your CI has a pre-commit hook, that row needs adjusting.\n\n**Next step:** run the three scenarios with the new text, keeping records in `specs/baseline/`. Any new excuse that shows up goes into the table. I can draft the scenario prompts if you want.",
+  "tool_calls": [
+    {
+      "id": "toolu_01HtHrtFxiqExL9Dhq483QeZ",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep2/repo/skills/secrets-scan-gate/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013p5LeogiwPFq5jz49QBuVd",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep2/repo/specs/secrets-scan-gate-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_0185EiBzcpkr3rrEmSFT9CGt",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/bulletproofing.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017aANtqHny2MWexmJv1tLU2",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/persuasion-principles.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01DVgiDkuucuEGH9pGrHZ7bw",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep2/repo/skills/secrets-scan-gate/SKILL.md",
+        "old_string": "Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches\nconfig files or anything under `deploy/`. For small changes the scan is optional.",
+        "new_string": "**Every `git commit` is preceded by `gitleaks protect --staged`, run after the final `git add` and\nbefore the commit. No exceptions.** Run it immediately; the output must be in front of you before you\ntype `git commit`. If you have not seen exit status 0 for the changes currently staged, do not commit.\nAny new `git add` after a scan means scanning again.\n\nViolating the letter of this rule is violating its spirit. The size of the diff, who asked for the\nmerge, and what runs later do not change it.\n\n| Excuse | Reality |\n|--------|---------|\n| \"The diff only touches docs\" | Docs hold pasted tokens, example `.env` lines and curl commands with real keys. The scan takes seconds. |\n| \"CI runs a scanner anyway\" | CI runs after the commit exists. The gate is the step before the commit, and CI is not a substitute for it. |\n| \"I'll scan before I push\" | By then the secret is already in local history, and removing it means rewriting commits. Scan before the commit. |\n| \"The lead wants a quick merge\" | The scan is part of a quick merge. A leaked key costs hours of rotation. |\n| \"I'm tired, it's the end of the session\" | Fatigue is when a wrong file gets staged. Scan. |\n\n**Red flags. If you think any of these, stop and run the scan:**\n\n- \"It's too small to scan\"\n- \"Something else will catch it\"\n- \"I'll do it later\"\n- \"This case is different\"\n\n**All of these mean: run `gitleaks protect --staged` now, then commit.**"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/secrets-scan-gate/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

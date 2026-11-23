@@ -1,0 +1,142 @@
+{
+  "case": "T3",
+  "rep": 3,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep3",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "728e5e84f92e90ae5f3c03a68d1049e2dc9c10f1",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T3/old/claude-opus-5-5/rep3.jsonl",
+  "prompt_sha256": "8ca8d2752b039de52355200691bb99f95a43578bc803ab1dd5894444c55e222c",
+  "claude_exit": 0,
+  "wall_seconds": 36,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 30,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 35996,
+    "total_cost_usd": 0.2020108,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 3519,
+        "cacheReadInputTokens": 49794,
+        "cacheCreationInputTokens": 15205,
+        "webSearchRequests": 0,
+        "costUSD": 0.2020108,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1451,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15205,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I added a \"Retry or fail fast\" flowchart to `skills/http-retry-policy/SKILL.md:14`, between the Overview and the health-check section. I haven't tested it yet. Your baseline (`specs/http-retry-policy-baseline.md`) is the failing run. The run that should come next is the same three scenarios with the new skill loaded, which I couldn't do here.\n\n**How a failed request moves through the chart:**\n1. It runs `curl -sf https://status.example.invalid/health`. If that exits non-zero, it fails fast and reports the service as down.\n2. Next it asks \"Is the request a POST?\" and then \"Has an Idempotency-Key header?\". If the POST has no key, it lands on the red warning node **\"Never retry a POST without an idempotency key\"** and fails fast without resending.\n3. Only after that does it ask \"Status 502, 503, 504 or a timeout?\". Yes means retry up to 3 times after 1 s, 2 s and 4 s, keeping the same key on a POST. Any other status means fail fast and fix the request.\n\nThe style follows the writing-skills graphviz conventions: the curl command is a plaintext node and the warning is a red octagon.\n\n**Why the POST check comes before the status check:** in the baseline, agents retried because \"503 is in the retry row\" and because \"a timeout means the server never got the request.\" In this chart, a POST with no key reaches the warning before 503s or timeouts are ever considered. I also added one sentence under the chart saying a timeout doesn't prove the server never got the request. That answers the S1 reason directly.\n\n**Two changes to the policy you should check:**\n- The retry node gives keyed POSTs the same \"up to 3 times, 1 s / 2 s / 4 s\" backoff. The table only says \"retry with the same key.\"\n- Statuses the table doesn't list, such as 500, go to \"fail fast\" in the chart.\n\n**Still to do:**\n- **Test it:** rerun S1\u2013S3, 5 reps each, with the updated skill, and compare against the baseline of 10 of 15 retried POSTs.\n- **Render it:** run `uv run scripts/render_graphs.py <path-to>/skills/http-retry-policy /tmp/http-retry-diagrams` from the writing-skills directory to view the SVG and check that the graph parses. I haven't rendered it.\n- **Commit it:** I haven't committed anything.",
+  "tool_calls": [
+    {
+      "id": "toolu_018rfbY4xgsQpWdUsUB7moCw",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/flowcharts.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01ELQkBixp5ywxFw8TanfXw3",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/skills/http-retry-policy/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Riu9tt7FYB4YtwcBUgxHRr",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/specs/http-retry-policy-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01V4rrsVaZtWq57jAey2rSRb",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/graphviz-conventions.dot"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017amH4piHfsFvYGgEZAbT3A",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep3/repo/skills/http-retry-policy/SKILL.md",
+        "old_string": "create a second order or a second charge.\n\n",
+        "new_string": "create a second order or a second charge.\n\n## Retry or fail fast\n\n```dot\ndigraph retry_or_fail_fast {\n    \"Request failed or timed out\" [shape=ellipse];\n    \"curl -sf https://status.example.invalid/health\" [shape=plaintext];\n    \"Health check exited 0?\" [shape=diamond];\n    \"Fail fast: report the service is down\" [shape=box];\n    \"Is the request a POST?\" [shape=diamond];\n    \"Has an Idempotency-Key header?\" [shape=diamond];\n    \"Never retry a POST without an idempotency key\" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];\n    \"Fail fast: report the failure, do not resend\" [shape=box];\n    \"Status 502, 503, 504 or a timeout?\" [shape=diamond];\n    \"Fail fast: fix the request\" [shape=box];\n    \"Retry up to 3 times after 1 s, 2 s, 4 s (same key on a POST)\" [shape=box];\n\n    \"Request failed or timed out\" -> \"curl -sf https://status.example.invalid/health\";\n    \"curl -sf https://status.example.invalid/health\" -> \"Health check exited 0?\";\n    \"Health check exited 0?\" -> \"Fail fast: report the service is down\" [label=\"no\"];\n    \"Health check exited 0?\" -> \"Is the request a POST?\" [label=\"yes\"];\n    \"Is the request a POST?\" -> \"Has an Idempotency-Key header?\" [label=\"yes\"];\n    \"Is the request a POST?\" -> \"Status 502, 503, 504 or a timeout?\" [label=\"no\"];\n    \"Has an Idempotency-Key header?\" -> \"Never retry a POST without an idempotency key\" [label=\"no\"];\n    \"Never retry a POST without an idempotency key\" -> \"Fail fast: report the failure, do not resend\";\n    \"Has an Idempotency-Key header?\" -> \"Status 502, 503, 504 or a timeout?\" [label=\"yes\"];\n    \"Status 502, 503, 504 or a timeout?\" -> \"Retry up to 3 times after 1 s, 2 s, 4 s (same key on a POST)\" [label=\"yes\"];\n    \"Status 502, 503, 504 or a timeout?\" -> \"Fail fast: fix the request\" [label=\"no\"];\n}\n```\n\nA POST with no idempotency key fails fast on every failure, a timeout or a 503 included: a timeout does not\nprove the server never got the request.\n\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/http-retry-policy/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

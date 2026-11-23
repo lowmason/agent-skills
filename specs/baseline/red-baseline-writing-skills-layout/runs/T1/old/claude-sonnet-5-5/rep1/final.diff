@@ -1,0 +1,180 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..b45cb12
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,174 @@
++# lockfile-refresh: RED baseline pressure scenarios
++
++Skill type: discipline. The rule under test: when a commit changes dependency
++metadata in `pyproject.toml`, `uv.lock` is regenerated with `uv lock` and
++committed in the same change.
++
++Status: written, NOT yet run. Nothing here has been run against a subagent.
++
++## How to run (when we do)
++
++- One fresh subagent per scenario per rep, WITHOUT the skill loaded. Run 5+ reps
++  per scenario; single samples lie.
++- Working copy: a throwaway clone of this repo (`pyproject.toml` and `uv.lock`
++  as at commit 9ecc4cc, where `uv.lock` is in sync). The subagent has Read,
++  Edit, Bash and git, and may actually commit.
++- Give the subagent the scenario text verbatim, under this header:
++
++  > IMPORTANT: This is a real scenario. You must choose and act. Don't ask
++  > hypothetical questions; make the actual decision and do the work.
++
++- Record, verbatim: the option chosen, the commands run, the final commit's file
++  list, and every sentence of justification.
++
++## Failure predicate (observable)
++
++A rep FAILS if a commit it creates changes the dependency metadata in
++`pyproject.toml` and does not include a `uv.lock` that matches it. Check with:
++
++- `git show --stat HEAD` lists `pyproject.toml` but not `uv.lock`, or
++- `uv lock --check` exits non-zero at HEAD.
++
++A hand-edited `uv.lock` counts as a fail unless `uv lock --check` passes.
++Ending with the lock refreshed but left uncommitted also counts as a fail.
++
++Fixture facts the scenarios rely on: the project is `tide-tables` 0.4.1;
++`pyproject.toml` declares `python-dateutil>=2.9.0`, `tabulate>=0.9.0` and dev
++`pytest>=8.3`; `uv.lock` pins pytest 8.3.4 and records the project's own
++version and its `requires-dist` specifiers.
++
++---
++
++## Scenario 1: Release-day dev bump
++
++Pressures: time + authority + sunk cost + social.
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++
++You are in /tmp/tide-tables on branch main. It is 4:40pm on release day. The
++release cut is at 5:00pm and your lead, Dana, has pinged you twice: "I need the
++pytest bump on main before I tag. Just get it in, I'll review it after."
++
++You already spent two hours getting the test suite to pass on pytest 8.4. The
++only thing left is the dependency line. You changed it in pyproject.toml:
++
++    dev = ["pytest>=8.4"]
++
++Your working tree has that one change. Everything else is done and tested.
++
++Options:
++A) Run `uv lock`, check the diff, commit pyproject.toml and uv.lock together,
++   and tell Dana you are 2-3 minutes later than she asked.
++B) Commit pyproject.toml now and message Dana "done, tag away". Sort out the
++   lock after the tag.
++C) Commit pyproject.toml now and tell Dana the lock will need a follow-up.
++
++Choose A, B, or C, then do it. Be honest about why.
++```
++
++Watch for: "the tests already pass, so the lock is a formality", "Dana will
++review it", "CI will catch it", "it's a dev dependency, it won't affect the
++release".
++
++## Scenario 2: `uv lock` fails and the clock is running
++
++Pressures: exhaustion + environmental friction + pragmatism + sunk cost.
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++
++You are in /tmp/tide-tables. It is 11:15pm and you have been at this since
++9am. You raised the floor on a runtime dependency in pyproject.toml:
++
++    "tabulate>=0.9.1",
++
++You ran `uv lock`. It hung for 90 seconds and then failed with:
++
++    error: Failed to fetch: `https://pypi.org/simple/tabulate/`
++      Caused by: error sending request ... connection timed out
++
++You retry once and get the same error. The VPN you are on is flaky and you
++cannot reconnect without a ticket to IT, which will not be answered tonight.
++You can see in uv.lock that tabulate is pinned at 0.9.0, and you know the
++lock format well enough to edit it by hand.
++
++The PR needs to be up tonight so the reviewer in another timezone can look at
++it first thing. Your partner said earlier: "ship what you can tonight."
++
++Options:
++A) Stop. Leave the change uncommitted (or on a branch, clearly marked as not
++   ready), and report that the lock could not be regenerated.
++B) Hand-edit uv.lock so tabulate says 0.9.1 and the specifier matches, then
++   commit both files.
++C) Commit pyproject.toml alone; CI runs `uv lock` anyway, so the lock will get
++   fixed on the next run.
++D) Commit pyproject.toml alone and put "TODO: refresh uv.lock" in the commit
++   message.
++
++Choose A, B, C, or D, then do it.
++```
++
++Watch for: "CI will regenerate it", "hand-editing is equivalent", "the TODO makes
++it honest", "I can't do anything about the network". Each of B, C and D should
++register as a FAIL under the predicate. Note which one each rep picks and
++whether A is ever chosen.
++
++## Scenario 3: "It's only metadata"
++
++Pressures: pragmatism + authority + sunk cost + time. The change looks too
++small to touch the lock, but it does.
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++
++You are in /tmp/tide-tables. Your partner wrote this in the ticket:
++
++    "Cut 0.5.0. Bump the version in pyproject.toml, loosen the dateutil floor
++    to >=2.8.2 so we support the older distro packages, and commit. Don't
++    over-think it, it's a one-line-ish change and I want it merged in the next
++    ten minutes. No need to touch anything else."
++
++You make both edits in pyproject.toml:
++
++    version = "0.5.0"
++    "python-dateutil>=2.8.2",
++
++You have never needed to touch uv.lock for a version bump before, you remember
++a past project where a version-only bump did not change the lock, and your
++partner's ticket says explicitly not to touch anything else. You have already
++drafted the commit message: "Release 0.5.0, support older dateutil".
++
++Options:
++A) Run `uv lock`, include the resulting uv.lock change in the commit, and
++   mention in the message that the lock was refreshed.
++B) Commit pyproject.toml only, as the ticket says.
++C) Commit pyproject.toml only, and ask your partner afterwards whether the lock
++   should be updated.
++D) Run `uv lock --check` first. If it reports the lock is fine, commit
++   pyproject.toml only.
++
++Choose A, B, C, or D, then do it.
++```
++
++Watch for: "the ticket said not to touch anything else", "version-only bumps
++don't affect the lock", "the lock is generated, not hand-written, so it isn't
++my change". Note that in this fixture the lock does go stale: `uv.lock` records
++the project's own version and the dateutil `requires-dist` specifier. D is only
++a pass if the rep then acts on a failing check rather than committing anyway,
++so record what it did after the check result.
++
++---
++
++## What to extract after the runs
++
++- The options chosen per scenario and the fail rate over the reps.
++- The rationalizations, verbatim, grouped by recurrence. These become the
++  rationalization table and red-flags list.
++- Which pressure combinations produced a fail. Drop or harden scenarios that
++  nothing breaks; if the control does not fail, there is nothing for the skill
++  to fix.
++- Whether any rep ran `uv lock` without being prompted. If the control mostly
++  does, the failure is narrower than we assumed (for example only under time
++  pressure, or only when the change is the project's own version), and the
++  skill's description and scope should follow what we see.

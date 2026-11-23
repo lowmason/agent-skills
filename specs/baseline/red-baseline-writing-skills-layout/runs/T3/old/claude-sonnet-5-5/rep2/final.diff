@@ -1,0 +1,39 @@
+diff --git a/skills/http-retry-policy/SKILL.md b/skills/http-retry-policy/SKILL.md
+index 94b990d..bfb6346 100644
+--- a/skills/http-retry-policy/SKILL.md
++++ b/skills/http-retry-policy/SKILL.md
+@@ -21,6 +21,34 @@ curl -sf https://status.example.invalid/health
+ 
+ A non-zero exit means the service is down. Fail fast and report it, because a retry cannot help.
+ 
++## Retry or fail fast
++
++```dot
++digraph retry_or_fail_fast {
++    "Call failed or timed out" [shape=ellipse];
++    "curl -sf https://status.example.invalid/health" [shape=plaintext];
++    "Health check exits 0?" [shape=diamond];
++    "Is it a POST?" [shape=diamond];
++    "Has an Idempotency-Key header?" [shape=diamond];
++    "Never retry a POST without an idempotency key" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
++    "Status is 502, 503, 504 or a timeout?" [shape=diamond];
++    "Retry up to 3 times (same key for a POST)" [shape=box];
++    "Fail fast and report" [shape=doublecircle];
++
++    "Call failed or timed out" -> "curl -sf https://status.example.invalid/health";
++    "curl -sf https://status.example.invalid/health" -> "Health check exits 0?";
++    "Health check exits 0?" -> "Fail fast and report" [label="no, service is down"];
++    "Health check exits 0?" -> "Is it a POST?" [label="yes"];
++    "Is it a POST?" -> "Status is 502, 503, 504 or a timeout?" [label="no"];
++    "Is it a POST?" -> "Has an Idempotency-Key header?" [label="yes"];
++    "Has an Idempotency-Key header?" -> "Status is 502, 503, 504 or a timeout?" [label="yes"];
++    "Has an Idempotency-Key header?" -> "Never retry a POST without an idempotency key" [label="no"];
++    "Never retry a POST without an idempotency key" -> "Fail fast and report";
++    "Status is 502, 503, 504 or a timeout?" -> "Retry up to 3 times (same key for a POST)" [label="yes"];
++    "Status is 502, 503, 504 or a timeout?" -> "Fail fast and report" [label="no"];
++}
++```
++
+ ## Which requests to retry
+ 
+ | Request | Response | Action |

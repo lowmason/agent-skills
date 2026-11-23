@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 9340,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.014273400000000002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 9254,
+    "output_tokens": 1190,
+    "output_tokens_details": {
+      "thinking_tokens": 425
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1190,
+      "cacheReadInputTokens": 9254,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.014273400000000002,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 425,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (loophole closing, rationalization table, red flags, violation symptoms in the description)\n\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md` (which principles fit a discipline skill)\n\nACTION: Read `skills/release-notes-gate/SKILL.md` (the current text, so the edit is a diff against what exists and not a rewrite)\n\nACTION: Read `specs/release-notes-gate-baseline.md` (to copy the rationalizations verbatim into the table, not from memory)\n\nACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (the description needs violation symptoms added, and the frontmatter rules apply to that edit)\n\nPartner, the baseline is a discipline failure: agents know the rule and talk themselves out of it. That calls for a prohibition, a rationalization table, and red flags, not softer \"prefer to...\" wording. I'm reading the reference files and the current SKILL.md first, so the edit is based on the real text and not on my recollection of it.\n\nThis is what I plan to add, once I've checked it against the files:\n\n- **An explicit ordering rule.** The changelog check must pass before the tag is created, with no exceptions for patch releases, deadlines, or a manager's request. \"Right after tagging\" is a violation because a pushed tag is hard to undo.\n- **A rationalization table** with the three verbatim excuses from the baseline (\"it's only a patch release\", \"I'll run it right after tagging\", \"the spirit is a good changelog, and this one is fine\"). Each gets a one-line reality counter. I'll add any new excuses I find in the full baseline file.\n- **A \"letter is the spirit\" line.** Skipping the check is the violation, even if the changelog looks fine.\n- **A red flags list** of thoughts that mean \"stop and run the check\".\n- **Description symptoms.** The description will list the triggering situations (deadline, patch release, \"ship now\") and will not summarize the workflow.\n\nAfter the edit I'll re-run the same 15 scenarios with the hardened skill. Any new rationalizations go back into the table, and I'll keep iterating until the skip rate is zero. I won't commit or push anything without your say-so.",
+  "ttft_ms": 3871,
+  "type": "result",
+  "duration_ms": 9431,
+  "ttft_stream_ms": 560,
+  "time_to_request_ms": 86,
+  "first_content_frame_ms": 561,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

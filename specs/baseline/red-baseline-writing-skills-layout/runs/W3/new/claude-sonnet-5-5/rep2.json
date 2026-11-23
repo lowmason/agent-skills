@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 6869,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0109814,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 9254,
+    "output_tokens": 860,
+    "output_tokens_details": {
+      "thinking_tokens": 251
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 860,
+      "cacheReadInputTokens": 9254,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.0109814,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 251,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `skills/release-notes-gate/SKILL.md` to see the current wording and what form it uses (soft guidance or prohibition).\nACTION: Read `specs/release-notes-gate-baseline.md` to pull the verbatim rationalizations and note which pressure produced each one.\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` for how to close loopholes and build the rationalization table and red flags list.\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md` to pick the persuasion principles that fit a discipline skill.\n\nI'm reading before I edit. I'll write the counters after I've seen the current skill and the references, and I'll send you the edit text before touching the file.\n\nThe plan, based on the baseline so far:\n\n- **Failure type:** the agents know the rule and skip it under pressure. That calls for a prohibition, a rationalization table and a red flags list, not softer guidance.\n- **Counters from the three quotes:**\n  - \"It's only a patch release\": the check applies to every tag, whatever the size.\n  - \"I'll run it right after tagging\": a tag is the point of no return, so the check has to come before it, not after.\n  - \"The spirit is a good changelog, and this one is fine\": running the check is the rule. Judging the changelog by eye doesn't count.\n- **Description:** it will state only the triggering conditions (about to tag or cut a release, deadline or ship-now pressure), with no summary of the process.\n- **Verification:** after the edit I'll rerun the same three scenarios with 5 reps each. Any new rationalizations go into the table, and I'll repeat until the skip rate hits zero.\n\nI'll write the edit after those reads and show it to you before I save it. If you'd like me to go ahead without the review, tell me.",
+  "ttft_ms": 2305,
+  "type": "result",
+  "duration_ms": 6933,
+  "ttft_stream_ms": 555,
+  "time_to_request_ms": 59,
+  "first_content_frame_ms": 556,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

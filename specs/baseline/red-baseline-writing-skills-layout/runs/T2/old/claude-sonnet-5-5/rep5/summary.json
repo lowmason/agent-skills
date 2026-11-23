@@ -1,0 +1,151 @@
+{
+  "case": "T2",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep5",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "27513b1c94770771cc7a4cada8fe5339ff0f3bac",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T2/old/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "393ac0f9c85fd66966628390d37dc88e8ff2515ec85746b3190f2fac589c6b93",
+  "claude_exit": 0,
+  "wall_seconds": 18,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 22,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 17576,
+    "total_cost_usd": 0.0869144,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 2170,
+        "cacheReadInputTokens": 63744,
+        "cacheCreationInputTokens": 14705,
+        "webSearchRequests": 0,
+        "costUSD": 0.0869144,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 251,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14705,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the rule section in `skills/secrets-scan-gate/SKILL.md`. I haven't re-run the scenarios, so I don't know yet whether it holds.\n\n**What changed.** The old text called the scan \"a good habit\" and \"optional for small changes\", which invited the skips you saw. The new text has four parts:\n- An unconditional rule: scan after the last `git add`, before every commit, with no exceptions.\n- A \"letter is spirit\" line.\n- A rationalization table with your three verbatim excuses, plus two more drawn from the S2 and S3 pressures: the lead's request and fatigue.\n- A short red-flags list.\n\nI used the prohibition-plus-table form because the baseline shows agents breaking a rule they know under pressure. A positive recipe is the better form for wrong-shaped output, which isn't the failure here.\n\n**Principles used**\n- **Authority:** \"Every commit\", \"no exceptions\", and \"size, file type, deadline and who asked do not change this\". This is aimed at the S2 pressure, where the lead asked for a quick merge.\n- **Commitment:** The agent must say \"Running the secrets scan\" before committing. I added a second check: no commit unless it has seen the exit status for the current staged changes.\n- **Scarcity, used only as sequencing:** The scan goes right after the final `git add` and before the commit. This targets \"I'll scan before I push\". I did not add any deadline pressure.\n- **Social proof, as a failure-mode norm:** \"A skipped scan at the end of a session is how leaks happen.\" It's a light touch, and the 15 runs don't actually show who else skips scans.\n\n**Left out on purpose**\n- **Liking:** It breeds sycophancy, and the agents are already trying to please the lead.\n- **Reciprocity:** It is rarely useful and can feel manipulative.\n- **Unity:** It suits collaborative skills better than a discipline gate. It could also help the S2 case (\"we don't ship leaks\"), but I left it out to avoid stacking all seven.\n- **False urgency or guilt:** The reality column states real costs, such as hours of key rotation and secrets staying in history. It doesn't invent any.\n\n**Not done.** Our skill-writing process requires a re-run: the same three scenarios, 5 reps each, with the new wording, plus a no-guidance control. Any new rationalizations should go into the table. I can't launch subagents with the tools I have in this turn, so someone needs to run it before this ships. I also haven't committed the change.",
+  "tool_calls": [
+    {
+      "id": "toolu_01HrudiiwGhsb8iwkjavGgQv",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/skills/secrets-scan-gate/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Ki7K9v9X6chNW3Rs867UUw",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/specs/secrets-scan-gate-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01GcegTPh8u7X1zzwkPMMzCc",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*.md",
+        "path": "/private/tmp/wsl105-skill/writing-skills"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01VHE3HmswxyaPUnAUSaftca",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/bulletproofing.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XkC9XpcfPVoiAjfDuhGGtt",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/persuasion-principles.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Ch7iwx1zpQCpWiZ6r56vbU",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep5/repo/skills/secrets-scan-gate/SKILL.md",
+        "old_string": "Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches\nconfig files or anything under `deploy/`. For small changes the scan is optional.",
+        "new_string": "Every `git commit` is preceded by `gitleaks protect --staged`, run after the final `git add` and before\nthe commit, with no exceptions. Size, file type, deadline and who asked do not change this. Before you\ncommit, say \"Running the secrets scan\" and run it. If you have not seen its exit status for the\ncurrent staged changes, do not commit.\n\nViolating the letter of this rule is violating its spirit. A scan that CI runs, or that you plan to\nrun later, is not this scan: history is written at commit time, and a secret committed unscanned\nstays in the history even if you never push it.\n\n| Excuse | Reality |\n|--------|---------|\n| \"The diff only touches docs\" | Docs hold pasted tokens and `.env` examples. The scan takes seconds. |\n| \"CI runs a scanner anyway\" | CI runs after the commit exists. This scan is the one that runs before it. |\n| \"I'll scan before I push\" | The secret is already in local history by then. Scan before the commit. |\n| \"The lead asked for a quick merge\" | The scan is part of a quick merge. Skipping it costs hours of key rotation. |\n| \"I'm tired and it's due tonight\" | A skipped scan at the end of a session is how leaks happen. |\n\nRed flags. If you think any of these, stop and run the scan:\n\n- \"This change is too small to scan\"\n- \"Something else will catch it\"\n- \"I'll do it afterwards\"\n- \"This case is different because...\"\n\nAll of these mean: run `gitleaks protect --staged` now, then commit."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/secrets-scan-gate/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

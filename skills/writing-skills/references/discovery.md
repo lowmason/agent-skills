@@ -3,6 +3,16 @@
 Read this when you write a SKILL.md's frontmatter, lay out its body, or write or tighten its
 description. The description rule itself stays in SKILL.md § Skill Discovery Optimization.
 
+## Contents
+
+- SKILL.md Structure
+- Skill Discovery Optimization (SDO)
+  - 1. Rich Description Field
+  - 2. Keyword Coverage
+  - 3. Descriptive Naming
+  - 4. Token Efficiency (Critical)
+  - 5. Cross-Referencing Other Skills
+
 ## SKILL.md Structure
 
 **Frontmatter (YAML):**
@@ -120,11 +130,12 @@ and a runtime may drop or shorten it when its listing overflows (Claude Code's r
 **Targets by tier:**
 - `description` (loaded before the skill triggers): the hard cap is 1024 chars, enforced by
   `build/check_frontmatter.py`. Spend it on triggers, not prose — apart from the name and any `when_to_use` text that a runtime appends to the description, it is the only text that
-  competes for context in conversations where the skill is never used. Codex also shortens
-  descriptions once its skills listing passes its budget: with 105 skills listed, Codex 0.163 cut
-  this repo's longer descriptions to 316–320 characters (2026-10-19; Codex 0.154 cut to 156–164
-  with 93 listed, 2026-10-03). Re-measure with `codex debug prompt-input` from a directory outside
-  any repo, reading its Skills list.
+  competes for context in conversations where the skill is never used.
+  Codex also shortens descriptions once its skills listing passes its budget, and the cut has
+  moved both ways between releases, so measure it before you rely on it: run
+  `codex debug prompt-input` from a directory outside any repo and read its Skills list. The
+  latest reading: with 95 skills listed, Codex 0.167.2 showed no description longer than 160
+  characters (2026-11-22; Codex 0.163 cut longer ones to 316–320 with 105 listed, 2026-10-19).
 - SKILL.md body (loaded on trigger): keep it to the decision procedure. Observed range in this
   repo is roughly 450–4,000 words, median ~1,500 — length tracks how much irreducible procedure a skill
   carries, so treat a body pushing past ~2,000 words as a prompt to ask what belongs in

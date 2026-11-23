@@ -1,0 +1,151 @@
+{
+  "case": "T3",
+  "rep": 6,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep6",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "47392bf44b8dd6e61365d6574becbce326605674",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T3/old/claude-sonnet-5-5/rep6.jsonl",
+  "prompt_sha256": "8ca8d2752b039de52355200691bb99f95a43578bc803ab1dd5894444c55e222c",
+  "claude_exit": 0,
+  "wall_seconds": 16,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep6/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 23,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 15270,
+    "total_cost_usd": 0.0861007,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 2262,
+        "cacheReadInputTokens": 64687,
+        "cacheCreationInputTokens": 14248,
+        "webSearchRequests": 0,
+        "costUSD": 0.0861007,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 252,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14248,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I added the flowchart to `skills/http-retry-policy/SKILL.md` as a new \"Retry or fail fast\" section, just before the \"Which requests to retry\" table. I haven't rendered it or run any scenarios against it.\n\n**What it shows:**\n- **Health check first:** `curl -sf https://status.example.invalid/health` is the first step after a failed call. A non-zero exit goes straight to \"Fail fast and report\".\n- **The warning:** a red octagon reads \"Never retry a POST without an idempotency key\". A POST with no `Idempotency-Key` header reaches it before any status code is looked at, and it leads to fail fast.\n- **Order of checks:** the key check comes before the status check. This targets the baseline reasons, \"503 is in the retry row of the table\" (S2) and \"a timeout means the server never got the request\" (S1). A one-line note under the chart says the same thing.\n- **Retry path:** a timeout, 502, 503 or 504 on a GET, HEAD, PUT or DELETE, or on a POST with a key, gets up to 3 retries with the same key after 1 s, 2 s and 4 s. Anything else fails fast so the request can be fixed.\n\n**Gaps:**\n- **Not tested:** the writing-skills Iron Law says an edit needs a failing test first. Your baseline covers the RED half, but the GREEN half is untested: re-running S1\u2013S3 with the chart, 5 reps each, to see whether the 10 of 15 keyless-POST retries drop. I'd do that before treating this as done.\n- **Not rendered:** run `scripts/render_graphs.py` from writing-skills to check that the graph parses and reads well.\n- **Retry-After is left out:** the chart omits the `Retry-After` rule for 429 and 503. That stays in its own section below.\n- **Not committed:** I haven't committed the change.\n- **Missing `license`:** the frontmatter has no `license` field, which the skill's checklist requires. I left it alone because you didn't ask for it. Tell me which license to use if you want it added.",
+  "tool_calls": [
+    {
+      "id": "toolu_015iF5qXiqcZHJ3XHgQDczbr",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep6/repo/skills/http-retry-policy/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_019ZMazfS3hqh1PkL9bud9o8",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep6/repo/specs/http-retry-policy-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NZrGUBNdHXAw2HHptbndtS",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/flowcharts.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Btt1aMFTtEqPPT2EtMfq12",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/graphviz-conventions.dot",
+        "path": "/private/tmp/wsl105-skill/writing-skills"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01C3D5wjPjb4cR8anQXfb5S2",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/graphviz-conventions.dot"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01FqwdqKFoyfzsdgdt81CU2G",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep6/repo/skills/http-retry-policy/SKILL.md",
+        "old_string": "## Which requests to retry\n",
+        "new_string": "## Retry or fail fast\n\n```dot\ndigraph retry_or_fail_fast {\n    \"Call failed or timed out\" [shape=ellipse];\n    \"curl -sf https://status.example.invalid/health\" [shape=plaintext];\n    \"Health check exited 0?\" [shape=diamond];\n    \"Is it a POST?\" [shape=diamond];\n    \"Has an Idempotency-Key header?\" [shape=diamond];\n    \"Never retry a POST without an idempotency key\" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];\n    \"Is it a timeout, 502, 503 or 504?\" [shape=diamond];\n    \"Retry up to 3 times, same key, after 1 s, 2 s, 4 s\" [shape=box];\n    \"Fail fast and report\" [shape=doublecircle];\n\n    \"Call failed or timed out\" -> \"curl -sf https://status.example.invalid/health\";\n    \"curl -sf https://status.example.invalid/health\" -> \"Health check exited 0?\";\n    \"Health check exited 0?\" -> \"Fail fast and report\" [label=\"no, service down\"];\n    \"Health check exited 0?\" -> \"Is it a POST?\" [label=\"yes\"];\n    \"Is it a POST?\" -> \"Has an Idempotency-Key header?\" [label=\"yes\"];\n    \"Is it a POST?\" -> \"Is it a timeout, 502, 503 or 504?\" [label=\"no\"];\n    \"Has an Idempotency-Key header?\" -> \"Never retry a POST without an idempotency key\" [label=\"no\"];\n    \"Never retry a POST without an idempotency key\" -> \"Fail fast and report\";\n    \"Has an Idempotency-Key header?\" -> \"Is it a timeout, 502, 503 or 504?\" [label=\"yes\"];\n    \"Is it a timeout, 502, 503 or 504?\" -> \"Retry up to 3 times, same key, after 1 s, 2 s, 4 s\" [label=\"yes\"];\n    \"Is it a timeout, 502, 503 or 504?\" -> \"Fail fast and report\" [label=\"no, fix the request\"];\n}\n```\n\nThe key check comes before the status check. A timeout or a 503 on a keyless POST still means fail fast.\n\n## Which requests to retry\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/http-retry-policy/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 9438,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.020324799999999997,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 9264,
+    "output_tokens": 780,
+    "output_tokens_details": {
+      "thinking_tokens": 232
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 780,
+      "cacheReadInputTokens": 9264,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.020324799999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 232,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md`\nACTION: Read `~/.claude/skills/writing-skills/references/graphviz-conventions.dot`\nACTION: Read `specs/cache-invalidation-baseline.md`\nACTION: Read `skills/cache-invalidation/SKILL.md`\n\nI'm reading the flowchart guidance, the graphviz conventions, the baseline reasons and the current skill before drafting anything. That way the flowchart's decision points come from the actual reasons agents gave for purging in those 11 runs, not from my guesses.\n\nNext steps:\n\n1. **Draft the flowchart.** It will be a small `dot` block placed where the skill covers purge vs. expire. Each diamond will be an observable question that an agent can answer from its situation, and the edges will be labeled \"yes\" or \"no\". I'll keep it to the one decision.\n2. **Micro-test the wording.** I'll run fresh-context reps with the full revised skill against a no-flowchart control, at least 5 each. I'll read every flagged run myself.\n3. **Re-run the three baseline scenarios with the new skill, 5 reps each.** I'll compare the results against the 11/15 failure rate. If agents find a new reason to purge, I'll tighten the chart and test again.\n4. **Report the results.** You'll get the numbers and any runs that still fail. I'll give you the diff before calling the flowchart finished.\n\nThis directory isn't a git repository, so I can't commit the change at the end. Tell me if you'd like me to `git init` here, or if the skill lives in a repo somewhere else.",
+  "ttft_ms": 4529,
+  "type": "result",
+  "duration_ms": 9505,
+  "ttft_stream_ms": 2000,
+  "time_to_request_ms": 64,
+  "first_content_frame_ms": 2000,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

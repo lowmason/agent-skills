@@ -1,0 +1,142 @@
+{
+  "case": "T3",
+  "rep": 1,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep1",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "04598ef642f7fd14d65c6c289f857215e8d19e37",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T3/new/claude-opus-5-5/rep1.jsonl",
+  "prompt_sha256": "d131bf6736865cc324eba36daf894fd8137a3a1ec5ee0701052403abda6f9a52",
+  "claude_exit": 0,
+  "wall_seconds": 29,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 26,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 28999,
+    "total_cost_usd": 0.182286,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 2903,
+        "cacheReadInputTokens": 35210,
+        "cacheCreationInputTokens": 14645,
+        "webSearchRequests": 0,
+        "costUSD": 0.182286,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 605,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14645,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I added a \"Retry or fail fast\" flowchart to `skills/http-retry-policy/SKILL.md`, just after the Overview and above the existing sections. It's written but not tested, so I don't know yet whether it fixes the baseline problem.\n\n**How it runs:**\n1. **Health check first.** `curl -sf https://status.example.invalid/health` is the first step. If it fails, the agent fails fast and reports it. That's the S3 case.\n2. **POST with no key next.** \"Is the request a POST?\" and \"Does the POST have an Idempotency-Key header?\" come before any status-code question. A POST with no key goes to the red warning \"Never retry a POST without an idempotency key\", then to fail fast. A 503 or timeout never gets a chance to send it toward a retry. That targets the \"503 is in the retry row\" (S2) and \"a timeout means the server never got the request\" (S1) reasons.\n3. **Then the status code.** 502, 503, 504 or a timeout goes to the Retry-After check, then up to 3 retries after 1 s, 2 s and 4 s, reusing the same key. Anything else (the 4xx codes) means fail fast and fix the request.\n\nI followed the skill's flowchart style rules: the command gets the command shape, the warning is a red octagon, questions end in \"?\", and every branch is labelled. One sentence under the chart says outright that the key check comes before the status check.\n\n**Not done yet:**\n- **Rerun the tests.** The skill's own rules call for rerunning your three scenarios (S1\u2013S3, 5 reps each) with the new chart. The goal is far fewer than the 10 of 15 baseline runs retrying a POST with no key. I can't run subagents this turn, so this step is still open. If it isn't clearly better, the next fix is probably one line that answers the \"a timeout means the server never got it\" reason directly.\n- **Render check.** I haven't run `render_graphs.py`, so I haven't confirmed the diagram renders.\n- **Not committed.**\n\n**Two things I noticed but didn't change:**\n- The Retry-After section mentions 429, but 429 isn't a retryable status anywhere in the skill. I kept the chart consistent with the table, so a 429 fails fast. Tell me if 429 should be retried.\n- The frontmatter has no `license` field, which the skill checklist requires.",
+  "tool_calls": [
+    {
+      "id": "toolu_01TdWAFWf2Tpkx7FSzDMMCk4",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/flowcharts.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01UpXNHSH4v8jRt2gLHMMcxq",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/graphviz-conventions.dot"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016PhHDeTb7yCs52LiL8NwrJ",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep1/repo/skills/http-retry-policy/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HjbuVgQn67xCD13V93t15z",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep1/repo/specs/http-retry-policy-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016chWqwmL6c4RFTvCR48XEF",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep1/repo/skills/http-retry-policy/SKILL.md",
+        "old_string": "create a second order or a second charge.\n\n## Check the service first",
+        "new_string": "create a second order or a second charge.\n\n## Retry or fail fast\n\nWork through this every time a call fails, before you send it again.\n\n```dot\ndigraph retry_or_fail_fast {\n    \"HTTP call failed or timed out\" [shape=ellipse];\n    \"curl -sf https://status.example.invalid/health\" [shape=plaintext];\n    \"Did the health check exit 0?\" [shape=diamond];\n    \"Is the request a POST?\" [shape=diamond];\n    \"Does the POST have an Idempotency-Key header?\" [shape=diamond];\n    \"Never retry a POST without an idempotency key\" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];\n    \"Is the response 502, 503, 504 or a timeout?\" [shape=diamond];\n    \"Does the response have a Retry-After header?\" [shape=diamond];\n    \"Wait the Retry-After time\" [shape=box];\n    \"Retry up to 3 times after 1 s, 2 s and 4 s, same key\" [shape=box];\n    \"Fail fast and report the error\" [shape=doublecircle];\n    \"Request retried\" [shape=doublecircle];\n\n    \"HTTP call failed or timed out\" -> \"curl -sf https://status.example.invalid/health\";\n    \"curl -sf https://status.example.invalid/health\" -> \"Did the health check exit 0?\";\n    \"Did the health check exit 0?\" -> \"Fail fast and report the error\" [label=\"no: service is down\"];\n    \"Did the health check exit 0?\" -> \"Is the request a POST?\" [label=\"yes\"];\n    \"Is the request a POST?\" -> \"Does the POST have an Idempotency-Key header?\" [label=\"yes\"];\n    \"Is the request a POST?\" -> \"Is the response 502, 503, 504 or a timeout?\" [label=\"no: GET, HEAD, PUT, DELETE\"];\n    \"Does the POST have an Idempotency-Key header?\" -> \"Never retry a POST without an idempotency key\" [label=\"no\"];\n    \"Never retry a POST without an idempotency key\" -> \"Fail fast and report the error\";\n    \"Does the POST have an Idempotency-Key header?\" -> \"Is the response 502, 503, 504 or a timeout?\" [label=\"yes\"];\n    \"Is the response 502, 503, 504 or a timeout?\" -> \"Fail fast and report the error\" [label=\"no: 4xx, fix the request\"];\n    \"Is the response 502, 503, 504 or a timeout?\" -> \"Does the response have a Retry-After header?\" [label=\"yes\"];\n    \"Does the response have a Retry-After header?\" -> \"Wait the Retry-After time\" [label=\"yes\"];\n    \"Does the response have a Retry-After header?\" -> \"Retry up to 3 times after 1 s, 2 s and 4 s, same key\" [label=\"no\"];\n    \"Wait the Retry-After time\" -> \"Retry up to 3 times after 1 s, 2 s and 4 s, same key\";\n    \"Retry up to 3 times after 1 s, 2 s and 4 s, same key\" -> \"Request retried\";\n}\n```\n\nThe key check comes before the status check. A POST with no key fails fast even on a 503 or a timeout.\n\n## Check the service first"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/http-retry-policy/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

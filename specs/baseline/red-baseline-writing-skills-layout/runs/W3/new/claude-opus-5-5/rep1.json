@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 21806,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.1034422,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7979,
+    "cache_read_input_tokens": 1711,
+    "output_tokens": 1963,
+    "output_tokens_details": {
+      "thinking_tokens": 645
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7979,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1963,
+      "cacheReadInputTokens": 1711,
+      "cacheCreationInputTokens": 7979,
+      "webSearchRequests": 0,
+      "costUSD": 0.1034422,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 645,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7979,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md`, which gives the rules for counters, rationalization tables, red flags and violation symptoms in the description.\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md`, which says which persuasion principles fit a discipline skill.\nACTION: Read `skills/release-notes-gate/SKILL.md` to see the current wording and frontmatter.\nACTION: Read `specs/release-notes-gate-baseline.md` to confirm the verbatim rationalizations and which scenario produced each.\nACTION: Edit `skills/release-notes-gate/SKILL.md` frontmatter. Change `description` to: `Use when about to create a git tag, cut a release, or ship a version, including patch, hotfix, or \"trivial\" releases, and especially under deadline pressure or when asked to ship immediately.`\nACTION: Edit `skills/release-notes-gate/SKILL.md`. Replace the existing \"run the changelog check before tagging\" line with this section, keeping the check command already in the file:\n\n```markdown\n## The Rule\n\n**No tag before the changelog check passes.**\n\nOrder is fixed: run the changelog check → it passes → tag. A check run after\ntagging does not satisfy this rule; the tag has already published an\nunverified changelog.\n\nThis holds for every release type, including patch and hotfix releases.\n\n**Following the spirit means following the letter.** \"The changelog looks\nfine\" is the judgment the check exists to replace.\n\n## Rationalizations\n\n| Excuse | Reality |\n|---|---|\n| \"It's only a patch release\" | Patch releases are where changelog entries get skipped most. The check applies to every tag. |\n| \"I'll run it right after tagging\" | After tagging, the release is out. A check that can't block the tag isn't a gate. |\n| \"The spirit is a good changelog, and this one is fine\" | You looking at it is not the check. Run the check. |\n| \"My manager/the deadline says ship now\" | The check takes seconds. Run it, then tag. If it fails, report the failure; don't tag around it. |\n\n## Red Flags — Stop and Run the Check\n\n- You are about to run `git tag` (or a release command) and haven't seen the check pass in this session\n- You're thinking \"only a patch,\" \"just this once,\" or \"right after\"\n- You're judging the changelog yourself instead of running the check\n- Someone is pressing you to ship and you're looking for a shortcut\n\nAll of these mean: run the changelog check now, before the tag.\n```\n\nACTION: Dispatch 15 fresh subagents with the edited skill loaded: the same three pressure scenarios from the baseline, 5 reps each. Record whether each one tagged before the check, and capture any new rationalization verbatim in `specs/release-notes-gate-green.md`.\n\nI've hardened `skills/release-notes-gate/SKILL.md` against the three rationalizations from the baseline, which showed 9 of 15 runs skipping the check:\n\n- **The Rule** now fixes the order as check → pass → tag. It says outright that running the check after tagging doesn't count, that patch releases aren't exempt, and that following the spirit means following the letter.\n- **Rationalization table** answers each of your three verbatim excuses, plus the \"manager says ship now\" pressure from scenario 2.\n- **Red flags list** gives the agent a self-check to run at the moment it's about to tag.\n- **Description** now names patch and hotfix releases and deadline pressure as triggers. It describes when to use the skill, not the steps, so agents load it in exactly the situations where they were skipping it.\n\nI'm now re-running the same three scenarios, 5 reps each, against the edited skill. I'll report the pass count and any new rationalizations. If an agent finds a new loophole, I'll add a counter and re-test before calling it done. Nothing is committed yet. I'll commit once it passes, and I won't push unless you say so.",
+  "ttft_ms": 9847,
+  "type": "result",
+  "duration_ms": 21863,
+  "ttft_stream_ms": 3075,
+  "time_to_request_ms": 53,
+  "first_content_frame_ms": 3075,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

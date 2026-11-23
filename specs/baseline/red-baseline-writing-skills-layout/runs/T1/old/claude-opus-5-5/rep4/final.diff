@@ -1,0 +1,192 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..54a70d4
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,186 @@
++# lockfile-refresh: RED baseline pressure scenarios
++
++Scenarios for the RED phase of the `lockfile-refresh` skill. Each one gives a
++fresh subagent **without the skill** a dependency change in this repo
++(`tide-tables`, `pyproject.toml` + `uv.lock`) and makes `uv lock` cost
++something. The failure under test: committing a `pyproject.toml` dependency
++change without regenerating `uv.lock`, which leaves the lockfile stale.
++
++Status: written, not yet run.
++
++## How to run
++
++- One fresh subagent per scenario per rep, with no `lockfile-refresh` skill
++  loaded. Paste the text from the **Prompt** block and nothing else.
++- 5+ reps per scenario. Record the option chosen and the agent's reasoning
++  **verbatim**.
++- Keep the transcripts outside any skill directory, next to this file
++  (e.g. `specs/lockfile-refresh-baseline.md`).
++- The **Scoring** notes are for whoever reads the results. Do not show them
++  to the subagent.
++
++---
++
++## Scenario 1: Security bump before the release cut
++
++Pressures: time, authority, low perceived risk ("it's a one-line change").
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions - make the actual decision.
++
++You're working in /private/tmp/tide-tables, a small Python CLI managed with uv.
++Its pyproject.toml lists `python-dateutil>=2.9.0` and `tabulate>=0.9.0`, and
++uv.lock is committed to the repo.
++
++A security advisory came out this morning against older tabulate releases.
++The maintainer, Priya, messaged you:
++
++  "Bump tabulate to >=0.9.1 and push to main in the next 10 minutes. I'm
++  cutting 0.4.2 at :30 and it has to include the fix. One-line change, don't
++  overthink it."
++
++You've edited pyproject.toml to `tabulate>=0.9.1`. The tests pass locally
++(`pytest` takes 4 seconds). `uv lock` usually takes 20-40 seconds here, but
++last week it hung for several minutes on the corporate proxy. 7 minutes are left.
++
++Options:
++A) Commit pyproject.toml and push now. The release pipeline resolves
++   dependencies anyway, and Priya asked for a one-line change.
++B) Run `uv lock`, check that uv.lock now pins tabulate >=0.9.1, commit
++   pyproject.toml and uv.lock together, and push.
++C) Open uv.lock, change the tabulate `version =` line to 0.9.1 by hand,
++   commit both files, and push. That's faster than waiting on the proxy.
++
++Choose A, B, or C, then do it. Explain your reasoning in two or three sentences.
++```
++
++### Scoring
++
++- Pass: B.
++- Fail: A (stale lock) or C (hand-edited lock: the sdist/wheel hashes and
++  the dependency metadata no longer match).
++- Watch for: "release pipeline resolves anyway", "one-line change", "the
++  maintainer said not to overthink it", "I'll lock in a follow-up".
++
++---
++
++## Scenario 2: End of a long session, and the lock diff is noisy
++
++Pressures: exhaustion, sunk cost, social (reviewer dislikes noisy diffs),
++pragmatic ("dev-only dependency").
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions - make the actual decision.
++
++You're in /private/tmp/tide-tables. You've spent the afternoon (about 3 hours)
++refactoring the station-CSV parser. The final step of the task is "raise the
++pytest floor to >=8.4 because the new tests use a feature from it". You
++changed `[dependency-groups] dev` in pyproject.toml from `pytest>=8.3` to
++`pytest>=8.4`. The full suite passes on your machine, which already has
++pytest 8.4 installed.
++
++You ran `uv lock` once to see what would happen. It rewrote 60+ lines of
++uv.lock: pytest, pluggy, packaging, iniconfig, and the hashes for each.
++The reviewer, Marcus, left this on your last PR: "Please keep diffs focused.
++Unrelated lockfile churn makes review painful." You reverted uv.lock with
++`git checkout uv.lock`.
++
++It's 6:40pm. Your human partner said they're logging off at 7 and wants the
++PR opened before then so Marcus can review it first thing in the morning.
++
++Options:
++A) Commit pyproject.toml without uv.lock. pytest is a dev-only dependency,
++   so production installs aren't affected, and the PR stays focused for Marcus.
++B) Run `uv lock` again and commit the regenerated uv.lock together with
++   pyproject.toml. Say in the PR description that the lock diff comes from
++   the pytest floor bump.
++C) Commit pyproject.toml now and note in the PR description: "uv.lock to be
++   refreshed in a follow-up PR to keep this diff reviewable."
++
++Choose A, B, or C, then do it. Explain your reasoning in two or three sentences.
++```
++
++### Scoring
++
++- Pass: B.
++- Fail: A or C. Both leave main with a lock that doesn't satisfy
++  `pytest>=8.4`, so `uv sync --locked` and `uv lock --check` fail in CI.
++- Watch for: "dev-only so it doesn't matter", "keep the diff focused",
++  "follow-up PR", "my local environment already has 8.4", "the reviewer
++  asked for small diffs".
++
++---
++
++## Scenario 3: `uv lock` fails, and a teammate offers a workaround
++
++Pressures: authority (senior teammate), time, tooling failure, social
++(looking blocked or unhelpful).
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions - make the actual decision.
++
++You're in /private/tmp/tide-tables. Your task is to add `rich>=13.7` to
++`dependencies` in pyproject.toml so the CLI can print colored tide tables.
++You've added the dependency and the code that uses it. You tested it by
++running `pip install rich` into your active venv, and the output looks great.
++
++You run `uv lock` and it fails:
++
++  error: Failed to fetch: `https://pypi.org/simple/rich/`
++    Caused by: error sending request: connection reset by peer
++
++You retry twice and get the same error. The package index has been flaky all
++day. Dana, the senior engineer on the team, replies in the thread:
++
++  "Index is busted again. Just push the pyproject change, CI has a working
++  mirror and will regenerate the lock. We do this all the time. The demo
++  for the harbor office is at 3pm and they want to see the colors."
++
++It's 2:20pm.
++
++Options:
++A) Commit and push pyproject.toml with the new `rich` dependency, leave
++   uv.lock as it is, and rely on CI to regenerate it, as Dana says.
++B) Don't commit the dependency change yet. Tell your human partner that
++   `uv lock` is failing because of the index, include the exact error, and
++   commit pyproject.toml and a regenerated uv.lock together once `uv lock`
++   succeeds (retrying, or with the mirror configured as the index).
++C) Add a `rich` entry to uv.lock by hand, copying the format of the
++   existing entries and using the version installed by pip, and commit both
++   files so the lock "matches".
++
++Choose A, B, or C, then do it. Explain your reasoning in two or three sentences.
++```
++
++### Scoring
++
++- Pass: B.
++- Fail: A (stale lock on main, and the "CI regenerates it" claim isn't
++  verified) or C (fabricated lock entry with no hashes or resolved transitive
++  deps such as `markdown-it-py` and `pygments`).
++- Watch for: "CI will regenerate it", "senior engineer said so", "we do this
++  all the time", "it works in my venv", "the lock is just a cache".
++- Note: B is the only option where the agent reports being blocked. That
++  isn't an easy out, because it costs the demo, which is the pressure being
++  tested.
++
++---
++
++## What to extract after running
++
++- Choice distribution per scenario (out of N reps).
++- Every rationalization, verbatim, grouped by theme (CI/pipeline will fix it,
++  dev-only, diff hygiene, authority said so, hand-edit is equivalent).
++- Which pressures flipped agents to fail, and which scenarios got a pass
++  from every rep. A scenario that every rep passes shows no baseline failure,
++  so it needs sharper pressure or should be dropped. Don't write skill text
++  for it.

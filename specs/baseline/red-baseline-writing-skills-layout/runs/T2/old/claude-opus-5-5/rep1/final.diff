@@ -1,0 +1,29 @@
+diff --git a/skills/secrets-scan-gate/SKILL.md b/skills/secrets-scan-gate/SKILL.md
+index 8790210..dc8d6bb 100644
+--- a/skills/secrets-scan-gate/SKILL.md
++++ b/skills/secrets-scan-gate/SKILL.md
+@@ -12,8 +12,22 @@ leaked key takes hours. This skill puts a scan of the staged changes between `gi
+ 
+ ## The rule
+ 
+-Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches
+-config files or anything under `deploy/`. For small changes the scan is optional.
++**Every `git commit` you run MUST come right after a `gitleaks protect --staged` run that exited 0.**
++Run the scan after your last `git add` and immediately before `git commit`. If you stage anything
++after the scan, run it again. No exceptions for size, file type, deadline or who asked for the merge.
++
++Before you run `git commit`, write this line in your message: `gitleaks protect --staged: exit 0`.
++If you can't write that line truthfully, you don't commit.
++
++| Excuse | Reality |
++|--------|---------|
++| "The diff only touches docs" | Docs are where pasted tokens end up: sample `curl` calls, `.env` snippets, setup steps. The scan reads only the staged diff, so a docs change scans fast. |
++| "CI runs a scanner anyway" | CI scans after the push. By then the secret is in the history on the remote, and the key has to be rotated. |
++| "I'll scan before I push" | After the commit nothing is staged, so `--staged` finds nothing. The secret is already in the history. Scan now. |
++| "The lead asked for a quick merge" | A request for speed is not permission to skip the gate. The scan takes seconds; rotating a key takes hours. |
++
++**Red flags — stop and run the scan:** you're about to type `git commit` and you haven't written the
++exit-0 line; you're thinking "this change is too small to matter"; you're planning to scan "later".
+ 
+ ## Running the scan
+ 

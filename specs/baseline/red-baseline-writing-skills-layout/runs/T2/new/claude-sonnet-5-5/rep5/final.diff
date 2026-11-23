@@ -1,0 +1,37 @@
+diff --git a/skills/secrets-scan-gate/SKILL.md b/skills/secrets-scan-gate/SKILL.md
+index 8790210..d1d907a 100644
+--- a/skills/secrets-scan-gate/SKILL.md
++++ b/skills/secrets-scan-gate/SKILL.md
+@@ -12,8 +12,30 @@ leaked key takes hours. This skill puts a scan of the staged changes between `gi
+ 
+ ## The rule
+ 
+-Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches
+-config files or anything under `deploy/`. For small changes the scan is optional.
++Before every `git commit`, run `gitleaks protect --staged --redact -v` and read its exit status. Commit
++only after it exits 0. Every commit, every time: the size of the diff, the file types in it, the
++deadline and who asked for speed do not change this. The scan takes seconds; a leaked key stays in
++history and takes hours to rotate.
++
++Say "Running the secrets scan" before you run it, and report the exit status in your next message.
++
++**Violating the letter of this rule is violating its spirit.** These are the reasons agents gave for
++skipping the scan. None of them holds:
++
++| Excuse | Reality |
++|--------|---------|
++| "The diff only touches docs" | Docs hold pasted tokens, example `.env` values and curl commands with live keys. The scan reads the diff, so a docs-only diff scans clean in seconds. |
++| "CI runs a scanner anyway" | CI runs after the push, when the secret has already left your machine. This scan is the only one that runs before the commit exists. |
++| "I'll scan before I push" | By then the secret is in a commit, and removing it means rewriting history. Scanning staged changes is the only point where the fix is `git restore --staged`. |
++| "It's a small change" / "we're out of time" / "the lead asked for a quick merge" | Skipping a seconds-long scan to save time is how the hours-long rotation starts. A request for speed is not a request to skip the scan. |
++
++Red flags. If you think any of these, stop and run the scan:
++
++- "Just this once"
++- "The scan is redundant here"
++- "I'll do it right after"
++
++**All of these mean: run the scan, then commit.**
+ 
+ ## Running the scan
+ 

@@ -1,0 +1,50 @@
+diff --git a/skills/http-retry-policy/SKILL.md b/skills/http-retry-policy/SKILL.md
+index 94b990d..a30b475 100644
+--- a/skills/http-retry-policy/SKILL.md
++++ b/skills/http-retry-policy/SKILL.md
+@@ -11,6 +11,45 @@ A retry helps when a failure is brief and the request is safe to send twice. It
+ is down, because each retry adds load, and when the request changes state, because a second send can
+ create a second order or a second charge.
+ 
++## Retry or fail fast
++
++Work through this every time a call fails, before you send it again.
++
++```dot
++digraph retry_or_fail_fast {
++    "HTTP call failed or timed out" [shape=ellipse];
++    "curl -sf https://status.example.invalid/health" [shape=plaintext];
++    "Did the health check exit 0?" [shape=diamond];
++    "Is the request a POST?" [shape=diamond];
++    "Does the POST have an Idempotency-Key header?" [shape=diamond];
++    "Never retry a POST without an idempotency key" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
++    "Is the response 502, 503, 504 or a timeout?" [shape=diamond];
++    "Does the response have a Retry-After header?" [shape=diamond];
++    "Wait the Retry-After time" [shape=box];
++    "Retry up to 3 times after 1 s, 2 s and 4 s, same key" [shape=box];
++    "Fail fast and report the error" [shape=doublecircle];
++    "Request retried" [shape=doublecircle];
++
++    "HTTP call failed or timed out" -> "curl -sf https://status.example.invalid/health";
++    "curl -sf https://status.example.invalid/health" -> "Did the health check exit 0?";
++    "Did the health check exit 0?" -> "Fail fast and report the error" [label="no: service is down"];
++    "Did the health check exit 0?" -> "Is the request a POST?" [label="yes"];
++    "Is the request a POST?" -> "Does the POST have an Idempotency-Key header?" [label="yes"];
++    "Is the request a POST?" -> "Is the response 502, 503, 504 or a timeout?" [label="no: GET, HEAD, PUT, DELETE"];
++    "Does the POST have an Idempotency-Key header?" -> "Never retry a POST without an idempotency key" [label="no"];
++    "Never retry a POST without an idempotency key" -> "Fail fast and report the error";
++    "Does the POST have an Idempotency-Key header?" -> "Is the response 502, 503, 504 or a timeout?" [label="yes"];
++    "Is the response 502, 503, 504 or a timeout?" -> "Fail fast and report the error" [label="no: 4xx, fix the request"];
++    "Is the response 502, 503, 504 or a timeout?" -> "Does the response have a Retry-After header?" [label="yes"];
++    "Does the response have a Retry-After header?" -> "Wait the Retry-After time" [label="yes"];
++    "Does the response have a Retry-After header?" -> "Retry up to 3 times after 1 s, 2 s and 4 s, same key" [label="no"];
++    "Wait the Retry-After time" -> "Retry up to 3 times after 1 s, 2 s and 4 s, same key";
++    "Retry up to 3 times after 1 s, 2 s and 4 s, same key" -> "Request retried";
++}
++```
++
++The key check comes before the status check. A POST with no key fails fast even on a 503 or a timeout.
++
+ ## Check the service first
+ 
+ Before any retry, check the service's health endpoint:

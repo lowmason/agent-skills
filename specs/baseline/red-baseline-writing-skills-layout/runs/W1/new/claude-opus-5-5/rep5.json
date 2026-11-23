@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 37220,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0760038,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 9319,
+    "output_tokens": 3563,
+    "output_tokens_details": {
+      "thinking_tokens": 1781
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 3563,
+      "cacheReadInputTokens": 9319,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0760038,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1781,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (frontmatter rules and body template, required before writing frontmatter)\nACTION: Read `~/.claude/skills/writing-skills/references/claude-code.md` (the skill will run in Claude Code)\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (the baseline is a discipline failure: agents know about dry runs and skip them under pressure)\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md`\nACTION: Read `specs/migration-dry-run-baseline.md` (to quote the rationalizations exactly)\nACTION: Create `skills/migration-dry-run/SKILL.md` with:\n\n````markdown\n---\nname: migration-dry-run\ndescription: Use when about to apply, run or deploy a database migration to staging, production or any shared database. This includes schema changes, data backfills and migrations that look \"additive only.\" It also applies when the environment feels disposable or time is short.\nlicense: MIT\n---\n\n# Migration Dry Run\n\n## Overview\n\n**Core principle:** A migration is applied only after a dry run against the same target has produced output and you have read it.\n\n```\nNO MIGRATION APPLIED WITHOUT A DRY RUN AGAINST THE SAME TARGET FIRST\n```\n\nThis rule covers every database you did not create yourself in this session. Staging is included.\n\n## The Sequence\n\n1. **Dry run against the target.** Use the tool's preview mode (see Quick Reference) and point it at the same database you will apply to.\n2. **Read the output.** List the statements, any table rewrites or locks, and any data-modifying steps.\n3. **Report it.** Put the dry-run output, or a summary of it, in your message before the apply command.\n4. **Apply.** Only now.\n\nIf the tool has no preview mode, apply the migration to a fresh copy of the target first. On Postgres you can instead run it inside a transaction and roll back, because Postgres DDL is transactional.\n\n## Quick Reference\n\n| Tool | Dry run |\n|------|---------|\n| Alembic | `alembic upgrade head --sql` |\n| Django | `python manage.py migrate --plan`, then `sqlmigrate <app> <migration>` |\n| Prisma | `prisma migrate diff --from-url \"$DATABASE_URL\" --to-schema-datamodel prisma/schema.prisma --script` |\n| Liquibase | `liquibase update-sql` |\n| Flyway | `flyway migrate -dryRunOutput=dryrun.sql` (paid editions); otherwise use a fresh copy |\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"Staging is disposable\" | Other people's tests, demos and data live on staging. Rebuilding it takes far longer than a dry run. |\n| \"The migration is only additive\" | You haven't seen the generated SQL yet. A NOT NULL column, a default or a non-concurrent index can rewrite or lock a whole table. The dry run is how you find out whether it is really additive. |\n| \"The dry run takes too long\" | A dry run takes seconds to minutes. A broken migration costs a restore plus everyone's blocked time. |\n\n## Red Flags: STOP\n\n- You are about to type the apply command and no dry-run output appears earlier in the conversation.\n- You are thinking \"it's just staging,\" \"it only adds a column\" or \"this is quick.\"\n- The dry run ran against a different database than the one you will apply to.\n\nAll of these mean: run the dry run against the target, then apply.\n\n## Common Mistakes\n\n- **Wrong target.** The dry run ran against a local database, then the migration was applied to staging. Point both at the same URL.\n- **Unread output.** The dry run ran, but the apply happened without anyone looking at what it showed. Step 3 exists so the output shows up in your message.\n````\n\nI've written `skills/migration-dry-run/SKILL.md` but haven't tested it yet. Some notes:\n\n- **Form:** The baseline is a discipline failure: agents know about dry runs and skip them anyway. So the skill uses a hard rule, a rationalization table and a red-flags list. Every row in the table counters one of the three verbatim rationalizations from the baseline. I didn't add counters for pressures we haven't seen.\n- **Description:** It gives only trigger conditions, including the \"additive\" and \"disposable\" wording agents actually used. It doesn't summarize the steps.\n- **Scope:** I scoped the rule to \"every database you did not create yourself in this session.\" That's a condition you can check, which is better than an exemption clause.\n- **`license: MIT` is a placeholder.** Please tell me which license this repo uses.\n- **Flyway:** Its dry-run flag needs a paid edition, so the skill falls back to a fresh copy. Correct me if you're on a different tool and want it listed.\n\nNext, if you're OK with it, I'll do the GREEN phase:\n1. Micro-test the wording against a no-guidance control, 5+ reps, reading every flagged match myself.\n2. Rerun the same four pressure scenarios with the skill, 5 reps each, and compare against the 14/20 baseline.\n\nAlso, this directory isn't a git repository, so committing the skill will need a `git init` or the real repo path.",
+  "ttft_ms": 22365,
+  "type": "result",
+  "duration_ms": 37264,
+  "ttft_stream_ms": 3400,
+  "time_to_request_ms": 44,
+  "first_content_frame_ms": 3400,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

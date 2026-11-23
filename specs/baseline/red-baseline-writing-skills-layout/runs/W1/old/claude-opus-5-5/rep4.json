@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 25843,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.050623600000000005,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 9218,
+    "output_tokens": 2295,
+    "output_tokens_details": {
+      "thinking_tokens": 543
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2295,
+      "cacheReadInputTokens": 9218,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.050623600000000005,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 543,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (frontmatter rules and body template, required before writing frontmatter)\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (required before writing counters, since the baseline is a rule broken under pressure)\nACTION: Read `~/.claude/skills/writing-skills/references/claude-code.md` (the skill will run in Claude Code)\nACTION: Read `specs/migration-dry-run-baseline.md` (to quote the baseline rationalizations exactly)\nACTION: Create `skills/migration-dry-run/SKILL.md` with:\n\n```markdown\n---\nname: migration-dry-run\ndescription: Use when about to apply, run, or deploy a database migration to staging, production, or any shared environment, including schema changes, ALTER TABLE, data backfills, and commands like `migrate up`, `prisma migrate deploy`, `alembic upgrade`, `rails db:migrate`, `flyway migrate`, or `knex migrate:latest`; also when tempted to skip a dry run because the environment is \"just staging\", the change is \"only additive\", or the dry run is slow.\nlicense: MIT\n---\n\n# Migration Dry Run\n\n## Overview\n\nA migration is not applied to a shared environment until a dry run of that exact migration, against that environment, has completed and you have read its output.\n\n**Core principle:** The dry run is the only evidence of what the migration will do to *this* database. \"It looks safe\" is a guess.\n\n## The Rule\n\n```\nNO MIGRATION APPLIED TO A SHARED ENVIRONMENT WITHOUT A DRY RUN FIRST\n```\n\n\"Shared environment\" means anything other than a local database only you use. Staging counts.\n\n**No exceptions:**\n- Not for staging\n- Not for additive-only migrations\n- Not for \"tiny\" or \"one-line\" migrations\n- Not when the dry run is slow\n- Not when someone says it's already been tested elsewhere\n\n## The Sequence\n\n1. Run the tool's dry-run / plan / SQL-preview mode against the target environment (e.g. `prisma migrate diff`, `alembic upgrade --sql`, `flyway migrate -dryRunOutput=...`, `rails db:migrate` inside a rolled-back transaction, or `BEGIN; ... ROLLBACK;` with the generated SQL).\n2. Read the output. Confirm: the statements match the intended change, no unexpected DROP/ALTER, lock-taking operations are known, row counts for data changes are plausible.\n3. Report the dry-run result to your human partner.\n4. Only then apply.\n\nIf the tool has no dry-run mode, generate the SQL and run it in a transaction you roll back. If that is impossible, stop and ask your human partner — do not apply.\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"Staging is disposable\" | Others use staging. Breaking it blocks them, and staging is where you find out production will break. A dry run there costs minutes; rebuilding it costs hours. |\n| \"The migration is only additive\" | Additive migrations still take locks, fail on existing data, collide with existing names, and trigger defaults/backfills on large tables. You only know it's additive after the dry run shows it. |\n| \"The dry run takes too long\" | A slow dry run predicts a slow, lock-holding apply. That is exactly what you need to know before applying. |\n\n## Red Flags — Stop and Dry Run\n\n- About to type the apply command and haven't seen dry-run output for this environment\n- Thinking \"it's just staging\"\n- Thinking \"this one is safe because...\"\n- Planning to \"check afterward\"\n- The dry run \"ran\" but you didn't read its output\n\n**All of these mean: run the dry run, read it, then apply.**\n\n## Common Mistakes\n\n- Dry-running against local and applying to staging — the dry run must target the environment you'll apply to.\n- Running the dry run and applying in one chained command (`&&`) — you never read the output.\n- Dry-running an older revision of the migration file, then editing it before applying.\n```\n\nI've written `skills/migration-dry-run/SKILL.md`, after reading the discovery, bulletproofing and Claude Code references and the baseline file.\n\n**What it contains:**\n- **Frontmatter:** `name`, a trigger-only `description` (starts \"Use when…\", third person, lists migration commands and the three baseline excuses as symptoms, no summary of the workflow), and `license`.\n- **Body:** a discipline-form rule. It has an explicit prohibition and a short apply sequence. The rationalization table counters the three verbatim baseline excuses. There's also a red-flags list and common mistakes.\n\n**One thing to confirm:** I set `license: MIT` as a placeholder. Tell me if your skills use something else.\n\n**Next step:** the GREEN phase. I'd re-run the same four pressure scenarios, 5 reps each, with this skill loaded. Then we compare against the 14/20 baseline and collect any new rationalizations for the REFACTOR pass. Shall I go ahead?\n\nAlso, this directory isn't a git repo yet. When we get to deployment I'll need to `git init` before committing, if that's okay with you.",
+  "ttft_ms": 9112,
+  "type": "result",
+  "duration_ms": 25886,
+  "ttft_stream_ms": 3297,
+  "time_to_request_ms": 42,
+  "first_content_frame_ms": 3297,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

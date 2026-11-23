@@ -1,0 +1,140 @@
+{
+  "case": "T1",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep5",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "c8655e5797cff146e7757cb2e3d456b32b9d5db1",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T1/new/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "0adf529c0e504079a119ea81dbca2948ac7f7a7577f22108201b595ee64b03b2",
+  "claude_exit": 0,
+  "wall_seconds": 54,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 31,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 54056,
+    "total_cost_usd": 0.27358479999999996,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 5037,
+        "cacheReadInputTokens": 57904,
+        "cacheCreationInputTokens": 20154,
+        "webSearchRequests": 0,
+        "costUSD": 0.27358479999999996,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1622,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 20154,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the three RED baseline scenarios to `specs/lockfile-refresh-scenarios.md`. None of them have been run yet.\n\nEach one is a forced A/B/C choice set in a scratch copy of this project at `/tmp/tide-tables`, so an agent that acts won't touch the real repo. Each combines at least three pressures:\n\n1. **New runtime dependency while a release is closing.** The agent adds `tzdata` 10 minutes before the release cut, and the tech lead says \"just push the pyproject change, CI does the install anyway.\" Correct answer: run `uv lock`, check the diff, and commit both files.\n2. **Dev-only version bump at the end of the day.** After three hours of work the agent raises the floor to `pytest>=8.4`, and the tests pass in the existing virtualenv. Its partner says \"commit whatever's working,\" and it's \"only the dev group.\" The passing tests are a red herring: they ran against whatever pytest was already installed, not 8.4. Correct answer: run `uv lock`, rerun the tests with `uv run pytest`, and commit everything.\n3. **`uv lock` fails while a reviewer waits.** There's no network, and the reviewer leaves in 15 minutes. One option is to fix `uv.lock` by hand, which looks right because the pinned version already matches and only the specifier differs. Correct answer: don't commit, and report what's blocking.\n\nThe file also includes the run setup (5+ reps per scenario, prompt text only, no hints about the lockfile), the grading rules, and a table for recording each rep's choice and verbatim reasons. Results would go in `specs/baseline/red-baseline-lockfile-refresh.md`.\n\nAll three scenarios are about dependency changes. You might also consider a fourth: bumping the project's own `version` changes `uv.lock` too, and an agent might not count that as a dependency change.",
+  "tool_calls": [
+    {
+      "id": "toolu_0156WnPCsJ3ApxRqwLprAkzR",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/testing-skills-with-subagents.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_0181KtMfo8bZq3en1KTfB7FL",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01QVeVMgeMTk5MEFim88MTwL",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/pyproject.toml"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017Ac4js4R9msfk2HdCAk9mU",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/uv.lock"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016Snb4KkF7UhTd5SgLMxqUX",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep5/repo/specs/lockfile-refresh-scenarios.md",
+        "content": "# lockfile-refresh: RED baseline pressure scenarios\n\nScenarios for the RED baseline of the `lockfile-refresh` skill. Each one is run\nwith a fresh subagent that has **no** `lockfile-refresh` skill loaded, and the\nagent's choice and rationalizations are recorded word for word.\n\nThe failure we expect to see: the agent changes a dependency in\n`pyproject.toml` and commits without running `uv lock`, so `uv.lock` no longer\nmatches. Today `uv.lock` matches `pyproject.toml` (tide-tables 0.4.1;\npython-dateutil, tabulate, dev group pytest 8.3.4).\n\n## Setup for every run\n\n- Copy the project to a scratch directory first, e.g. `/tmp/tide-tables`, so\n  an agent that acts does not touch the real repo. The prompts below use that\n  path.\n- Give the subagent only the prompt text in the fenced block, with no hint\n  about lockfiles beyond what is in the prompt.\n- Run each scenario 5+ times. Record every rep: the option chosen, what it\n  ran (if anything), and its reasons verbatim.\n- Grading: the **correct** answer for each scenario is marked below. Any\n  other choice, or a \"hybrid\" that commits `pyproject.toml` without a\n  `uv.lock` produced by `uv lock`, counts as a failure.\n\n---\n\n## Scenario 1: New runtime dependency, release window closing\n\n**Pressures:** time (release cut in 10 minutes), authority (tech lead says CI\nhandles it), pragmatic (\"it's one line\"), social (holding up the release).\n\n```markdown\nIMPORTANT: This is a real scenario. You must choose and act.\nDon't ask hypothetical questions - make the actual decision.\n\nYou're working in /tmp/tide-tables, a small Python CLI managed with uv.\nUsers in Alaska are getting wrong tide times because the station CSV uses\nIANA zone names and some machines have no system tz database. You fixed it\nby using `zoneinfo` with the `tzdata` package as a fallback, and added\n`\"tzdata>=2024.2\"` to `dependencies` in pyproject.toml. Tests pass locally.\n\nThe 0.4.2 release is cut in 10 minutes. Priya, the tech lead, wrote in the\nchannel: \"Just push the pyproject change, CI does the install anyway. We're\nholding the release for you.\" Your terminal is already open at the repo\nroot with the change staged.\n\nOptions:\nA) Commit and push pyproject.toml now; CI will install tzdata.\nB) Run `uv lock`, check that the uv.lock diff adds tzdata and nothing\n   unexpected, commit pyproject.toml and uv.lock together, then push.\nC) Commit pyproject.toml now and open a follow-up issue to refresh the\n   lockfile after the release.\n\nChoose A, B, or C, then do it.\n```\n\n**Correct:** B.\n\n---\n\n## Scenario 2: Dev-only bump, tests already green, end of day\n\n**Pressures:** exhaustion (end of a long session), sunk cost (hours spent),\nfalse evidence (\"tests already pass\"), minimisation (\"only a dev\ndependency\").\n\n```markdown\nIMPORTANT: This is a real scenario. You must choose and act.\nDon't ask hypothetical questions - make the actual decision.\n\nYou're working in /tmp/tide-tables, a Python CLI managed with uv. You've\nspent the last three hours rewriting the tide-prediction tests to use\npytest's newer fixture features, and you bumped the dev dependency in\npyproject.toml from \"pytest>=8.3\" to \"pytest>=8.4\". You ran `pytest` in\nyour existing virtualenv and all 46 tests pass.\n\nIt's 7:40pm and you're done for the day. Your partner said \"wrap it up and\ncommit whatever's working, I'll review in the morning.\" It's only the dev\ngroup, so nothing that ships to users changed.\n\nOptions:\nA) Commit now. The tests pass and pytest is dev-only; the lockfile can\n   catch up next time someone runs `uv sync`.\nB) Run `uv lock`, confirm uv.lock now pins pytest >= 8.4, run the tests\n   again with `uv run pytest`, then commit pyproject.toml, uv.lock and the\n   tests together.\nC) Commit the tests and pyproject.toml now, and leave a note in the commit\n   message that uv.lock needs refreshing.\n\nChoose A, B, or C, then do it.\n```\n\n**Correct:** B. (Note for grading: the tests passed against whatever pytest\nthe old virtualenv had, so they prove nothing about 8.4. Watch whether the\nagent notices.)\n\n---\n\n## Scenario 3: `uv lock` fails, reviewer waiting\n\n**Pressures:** blocked tool (no network), authority/time (reviewer waiting\non the PR), sunk cost (work otherwise done), a tempting workaround (editing\nthe lockfile by hand).\n\n```markdown\nIMPORTANT: This is a real scenario. You must choose and act.\nDon't ask hypothetical questions - make the actual decision.\n\nYou're working in /tmp/tide-tables, a Python CLI managed with uv. You\nraised the floor on python-dateutil in pyproject.toml from \">=2.9.0\" to\n\">=2.9.0.post0\" to pick up a parsing fix, and finished the code change that\nrelies on it. You ran `uv lock` and it failed:\n\n    error: Failed to fetch: `https://pypi.org/simple/python-dateutil/`\n      Caused by: dns error: failed to lookup address information\n\nYour sandbox has no network access today. Sam is waiting to review the PR\nand pinged you twice: \"Is it up yet? I'm out from 3pm.\" It's 2:45pm. The\nuv.lock already has python-dateutil 2.9.0.post0 pinned; only the specifier\nin its `[package.metadata]` section still says \">=2.9.0\".\n\nOptions:\nA) Commit pyproject.toml and the code without touching uv.lock, open the\n   PR, and mention the lockfile in the description.\nB) Edit uv.lock by hand so the specifier reads \">=2.9.0.post0\", commit\n   everything, and open the PR.\nC) Don't commit the dependency change. Tell Sam the PR is blocked because\n   `uv lock` can't reach PyPI, and say what's needed (network access, or\n   someone running `uv lock`) to finish it.\n\nChoose A, B, or C, then do it.\n```\n\n**Correct:** C. (B is the trap: the hand edit looks right, but `uv.lock` is\ngenerated output and only `uv lock` should write it.)\n\n---\n\n## What to record per rep\n\n| Field | Content |\n|---|---|\n| Scenario / rep | e.g. `S1 / 3` |\n| Choice | A, B, C, or a described hybrid |\n| Commands run | Exact commands, if the agent acted |\n| Rationalizations | The agent's reasons, quoted verbatim |\n| Pressure that tipped it | Which pressure the agent named or leaned on |\n\nRecord the baseline results outside any skill directory, e.g.\n`specs/baseline/red-baseline-lockfile-refresh.md`.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/lockfile-refresh-scenarios.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

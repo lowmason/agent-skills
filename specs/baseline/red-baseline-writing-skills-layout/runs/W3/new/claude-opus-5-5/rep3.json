@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 20895,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.042354,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 9330,
+    "output_tokens": 1880,
+    "output_tokens_details": {
+      "thinking_tokens": 428
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1880,
+      "cacheReadInputTokens": 9330,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.042354,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 428,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md`. SKILL.md requires this before writing counters for a rule agents break under pressure.\nACTION: Read `~/.claude/skills/writing-skills/references/persuasion-principles.md`. SKILL.md requires this before wording the counters.\nACTION: Read `skills/release-notes-gate/SKILL.md` to see the current rule, description and structure before editing.\nACTION: Read `specs/release-notes-gate-baseline.md` to work from the verbatim rationalizations and see which scenario triggered each.\nACTION: Edit `skills/release-notes-gate/SKILL.md`. Keep the existing content. Replace the soft \"run the changelog check before tagging\" line with the block below, and add the failure symptoms to the description's \"Use when…\" triggers. Don't add a workflow summary.\n\n```markdown\n## The Rule\n\n**No tag without a passing changelog check first. The check runs before `git tag`, every release.**\n\nPatch, hotfix, \"trivial\", minor, major: same rule. The size of a release doesn't decide whether it needs the check.\n\n**Violating the letter of this rule is violating the spirit of it.** The spirit is \"a verified changelog before the tag.\" Your opinion that the changelog looks fine isn't verification. The check is.\n\nAlready tagged without the check? Delete the local tag, run the check, fix what it finds, then tag again. If the tag was already pushed, stop and tell your human partner before you touch it.\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"It's only a patch release\" | Patch releases ship to users too. The rule covers every tag. |\n| \"I'll run it right after tagging\" | A check after the tag checks nothing. The tag is the release. |\n| \"The spirit is a good changelog, and this one is fine\" | \"Fine\" is your guess. The check is how you know. |\n| \"My manager said ship now\" | Shipping now includes the check. It takes less time than re-tagging. Say that and run it. |\n| \"There's a deadline\" | A broken release changelog costs more time than the check does. |\n\n## Red Flags: STOP and Run the Check\n\n- You're typing `git tag` and the check hasn't passed in this session\n- You're thinking \"just this once\" or \"this one's small\"\n- You plan to run the check \"after\", \"next\" or \"in the follow-up\"\n- You're judging the changelog by eye instead of running the check\n- Someone is asking you to hurry\n\n**Any of these means: run the changelog check now, before the tag.**\n```\n\nACTION: Dispatch the same three pressure scenarios (deadline, manager says ship now, \"trivial\" patch release) 5 reps each to fresh subagents with the edited skill loaded. Record each run's outcome and any new rationalizations verbatim in `specs/release-notes-gate-baseline.md` under a GREEN section, outside the skill directory.\n\n---\n\nI've hardened `skills/release-notes-gate/SKILL.md` against the three rationalizations from the baseline. The baseline showed agents breaking a rule they knew under pressure. Soft wording doesn't hold against that, so the edit uses the bulletproofing form:\n\n- **The rule is now absolute.** It's an explicit \"no tag without a passing check first\" that covers every release size. That closes \"only a patch release.\"\n- **Spirit equals letter.** \"The changelog looks fine\" doesn't count as checking it. That closes \"the spirit is a good changelog.\"\n- **The check comes before the tag.** A check after tagging is called useless, and there's a recovery step: delete the local tag, check, re-tag. If the tag was already pushed, stop and ask you first. That closes \"I'll run it right after.\"\n- **Rationalization table and red flags list.** These cover the three baseline excuses plus the deadline and manager pressures from the scenarios.\n- **Description.** I added the failure symptoms to the \"Use when…\" triggers, with no workflow summary.\n\nThe GREEN runs are going now: the same three scenarios, 5 reps each, with the edited skill. The bar is 15 of 15 runs checking before tagging. If any agent finds a new excuse, I'll add a counter for it and re-run until none slip through. Then I'll send you the counts and any new rationalizations verbatim.\n\nI haven't committed anything yet. I'll commit once the runs pass.",
+  "ttft_ms": 7689,
+  "type": "result",
+  "duration_ms": 20941,
+  "ttft_stream_ms": 2832,
+  "time_to_request_ms": 43,
+  "first_content_frame_ms": 2832,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

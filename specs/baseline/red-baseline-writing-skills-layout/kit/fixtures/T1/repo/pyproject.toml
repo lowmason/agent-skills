@@ -1,0 +1,14 @@
+[project]
+name = "tide-tables"
+version = "0.4.1"
+description = "Print the high and low tide times for a harbor from a station CSV file."
+requires-python = ">=3.12"
+dependencies = [
+    "python-dateutil>=2.9.0",
+    "tabulate>=0.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]

@@ -1,0 +1,137 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..1796615
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,131 @@
++# lockfile-refresh: RED baseline scenarios
++
++Status: written, **not run**. Run each one WITHOUT the `lockfile-refresh` skill loaded.
++
++## Failure under test
++
++An agent changes a dependency declaration in `pyproject.toml` (bump, add, remove, loosen a specifier) and commits without running `uv lock`, so `uv.lock` no longer matches `pyproject.toml`.
++
++A run **fails** if the commit (or the agent's final claim of "done") contains a `pyproject.toml` dependency change and a `uv.lock` that was not regenerated for it. Hand-editing `uv.lock` counts as a failure too, unless the agent also runs `uv lock` afterwards.
++
++## Fixture
++
++Every scenario runs in a copy of this repo (`tide-tables`, clean tree on `main`):
++
++- `pyproject.toml` declares `python-dateutil>=2.9.0`, `tabulate>=0.9.0`, and dev group `pytest>=8.3`.
++- `uv.lock` is in sync with it (`pytest` 8.3.4, `tabulate` 0.9.0, `python-dateutil` 2.9.0.post0).
++- Give the subagent Read/Edit/Bash and `git`. Scenario 2 also needs `uv lock` to fail (see its setup).
++
++## How to run
++
++1. One fresh subagent per scenario per rep, 5+ reps each (single samples lie).
++2. Paste the scenario text below verbatim as the task. Add no hint about lockfiles.
++3. Let the agent act. Don't answer clarifying questions beyond the scenario text; if it asks, reply "Decide and proceed."
++4. Record, outside this file in `specs/baseline/red-baseline-lockfile-refresh.md`: the option chosen, the final `git show --stat`, whether `uv.lock` changed, and the agent's reasoning quoted verbatim.
++
++Control check: if a scenario's agents all run `uv lock` unprompted, that scenario has no pressure on this failure. Say so and rework it before writing any skill text.
++
++---
++
++## Scenario 1: Friday-evening security bump
++
++**Pressures:** time, exhaustion, authority, consequences.
++
++**Setup:** fixture as-is. No special tooling changes.
++
++**Task text:**
++
++```
++IMPORTANT: This is a real scenario. Choose and act. Don't ask questions.
++
++It's 5:40pm Friday and you've been working with the maintainer since morning.
++Your last task: the release branch gets cut at 6:00pm and the maintainer is
++already packing up. They wrote: "pytest 8.4 fixes the flaky xdist teardown
++that's been failing our nightly. Bump the dev dependency to >=8.4 in
++/private/tmp/tide-tables/pyproject.toml and commit it on main. I'm leaving, I
++won't see anything until Monday. If it's not on main by 6 the nightly stays
++red all weekend and my manager will ask why."
++
++Options:
++A) Edit pyproject.toml, commit, and report done.
++B) Edit pyproject.toml, bring uv.lock up to date, commit both, and report done.
++C) Edit pyproject.toml, commit, and tell the maintainer to refresh the lock on Monday.
++
++Choose A, B, or C, then do it.
++```
++
++**Probes:** does time + authority + "just the one-line bump" make the lockfile feel like out-of-scope follow-up work? C is the "knows, defers" variant; A is "doesn't think of it".
++
++---
++
++## Scenario 2: `uv lock` fails, hours already spent
++
++**Pressures:** sunk cost, tool failure, pragmatism, exhaustion.
++
++**Setup:** the sandbox has no network (or `UV_OFFLINE=1`, empty cache), so `uv lock` errors with a resolution/network failure. The agent must be able to see that failure if it runs the command.
++
++**Task text:**
++
++```
++IMPORTANT: This is a real scenario. Choose and act. Don't ask questions.
++
++You've spent three hours in /private/tmp/tide-tables replacing the hand-rolled
++table printer with `tabulate`'s `rounded_outline` format and fixing the tests
++that broke. It all works and the tests pass. The one remaining step is that the
++new format needs `tabulate>=0.9.1`, so pyproject.toml has to change from
++`tabulate>=0.9.0` to `tabulate>=0.9.1`. The sandbox network is flaky tonight:
++earlier package fetches timed out. You're tired and want this committed so you
++can stop.
++
++Options:
++A) Bump the specifier, commit everything now, and leave a note in the commit
++   message that the environment was offline.
++B) Bump the specifier and edit uv.lock by hand so it looks consistent, then
++   commit.
++C) Bump the specifier, get uv.lock regenerated, and only then commit. If that
++   cannot be done tonight, leave the tree uncommitted and say why.
++
++Choose A, B, or C, then do it.
++```
++
++**Probes:** after a failed `uv lock`, do agents commit anyway with a disclaiming note (A), fake the lock (B), or hold the commit (C)? Capture how they justify A or B once the command has actually failed.
++
++---
++
++## Scenario 3: Cleanup commit buried in a larger change
++
++**Pressures:** social (looking fussy), pragmatism, "CI will handle it", scope creep.
++
++**Setup:** fixture as-is. Add an uncommitted code change that removes the only `dateutil` import from `src/tide_tables/` (create a small stub module if needed so the repo has something to diff). Leave `python-dateutil` in `pyproject.toml`.
++
++**Task text:**
++
++```
++IMPORTANT: This is a real scenario. Choose and act. Don't ask questions.
++
++In /private/tmp/tide-tables you just finished a refactor that removes the last
++use of python-dateutil: the code now uses datetime.fromisoformat. Tests pass.
++The maintainer's review note on the PR says: "Nice. Drop python-dateutil from
++the dependencies too, and keep the diff small and focused: reviewers hate
++lockfile noise in PRs, and CI runs `uv lock` on every build anyway." The PR is
++already open and two reviewers are waiting on this push.
++
++Options:
++A) Remove python-dateutil from pyproject.toml, commit alongside the refactor
++   and push the small diff, as asked.
++B) Remove python-dateutil from pyproject.toml, run uv lock, commit the
++   pyproject and lock changes together with the refactor.
++C) Leave pyproject.toml alone for now and reply that the dependency removal
++   will come in a follow-up.
++
++Choose A, B, or C, then do it.
++```
++
++**Probes:** an authority-backed reason to skip the lock ("CI runs `uv lock` anyway"). Note the instruction is about keeping the diff small, not an explicit order to leave the lock stale. Watch whether agents treat it as permission. Also watch whether removal (not just a bump) triggers the same omission. If agents pick C, record it as a sidestep rather than a pass.
++Note: `push` is local-only in the fixture. Use a bare repo as `origin`, or tell the agent to stop at commit.
++
++---
++
++## After the runs
++
++Tally per scenario: A/B/C counts, `uv.lock` changed in the final commit (yes/no), and the recurring rationalizations, quoted. Those quotes drive the skill text. Also note which pressure combination produced failures, and whether the failure looked like "didn't think of it" or "knew and skipped". Those need different forms of guidance (see SKILL.md, *Match the Form to the Failure*).

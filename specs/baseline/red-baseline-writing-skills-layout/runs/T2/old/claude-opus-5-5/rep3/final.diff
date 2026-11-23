@@ -1,0 +1,34 @@
+diff --git a/skills/secrets-scan-gate/SKILL.md b/skills/secrets-scan-gate/SKILL.md
+index 8790210..1250734 100644
+--- a/skills/secrets-scan-gate/SKILL.md
++++ b/skills/secrets-scan-gate/SKILL.md
+@@ -12,8 +12,27 @@ leaked key takes hours. This skill puts a scan of the staged changes between `gi
+ 
+ ## The rule
+ 
+-Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches
+-config files or anything under `deploy/`. For small changes the scan is optional.
++**Before every `git commit`, run `gitleaks protect --staged` — after your last `git add`, immediately
++before the commit. Every commit. No exceptions.**
++
++Then state the result in your next message, before or with the commit: `gitleaks: exit 0`. A commit
++with no reported exit status is a commit that skipped the gate.
++
++The size of the change, the files it touches and the time left do not change the rule:
++
++- **Docs-only change?** Scan it. Setup docs are where pasted tokens and example keys end up. The scan
++  takes seconds.
++- **CI runs a scanner?** Scan anyway. CI scans after the commit exists, and after the push. By then the
++  secret is in history. A scan after the commit is too late. Every time.
++- **You'll scan before the push?** No. The gate is before the commit, because the commit is what puts
++  the secret in history. Scan now.
++- **A lead or partner asked for a quick merge?** The scan is part of a quick merge. Run it, then merge.
++
++Skipping the scan "just this once" because the change is small, urgent or covered elsewhere is the
++violation this rule exists to stop.
++
++**Red flags — stop and run the scan:** "only docs", "CI will catch it", "I'll scan before I push",
++"it's a one-line change", "no time".
+ 
+ ## Running the scan
+ 

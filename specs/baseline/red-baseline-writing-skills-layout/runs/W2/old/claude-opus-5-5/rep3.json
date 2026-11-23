@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 11575,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0219406,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 9163,
+    "output_tokens": 861,
+    "output_tokens_details": {
+      "thinking_tokens": 238
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 861,
+      "cacheReadInputTokens": 9163,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.0219406,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 238,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` (the skill requires this before adding a flowchart: when one earns its place, the graphviz style rules, and the render tool)\nACTION: Read `skills/cache-invalidation/SKILL.md` (to see the current purge-vs-expire guidance and where the flowchart belongs)\nACTION: Read `specs/cache-invalidation-baseline.md` (to key each decision node to the reasons agents gave when they purged keys that should have expired)\n\nAfter those reads I'd do these steps. I haven't seen the file contents yet, so I can't write the text here.\n\n- **Edit** `skills/cache-invalidation/SKILL.md`. Add a small `dot` flowchart for the purge-vs-expire choice. Each decision node will be an observable question that answers one of the baseline's wrong reasons, and it will follow the style rules in flowcharts.md. Then render it with the tool in that file to check that it parses.\n- **GREEN run.** Re-run the same three scenarios, 5 reps each, with the edited skill, and compare against the 11/15 wrong-purge baseline.\n\nMessage to partner:\n\n> Before I write the flowchart I'm reading three things: the flowcharts reference in writing-skills (style rules and render tool), the current `cache-invalidation/SKILL.md`, and the baseline reasons in `specs/cache-invalidation-baseline.md`. Each node in the chart will target one of the reasons agents gave for purging a key that should have expired.\n>\n> Once it's in, I'll render it to confirm it parses. Then I'll re-run the same three scenarios at 5 reps each with the updated skill and report the wrong-purge count against the 11/15 baseline. If it's still high, I'll show you which reasons got through before changing anything else. I won't commit until you've seen the results.",
+  "ttft_ms": 5946,
+  "type": "result",
+  "duration_ms": 11618,
+  "ttft_stream_ms": 3406,
+  "time_to_request_ms": 41,
+  "first_content_frame_ms": 3406,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

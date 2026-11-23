@@ -7143,6 +7143,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): Part B and its tests landed, so a files packet copies the Markdown files that a skill's citation covers, and settle reads rows on them and holds a skill whose covered files moved. E3's fresh `/cc-guide files` pass, run in its own session after the merge, closes this item and the one on `packets.py` `files()`. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md.
       → progress 2026-11-22 (E3 pass, `/cc-guide files`, branch claude/cc-guide-files-e3-62cb58): the live run of Part B ran over 17 of the 19 citing skills. By owner ruling it left out `skills/writing-skills` (plan 105 re-verifies it after its layout move) and `skills/brainstorming` (a one-skill pass after plan 106 merges), so this item stays open until both have run. Each packet held the skill's covered Markdown files. Of 239 rows, 58 sat on covered files. 2 of those 58 contradicted the guide: `skills/prepare-handoff/references/fact-checker.md:15` (fixed in this pass) and `skills/subagent-driven-development/references/model-selection.md:13` (held, filed under `cc-guide-files-pass-e3`). 7 were not covered. The item's own example now works: `skills/executing-plans/SKILL.md` gets rows on `references/final-review.md`. Whole pass: 210 consistent, 5 contradicting (1 fixed, 3 held in 2 skills, 1 the standing `description-when-only` deviation), 24 not covered (22 ruled no action, 2 filed as items).
+      → progress 2026-11-23 (plan 105): `/cc-guide files skills/writing-skills/SKILL.md` ran after the layout move. Of 58 rows, 51 are consistent, 2 contradict (the standing `description-when-only` deviation), 5 are not covered (owner ruling 2026-11-23: no action) and 0 are unverified. Only `skills/brainstorming` is left, so this item stays open.
 
 ## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.
@@ -7315,3 +7316,45 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] **Check that `skills/tech-debt/SKILL.md` still works as a background fork (E3 files pass, 2026-11-22).** The skill sets `context: fork` and no `background` key, and its steps run a Bash sweep and `marimo` commands. The guide's `background` row says that a fork runs in the background by default (since 2.1.218) and gets the narrower tool set of background subagents, and that a skill whose steps need another tool sets `background: false`. The verifier rated the skill's frontmatter not covered, because no guide sentence says which tools a background subagent lacks. The owner first ruled "guide addition" on a wrong premise from the E3 pass, which said that the guide lacks the default. The guide has it. The repo lint (`HOST_KEYS` in `build/check_frontmatter.py`) rejects a `background` key, so a fix by frontmatter also needs a lint change. Size: design. Done when: a run of the skill in an interactive session, or the docs, shows whether its Bash sweep and `marimo` steps work under the background tool set, and the owner has ruled one of: no change, a `background` key plus a lint change, or a guide statement on which tools a background fork lacks.
 - [ ] **Narrow the `WorktreeCreate` and `--worktree` words in `skills/using-git-worktrees/SKILL.md` line 65 (E3 files pass, owner ruling 2026-11-22: hold).** Line 65 lists `EnterWorktree`, `WorktreeCreate`, a `/worktree` command and a `--worktree` flag as ways that the running session might already have to create a worktree. The guide says that `WorktreeCreate` is a hook, not a tool, and that `--worktree` is a flag that a session starts with, so a running session cannot use either one to create a worktree. Fix: drop those two names from the list, or say what each one is. The skill is adapted from superpowers, so the fix needs a `NOTICE` bullet and a `writing-skills` micro-test, which is why the E3 pass held the file and did not restamp it. Size: plan. Done when: line 65 names only ways that a running session can create a worktree, the `NOTICE` bullet is in, a micro-test shows that the new wording does not change what a session does, and `baseline cite` has stamped the file.
 - [ ] **Correct the rework-cost claim in `skills/subagent-driven-development/references/model-selection.md` line 13 (E3 files pass, owner ruling 2026-11-22: hold).** The file says that a model that takes 2-3× the turns, or needs a re-dispatch, costs more than the tier above it. The guide lists Haiku 5.5 at a fortieth of Opus 5.5's price and a twentieth of Sonnet 5.5's, so on the Anthropic API a cheap-tier model with 3× the turns still costs less than the standard tier. The claim may still hold for time and review effort, but not for price. The paragraph ties it to the two defaults in `SKILL.md`, so the fix must keep that reasoning sound. Fix: say that rework costs time and review effort, and that the cheap tier is cheaper per token by a wide margin. The skill is adapted from superpowers, so the fix needs a `NOTICE` bullet and a `writing-skills` micro-test, which is why the E3 pass held the file and did not restamp it. Size: plan. Done when: line 13 states a claim that matches the guide's prices, the `NOTICE` bullet is in, a micro-test shows that the model choices in a dispatch do not change, and `baseline cite` has stamped the file.
+
+## 105-writing-skills-improvements — 2026-11-23
+- [ ] **Finish the skill-type rename at two older spots (plan 105, ruling at Task 1).** Plan 105 Task 1 Step 5
+      made one list of four skill types and renamed the persuasion table and its Quick Reference parenthetical.
+      Two older spots keep the former name: the heading `### Discipline-Enforcing Skills (rules/requirements)` at
+      `skills/writing-skills/SKILL.md:221`, and the bullet `Discipline-enforcing skills (TDD, verification
+      requirements)` at `skills/writing-skills/references/persuasion-principles.md:32`. The plan named only the
+      table and the parenthetical, so the executor left these two. The edit reaches a live skill, so it follows
+      writing-skills' Iron Law or an owner waiver. Size: quick-fix. Done when: both spots say "Discipline", the
+      `SKILL.md` body stays at or below 19,700 characters (`check_conformance.skill_body`) and the commit lints
+      pass.
+- [ ] **Make `graph_name` find a header after a block comment or in capitals (plan 105, ruling at Task 2).** In
+      `skills/writing-skills/scripts/render_graphs.py`, `_header` skips only blank lines and lines that start with
+      `//` or `#`, and `_HEADER` matches `digraph`, `graph` and `strict` in lower case only. A `dot` block that
+      opens with a `/* … */` comment, or that spells `Digraph` or `DIGRAPH`, gets no header match. `find_blocks`
+      then skips it with no message and the run exits 0. DOT accepts both forms. Size: quick-fix. Done when:
+      `_header` skips a `/* */` comment, `_HEADER` ignores case, one test in
+      `skills/writing-skills/scripts/test_render_graphs.py` pins each form, and
+      `uv run python build/run_suites.py writing-skills` passes.
+- [ ] **Let `--combine` handle an undirected `graph` block (plan 105, ruling at Task 2).** In
+      `skills/writing-skills/scripts/render_graphs.py`, `combine` wraps every block as a `subgraph cluster_N`
+      inside one `digraph`. A block that starts with `graph` holds `--` edges, which `dot` rejects inside a
+      `digraph`. A skill with such a block makes `--combine` print `failed: combined diagram: …` on stderr and
+      exit 1. The old `render-graphs.js` also built one `digraph`, and the plan asked for a port that matches it.
+      Size: quick-fix. Done when: `--combine` handles an undirected block without failing the whole run (for
+      example, it names the block on stderr and renders the rest), with a test for the chosen behaviour.
+- [ ] **Close the three Glob audit limits when the guard kit is reused (plan 105, rulings at Task 3).** The path
+      audit in `specs/baseline/red-baseline-writing-skills-layout/kit/audit.py` judges a Glob pattern by its
+      literal part. Three reaches stay open, and the record names them (`## Kit`, Grep and Glob): a `**` from the
+      rep folder can list names under `home/Library/Keychains`, the link to the real Keychains folder; a relative
+      brace alternative under an absolute prefix is not joined to that prefix; and a brace alternative under a
+      `$HOME/Library` prefix is no hit. The record calls them harmless in plan 105's run, because the Keychains
+      link holds neither the spec nor the plan. Size: quick-fix. Revisit if: a new directory under
+      `specs/baseline/` holds a copy of `audit.py` for a tools-on guard run. Then close the three, with a test and
+      a mutant for each, or record why they stay.
+- [ ] **Add a guard case that only the moved file can pass (plan 105, final review).** Plan 105's guard run scored
+      120 of 120 reps PASS, old layout and new. It shows no loss from the move and cannot show a gain
+      (`specs/baseline/red-baseline-writing-skills-layout.md`, Results, Reading of the result). T2's use part can
+      be met from general knowledge, and one voided T3 rep met its use part without the read, so the Read part
+      carries those cases. A later change to a writing-skills file needs a case whose marker occurs only in that
+      file and cannot be guessed. Size: design. Revisit if: a plan in `specs/plans/` moves, splits or rewrites a
+      file in `skills/writing-skills/` and plans a guard run.

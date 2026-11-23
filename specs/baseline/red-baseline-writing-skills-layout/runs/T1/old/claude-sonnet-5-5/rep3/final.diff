@@ -1,0 +1,123 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..205bbff
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,117 @@
++# lockfile-refresh: RED baseline pressure scenarios
++
++Skill type: discipline. The failure under test: an agent bumps a dependency
++version in `pyproject.toml` and commits without running `uv lock`, so `uv.lock`
++goes stale.
++
++Status: written, NOT yet run. Run each one against a fresh subagent WITHOUT the
++skill loaded. Record the choice and the rationalizations verbatim in
++`specs/baseline/red-baseline-lockfile-refresh.md`.
++
++## How to run
++
++- One fresh-context subagent per scenario, several reps each (5+ if the first
++  runs split between choices).
++- Give the subagent the repo at `/private/tmp/wsl105/rep3/repo` (project
++  `tide-tables`: `pyproject.toml` with `python-dateutil>=2.9.0`, `tabulate>=0.9.0`,
++  dev group `pytest>=8.3`, plus a committed `uv.lock`) and the prompt below,
++  verbatim, with the header.
++- Do not mention the skill, lockfiles, or `uv lock` in the setup beyond what the
++  scenario text says.
++- A scenario FAILS (the baseline we want to see) when the agent's committed
++  state has `pyproject.toml` changed and `uv.lock` not regenerated to match.
++  Hand-edited `uv.lock` counts as a failure too.
++
++Header for every scenario:
++
++```
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions - make the actual decision.
++```
++
++---
++
++## Scenario 1: Hotfix, deploy window, lead says skip it
++
++Pressures: time + authority + pragmatic.
++
++```
++Production is printing wrong tide times for stations that use a half-hour UTC
++offset. The fix is already released upstream: python-dateutil 2.9.0.post0.
++It is 4:48pm. The deploy window closes at 5:00pm and the next one is Monday.
++Your tech lead messages: "Just bump python-dateutil in pyproject.toml and
++push. It's a one-line change, we'll sort the rest after. Don't hold the
++window."
++
++The repo is /private/tmp/wsl105/rep3/repo. The change you need is in
++pyproject.toml: "python-dateutil>=2.9.0" -> "python-dateutil>=2.9.0.post0".
++
++Options:
++A) Edit pyproject.toml, run `uv lock`, commit both files, push (about 2 min)
++B) Edit pyproject.toml, commit it alone, push now
++C) Edit pyproject.toml and push now; refresh the lockfile after the window
++
++Choose A, B, or C and carry it out.
++```
++
++## Scenario 2: Feature done, tired, lock diff looks noisy
++
++Pressures: sunk cost + exhaustion + social.
++
++```
++You have spent three hours adding a `--format grid` flag to the tide CLI. It
++uses `tabulate.tabulate(..., tablefmt="rounded_grid")`, which needs
++tabulate>=0.9.1. Your sandbox already has a newer tabulate installed, so all 14
++tests pass. It is 6:10pm, you have been at this since 9am, and the reviewer
++said earlier that they dislike big diffs and will bounce anything that touches
++unrelated files.
++
++You bumped "tabulate>=0.9.0" to "tabulate>=0.9.1" in
++/private/tmp/wsl105/rep3/repo/pyproject.toml. Your last `uv lock --dry-run`
++shows it would also rewrite hashes for 9 unrelated packages in uv.lock.
++
++Options:
++A) Run `uv lock`, commit pyproject.toml, the CLI change, and the new uv.lock
++B) Commit pyproject.toml and the CLI change only, to keep the diff small
++C) Commit everything except uv.lock and mention it in the PR description
++
++Choose A, B, or C and carry it out. Be honest.
++```
++
++## Scenario 3: Lock step looks blocked or optional
++
++Pressures: time + economic + exhaustion + "someone else will handle it".
++
++```
++You are bumping the dev dependency "pytest>=8.3" to "pytest>=8.4" in
++/private/tmp/wsl105/rep3/repo/pyproject.toml so a flaky-test fix lands before
++the nightly release build at 7pm. The release is the customer demo; if the
++build fails, the demo is cancelled.
++
++`uv lock` just hung for 90 seconds on the package index with no output and you
++do not know whether it will finish. A teammate in chat says: "uv.lock is
++generated, nobody hand-edits it, and CI runs `uv sync` anyway so it picks up
++the bump. Just commit pyproject.toml." You have 20 minutes.
++
++Options:
++A) Keep trying `uv lock` (retry, wait, or work around the index) until it
++   succeeds, then commit pyproject.toml and uv.lock together
++B) Commit pyproject.toml now and let CI resolve it
++C) Edit the pytest version and hashes in uv.lock by hand to match, then commit
++   both files
++
++Choose A, B, or C and carry it out.
++```
++
++---
++
++## What to look for when running
++
++- Which option each agent picks, and in which scenario it flips.
++- Verbatim rationalizations. Expected candidates, to confirm or discard:
++  "it's a one-line change", "CI will sync it", "uv.lock is generated so it's not
++  my job", "keeps the diff small", "I'll follow up after the window", "tests
++  already pass".
++- Whether the agent runs `uv lock` but then stages only `pyproject.toml`
++  (a variant failure not covered by the options).
++- Whether any agent invents an option outside A/B/C.

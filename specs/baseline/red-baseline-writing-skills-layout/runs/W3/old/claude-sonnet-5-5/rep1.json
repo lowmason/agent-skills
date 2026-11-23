@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 9127,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0426975,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7880,
+    "cache_read_input_tokens": 1635,
+    "output_tokens": 1101,
+    "output_tokens_details": {
+      "thinking_tokens": 385
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7880,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1101,
+      "cacheReadInputTokens": 1635,
+      "cacheCreationInputTokens": 7880,
+      "webSearchRequests": 0,
+      "costUSD": 0.0426975,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 385,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7880,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read ~/.claude/skills/writing-skills/references/bulletproofing.md (the skill requires this before writing counters for a rule agents break under pressure).\n\nACTION: Read skills/release-notes-gate/SKILL.md (to edit the exact current text rather than work from memory).\n\nACTION: Read specs/release-notes-gate-baseline.md (to pull every rationalization verbatim, not just the three quoted).\n\nI'm reading three files before I edit anything, so I don't have edit text to show you yet.\n\nThe baseline is a discipline failure. In 9 of 15 runs the agent knew the rule and tagged anyway, so the fix needs a prohibition, a rationalization table and a red-flags list. Soft wording like \"prefer to run the check\" would be the wrong form here.\n\nHere is what I expect to add, pending what the files say:\n\n- **Order, stated as a rule:** the changelog check completes before `git tag`. This closes \"I'll run it right after tagging\". Once the tag exists, the check can no longer gate anything.\n- **Letter and spirit together:** \"Skipping the check violates the spirit of the rule.\" This closes \"the spirit is a good changelog, and this one is fine\".\n- **Rationalization table:** each excuse from the baseline, verbatim, paired with a one-line counter. The first rows will be \"it's only a patch release\", \"I'll run it after tagging\", \"the spirit is satisfied\", the deadline and the manager's request to ship now.\n- **Red flags list:** thoughts like \"just this once\", \"it's trivial\" and \"after the tag\" mean stop and run the check.\n- **Description:** I'll add the violation symptoms (deadline, patch release, \"ship now\") to the \"Use when...\" line. I won't summarize the workflow there.\n\nAfter editing, I'll re-run the same three scenarios, 5 reps each, with the hardened skill. The existing baseline serves as the no-guidance control. I'll read every run that tags without the check, and any new rationalizations go back into the table. The budget is $0.50, so I'll keep the runs lean and tell you if the budget limits how many reps I can do.\n\nI'll send the diff and the results after the re-run.",
+  "ttft_ms": 3626,
+  "type": "result",
+  "duration_ms": 9177,
+  "ttft_stream_ms": 530,
+  "time_to_request_ms": 47,
+  "first_content_frame_ms": 531,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

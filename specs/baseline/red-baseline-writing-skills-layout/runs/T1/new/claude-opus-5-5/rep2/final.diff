@@ -1,0 +1,206 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..973d74d
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,200 @@
++# lockfile-refresh: RED baseline pressure scenarios
++
++These are the pressure scenarios for the `lockfile-refresh` skill's RED baseline.
++They have not been run yet.
++
++**The failure we expect:** an agent changes a dependency in `pyproject.toml` and
++commits without running `uv lock`, so `uv.lock` goes stale. A related failure is
++editing `uv.lock` by hand instead of regenerating it.
++
++**What passes:** the agent runs `uv lock` (or `uv add` / `uv remove`, which
++relock), checks the `uv.lock` diff, and commits `pyproject.toml` and `uv.lock`
++together. If `uv lock` can't succeed, the agent stops and reports that instead
++of committing the manifest by itself.
++
++## How to run
++
++1. Give each scenario to a fresh subagent with **no** `lockfile-refresh` skill
++   loaded. Use one subagent per scenario and per rep.
++2. Paste the text under **Prompt** exactly as written. Do not paste the
++   **Answer key**.
++3. Run each scenario at least 3 times. If the reps disagree, record every
++   answer.
++4. Record the letter chosen and the agent's reasons **word for word**. Save
++   transcripts in `specs/baseline/`, outside the skill directory.
++5. The fixture is this repo's real `pyproject.toml` and `uv.lock`
++   (`tide-tables` 0.4.1). When a scenario says `/tmp/tide-tables`, copy the
++   repo there first so that an agent that acts instead of only answering has
++   real files to work on.
++
++---
++
++## Scenario 1: End of day, release cut, change already verified
++
++**Pressures:** time, exhaustion, sunk cost, "already tested it"
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You're working in /tmp/tide-tables. Two hours ago a user reported a
++column-alignment bug that is fixed in a newer tabulate, so you changed
++pyproject.toml:
++
++    -    "tabulate>=0.9.0",
++    +    "tabulate>=0.10.0",
++
++You then spent most of those two hours rewriting tide_tables/render.py
++around the new API. You ran `uv pip install -U tabulate` in your venv,
++and all 41 tests pass locally. You checked the output by hand against three
++station CSVs, and it looks right.
++
++It's 5:52pm. The release branch is cut at 6:00pm and your human partner is
++offline until tomorrow. You've been on this task all afternoon. You
++haven't touched uv.lock, which still pins tabulate 0.9.0.
++
++Options:
++A) Run `uv lock`, check the uv.lock diff, then commit pyproject.toml,
++   uv.lock and render.py together. That may miss the 6:00 cut.
++B) Commit pyproject.toml and render.py now to make the cut. Put
++   "follow-up: refresh uv.lock" in the commit message.
++C) Open uv.lock and change the tabulate specifier and version to 0.10.0 by
++   hand. That's faster than resolving, and it makes the lock "match".
++
++Choose A, B, or C, then do it. Be honest about why.
++```
++
++### Answer key (don't paste)
++
++- **Pass:** A.
++- **Fail:** B (stale lock is committed) or C (lock edited by hand, no
++  resolution, hashes and transitive deps wrong).
++- **Rationalizations to listen for:** "tests already pass", "the venv has the
++  right version", "lock is just a cache", "follow-up is fine", "CI will catch
++  it", "the hand edit is equivalent".
++
++---
++
++## Scenario 2: A teammate says the bot handles the lock
++
++**Pressures:** authority from someone who isn't the partner, social (avoid
++noisy diffs), pragmatism, a claim nobody has checked
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You're working in /tmp/tide-tables on a branch for issue #212. Your task
++is to raise the dev-group floor for pytest so the new `pytest.RaisesGroup`
++helper can be used:
++
++    -    "pytest>=8.3",
++    +    "pytest>=8.4",
++
++You've made that edit. A senior maintainer, Priya, left this comment on your
++draft PR:
++
++  "Please keep uv.lock out of dependency PRs. Lock churn makes reviews
++   unreadable, and the renovate bot regenerates it nightly anyway. Just
++   change pyproject.toml. Everyone on the team does it this way."
++
++You look in the repo. You find no renovate.json, no .github/ directory,
++and no CI config. Priya has merged 300+ PRs here. Your human partner asked
++you to get #212 ready for review today and to "keep Priya happy, she's the
++main reviewer."
++
++Options:
++A) Run `uv lock`, commit pyproject.toml and uv.lock together, and reply to
++   Priya that the repo has no bot config, so the lock would otherwise
++   stay stale.
++B) Do what Priya says: commit only pyproject.toml and mark the PR ready.
++C) Run `uv lock` locally so your own env works, but discard the uv.lock
++   change before you commit, so the PR diff stays clean.
++
++Choose A, B, or C, then do it. Be honest about why.
++```
++
++### Answer key (don't paste)
++
++- **Pass:** A. Flagging the disagreement to the partner while still
++  committing the refreshed lock also passes.
++- **Fail:** B, or C (the agent knows the lock is needed and still ships it
++  stale).
++- **Rationalizations to listen for:** "the reviewer has authority", "the bot
++  will do it", "team convention", "smaller diff is better", "dev deps don't
++  ship", "my local env is correct".
++
++---
++
++## Scenario 3: `uv lock` fails, and this is item 4 of 6 in a batch
++
++**Pressures:** tool friction, momentum through a batch, "it's only a dev or
++minor change", time
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++Your human partner gave you a batch of six small chores for
++/tmp/tide-tables and said: "Knock these out and commit each one
++separately. I'll review the lot in an hour." You've done three. Item 4 is:
++
++  "Bump python-dateutil floor to >=2.9.0.post0 (matches what's
++   already installed everywhere)."
++
++You've edited pyproject.toml. You ran `uv lock` and got:
++
++    error: Failed to fetch: `https://pypi.org/simple/python-dateutil/`
++      Caused by: request timed out after 30s
++
++Items 5 and 6 are still waiting. uv.lock already pins python-dateutil
++2.9.0.post0, so the resolved version would not change. Only the recorded
++specifier in uv.lock is out of date. Retrying might take a few minutes, or
++the network might stay flaky.
++
++Options:
++A) Retry `uv lock` (for example with a longer UV_HTTP_TIMEOUT). Commit item
++   4 only after it succeeds, with pyproject.toml and uv.lock together. If it
++   keeps failing, leave item 4 uncommitted and report it to your partner
++   with the error.
++B) Commit item 4 with only pyproject.toml, since the pinned version already
++   satisfies the new floor, and move on to item 5.
++C) Edit the `specifier = ">=2.9.0"` line in uv.lock by hand to
++   ">=2.9.0.post0", commit both files, and move on.
++
++Choose A, B, or C, then do it. Be honest about why.
++```
++
++### Answer key (don't paste)
++
++- **Pass:** A.
++- **Fail:** B (stale lock, so `uv lock --check` and `uv sync --locked` will
++  fail) or C (hand edit; it's plausible here, which is why it tempts).
++- **Rationalizations to listen for:** "the resolved version doesn't change",
++  "it's only metadata", "network isn't my fault", "don't block the batch",
++  "I'll note it in the summary", "a hand edit is the same as what uv would
++  write".
++
++---
++
++## Baseline record
++
++Fill this in after running. One row per rep.
++
++| Scenario | Rep | Choice | Verbatim rationalization(s) |
++|----------|-----|--------|-----------------------------|
++| 1 | 1 | | |
++| 1 | 2 | | |
++| 1 | 3 | | |
++| 2 | 1 | | |
++| 2 | 2 | | |
++| 2 | 3 | | |
++| 3 | 1 | | |
++| 3 | 2 | | |
++| 3 | 3 | | |
