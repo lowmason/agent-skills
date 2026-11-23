@@ -13,12 +13,14 @@ It reads every Markdown file under <skill-dir> and renders each ```dot block tha
 a graph header. It skips a block with no `digraph` or `graph` header, such as a code
 fragment shown as a bad example. An anonymous graph gets the name `graph_<k>`. Each SVG
 is named `<file stem>-<graph name>.svg`, with a number added when a name repeats.
+The combined SVG is a digraph, so --combine skips an undirected `graph` block and names
+it on stderr.
 
 <out-dir> must lie outside the skill folder, because everything in that folder ships
 with the skill. Needs Graphviz's `dot` on PATH.
 
-Exit status: 0 when every block rendered (or none was found), 1 when a block failed
-(the other blocks still render), 2 for a usage error or a refusal.
+Exit status: 0 when every block rendered (or none was found), 1 when a block failed or
+--combine skipped one (the other blocks still render), 2 for a usage error or a refusal.
 
 A Python port of upstream superpowers' `render-graphs.js`. The port reads every Markdown
 file, skips fragments, exits non-zero on a failed block and writes outside the skill.
@@ -49,9 +51,13 @@ DOT_HINT = '\n'.join(
 _FENCE = re.compile(
     r'^[ \t]*```dot[ \t]*\n(.*?)^[ \t]*```[ \t]*$', re.MULTILINE | re.DOTALL
 )
+# DOT keywords are case-independent.
 _HEADER = re.compile(
-    r'(?:strict\s+)?(?:di)?graph\b(?:\s+(?P<name>\w+|"(?:[^"\\]|\\.)*"))?\s*\{'
+    r'(?:strict\s+)?(?P<kind>(?:di)?graph)\b(?:\s+(?P<name>\w+|"(?:[^"\\]|\\.)*"))?\s*\{',
+    re.IGNORECASE,
 )
+# Whitespace and comments before the header: // and # to the end of the line, /* */ blocks.
+_LEADING = re.compile(r'(?:\s+|//[^\n]*|#[^\n]*|/\*.*?\*/)*', re.DOTALL)
 _RANKDIR = re.compile(r'^[ \t]*rankdir[ \t]*=[ \t]*"?\w+"?[ \t]*;?[ \t]*$', re.MULTILINE)
 _UNSAFE_IN_FILE_NAME = re.compile(r'[^\w.-]+')
 
@@ -72,14 +78,9 @@ def dot_blocks(markdown: str) -> list[str]:
 
 
 def _header(block: str) -> re.Match[str] | None:
-    '''Match the graph header at the first line that is not blank and not a comment.'''
-    offset = 0
-    for line in block.splitlines(keepends=True):
-        stripped = line.strip()
-        if stripped and not stripped.startswith(('//', '#')):
-            return _HEADER.match(block, offset + len(line) - len(line.lstrip()))
-        offset += len(line)
-    return None
+    '''Match the graph header after any leading whitespace and comments.'''
+    leading = _LEADING.match(block)  # never None: every part of the pattern is optional
+    return _HEADER.match(block, leading.end() if leading else 0)
 
 
 def graph_name(block: str) -> str | None:
@@ -89,6 +90,13 @@ def graph_name(block: str) -> str | None:
         return None
     name = match.group('name') or ''
     return name[1:-1] if name.startswith('"') else name
+
+
+def is_directed(block: str) -> bool:
+    '''True for a `digraph` block. The combined diagram is a digraph, and dot rejects the
+    `--` edges of an undirected `graph` inside one.'''
+    match = _header(block)
+    return match is not None and match.group('kind').lower() == 'digraph'
 
 
 def find_blocks(skill_dir: Path) -> list[Block]:
@@ -147,6 +155,33 @@ def combine(blocks: list[Block], skill_name: str) -> str:
         + '\n\n'.join(clusters)
         + '\n}\n'
     )
+
+
+def _render_combined(blocks: list[Block], skill_name: str, out: Path) -> int:
+    '''Render the digraph blocks as one SVG. Skip each undirected block with a message.
+    Return the number of blocks skipped or failed.'''
+    failures = 0
+    for block in blocks:
+        if not is_directed(block.text):
+            print(
+                f'skipped: {block.source.as_posix()}: {block.name}: an undirected graph '
+                'cannot join the combined digraph; render it without --combine',
+                file=sys.stderr,
+            )
+            failures += 1
+    directed = [block for block in blocks if is_directed(block.text)]
+    if not directed:
+        return failures
+    source = combine(directed, skill_name)
+    (out / f'{skill_name}_combined.dot').write_text(source, encoding='utf-8')
+    try:
+        svg = render_svg(source)
+    except RenderError as exc:
+        print(f'failed: combined diagram: {exc}', file=sys.stderr)
+        return failures + 1
+    (out / f'{skill_name}_combined.svg').write_text(svg, encoding='utf-8')
+    print(f'rendered: {skill_name}_combined.svg')
+    return failures
 
 
 def render_svg(dot_text: str) -> str:
@@ -209,17 +244,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f'Found {len(blocks)} diagram(s) in {skill.name}/')
     failures = 0
     if args.combine:
-        skill_name = skill.name.replace('-', '_')
-        source = combine(blocks, skill_name)
-        (out / f'{skill_name}_combined.dot').write_text(source, encoding='utf-8')
-        try:
-            svg = render_svg(source)
-        except RenderError as exc:
-            print(f'failed: combined diagram: {exc}', file=sys.stderr)
-            failures += 1
-        else:
-            (out / f'{skill_name}_combined.svg').write_text(svg, encoding='utf-8')
-            print(f'rendered: {skill_name}_combined.svg')
+        failures += _render_combined(blocks, skill.name.replace('-', '_'), out)
     else:
         for block, name in zip(blocks, output_names(blocks)):
             try:
