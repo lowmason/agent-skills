@@ -43,9 +43,9 @@ Before you start implementing, you must, in order:
 4. Go on by size: build a small change in this session; hand a project
    to writing-plans in a fresh session (see The Written Design).
 
-If nothing is open when you write your first message and there's one
-sensible way, steps 1 to 3 happen in that message for a small change,
-and step 1 does for a project (see Your First Message).
+If nothing is open when you write your first message, step 1 happens
+in that message, and for a small change with one sensible way, steps 2
+and 3 do too (see Your First Message).
 
 Besides a quick, clear task, two things aren't implementing: a spike
 they said yes to (see Spike to feel things out), and doing what they
@@ -85,8 +85,10 @@ Move the work forward, with one of these:
   and the project leave open something whose answer would change what
   gets built, ask about the one that would change it most; when its
   choices can be named, sketch each concretely, with what it trades off
-  and which you'd pick. If nothing like that is open, there's one
-  sensible way. For a small change, end with the short design itself
+  and which you'd pick. If nothing like that is open and several ways
+  fit, end by laying them out (see Lay out the approaches). If one
+  does, there's one sensible way. For a small change, end with the
+  short design itself
   (the approach, a line on why the others don't fit, and the design in a
   few lines) and ask them to approve it. Their approval covers the
   approach and the design: build it in this session. For a project, end
@@ -232,7 +234,7 @@ message. Once they've accepted, put a mockup next to the description.
 
 ## Size the Work
 
-Once you understand what they want and they've picked an approach, say
+Once you understand what they want and an approach is picked, say
 how big the work is in plain words. They can override it.
 
 | Size | The design | After they approve it |
@@ -243,8 +245,9 @@ how big the work is in plain words. They can override it.
 
 Short or full, the design has an **Approaches** part: the two or
 three ways you considered building it, what each trades off, which one
-they picked, and why. They pick in the conversation, before you write
-the design.
+was picked, by whom, and why. The pick comes in the conversation,
+before you write the design; only a small change with one sensible way
+may carry both in one message.
 
 **A small change stays here.** Play the short design back in chat (the
 approaches, the pick, the how) and get their approval there. Then build
