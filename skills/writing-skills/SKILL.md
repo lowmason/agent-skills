@@ -142,7 +142,9 @@ cross-references to other skills.
 
 Before you add a flowchart to a skill, read
 [references/flowcharts.md](references/flowcharts.md): when a flowchart earns
-its place, and the graphviz style rules and render tool.
+its place, and the render tool. Before you draw it, read
+[references/graphviz-conventions.dot](references/graphviz-conventions.dot):
+the node shapes, edge labels and naming rules.
 
 ## Code Examples
 
@@ -299,7 +301,9 @@ When a baseline shows an agent breaking a rule it knows under pressure, read
 [references/bulletproofing.md](references/bulletproofing.md) before you write
 the counters: closing loopholes, the spirit-versus-letter line, the
 rationalization table, the red flags list and the description's violation
-symptoms.
+symptoms. Before you word the counters, read
+[references/persuasion-principles.md](references/persuasion-principles.md):
+which persuasion principles fit each skill type.
 
 ## RED-GREEN-REFACTOR for Skills
 
@@ -336,7 +340,7 @@ Full pressure-scenario runs are the final gate, but they are slow and expensive 
 
 Micro-tests verify wording; they do not replace pressure scenarios for discipline skills.
 
-**Testing methodology:** See [testing-skills-with-subagents.md](testing-skills-with-subagents.md) for the complete testing methodology:
+**Testing methodology:** See [references/testing-skills-with-subagents.md](references/testing-skills-with-subagents.md) for the complete testing methodology:
 - How to write pressure scenarios
 - Pressure types (time, sunk cost, authority, exhaustion)
 - Plugging holes systematically

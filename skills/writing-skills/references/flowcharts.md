@@ -26,7 +26,7 @@ digraph when_flowchart {
 - Linear instructions → Numbered lists
 - Labels without semantic meaning (step1, helper2)
 
-See [graphviz-conventions.dot](../graphviz-conventions.dot) in the skill's directory for graphviz style rules.
+See [graphviz-conventions.dot](graphviz-conventions.dot) for graphviz style rules.
 
 **Visualizing for your human partner:** run [scripts/render_graphs.py](../scripts/render_graphs.py) to render a skill's flowcharts to SVG. It reads every Markdown file in the skill, skips a `dot` block with no graph header, and exits non-zero when a block fails. It needs Graphviz's `dot` on PATH. Give it an output folder outside the skill, since everything in the skill folder ships with the skill. From writing-skills' directory:
 ```bash
