@@ -225,6 +225,47 @@ Borderline calls:
 - T4 gate, before the arms (2026-11-22): "Run arms, cap $9.00 (Recommended)". The spend stop rose from $8.00 to $9.00 for the three arms.
 - T4 outcome, after the arms (2026-11-22): "(b) Known gap (Recommended)". B's text stays as measured, and T4 strict at 3 of 5 on B is a known gap, recorded here and in `NOTICE`.
 
+## agy probe (item 8)
+
+Item 8 asks for an Antigravity CLI (`agy`) launch line in `visual-companion.md`. The line comes from a live run, never from a guess. In this section, `<repo>` is this worktree, `<scratch>` is each run's new folder under `/tmp`, and `<outd>` is the run's output folder under `~/.cache/agent-skills/scratch/`. The raw agy output stays in `<outd>`, outside the repository, because it holds home paths and conversation ids.
+
+### Docs read (Step 1, 2026-11-22, agy 1.5.7)
+
+- `agy --help`: the flags include `--mode` (accept-edits, auto, plan), `--sandbox`, `--settings`, `--input-format stream-json` (which needs `--output-format stream-json`), `--print-timeout` and `--dangerously-skip-permissions`. No flag runs a command in the background.
+- `specs/guides/antigravity-customization-guide.md`: no line says how to keep a shell process alive. Auto mode is the default since 1.5.7, `-p` included (line 523). Auto mode turns the terminal sandbox on, and a sandboxed command has no network by default (line 560).
+- `agy changelog` (the local copy lists releases to 1.5.14): earlier entries keep daemon background commands, such as dev servers, running after a headless turn ends. A later headless entry ends daemon processes when the run ends. `manage_task` lists and stops background tasks.
+- agy's online docs (antigravity.google/docs, the CLI headless, terminal and sandbox pages, read through a web-fetch agent; the site lists CLI 1.5.12): no `run_command` parameter for a daemon is documented. A headless process exits after its input closes and the current turn ends. The macOS sandbox profile limits file access and sockets. No flag turns the sandbox off. `enableTerminalSandbox` defaults to false, but auto mode turns the sandbox on. Outside auto mode, a headless run denies each command that needs approval, so the run needs command allow rules.
+- Mechanism tested: a daemon background command in agy's terms. The agent starts it with `run_command` in turn 1 of one stream-json session, and agy keeps it as a background task. Turn 2 checks the server's pid.
+
+### Runs
+
+Each run is one session with two turns, from `<scratch>`, which is outside every repository. Turn 1 asks agy to start `start-server.sh --project-dir <scratch> --foreground` as a daemon background command and to print its startup JSON. `--open` is left out, so no browser opens. Turn 2 runs the plan's check, `test -f <state_dir>/server-info && ! test -e <state_dir>/server-stopped && kill -0 "$(cat <state_dir>/server.pid)" && echo ALIVE || echo DEAD`. The command for run 3:
+
+```bash
+cd <scratch> && agy --mode accept-edits --settings <outd>/run3-settings.json --input-format stream-json --output-format stream-json --print-timeout 600s < <outd>/run3-input.ndjson
+```
+
+Runs 1 and 1b leave out `--mode` and `--settings`, and run 2 uses the same flags as run 3. Run 3's settings turn the terminal sandbox off (`"enableTerminalSandbox": false`) and allow six commands: `command(<scratch>/scripts/start-server.sh)`, `command(test)`, `command(cat)`, `command(kill -0)`, `command(echo)`, and one `command(regex:...)` rule that matches only the turn-2 check on `<scratch>`'s state folder. Run 2 has the first five rules.
+
+| Run | agy | Mode | Terminal sandbox | Script | Turn 1 | Turn 2 | Result |
+|---|---|---|---|---|---|---|---|
+| 1 | 1.5.7 | auto (default) | on | `<repo>/skills/brainstorming/scripts/start-server.sh` | agy's `read_file` on the script, outside its workspace, was denied (headless). The command never ran. | prints nothing | Inconclusive |
+| 1b | 1.5.7 before run 1 (not read again at 1b) | auto (default) | on | a copy of `start-server.sh`, `server.cjs`, `helper.js` and `frame-template.html` in `<scratch>/scripts/` | `run_command` became background task `task-12` and printed the startup JSON | `kill ... failed: operation not permitted`, then `DEAD`. `manage_task` status in turn 2: `RUNNING`. The agent's retry outside the sandbox was denied (headless). | DEAD by the check. The sandbox blocks `kill -0` |
+| 2 | 1.5.14, after an auto-update | accept-edits | off | the copy | the server started as a background task and printed the startup JSON | the check was denied, since no word-prefix allow rule matches a compound command | No turn-2 output |
+| 3 | 1.5.14 | accept-edits | off | the copy | `run_command` stayed `ACTIVE` as a background task, and turn 1 returned the startup JSON | `ALIVE` (exit 0) | **ALIVE** |
+
+After runs 1b and 2, the server outlived the session. In run 1b, `ps` still listed `node server.cjs` after the session. A later `stop-server.sh` printed `{"status": "stale_pid"}`, because by then the server had stopped itself: its watchdog exits when the owner process has exited (`server.cjs`, `ownerAlive()`). After run 2, `stop-server.sh` printed `{"status": "stopped"}`. After run 3, `stop-server.sh <session_dir>` printed `{"status": "stopped"}`. Each scratch folder was deleted, and no `server.cjs` process was left.
+
+### Owner rulings
+
+- Step 2 (2026-11-22): "Both runs (Recommended)". Run 1 in default auto mode with the sandbox on. Only if turn 2 prints DEAD, run 2 with `--mode accept-edits` (sandbox off) and `--settings` allow rules for exactly `start-server.sh`, `test`, `cat`, `kill -0` and `echo`, never `--dangerously-skip-permissions`.
+- After run 1 (2026-11-22): "Re-run on a copy (Recommended)". Repeat run 1 on a copy of the four server files inside a new scratch folder, with the same run-2 rule.
+- After run 2 (2026-11-22): "One more run (Recommended)". Run 3 on agy 1.5.14, on a copy in a new folder, with the sandbox off, the approved rules and one regex allow rule that matches only the turn-2 check.
+
+### Verdict
+
+Turn 2 printed ALIVE in run 3, so `visual-companion.md` gets Form 1, with the flag `--foreground`. The mechanism is that agy keeps the `run_command` running as a background task across turns. It is proven on agy 1.5.14, in `--mode accept-edits`, with the terminal sandbox off. Auto mode with the sandbox on is not proven: in run 1b the background task stayed `RUNNING`, but the sandbox blocked the check, and the run cannot show whether a browser reaches the server.
+
 ## Spend
 
 Running total of `total_cost_usd` over every rep and vote of plan 106, read from the raw JSON (so a void rep's cost counts). The plan stops for the owner before the total passes $3.00 at the end of Task 2, and before it passes $8.00 at any point.
