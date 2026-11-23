@@ -48,10 +48,11 @@
 - **D3** (owner, brief, 2026-11-23): `~/.cache/agent-skills/scratch/plan105/` still holds unscrubbed rep output. Ask the owner before any Codex seat, and do not delete that folder without asking. Applied in: Global Constraints (Codex).
 - **D4** (owner, brief, 2026-11-23): copying plan 105's guard kit fires the backlog item "Close the three Glob audit limits when the guard kit is reused"; moving or rewriting a writing-skills file with a guard run fires "Add a guard case that only the moved file can pass". This plan copies `audit.py`, so the first fires, and Task 1 closes it. Whether the second fires is Open for plan review item 13. Applied in: Task 1.
 - **D5** (owner, brief, 2026-11-23): close each of the three Glob limits with a test and a mutant (the backlog item's own "Done when"). Applied in: Task 1.
+- **D6** (owner, plan review, 2026-11-23): "Approve as proposed": every default in Open for plan review (items 1–14), so the $50 cap with its $42 projection stop, the case wording and pass rules, the trigger prompts and bars, and the new skill text are final. Applied in: Global Constraints, Tasks 1–7.
 
 ## Open for plan review
 
-Each item carries the default this plan uses.
+Resolved at plan review on 2026-11-23: the owner approved each default as proposed (D6). Each item carries the default this plan uses.
 
 1. **The cap** (plan 105's D2). $50, with Task 2's projection (stop above $42) and the pair check. The estimate: 60 case reps at plan 105's tools-rep rates (about $0.12 Sonnet, $0.28 Opus) ≈ $12; 192 trigger reps at about $0.05 Sonnet and $0.15 Opus ≈ $19; probes and pilots ≈ $2.
 2. **The case wording and pass rules** (Task 1 Step 4). M1, T2 and R3 as the table states.
