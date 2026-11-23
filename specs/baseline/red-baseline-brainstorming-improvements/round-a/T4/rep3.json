@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 22074,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.040986800000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8574,
+    "output_tokens": 1820,
+    "output_tokens_details": {
+      "thinking_tokens": 1190
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1820,
+      "cacheReadInputTokens": 8574,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.040986800000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1190,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write it up, there's a bigger choice still open. We settled how recordings get cleaned up, but not where the guide lives or how volunteers get recordings into it. That shapes most of the design.\n\n**1. Build it into your existing website.** Each exhibit gets a page on the Eleventy site, and the code beside the exhibit opens that page. The page plays the story in the visitor's chosen language. Volunteers sign in to a simple upload page, pick the exhibit and language, and upload from their phone. Each upload is cleaned up automatically, and the site republishes itself on Netlify.\n- *Gains:* it uses what you already run, so there's no new service to pay for or look after. At 120 recordings and about 20 more a year, the size is no problem.\n- *Costs:* I'd have to build the volunteer upload page and sign-in, and they're the fiddliest part.\n\n**2. Same visitor pages, but recordings kept in a separate media service.** The pages live on your site, but uploads go to a hosted audio storage service, which also does the clean-up.\n- *Gains:* less for us to build on the upload side.\n- *Costs:* another account and possibly a monthly bill, and the recordings live outside your site.\n\n**3. Use a ready-made museum guide app** instead of building one. Some are free for museums.\n- *Gains:* almost nothing to build.\n- *Costs:* visitors may need to install an app rather than just scan and listen. Welsh support and automatic clean-up aren't guaranteed. The guide wouldn't look or feel like your site.\n\nI recommend **1**. It keeps everything on the site you already have, it's built around the \"scan and listen\" moment you described, and it gives volunteers one place to upload. Which way do you want to go?\n\nThis is a project rather than a quick change, so once you've picked, I'll write the full design as a document in the repository. A reviewer will read it first, and I may come back once with a few questions before I hand it over.",
+  "ttft_ms": 15244,
+  "type": "result",
+  "duration_ms": 22121,
+  "ttft_stream_ms": 1930,
+  "time_to_request_ms": 47,
+  "first_content_frame_ms": 1930,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

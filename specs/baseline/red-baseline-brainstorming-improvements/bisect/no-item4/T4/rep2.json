@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 20415,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.037578,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 8650,
+    "output_tokens": 1648,
+    "output_tokens_details": {
+      "thinking_tokens": 1103
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1648,
+      "cacheReadInputTokens": 8650,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.037578,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1103,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write it up, one bigger choice is still open, and it shapes the whole design: **where the guide lives and how volunteers get their recordings into it.** The clean-up step we just picked sits inside whichever of these you choose.\n\nThis is project-sized. I'll write a full design document, and a reviewer will read it before you see it.\n\n**1. Part of your existing website, with a simple editing screen.** Each exhibit gets a page on the current Eleventy site, and the code beside the exhibit points to it. Volunteers log into an editing screen added to the site, such as Decap CMS, and upload there. A small automatic step cleans the audio, and the site republishes.\n- Cheapest to run, and it's one site with your branding.\n- Each upload triggers a rebuild of the site, so a new story takes a few minutes to go live.\n- Audio files pile up in the website's repository over time, so they'd need moving to separate file storage.\n\n**2. A small separate guide app.** It has its own upload page for volunteers, file storage, and a cleaning service, and the website just links to it.\n- New stories go live almost immediately, and it's easiest to grow, for example with listen counts or a third language.\n- It's a second thing to host, pay for, and keep running, and someone has to look after it.\n\n**3. A hosted audio-guide service.** Several services exist for museums that do this already.\n- Least to build, but there's a yearly fee, less control over the look, and the cleaning depends on what the service offers.\n\nI recommend **1**, with the audio kept in separate file storage. Ten new stories a year doesn't need instant publishing, and it keeps everything on what the museum already runs and pays for.\n\nWhich way do you want to go?",
+  "ttft_ms": 14362,
+  "type": "result",
+  "duration_ms": 20501,
+  "ttft_stream_ms": 1889,
+  "time_to_request_ms": 86,
+  "first_content_frame_ms": 1889,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

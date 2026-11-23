@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 13358,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.023877399999999997,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8627,
+    "output_tokens": 964,
+    "output_tokens_details": {
+      "thinking_tokens": 485
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 964,
+      "cacheReadInputTokens": 8627,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.023877399999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 485,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "No actions this turn. The scope is settled, so I'm moving on to the next open question.\n\n---\n\nGood. One case could undo the whole thing, so I'd like to settle it before we get to how acknowledgments and on-call work.\n\nOn a January night, one likely way to lose the heater is a power cut or a tripped breaker. That same event would probably take down the machine running the broker, `ingest/`, and this new service. Then nothing watches the readings, nothing notices the sensors went quiet, and nobody gets a text. That's exactly the night you built this for.\n\nThere are three ways to handle it:\n\n- **Outside watchdog.** The service checks in every few minutes with a small hosted heartbeat service. If the check-ins stop, that service texts the on-call person. This covers power loss, a crashed machine, and a dead internet link. It adds one external dependency and possibly a small monthly cost.\n- **Battery backup (UPS)** on the machine, the router, and the broker. This keeps everything running through a short outage. It doesn't help if the machine crashes or the internet drops, and it only lasts as long as the battery.\n- **Accept the gap.** If the heater is on a different circuit or has its own failure alarm, a power cut may not be your real risk.\n\nI'd pick the outside watchdog. It's the only one that catches \"the alerting system itself is gone,\" and it's cheap to add.\n\nIs power loss a real risk for your greenhouse? Is the heater on the same supply as the machine running all this?",
+  "ttft_ms": 8221,
+  "type": "result",
+  "duration_ms": 13403,
+  "ttft_stream_ms": 1960,
+  "time_to_request_ms": 52,
+  "first_content_frame_ms": 1961,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

@@ -81,6 +81,12 @@ On Windows, the script auto-detects and switches to foreground mode (which block
 <this-skill-dir>/scripts/start-server.sh --project-dir /path/to/project --open --foreground
 ```
 
+**Antigravity CLI (`agy`):**
+```bash
+# Needs --mode accept-edits with the terminal sandbox off (auto mode is not proven). agy then keeps this run_command running as a background task across turns (agy 1.5.14).
+<this-skill-dir>/scripts/start-server.sh --project-dir /path/to/project --open --foreground
+```
+
 **Copilot CLI:**
 ```bash
 # Use --foreground and start the server via the bash tool with mode: "async"
@@ -289,6 +295,8 @@ If `$STATE_DIR/events` doesn't exist, the user didn't interact with the browser 
 ```bash
 <this-skill-dir>/scripts/stop-server.sh $SESSION_DIR
 ```
+
+`$SESSION_DIR` is the session directory: the parent of `screen_dir` and `state_dir` from the startup JSON (for example `/path/to/project/.brainstorm/12345-1706000000`).
 
 If the session used `--project-dir`, mockup files persist in `.brainstorm/` for later reference. Only `/tmp` sessions get deleted on stop.
 

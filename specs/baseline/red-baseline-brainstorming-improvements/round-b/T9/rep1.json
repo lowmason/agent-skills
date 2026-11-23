@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 14117,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0775262,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7202,
+    "cache_read_input_tokens": 1711,
+    "output_tokens": 978,
+    "output_tokens_details": {
+      "thinking_tokens": 529
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7202,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 978,
+      "cacheReadInputTokens": 1711,
+      "cacheCreationInputTokens": 7202,
+      "webSearchRequests": 0,
+      "costUSD": 0.0775262,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 529,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7202,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Glad the cards work for you. The version you saw was a quick throwaway with no tests, sitting outside your project. Before anything goes into `gigtools`, here are the ways to bring it in:\n\n**1. Rebuild it properly in `gigtools`, using the test version as the look to match.** (My pick.) It would be a new script next to your mailing-list scripts. It keeps the same A5 layout: huge title, then key, capo if there is one, and who starts. This time it would come with tests for the cases that could trip it up mid-gig:\n   - a title too long to fit at full size\n   - a blank capo cell\n   - a song with no starter filled in\n   - a column renamed in the spreadsheet\n\n   It takes a bit longer, but the cards should hold up when the setlist changes.\n\n**2. Copy the test version in as it is and add tests afterward.** This is the fastest way. But the test version was only written to handle the setlist you have today. Anything unusual in next month's sheet would turn up as an ugly or broken card, possibly on the night.\n\n**3. Make a web page per song and print from the browser.** This makes the look easy to tweak, but browsers scale printouts unpredictably. That works against \"readable from the floor,\" so I'd drop it.\n\nThis is a small change, one script plus its tests, so I'd write a short design here in chat for you to approve and then build it in this session.\n\nWhich way do you want to go?",
+  "ttft_ms": 8669,
+  "type": "result",
+  "duration_ms": 14224,
+  "ttft_stream_ms": 2443,
+  "time_to_request_ms": 107,
+  "first_content_frame_ms": 2443,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

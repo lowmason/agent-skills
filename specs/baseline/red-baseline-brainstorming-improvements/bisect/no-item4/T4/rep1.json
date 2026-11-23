@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 22704,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0981142,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7298,
+    "cache_read_input_tokens": 1711,
+    "output_tokens": 1969,
+    "output_tokens_details": {
+      "thinking_tokens": 1487
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7298,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1969,
+      "cacheReadInputTokens": 1711,
+      "cacheCreationInputTokens": 7298,
+      "webSearchRequests": 0,
+      "costUSD": 0.0981142,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1487,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7298,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write it up, one choice shapes most of the build: how a volunteer's recording gets from their phone onto the guide. Here are the two ways that fit your Netlify site.\n\n**1. Built into your existing website.** Each exhibit gets a page on the current site, in English and Welsh, and that page's address is what the code beside the exhibit opens. Volunteers sign in to a simple editing screen on the site, pick the exhibit, and upload. An automatic step levels the volume, trims the silences, and republishes the site. The new recording is live a few minutes later.\n- Trade-off: no new accounts or monthly costs, and one system to look after.\n- Trade-off: there's a short wait before a recording goes live, and the recordings are stored alongside the website's files. At about 120 recordings that's manageable.\n\n**2. A separate audio hosting service.** Recordings go to a media service through an upload form, and the service cleans them up. The guide pages play the audio from that service.\n- Trade-off: uploads go live almost instantly, and the website itself stays small.\n- Trade-off: it adds a second account, probably a monthly fee, and another login for volunteers.\n\nI recommend **1**. Ten new recordings a year doesn't need instant publishing. It also keeps everything in the website you already run, so there's less for anyone to maintain.\n\nThis is a full design, so I'll write it as a document in the repository. A reviewer will read it first, and I may come back once with a few questions. Which way do you want to go?",
+  "ttft_ms": 18004,
+  "type": "result",
+  "duration_ms": 22797,
+  "ttft_stream_ms": 1834,
+  "time_to_request_ms": 88,
+  "first_content_frame_ms": 1834,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

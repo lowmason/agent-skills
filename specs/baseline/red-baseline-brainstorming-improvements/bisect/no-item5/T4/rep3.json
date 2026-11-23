@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 24757,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.04468540000000001,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8667,
+    "output_tokens": 2004,
+    "output_tokens_details": {
+      "thinking_tokens": 1429
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2004,
+      "cacheReadInputTokens": 8667,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.04468540000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1429,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before writing the design, there's one more choice to make, and it's a big one.\n\nACTION: none\n\nBefore I write it up, there's one bigger choice we haven't made: **where volunteers upload recordings, and where the guide lives.** Your site is plain pages on Netlify, with nowhere to accept uploads yet. Volunteers record on their phones, so uploading from a phone should be easy. Three ways to do it:\n\n1. **An editing panel added to the website.** Volunteers log in to an admin page and attach their recording. Each recording is saved alongside the website's files, cleaned up, and published when the site rebuilds. It's closest to what you have now. The downsides: these panels are fiddly on a phone, every upload rebuilds the whole site, and sixty stories in two languages make the site's files grow quickly.\n\n2. **A simple upload page on the same Netlify account (my recommendation).** A phone-friendly page, behind a volunteer password: pick the exhibit, pick English or Welsh, upload. The recording is stored separately from the website and cleaned up as soon as it arrives. The exhibit's guide page plays the latest version. Nothing is rebuilt, and no new service is involved. It does mean a little more of our own code to look after.\n\n3. **An off-the-shelf audio guide service.** Least to build. But it costs a monthly fee, gives you less control over the look and the Welsh experience, and may not do the automatic clean-up you just chose.\n\nI recommend 2. It fits how volunteers actually work, and it keeps everything on the setup you already have.\n\nThis is a full project, not a quick change. Once you've picked, I'll write the design as a document in the repository. A reviewer will read it before you do, and I may come back once with a few questions.\n\nWhich way do you want to go?",
+  "ttft_ms": 18510,
+  "type": "result",
+  "duration_ms": 24796,
+  "ttft_stream_ms": 2019,
+  "time_to_request_ms": 48,
+  "first_content_frame_ms": 2019,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

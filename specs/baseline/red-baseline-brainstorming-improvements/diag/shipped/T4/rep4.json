@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 25367,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0478898,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8749,
+    "output_tokens": 2163,
+    "output_tokens_details": {
+      "thinking_tokens": 1518
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2163,
+      "cacheReadInputTokens": 8749,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0478898,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1518,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write this up, there's one more choice about how it gets built. The museum's site is a static site on Netlify, so it can't accept uploads on its own. Where the guide lives and how a volunteer's recording reaches it shapes most of the design.\n\n**(1) Guide pages on your existing site, recordings stored in the site's code.** Each exhibit gets a page like `harbourmuseum.org/guide/anchor-chain`, and the code beside the exhibit opens it. Visitors need no app. Volunteers use a simple editing screen added to the site. Each upload is saved into the site's files, cleaned up, and published with the next site update.\n- Trade-off: it's the fewest new parts.\n- But 120 recordings, plus ten new stories a year in two languages, make the site's files heavy.\n- Each new recording also waits for a full site update before visitors hear it.\n\n**(2) Guide pages on your existing site, recordings stored separately.** Visitors get the same pages and the same codes. Volunteers use a small password-protected upload page. Each recording goes to file storage alongside the site, gets cleaned up as it arrives, and is live within a minute or so.\n- Trade-off: one more piece to look after, the storage, which is a few pounds a month at most at your size.\n- The site itself stays light.\n\n**(3) An off-the-shelf audio-guide service.** You pay a subscription and get their app or player and their upload tool.\n- Trade-off: almost nothing to build.\n- But it costs more every year, your Welsh support depends on what they offer, and the clean-up step is theirs to do or not.\n\nI recommend **(2)**. It keeps the guide part of your own site, adds recordings without anyone technical, and the clean-up you chose fits naturally into the upload step.\n\nThis is a project-sized piece of work. Once you pick, I'll write the full design as a document in the repository. A reviewer will read it first, and I may come back once with a few questions before handing it over.\n\nWhich way do you want to go?",
+  "ttft_ms": 18511,
+  "type": "result",
+  "duration_ms": 25403,
+  "ttft_stream_ms": 1649,
+  "time_to_request_ms": 37,
+  "first_content_frame_ms": 1649,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

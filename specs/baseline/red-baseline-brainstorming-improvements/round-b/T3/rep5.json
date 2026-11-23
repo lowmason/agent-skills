@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 11567,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0215654,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8627,
+    "output_tokens": 848,
+    "output_tokens_details": {
+      "thinking_tokens": 611
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 848,
+      "cacheReadInputTokens": 8627,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0215654,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 611,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "No actions this turn.\n\nThe two-hour window is what I keep coming back to. With repeats every 15 minutes, a person who sleeps through the texts loses half that window by the fourth one, and nothing else happens.\n\n**If the on-call person doesn't respond, what should happen next?**\n\nYour answer decides whether this is a simple \"text one person\" service or one that also tracks the rest of the team and hands the alert on.\n\nOne thing I'll need to settle soon after: how someone says \"I'm on it.\" Replying to the text is the most natural way, but receiving replies means the SMS provider has to reach this service from the internet. Right now everything here runs locally against the broker and `greenhouse.db`. I'll come back to that once I know who's in the chain.",
+  "ttft_ms": 8175,
+  "type": "result",
+  "duration_ms": 11629,
+  "ttft_stream_ms": 1713,
+  "time_to_request_ms": 63,
+  "first_content_frame_ms": 1713,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

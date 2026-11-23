@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 11543,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0213186,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8433,
+    "output_tokens": 838,
+    "output_tokens_details": {
+      "thinking_tokens": 299
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 838,
+      "cacheReadInputTokens": 8433,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.0213186,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 299,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "No actions this turn. I'm playing back what I've understood so far and asking the next question.\n\n---\n\nHere's what I've got so far.\n\n**What it's for:** a logbook for your amateur radio contacts, to replace the paper notebook and the monthly retyping into a spreadsheet. You're the main reader. It needs to do three things:\n\n- **Lookup:** quickly answer \"have I worked this station before?\"\n- **Yearly export:** once a year, produce an ADIF file of everything to upload to Logbook of The World (LoTW) so contacts get confirmed for awards.\n- **Work offline:** you log about thirty contacts a week, at home and at field days, and field days sometimes have no internet. Logging and lookup can't depend on a connection.\n\n**What I'm filling in (correct me):**\n\n- Each contact records at least the fields LoTW needs to match a QSO: the other station's callsign, date and time in UTC, band or frequency, and mode. Signal reports, name, and notes are optional extras. This way the yearly export uploads cleanly without fixing records by hand.\n- The years already in your spreadsheet should come into the new log. Otherwise \"have I worked them before?\" only knows about contacts from now on.\n- This is a log, not a station-control program. No rig control and no live spotting, since nothing you've said needs them.\n\nWhat's wrong or missing there?\n\nNext question: when you make a contact, at home or at a field day, what does the moment of writing it down look like today? Where are you sitting, what's in your hands, and how soon after the contact does it go into the notebook? The answer decides whether this should be built for fast entry right at the radio, or for typing up a batch afterward.",
+  "ttft_ms": 5643,
+  "type": "result",
+  "duration_ms": 11610,
+  "ttft_stream_ms": 2218,
+  "time_to_request_ms": 69,
+  "first_content_frame_ms": 2218,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

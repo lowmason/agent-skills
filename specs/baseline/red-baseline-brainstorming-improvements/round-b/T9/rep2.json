@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 11788,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.022459000000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 8555,
+    "output_tokens": 893,
+    "output_tokens_details": {
+      "thinking_tokens": 379
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 893,
+      "cacheReadInputTokens": 8555,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.022459000000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 379,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "No actions this turn. Keeping the spike means building it properly, so I'll settle with you how it goes into `gigtools` before anything lands on `stage-cards`.\n\n---\n\nGlad it works for you. The spike was a quick look: it has no tests, and it was never meant to live in your repo. So before I bring it in, here's how I see the options:\n\n**1. Add it to `gigtools` as its own script (my pick).**\nIt would sit next to the two mailing-list scripts as `stage_cards.py`. You'd run `python stage_cards.py setlist.xlsx` and get `cards.pdf`. I'd rebuild it from what the spike taught us: same A5 cards with the huge title, key, capo, and who starts. I'd add a few tests covering reading the spreadsheet, a song with no capo, and a missing cell. It's one place for all the band's tools, and it's small.\n\n**2. Keep it as a separate little tool outside `gigtools`.**\nThis only makes sense if the cards have nothing to do with the mailing-list side and you'd rather they never mixed. The cost is a second thing to keep track of, for one script.\n\n**3. Share the spreadsheet-reading code with the mailing-list scripts.**\nThis is only worth it if those scripts read the same setlist file. I haven't seen that they do, so I'd skip it unless you know otherwise.\n\nI'd go with 1, because it's the smallest change that gives you a proper, tested version where the rest of your band's tools already live. Which way do you want to go? Once you pick, I'll write up the short design for you to approve, then build it.",
+  "ttft_ms": 6213,
+  "type": "result",
+  "duration_ms": 11885,
+  "ttft_stream_ms": 1957,
+  "time_to_request_ms": 115,
+  "first_content_frame_ms": 1957,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

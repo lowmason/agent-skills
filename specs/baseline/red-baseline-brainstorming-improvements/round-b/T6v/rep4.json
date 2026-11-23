@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 23527,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.050932599999999995,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8763,
+    "output_tokens": 2315,
+    "output_tokens_details": {
+      "thinking_tokens": 882
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2315,
+      "cacheReadInputTokens": 8763,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.050932599999999995,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 882,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Write `specs/release-notes-breaking-flag.md`\n```markdown\n# Breaking-change flag in release notes\n\nSource: `specs/deferred_items.md` item 7 (picked via /deferred, disposition Design).\n\n## Intent\n\n`release-notes` writes one bullet per merged pull request. Breaking changes\ncurrently look like every other bullet. Two audiences need to spot them:\n\n- **People reading the notes** should see breaking changes at a glance.\n- **`announce`** should put breaking changes first in its post.\n\n## Goals\n\n- `release-notes` marks a bullet as breaking when its pull request carries\n  the `breaking` label.\n- `changelog-check` (`skills/changelog-check/parse.py`) accepts marked\n  bullets and records which entries are breaking.\n- `announce` lists breaking entries before all others.\n\n## Non-goals\n\n- No other severity levels or flags (deprecations, security, etc.).\n- No change to how `release-notes` picks or words bullets beyond the tag.\n- No rewriting of existing release notes.\n\n## Anti-goals\n\n- Older notes, with no tags, must not start failing `changelog-check` or\n  parse any differently than they do today.\n\n## Constraints\n\n- `parse.py` today splits each bullet on \" — \" and rejects a bullet with\n  more than two parts. That rule stays as it is for the rest of the bullet.\n\n## Approaches\n\n1. **Third part:** append \" — breaking: yes\" to the bullet and let\n   `parse.py` accept three parts. Loosens the two-part rule for every\n   bullet, and the flag sits at the end of the line, where readers are\n   least likely to see it.\n2. **Leading tag:** start the bullet with `[breaking]`, which `parse.py`\n   reads and strips before it splits. Untagged bullets parse exactly as\n   before, and the tag is the first thing a reader sees.\n\n**Picked: 2**, by the partner, on Claude's recommendation: older notes stay\nvalid unchanged, and the tag is visible at a glance.\n\n## The design (agreed with the partner)\n\n- **`release-notes`** (`skills/release-notes/SKILL.md`): when the pull\n  request carries the `breaking` label, start its bullet with `[breaking]`.\n- **`parse.py`:** if a bullet starts with `[breaking]`, strip it, set\n  `breaking=True` on the entry, then split and validate the remainder as\n  today. Every other entry gets `breaking=False`.\n- **`announce`** (`skills/announce/SKILL.md`): list breaking entries first.\n- **Test** in `skills/changelog-check/`: one tagged bullet and one\n  untagged bullet, checking the `breaking` value and that the rest of each\n  entry parses the same as before.\n\n## Claude's calls (not discussed; easy to change)\n\n- Exact tag text is `[breaking]`, lowercase, followed by one space, placed\n  after the bullet marker (`- [breaking] …`). A tag anywhere else is just\n  text.\n- `announce` keeps the original order within each group (breaking, then\n  the rest) and keeps the `[breaking]` tag visible in the post.\n\n## Left to the builder\n\n- How `release-notes` reads pull request labels, following whatever it\n  already uses to gather pull request data.\n- Where `breaking` lives on the parsed entry, following `parse.py`'s\n  existing entry structure.\n```\n\nACTION: Dispatch a fresh general-purpose subagent (`model: opus`) with the prompt from `builder-check-prompt.md`, pointed at `specs/release-notes-breaking-flag.md`.\n\nSince this came from `/deferred`, I'm writing the design up as a spec file rather than leaving it in chat. Planning reads that file, and the deferred list gets marked as planned against it. It's in `specs/release-notes-breaking-flag.md`. I added two small calls of my own that are marked as such: the exact tag form (`- [breaking] …`), and that `announce` keeps the original order within each group.\n\nA reviewer is reading it now as if they had to build from it. I may come back once with a few questions before I hand it to you.\n\nOne thing to know meanwhile: this directory isn't a git repository, so I can't commit the spec or the deferred-list update yet. Should I run `git init` here, or is the real repo somewhere else?",
+  "ttft_ms": 11007,
+  "type": "result",
+  "duration_ms": 23574,
+  "ttft_stream_ms": 2635,
+  "time_to_request_ms": 58,
+  "first_content_frame_ms": 2635,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

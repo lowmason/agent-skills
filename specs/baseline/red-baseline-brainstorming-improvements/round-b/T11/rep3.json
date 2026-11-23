@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 13016,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.025190800000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8654,
+    "output_tokens": 1029,
+    "output_tokens_details": {
+      "thinking_tokens": 549
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1029,
+      "cacheReadInputTokens": 8654,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.025190800000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 549,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's what I understand: on Saturday mornings the two coordinators need a list of loans that are past due and still out, so they can phone those borrowers without scrolling through everything. \"Phoned\" records the call so the other coordinator doesn't ring the same person that week.\n\n**What I found:**\n- The dashboard's two panels share `dashboard/panel.html`. It shows the tool, borrower and phone, oldest due date first.\n- Nothing on a loan records a call yet.\n- The panel has no buttons. The loan pages' \"Mark returned\" button is a small form I can copy.\n\n**Short design** (I see one sensible way to build this):\n\n- **Data:** add a `phoned_on` date to `Loan`, empty by default, with a migration.\n- **Overdue panel:** shows loans that are not returned and were due before today. It also leaves out any loan phoned in the last seven days. A loan phoned on a Saturday comes back the following Saturday if it's still out. It reuses `panel.html`, with an option to show the button.\n- **\"Phoned\" button:** a small form that sets `phoned_on` to today and returns to the dashboard. Staff only, like \"Mark returned\".\n- **Tests:** a queryset test like the other two panels have, covering returned, due today, phoned 6 days ago and phoned 7 days ago, plus a test that the button saves the date.\n\nDoes that match what you want? If so, say yes and I'll build it. Or if you'd rather I just dive in, say so.",
+  "ttft_ms": 8384,
+  "type": "result",
+  "duration_ms": 13063,
+  "ttft_stream_ms": 2372,
+  "time_to_request_ms": 48,
+  "first_content_frame_ms": 2373,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

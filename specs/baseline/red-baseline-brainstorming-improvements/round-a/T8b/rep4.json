@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 6364,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.012360799999999998,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8204,
+    "output_tokens": 392,
+    "output_tokens_details": {
+      "thinking_tokens": 154
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 392,
+      "cacheReadInputTokens": 8204,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.012360799999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 154,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I looked through the app first. The site builds the timetable page from `sailings.csv`, which the ferry office exports each night. Nothing in that file marks a sailing as cancelled, and there's no code for warnings yet. So the site currently has no way of knowing that a sailing is off.\n\nThat makes the biggest open question where the news of a cancellation would come from. Whether this is a new column in the nightly file, a way for staff to flag a sailing during the day, or something else depends on how cancellations actually happen. It also decides how quickly a warning could reach people, since a nightly export can't cover a sailing that's called off at noon because of weather.\n\nWhen a sailing gets cancelled today, how does that decision get made, and how do passengers currently find out about it?",
+  "ttft_ms": 3804,
+  "type": "result",
+  "duration_ms": 6414,
+  "ttft_stream_ms": 2211,
+  "time_to_request_ms": 51,
+  "first_content_frame_ms": 2211,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

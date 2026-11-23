@@ -1,6 +1,6 @@
 # brainstorming: suggested changes
 
-**Status:** findings, owner rulings recorded and approved for planning (2026-11-22). No skill text was edited. This document lists ranked changes to `skills/brainstorming/`. The owner picked six of them (see Owner decisions), and this document is the input for writing-plans, with no spec in between.
+**Status:** COMPLETE (2026-11-22). Plan 106 (`specs/plans/completed/106-brainstorming-improvements.md`) implemented items 1, 2, 4, 5, 6 and 8. Items 3 and 7 stay out, as Owner decisions says. At the completion gate the owner kept item 2's fix local, with no upstream PR. Before that: findings, owner rulings recorded and approved for planning (2026-11-22). No skill text was edited. This document lists ranked changes to `skills/brainstorming/`. The owner picked six of them (see Owner decisions), and this document is the input for writing-plans, with no spec in between.
 
 **Date:** 2026-11-22. **Scope:** `skills/brainstorming/` and its NOTICE entry. No change is proposed for derive-roadmap, writing-plans, `/deferred` or `install.py`.
 
