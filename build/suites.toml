@@ -212,3 +212,9 @@ name = 'writing-skills'
 dir = 'skills/writing-skills/scripts'
 with = ['pytest']
 notes = ['render_graphs.py tests, stdlib only. The tests that render skip when graphviz dot is not on PATH.']
+
+[[suite]]
+name = 'writing-skills-layout-kit'
+dir = 'specs/baseline/red-baseline-writing-skills-layout/kit'
+with = ['pytest']
+notes = ['Plan 105 guard kit: runners (stub claude, no model), rep_tools.py, audit.py, sheets.py, build_prompts.py and cases.py tests. bash, git and uv required.']
