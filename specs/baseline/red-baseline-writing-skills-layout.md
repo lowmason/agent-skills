@@ -140,6 +140,52 @@ folder matches that pattern. No hit names the home or the user. These counts are
 paths written into it. Git ignores both folders.
 `check_scrub.py` prints PASS.
 
+### Probes and pilot (Task 4)
+
+Task 4 ran the four probes and the pilot. `claude --version` printed `2.1.323 (Claude Code)` before and
+after each of the eight batches (four probes, four pilot reps). The version did not change during the run.
+The raw probe and pilot output is in `~/.cache/agent-skills/scratch/plan105/`. Nothing from it is
+committed.
+
+**Probes.** Each probe sent `isolation_probe.txt` once. `probe_json.sh` ran the no-tools command and
+`probe_tools.sh` ran the tools command. All four runs ended with the subtype `success`.
+
+| Probe | Model | Lines 1–6 and 8 | Line 7 | Cost (USD) |
+|---|---|---|---|---|
+| `probe_json.sh` | `claude-sonnet-5-5` | NO | YES | 0.0082029 |
+| `probe_json.sh` | `claude-opus-5-5` | NO | YES | 0.0232418 |
+| `probe_tools.sh` | `claude-sonnet-5-5` | NO | YES | 0.0081747 |
+| `probe_tools.sh` | `claude-opus-5-5` | NO | YES | 0.0240054 |
+
+- **Line 7 (the user's name or email) read YES in all four probes.** Each answer quoted the user's email
+  address. This record does not copy the address. The open watch item "Account identity reaches the
+  isolated micro-test runs" tracks this. Per the plan's Task 4 Step 1, a YES on line 7 does not stop the
+  run.
+- **Line 6 on Opus.** Both Opus probes answered NO and added a note. The note says that the context
+  mentions some slash commands in passing, `/code-review` among them, and that it holds no skill list
+  and no skill named writing-skills. The init record of both tools probes (Sonnet and Opus) lists no
+  slash command and no skill. The Sonnet probes gave no such note. This record reads the line as NO.
+- **Lines 1–5 and 8** read NO in every probe.
+
+**Pilot.** The pilot arm is built from HEAD (`208800f95203f97b25be9954856aa8b5abaf1e6f`). `rep_tools.py
+place-copy HEAD` placed 12 files of `skills/writing-skills` in `/private/tmp/wsl105-skill/`.
+`build_prompts.py HEAD pilot <scratch>/prompts-pilot` wrote the six prompts. The body is 18,758
+characters. HEAD still has the old layout, so the three support files sit in the skill folder's root.
+`run_tool_reps.sh` ran each rep alone as a background command, with `<out-dir>` set to
+`pilot-runs/<case>/pilot/<model>/` in scratch. `audit.py` then audited each rep.
+
+| Case | Model | Cost (USD) | Turns | Tool calls | Wall (s) | Read of the moved file | First write of the target | Path audit | V9 | VOID | Read check |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| T1 | `claude-sonnet-5-5` | 0.1252769 | 7 | 6 | 34 | call 1 | call 5 | 0 hits | none | none | PASS |
+| T2 | `claude-sonnet-5-5` | 0.0838596 | 7 | 6 | 17 | call 4 | call 6 | 0 hits | none | none | PASS |
+| T3 | `claude-sonnet-5-5` | 0.0845620 | 6 | 5 | 16 | call 4 | call 5 | 0 hits | none | none | PASS |
+| T1 | `claude-opus-5-5` | 0.2579898 | 6 | 5 | 52 | call 1 | call 5 | 0 hits | none | none | PASS |
+
+Each rep ended with the subtype `success` and `is_error` false. Both T1 reps read
+`testing-skills-with-subagents.md` before their first write of `specs/lockfile-refresh-scenarios.md`. The
+pilot reps are not scored. Nobody graded their answers. After the pilot, `/private/tmp/wsl105-skill/` and
+`/private/tmp/wsl105/` were empty.
+
 ## Cases
 
 **W1–W3**, as plan 72 states them (`specs/baseline/red-baseline-writing-skills-split.md:20-24`). The
@@ -314,9 +360,34 @@ Each rep's `--max-budget-usd` is $0.50 for a no-tools rep and $1.50 for a tools 
 
 The total is the sum of `total_cost_usd` over every probe, pilot and rep of plan 105.
 
-| Item | Cost (USD) | Running total (USD) |
-|---|---|---|
-| Start, before any probe or rep | 0.00 | 0.00 |
+Task 4 wrote the rows below. `claude --version` printed `2.1.323 (Claude Code)` at each point, and the
+table shortens it to `2.1.323`. Task 6 adds its rows in the same columns. The running total sums the
+exact `total_cost_usd` values.
+
+| Item | `claude --version` before | `claude --version` after | Cost (USD) | Running total (USD) |
+|---|---|---|---|---|
+| Start, before any probe or rep | n/a | n/a | 0.00 | 0.00 |
+| Probe, `probe_json.sh`, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.0082029 | 0.0082029 |
+| Probe, `probe_json.sh`, `claude-opus-5-5` | 2.1.323 | 2.1.323 | 0.0232418 | 0.0314447 |
+| Probe, `probe_tools.sh`, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.0081747 | 0.0396194 |
+| Probe, `probe_tools.sh`, `claude-opus-5-5` | 2.1.323 | 2.1.323 | 0.0240054 | 0.0636248 |
+| Pilot, T1, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.1252769 | 0.1889017 |
+| Pilot, T2, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.0838596 | 0.2727613 |
+| Pilot, T3, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.0845620 | 0.3573233 |
+| Pilot, T1, `claude-opus-5-5` | 2.1.323 | 2.1.323 | 0.2579898 | 0.6153131 |
+
+**Projection (Task 4, Step 3).** The pilot was one T rep per Sonnet case and one T1 rep on Opus.
+
+| Term | Value (USD) |
+|---|---|
+| Spend so far (probes and pilot) | 0.6153131 |
+| 60 W reps × 0.05 | 3.0000000 |
+| 30 × the mean Sonnet T pilot cost, 30 × (0.1252769 + 0.0838596 + 0.0845620) / 3 = 30 × 0.0978995 | 2.9369850 |
+| 30 × the Opus T pilot cost, 30 × 0.2579898 | 7.7396940 |
+| **Projected total** | **14.2919921** |
+
+The projection is $14.29. It is below the $35 stop, so the run may go on to Task 5 and the scored reps of
+Task 6. The check before each pair in Task 6 still applies. The Opus term uses one rep, the T1 rep.
 
 ## Deviations
 
