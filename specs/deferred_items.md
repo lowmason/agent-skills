@@ -7257,7 +7257,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## brainstorming-improvements (no plan; owner rulings on specs/findings/brainstorming-improvements.md, branch claude/brainstorming-skill-review-handoff-45fef9) — 2026-11-22
 - [ ] **Let brainstorming's builder check read the project, once a run shows the waste
-      (`specs/findings/brainstorming-improvements.md`, item 7; owner ruling 2026-11-22: hold it in the backlog
+      (`specs/completed/brainstorming-improvements.md`, item 7; owner ruling 2026-11-22: hold it in the backlog
       with a prove-first note).** `skills/brainstorming/builder-check-prompt.md:12` tells the builder to read the
       design only. The sort at `skills/brainstorming/SKILL.md:323-325` then drops each question "Answered already
       by the conversation or the project". The finding reasons that a builder who cannot read the code asks

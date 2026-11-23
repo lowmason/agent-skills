@@ -1,7 +1,7 @@
 # RED baseline — brainstorming improvements (plan 106)
 
 **Date:** 2026-11-22 · **Status:** Complete. Round A met every bar. Round B met every bar except the T4 platform case on its strict reading (3 of 5), which the owner accepted as a known gap after the diagnostic and the revert arms. P3 met its bar (5 of 5), so its known gap is closed. The T7 panel shows no regression and no gain. The agy probe printed ALIVE, so `visual-companion.md` gives the proven launch line (Form 1). Total spend $8.57.
-**Governs:** plan 106 (`specs/plans/106-brainstorming-improvements.md`), items 1, 2, 4, 5, 6 and 8 of the brainstorming findings (`specs/findings/brainstorming-improvements.md`).
+**Governs:** plan 106 (`specs/plans/completed/106-brainstorming-improvements.md`), items 1, 2, 4, 5, 6 and 8 of the brainstorming findings (`specs/completed/brainstorming-improvements.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-improvements/` beside it, and plan 106's
 > file during any later micro-test of brainstorming whose reps have tools. They hold the frozen
