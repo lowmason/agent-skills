@@ -49,9 +49,20 @@ Regression: a case below its bar, except P3 at exactly 3 of 5 in round B (item 4
 
 Outcomes. All bars met and no T7 regression: the round stands. A regression in round B first re-runs that case on each "B without item N" arm, for items 2, 4 and 5, at 5 reps, and reports which arm restores it. A T7 regression goes to the owner before any re-run on revert arms. Every missed bar, regression or P3 miss is then an owner gate, with three choices: (a) one wording round, its new text written into this record before any rep, the case and the guards its passage reaches re-run at 5 reps; (b) accept the miss as a known gap, recorded here and in `NOTICE`; (c) revert the hunk the miss points to. No skill text changes without the owner's choice. Round A has no choice (a): its edits only remove text.
 
+## Isolation pilot
+
+Two reps of `kit/isolation_probe.txt` (plan 104's 8-question probe) ran into `isolation-pilot/` on 2026-11-22 with Claude Code 2.1.323. Both exited 0 and show `turns=1 extra-iters=- models=1`. Neither is VOID. Cost $0.05.
+
+- Lines 1 to 5 (CLAUDE.md, output style, rules, SessionStart hook text, auto-memory) and line 8 (other sessions) read NO in both reps.
+- Line 7 (the user's name or e-mail) reads YES in both reps, a recorded YES under the line-7 rule. Each rep quotes the address sentence of the session's own context. The scrub replaced the address with `<USER-EMAIL>` in both rep files, so the scrub worked on a live rep. Rep2 adds "No name is given."
+- **Line 6 (a list of available skills or slash commands, or a skill named writing-skills) reads YES in both reps.** Both quote one sentence about a built-in command: "/code-review ultra launches a multi-agent cloud review of the current branch". Both also say that no skill list is present: rep1, "these are mentions of slash commands in session guidance, not a formal list of skills"; rep2, "There is no skills list and no writing-skills". Under the registered rule, a YES on a line other than 7 stops the run for the owner. Plan 104's probe on the same Claude Code version saw the same guidance and answered NO with a note, and its controller read line 6 as NO ("its note names built-in commands in the session's guidance, not a skill list", `red-baseline-mutant-screen-runs.md`, the `opus` probe). The owner ruled (2026-11-22): "Read as NO, go on (Recommended)": "Record line 6 as a NO on substance, as plan 104 did: the text is built-in guidance that names a command, not a skill list. Quote this ruling in the record, commit the pilot and start Task 2. No spend."
+
+Result: the pilot passes under the line-7 rule and the owner's line-6 ruling. Every later batch's Claude Code version is checked against 2.1.323, the pilot's version.
+
 ## Spend
 
 Running total of `total_cost_usd` over every rep and vote of plan 106, read from the raw JSON (so a void rep's cost counts). The plan stops for the owner before the total passes $3.00 at the end of Task 2, and before it passes $8.00 at any point.
 
 | Batch | Claude Code | Reps or votes | Cost | Running total |
 |---|---|---|---|---|
+| Isolation pilot | 2.1.323 | 2 reps | $0.05 | $0.05 |
