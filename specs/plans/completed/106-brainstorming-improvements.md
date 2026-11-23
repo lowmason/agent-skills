@@ -1,5 +1,7 @@
 # Brainstorming Improvements Implementation Plan
 
+**Status: COMPLETE (2026-11-22)** — executed via executing-plans; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Apply items 1, 2, 4, 5, 6 and 8 of the brainstorming findings to `skills/brainstorming/`, measure the four that change tested wording in two isolated micro-test rounds, and record every change to upstream text in `NOTICE`.
@@ -100,19 +102,19 @@ These were the planning session's defaults. The owner approved each at plan revi
 - Produces: `build_prompts.py <arm> <sha> <out-dir>` and `show_reps.py <dir> ...`, as in `<v702>/kit/`. `show_reps.py` prints `VOID (<reason>)` for a void rep file.
 - Produces: the record's sections Method, Rules, Bars, Isolation pilot and Spend.
 
-- [ ] **Step 1: Fix BASE and check for drift.** Record `git rev-parse HEAD` as BASE and `claude --version` in `<rec>.md`. Then check:
+- [x] **Step 1: Fix BASE and check for drift.** Record `git rev-parse HEAD` as BASE and `claude --version` in `<rec>.md`. Then check:
   - the SKILL.md body at BASE is 19,524 characters with sha256 `f6067e3a10f9e2ec46a6ec11cb861abb9fcc1d6c60a97ca3995f311487542f7a`;
   - each old text of edits I1a to I1c, I6, I2a to I2d, I4 and I5 (Tasks 2 and 3) matches once in `skills/brainstorming/SKILL.md`;
   - plan 103's kit is on `origin/main`: `git log -1 --format=%H origin/main -- specs/baseline/red-baseline-worktree-skills-fix/kit/postprocess.py` prints a sha. Record it as the source commit.
   - plan 103's `postprocess` has the interface in Interfaces: `git grep -n "def postprocess(raw" -- specs/baseline/red-baseline-worktree-skills-fix/kit/postprocess.py` prints one line, the file names both reasons `'result_index'` and `'origin'`, and `uv run python build/run_suites.py worktree-skills-fix-kit` passes.
   A failed check stops the task for the owner.
 
-- [ ] **Step 2: Copy the kit.** Copy the files that Files names, unchanged except for these edits:
+- [x] **Step 2: Copy the kit.** Copy the files that Files names, unchanged except for these edits:
   - In `cases.py`, `build_prompts.py`, `show_reps.py`, `panel.py` and `run_reps.sh`, change "plan 86" to "plan 106" in docstrings and comments, and the temp prefixes `plan86-rep-` and `plan86-panel-` to `plan106-rep-` and `plan106-panel-`.
   - `panel.py` keeps `MODEL = 'claude-opus-5-5'`, and its `HEADER_SOURCE` still resolves (the kit sits at the same depth as `<v702>/kit/`).
   Then run `uv run python <rec>/kit/panel.py selftest`. Expected: `selftest ok`.
 
-- [ ] **Step 3: Write the failing tests and register the suite.** Add to `build/suites.toml`, after the suite named `brainstorming`:
+- [x] **Step 3: Write the failing tests and register the suite.** Add to `build/suites.toml`, after the suite named `brainstorming`:
 
 ```toml
 [[suite]]
@@ -131,11 +133,15 @@ notes = ['Plan 106 micro-test kit: postprocess, runner, reader and panel tests w
 
   Run: `uv run python build/run_suites.py brainstorming-improvements-kit`. Expected: plan 103's three `test_postprocess.py` tests pass, and the five new tests fail.
 
-- [ ] **Step 4: Wire `postprocess` in.** In `run_reps.sh`, after each rep ends, pass `rep<N>.json` through `postprocess` the way plan 103's `run_reps.sh` does. In `panel.py`, `call_voter` returns `postprocess` of the parsed JSON, `gather` skips a rep whose JSON has `void` True, and `run` stops with a message naming the vote when a vote comes back void (re-run the panel into a new folder). In `show_reps.py`, a rep JSON with `void` True prints `rep<N> VOID (<reason>)` and nothing else.
+> Deviation: `test_kit.py` has two tests more than the plan's (`test_run_reps_voids_unreadable_output` and `test_run_stops_on_a_void_vote`, which Step 4's behaviors need), and the mutant step added eight shape tests (ledger rulings).
 
-- [ ] **Step 5: Run the kit checks.** Run `uv run python build/run_suites.py brainstorming-improvements-kit`, `uv run python <rec>/kit/check_scrub.py` and `uv run python <rec>/kit/panel.py selftest`. Expected: the suite passes (+8 tests), `PASS`, and `selftest ok`.
+- [x] **Step 4: Wire `postprocess` in.** In `run_reps.sh`, after each rep ends, pass `rep<N>.json` through `postprocess` the way plan 103's `run_reps.sh` does. In `panel.py`, `call_voter` returns `postprocess` of the parsed JSON, `gather` skips a rep whose JSON has `void` True, and `run` stops with a message naming the vote when a vote comes back void (re-run the panel into a new folder). In `show_reps.py`, a rep JSON with `void` True prints `rep<N> VOID (<reason>)` and nothing else.
 
-- [ ] **Step 6: Write the record and commit it before any rep.** `<rec>.md` opens with a quarantine note like `<v702>.md`'s: quarantine this file, its folder and this plan during any later micro-test of brainstorming whose reps have tools. Then: **Method** (BASE, the Claude Code version, the kit and its source commits, the command, the model, the arms: the shipped copy at BASE, A and B, each read with `git show`), **Rules** and **Bars** (exact copy below), and **Spend** (a running-total table). Commit with `test(specs): register plan 106 micro-test kit and rules`, after the commit gate.
+> Deviation: `run_reps.sh` calls `postprocess(raw)` as a function and writes its return value, not plan 103's `.VOID` file (handoff H6). It keeps each raw rep in the plan 106 scratch folder and voids unreadable output. At the final review, `panel.py` gained the same void for an unreadable vote and keeps each raw vote in scratch, and four tests pin the identity scrub and the isolation flags (ledger rulings, mutant run 2: 29 of 29 caught).
+
+- [x] **Step 5: Run the kit checks.** Run `uv run python build/run_suites.py brainstorming-improvements-kit`, `uv run python <rec>/kit/check_scrub.py` and `uv run python <rec>/kit/panel.py selftest`. Expected: the suite passes (+8 tests), `PASS`, and `selftest ok`.
+
+- [x] **Step 6: Write the record and commit it before any rep.** `<rec>.md` opens with a quarantine note like `<v702>.md`'s: quarantine this file, its folder and this plan during any later micro-test of brainstorming whose reps have tools. Then: **Method** (BASE, the Claude Code version, the kit and its source commits, the command, the model, the arms: the shipped copy at BASE, A and B, each read with `git show`), **Rules** and **Bars** (exact copy below), and **Spend** (a running-total table). Commit with `test(specs): register plan 106 micro-test kit and rules`, after the commit gate.
 
 ````text
 ## Rules
@@ -164,9 +170,11 @@ Regression: a case below its bar, except P3 at exactly 3 of 5 in round B (item 4
 Outcomes. All bars met and no T7 regression: the round stands. A regression in round B first re-runs that case on each "B without item N" arm, for items 2, 4 and 5, at 5 reps, and reports which arm restores it. A T7 regression goes to the owner before any re-run on revert arms. Every missed bar, regression or P3 miss is then an owner gate, with three choices: (a) one wording round, its new text written into this record before any rep, the case and the guards its passage reaches re-run at 5 reps; (b) accept the miss as a known gap, recorded here and in `NOTICE`; (c) revert the hunk the miss points to. No skill text changes without the owner's choice. Round A has no choice (a): its edits only remove text.
 ````
 
-- [ ] **Step 7: Isolation pilot.** Run 2 reps of `<rec>/kit/isolation_probe.txt` into `<rec>/isolation-pilot/`. Expected: lines 1 to 6 and 8 read NO in both, under the line-7 rule, and `show_reps.py` shows `turns=1 extra-iters=- models=1` and no VOID. Write the result to `<rec>.md`, Isolation pilot, and add the cost to Spend.
+- [x] **Step 7: Isolation pilot.** Run 2 reps of `<rec>/kit/isolation_probe.txt` into `<rec>/isolation-pilot/`. Expected: lines 1 to 6 and 8 read NO in both, under the line-7 rule, and `show_reps.py` shows `turns=1 extra-iters=- models=1` and no VOID. Write the result to `<rec>.md`, Isolation pilot, and add the cost to Spend.
 
-- [ ] **Step 8: Commit the pilot.** Run `privacy_sweep.py <rec>/isolation-pilot`, then the commit gate. Commit with `test(specs): run plan 106 isolation pilot`.
+> Deviation: line 6 of the probe read YES in both reps (a built-in command named in session guidance, no skill list). The owner ruled it a NO and the run went on (owner gate).
+
+- [x] **Step 8: Commit the pilot.** Run `privacy_sweep.py <rec>/isolation-pilot`, then the commit gate. Commit with `test(specs): run plan 106 isolation pilot`.
 
 ### Task 2: Item 1, free body room, and round A
 
@@ -179,7 +187,7 @@ Outcomes. All bars met and no T7 regression: the round stands. A regression in r
 - Consumes: Task 1's kit.
 - Produces: commit A, with a SKILL.md body of 19,054 characters, sha256 `143b293e4595d1621bdff4068c14d3b238ca6a87ea2639957311b0ca7f598e94`.
 
-- [ ] **Step 1: Apply I1a.** Delete this paragraph and the blank line after it (Visual Companion, about line 392):
+- [x] **Step 1: Apply I1a.** Delete this paragraph and the blank line after it (Visual Companion, about line 392):
 
 ```text
 **Per question, ask: would they understand this better by seeing it?**
@@ -189,7 +197,7 @@ question about a UI topic isn't automatically a visual question.
 
 ```
 
-- [ ] **Step 2: Apply I1b and I1c.** I1b, after the ordered list (about line 54). Replace:
+- [x] **Step 2: Apply I1b and I1c.** I1b, after the ordered list (about line 54). Replace:
 
 ```text
 One kind of work takes a different path. A new project of several stages,
@@ -216,15 +224,15 @@ with:
 stages with nothing built goes to the New-Project Entry whole.
 ```
 
-- [ ] **Step 3: Check and commit A.** Expected: body 19,054 characters, sha256 `143b293e…598e94` as above, and the commit gate passes. Commit with `refactor(brainstorming): drop the per-question paragraph and shorten the roadmap pointers`. Record its sha as A.
+- [x] **Step 3: Check and commit A.** Expected: body 19,054 characters, sha256 `143b293e…598e94` as above, and the commit gate passes. Commit with `refactor(brainstorming): drop the per-question paragraph and shorten the roadmap pointers`. Record its sha as A.
 
-- [ ] **Step 4: Build the prompts.** Run `build_prompts.py skill BASE <rec>/prompts/shipped` and `build_prompts.py skill A <rec>/prompts/a`. Check that each case's prompt in `a/` differs from the same case in `shipped/` only inside the `<skill name="brainstorming">` block, and that each `shipped/` prompt equals the same case in `<v702>/prompts/new-r1/` where that folder has it.
+- [x] **Step 4: Build the prompts.** Run `build_prompts.py skill BASE <rec>/prompts/shipped` and `build_prompts.py skill A <rec>/prompts/a`. Check that each case's prompt in `a/` differs from the same case in `shipped/` only inside the `<skill name="brainstorming">` block, and that each `shipped/` prompt equals the same case in `<v702>/prompts/new-r1/` where that folder has it.
 
-- [ ] **Step 5: Run round A.** The twelve guards, reps 1 to 5 each, from `<rec>/prompts/a/` into `<rec>/round-a/<case>/`. Update Spend after each batch. Stop for the owner before the total passes $3.00.
+- [x] **Step 5: Run round A.** The twelve guards, reps 1 to 5 each, from `<rec>/prompts/a/` into `<rec>/round-a/<case>/`. Update Spend after each batch. Stop for the owner before the total passes $3.00.
 
-- [ ] **Step 6: Score and apply the bars.** Hand-score every rep under the Rules. For a guard below its bar, run the diagnostic: 5 reps from `<rec>/prompts/shipped/` into `<rec>/diag/shipped/<case>/`. A missed bar is an owner gate (Bars, Outcomes). Under (c), revert the one hunk the miss points to, then repeat Steps 3 to 6 for that case.
+- [x] **Step 6: Score and apply the bars.** Hand-score every rep under the Rules. For a guard below its bar, run the diagnostic: 5 reps from `<rec>/prompts/shipped/` into `<rec>/diag/shipped/<case>/`. A missed bar is an owner gate (Bars, Outcomes). Under (c), revert the one hunk the miss points to, then repeat Steps 3 to 6 for that case.
 
-- [ ] **Step 7: Write the results and commit.** Append `## Round A` to `<rec>.md`: a table of the twelve guards (shipped figure from `<v702>.md`, round A tally, verdict), the rep verdicts in rep order, one line per FAIL and VOID (`<case> rep<N>: <why>, "<short verbatim quote>"`), the diagnostics, and the owner's ruling quoted when there was a gate. Run the privacy sweep on the new folders and the commit gate. Commit with `test(specs): record plan 106 round A`.
+- [x] **Step 7: Write the results and commit.** Append `## Round A` to `<rec>.md`: a table of the twelve guards (shipped figure from `<v702>.md`, round A tally, verdict), the rep verdicts in rep order, one line per FAIL and VOID (`<case> rep<N>: <why>, "<short verbatim quote>"`), the diagnostics, and the owner's ruling quoted when there was a gate. Run the privacy sweep on the new folders and the commit gate. Commit with `test(specs): record plan 106 round A`.
 
 ### Task 3: Items 6, 2, 4 and 5, and round B
 
@@ -237,7 +245,7 @@ stages with nothing built goes to the New-Project Entry whole.
 - Consumes: commit A; Task 1's kit.
 - Produces: commit B, with a SKILL.md body of 19,385 characters, sha256 `2bccdaeda4c8c6ba64470f4dd9c9ad061daea57ca994445571fa3a8d45353ba9`.
 
-- [ ] **Step 1: Apply I6 and commit (item 6).** Look Before You Ask (about line 65). Replace:
+- [x] **Step 1: Apply I6 and commit (item 6).** Look Before You Ask (about line 65). Replace:
 
 ```text
 a `specs/deferred_items.md`, check it for deferred work the idea touches.
@@ -252,7 +260,7 @@ deferred work the idea touches.
 
   Expected: body 19,080. After the commit gate, commit with `fix(brainstorming): search the backlog for the idea's terms`.
 
-- [ ] **Step 2: Apply I2a to I2d and commit (item 2).** I2a, the paragraph after the ordered list (about line 46). Replace:
+- [x] **Step 2: Apply I2a to I2d and commit (item 2).** I2a, the paragraph after the ordered list (about line 46). Replace:
 
 ```text
 If nothing is open when you write your first message and there's one
@@ -315,7 +323,7 @@ may carry both in one message.
 
   Expected: body 19,236. After the commit gate, commit with `fix(brainstorming): make Size the Work agree with the first-message design`.
 
-- [ ] **Step 3: Apply I4 and commit (item 4).** Lay out the approaches (about line 186). Replace:
+- [x] **Step 3: Apply I4 and commit (item 4).** Lay out the approaches (about line 186). Replace:
 
 ```text
 say you'll go with your pick instead, and write the design in the next
@@ -333,7 +341,7 @@ sensible way, say so in that message
 
   Expected: body 19,336. After the commit gate, commit with `fix(brainstorming): a push to hurry does not hand over the how`.
 
-- [ ] **Step 4: Apply I5 and commit (item 5, the owner's wording).** Red Flags, last row (about line 376). Replace:
+- [x] **Step 4: Apply I5 and commit (item 5, the owner's wording).** Red Flags, last row (about line 376). Replace:
 
 ```text
 once you've looked, do it, and say what you did and what else it touches. |
@@ -347,15 +355,17 @@ once you've looked, do it, and say what you did and what else it touches. If the
 
   After the commit gate, commit with `fix(brainstorming): point the quick-task Red Flags cell back to the size rules`.
 
-- [ ] **Step 5: Check B.** Record the Step 4 commit's sha as B, and the shas of the Step 1 to 4 commits as I6, I2, I4 and I5. Expected: body 19,385 characters, sha256 `2bccdaed…353ba9` as above, at most 19,700, and the commit gate passes.
+- [x] **Step 5: Check B.** Record the Step 4 commit's sha as B, and the shas of the Step 1 to 4 commits as I6, I2, I4 and I5. Expected: body 19,385 characters, sha256 `2bccdaed…353ba9` as above, at most 19,700, and the commit gate passes.
 
-- [ ] **Step 6: Build the prompts.** Run `build_prompts.py skill B <rec>/prompts/b` and `build_prompts.py control - <rec>/prompts/control`. Check that each case's prompt in `b/` differs from the same case in `<rec>/prompts/shipped/` only inside the skill block, and that `<rec>/prompts/control/T7.txt` has sha256 `e26f6b19251da9f5c4ae096fc4fa394e347368b1c228ccc035e9b34cc54c670c` (plan 86's control T7 prompt). No rep runs on the control prompts.
+- [x] **Step 6: Build the prompts.** Run `build_prompts.py skill B <rec>/prompts/b` and `build_prompts.py control - <rec>/prompts/control`. Check that each case's prompt in `b/` differs from the same case in `<rec>/prompts/shipped/` only inside the skill block, and that `<rec>/prompts/control/T7.txt` has sha256 `e26f6b19251da9f5c4ae096fc4fa394e347368b1c228ccc035e9b34cc54c670c` (plan 86's control T7 prompt). No rep runs on the control prompts.
 
-- [ ] **Step 7: Run round B.** From `<rec>/prompts/b/`: T7 reps 1 to 25 into `<rec>/round-b/T7/`, and T10, T11, T12, T13 and the twelve guards, reps 1 to 5 each, into `<rec>/round-b/<case>/`. Update Spend after each batch. Stop for the owner before the total passes $8.00.
+- [x] **Step 7: Run round B.** From `<rec>/prompts/b/`: T7 reps 1 to 25 into `<rec>/round-b/T7/`, and T10, T11, T12, T13 and the twelve guards, reps 1 to 5 each, into `<rec>/round-b/<case>/`. Update Spend after each batch. Stop for the owner before the total passes $8.00.
 
-- [ ] **Step 8: Hand-score every rep.** Score under the Rules. Write T7's hand scores to `<rec>/round-b/T7/hand-scores.json` (`{"b-rep<N>": "P" | "F"}`) before the panel. Then write `<rec>/panel/T7/hand-scores.json` with B's scores and the shipped scores from `<v702>/green/new-r1/T7/hand-scores.json`, each key `newr1-rep<N>` renamed `shipped-rep<N>`. If a T7 rep is VOID, copy B's 25 scored rep files into `<rec>/round-b/T7-scored/` and give the panel that folder.
+> Deviation: each case ran only while `spend.py`'s worst case kept the rep total under $7.35, which left room for the T7 panel under the $8.00 stop (ledger ruling).
 
-- [ ] **Step 9: Run the T7 panel.** Check that `<v702>/panel/T7/rule.txt` has sha256 `d0b60c615ba84ef14f4eea79e718108b8c96b5059c0ff5b763eb4d6826889af8`. Then run:
+- [x] **Step 8: Hand-score every rep.** Score under the Rules. Write T7's hand scores to `<rec>/round-b/T7/hand-scores.json` (`{"b-rep<N>": "P" | "F"}`) before the panel. Then write `<rec>/panel/T7/hand-scores.json` with B's scores and the shipped scores from `<v702>/green/new-r1/T7/hand-scores.json`, each key `newr1-rep<N>` renamed `shipped-rep<N>`. If a T7 rep is VOID, copy B's 25 scored rep files into `<rec>/round-b/T7-scored/` and give the panel that folder.
+
+- [x] **Step 9: Run the T7 panel.** Check that `<v702>/panel/T7/rule.txt` has sha256 `d0b60c615ba84ef14f4eea79e718108b8c96b5059c0ff5b763eb4d6826889af8`. Then run:
 
 ```bash
 uv run python specs/baseline/red-baseline-brainstorming-improvements/kit/panel.py run \
@@ -372,11 +382,13 @@ uv run python specs/baseline/red-baseline-brainstorming-improvements/kit/panel.p
 
   Expected: 50 replies, 3 votes, 0 missing votes, and both one-sided Fisher p values printed. Add the cost to Spend.
 
-- [ ] **Step 10: Apply the bars.** Score each case against Round B's bars. For a guard below its bar, run the diagnostic on `<rec>/prompts/shipped/` into `<rec>/diag/shipped/<case>/`.
+- [x] **Step 10: Apply the bars.** Score each case against Round B's bars. For a guard below its bar, run the diagnostic on `<rec>/prompts/shipped/` into `<rec>/diag/shipped/<case>/`.
 
-- [ ] **Step 11: Stop on a T7 regression.** A T7 regression goes to the owner before Step 12. Present the panel figures and the fail forms.
+> Deviation: T4's strict reading missed its bar (3 of 5). The shipped-copy diagnostic read 4 of 5. The owner raised the spend stop to $9.00 for the revert arms (Step 12): without item 2 5 of 5, without item 4 or 5 4 of 5. The owner then accepted T4 strict as a known gap, outcome (b) (owner gates).
 
-- [ ] **Step 12: Re-run a regressing case on the revert arms.** For each item N in 2, 4 and 5, build the arm as a commit object, without touching the working tree, the index or the stash (`<N>` is item N's commit from Step 5):
+- [x] **Step 11: Stop on a T7 regression.** A T7 regression goes to the owner before Step 12. Present the panel figures and the fail forms.
+
+- [x] **Step 12: Re-run a regressing case on the revert arms.** For each item N in 2, 4 and 5, build the arm as a commit object, without touching the working tree, the index or the stash (`<N>` is item N's commit from Step 5):
 
 ```bash
 T=$(mktemp)
@@ -389,7 +401,7 @@ git diff --name-only B "$ARM"
 
   The last command must print only `skills/brainstorming/SKILL.md`, and `git diff B "$ARM"` must show only item N's hunks reversed. Record `$ARM` and its SKILL.md blob sha in `<rec>.md`. The planning session tested this recipe on a scratch clone with a tracked edit in the working tree: the arm reversed only the item, and the edit and the stash list stayed as they were. Build `build_prompts.py skill "$ARM" <rec>/prompts/no-item<N>`, and run the regressing case at 5 reps into `<rec>/bisect/no-item<N>/<case>/`. Report which arm restores the bar. Then the owner gate applies (Bars, Outcomes).
 
-- [ ] **Step 13: Write the results and commit.** Append `## Round B` to `<rec>.md`: a table of T10 to T13 and the twelve guards (shipped figure, round B tally, verdict); the rep verdicts; one line per FAIL and VOID; the descriptive counts that plan 86's Rules keep, the T11 and T13 call/ask/skip tables among them; the T7 panel table (panel majority and hand score with Wilson intervals for each arm, both Fisher p values, where hand and panel differ, and the fail forms); the diagnostics and the revert-arm results; and the owner's rulings, quoted. Run the privacy sweep on the new folders and the commit gate. Commit with `test(specs): record plan 106 round B`.
+- [x] **Step 13: Write the results and commit.** Append `## Round B` to `<rec>.md`: a table of T10 to T13 and the twelve guards (shipped figure, round B tally, verdict); the rep verdicts; one line per FAIL and VOID; the descriptive counts that plan 86's Rules keep, the T11 and T13 call/ask/skip tables among them; the T7 panel table (panel majority and hand score with Wilson intervals for each arm, both Fisher p values, where hand and panel differ, and the fail forms); the diagnostics and the revert-arm results; and the owner's rulings, quoted. Run the privacy sweep on the new folders and the commit gate. Commit with `test(specs): record plan 106 round B`.
 
 ### Task 4: Item 8, `visual-companion.md`
 
@@ -400,13 +412,15 @@ git diff --name-only B "$ARM"
 **Interfaces:**
 - Produces: the agy outcome, recipe or not supported, which Task 5's `NOTICE` sentence names.
 
-- [ ] **Step 1: Read agy's docs.** Read `agy --help`, `agy changelog`, `specs/guides/antigravity-customization-guide.md` and agy's online docs (https://antigravity.google/docs, its CLI headless, terminal and sandbox pages) for a way to keep a shell process alive across turns, like Gemini CLI's `is_background: true` or Codex's foreground mode. Note each page or command read and what it says, with `agy --version`.
+- [x] **Step 1: Read agy's docs.** Read `agy --help`, `agy changelog`, `specs/guides/antigravity-customization-guide.md` and agy's online docs (https://antigravity.google/docs, its CLI headless, terminal and sandbox pages) for a way to keep a shell process alive across turns, like Gemini CLI's `is_background: true` or Codex's foreground mode. Note each page or command read and what it says, with `agy --version`.
 
-- [ ] **Step 2: Ask the owner before the live run.** The run spends agy plan quota and approves shell calls inside one new scratch folder under `/tmp`, outside every repository. It may need a second run with the terminal sandbox off (Step 3), and the owner approves that run in the same answer. Name the mechanism from Step 1, or say none was found and the run tests `start-server.sh`'s default mode and `--foreground`.
+- [x] **Step 2: Ask the owner before the live run.** The run spends agy plan quota and approves shell calls inside one new scratch folder under `/tmp`, outside every repository. It may need a second run with the terminal sandbox off (Step 3), and the owner approves that run in the same answer. Name the mechanism from Step 1, or say none was found and the run tests `start-server.sh`'s default mode and `--foreground`.
 
-- [ ] **Step 3: The live run.** In the scratch folder, run one `agy -p` session with `--input-format stream-json --output-format stream-json`, two turns. Turn 1: start `<repo>/skills/brainstorming/scripts/start-server.sh --project-dir <scratch>` (with `--foreground` and the Step 1 mechanism when there is one) and print the JSON it returns. Leave out `--open`, so no browser opens. Turn 2: run `test -f <state_dir>/server-info && ! test -e <state_dir>/server-stopped && kill -0 "$(cat <state_dir>/server.pid)" && echo ALIVE || echo DEAD`. The server is kept when turn 2 prints ALIVE. Then stop the server with `stop-server.sh <session_dir>` and delete the scratch folder. Append `## agy probe (item 8)` to `<rec>.md`: the docs read, the agy version, the execution mode and the terminal sandbox setting the run used (agy's auto mode turns the sandbox on), the commands, turn 2's output and the verdict. If turn 2 prints DEAD with the sandbox on, run once more with it off before the verdict, since a sandbox can block a localhost server. Form 1 then names the mode and the sandbox setting that the recipe needs.
+- [x] **Step 3: The live run.** In the scratch folder, run one `agy -p` session with `--input-format stream-json --output-format stream-json`, two turns. Turn 1: start `<repo>/skills/brainstorming/scripts/start-server.sh --project-dir <scratch>` (with `--foreground` and the Step 1 mechanism when there is one) and print the JSON it returns. Leave out `--open`, so no browser opens. Turn 2: run `test -f <state_dir>/server-info && ! test -e <state_dir>/server-stopped && kill -0 "$(cat <state_dir>/server.pid)" && echo ALIVE || echo DEAD`. The server is kept when turn 2 prints ALIVE. Then stop the server with `stop-server.sh <session_dir>` and delete the scratch folder. Append `## agy probe (item 8)` to `<rec>.md`: the docs read, the agy version, the execution mode and the terminal sandbox setting the run used (agy's auto mode turns the sandbox on), the commands, turn 2's output and the verdict. If turn 2 prints DEAD with the sandbox on, run once more with it off before the verdict, since a sandbox can block a localhost server. Form 1 then names the mode and the sandbox setting that the recipe needs.
 
-- [ ] **Step 4: Add the agy block.** Put it after the `**Gemini CLI:**` block and before `**Copilot CLI:**`, with a blank line on each side. Use the first form only when Step 3 printed ALIVE, with the mechanism and flags exactly as the live run used them. Otherwise use the second form.
+> Deviation: four runs. Run 1 (auto, sandbox on) stopped at a headless read denial of the script, so runs 1b to 3 used a copy of the server files inside the scratch folder. Run 1b's check was blocked by the sandbox, run 2's check matched no allow rule, and run 3 added one regex allow rule for the check and printed ALIVE on agy 1.5.14 (owner gates).
+
+- [x] **Step 4: Add the agy block.** Put it after the `**Gemini CLI:**` block and before `**Copilot CLI:**`, with a blank line on each side. Use the first form only when Step 3 printed ALIVE, with the mechanism and flags exactly as the live run used them. Otherwise use the second form.
 
   Form 1, a proven recipe:
 
@@ -424,13 +438,15 @@ git diff --name-only B "$ARM"
 **Antigravity CLI (`agy`):** Not supported yet. No way to keep the server running across turns was found on agy <version> (<YYYY-MM-DD>). Tell your human partner the visual companion can't run here, and stay in text.
 ```
 
-- [ ] **Step 5: Say where `$SESSION_DIR` comes from.** In Cleaning Up, after the code block that runs `stop-server.sh $SESSION_DIR`, add this paragraph, with a blank line on each side:
+> Deviation: at the final review, the comment line was reworded to open with what the recipe needs (`--mode accept-edits` with the terminal sandbox off; auto mode not proven), since both reviewers read the first wording as proven in the default mode.
+
+- [x] **Step 5: Say where `$SESSION_DIR` comes from.** In Cleaning Up, after the code block that runs `stop-server.sh $SESSION_DIR`, add this paragraph, with a blank line on each side:
 
 ```text
 `$SESSION_DIR` is the session directory: the parent of `screen_dir` and `state_dir` from the startup JSON (for example `/path/to/project/.brainstorm/12345-1706000000`).
 ```
 
-- [ ] **Step 6: Check and commit.** Run `uv run python build/check_snippets.py skills/brainstorming/`, `uv run python build/check_links.py` and the commit gate. Expected: each exits 0, and `git diff --stat` shows only `visual-companion.md` and `<rec>.md`. Commit with `docs(brainstorming): add the agy launch line and say where SESSION_DIR comes from`.
+- [x] **Step 6: Check and commit.** Run `uv run python build/check_snippets.py skills/brainstorming/`, `uv run python build/check_links.py` and the commit gate. Expected: each exits 0, and `git diff --stat` shows only `visual-companion.md` and `<rec>.md`. Commit with `docs(brainstorming): add the agy launch line and say where SESSION_DIR comes from`.
 
 ### Task 5: `NOTICE`
 
@@ -440,11 +456,11 @@ git diff --name-only B "$ARM"
 **Interfaces:**
 - Consumes: round B's P3 tally (Task 3), the agy outcome (Task 4).
 
-- [ ] **Step 1: Re-read `NOTICE`.** Fetch, and compare `NOTICE` on `origin/main` with BASE. Plan 105 (writing-skills) and plan 103's Task 4 may have added bullets to the superpowers change list. Keep every line they added. Wrap each edited paragraph at about 72 columns with the list's indentation (two spaces, a dash, four spaces on continuation lines).
+- [x] **Step 1: Re-read `NOTICE`.** Fetch, and compare `NOTICE` on `origin/main` with BASE. Plan 105 (writing-skills) and plan 103's Task 4 may have added bullets to the superpowers change list. Keep every line they added. Wrap each edited paragraph at about 72 columns with the list's indentation (two spaces, a dash, four spaces on continuation lines).
 
-- [ ] **Step 2: Update plan 70's entry (item 6).** In the bullet that starts `brainstorming was rebased on upstream v7.0.1`, replace the sentence `Look Before You Ask also checks specs/deferred_items.md.` with `Look Before You Ask also searches specs/deferred_items.md for the idea's terms.`
+- [x] **Step 2: Update plan 70's entry (item 6).** In the bullet that starts `brainstorming was rebased on upstream v7.0.1`, replace the sentence `Look Before You Ask also checks specs/deferred_items.md.` with `Look Before You Ask also searches specs/deferred_items.md for the idea's terms.`
 
-- [ ] **Step 3: Extend plan 86's entry (items 1, 2 and 4).** In the bullet that starts `Plan 86 (2026-11-10) took upstream v7.0.2's brainstorming retune`, append after its last sentence, whose last two lines read `    round, as it does on the copy before the port, and is recorded as a` and `    known gap.`, with `<date>` and the P3 sentence filled from round B:
+- [x] **Step 3: Extend plan 86's entry (items 1, 2 and 4).** In the bullet that starts `Plan 86 (2026-11-10) took upstream v7.0.2's brainstorming retune`, append after its last sentence, whose last two lines read `    round, as it does on the copy before the port, and is recorded as a` and `    known gap.`, with `<date>` and the P3 sentence filled from round B:
 
 ```text
 Plan 106 (<date>) changed four parts of that text. The Visual
@@ -464,7 +480,9 @@ upstream text was taken. <P3 sentence>
 
   The P3 sentence, by round B's P3 tally: at 4 or 5 of 5, `The P3 case then met its bar (<n> of 5), so its known gap is closed.`; at 3 of 5 or fewer, `The P3 case scored <n> of 5 and stays a known gap.` (with the owner's ruling quoted when the gate ran).
 
-- [ ] **Step 4: Add the visual-companion bullet (item 8).** Add as the last bullet of the superpowers change list, after any bullet that plans 103 and 105 added, exact copy with the slots filled:
+> Deviation: one sentence past the template records the T4 strict known gap, as the owner's ruling (b) requires (ledger ruling).
+
+- [x] **Step 4: Add the visual-companion bullet (item 8).** Add as the last bullet of the superpowers change list, after any bullet that plans 103 and 105 added, exact copy with the slots filled:
 
 ```text
   - Plan 106 (<date>) changed brainstorming/visual-companion.md.
@@ -477,4 +495,4 @@ upstream text was taken. <P3 sentence>
 
   The agy clause, by Task 4's outcome: `gives the launch recipe that a live run on agy <version> proved` or `says the visual companion is not supported on agy <version>, since no way to keep the server running across turns was found`.
 
-- [ ] **Step 5: Check and commit.** Run `uv run python build/check_provenance.py` and the commit gate. Expected: both pass, and `git diff BASE -- NOTICE` shows only this task's three changes beside lines other plans added. Commit with `docs(notice): record plan 106's brainstorming changes`.
+- [x] **Step 5: Check and commit.** Run `uv run python build/check_provenance.py` and the commit gate. Expected: both pass, and `git diff BASE -- NOTICE` shows only this task's three changes beside lines other plans added. Commit with `docs(notice): record plan 106's brainstorming changes`.

@@ -5488,7 +5488,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-10-29 (/deferred quick fix): all eight edits made in every place named. Edit (1)
       took the rule's full fail list. Edit (8) deleted "On the registered verdicts," and the word
       "registered". The Rules section and the re-run's registered block are unchanged.
-- [ ] The Red Flags cell for the quick-task row does not point back to the size rules (plan 70 Task
+- [x] The Red Flags cell for the quick-task row does not point back to the size rules (plan 70 Task
       8 review, Minor). The cell is the right column of the last row in the Red Flags table,
       `skills/brainstorming/SKILL.md:332`: "Reading is fine. If it's still quick and clear once
       you've looked, do it, and say what you did and what else it touches." A reader can take "do
@@ -5502,6 +5502,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       test shows a rep that edits after a check found a wider reach. The owner chooses the wording.
       Owner decision D18 set the current wording in Task 8.
       → planned 2026-11-22: specs/plans/106-brainstorming-improvements.md
+      → done 2026-11-22 (plan 106): edit I5, the owner's wording, ends the cell with "If the look shows a wider reach, step up a size." Round B: T1, T2 and P2b 5 of 5 each (`specs/baseline/red-baseline-brainstorming-improvements.md`).
 
 ## 71-sdd-bayesian-compaction-window — 2026-10-29
 - [x] Nothing resolves relative links inside `skills/**/references/` (plan 71 final review,
@@ -6311,7 +6312,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-10 (/deferred quick fix): the RED Phase list of the Skill Creation Checklist in `skills/writing-skills/SKILL.md` says to keep scenarios, transcripts and baseline records outside the skill directory, and `NOTICE` names the line.
 
 ## 86-brainstorming-v7-0-2-retune — 2026-11-10
-- [ ] **The scope of brainstorming's first-message design (plan 86, final review: Codex's finding and the
+- [x] **The scope of brainstorming's first-message design (plan 86, final review: Codex's finding and the
       reviewer's third Declined line).** `skills/brainstorming/SKILL.md` lets the first message carry the short
       design for a small change when nothing is open and there is one sensible way (Your First Message). Size the
       Work still says the design's Approaches part records "the two or three ways you considered" and "which one
@@ -6327,6 +6328,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `skills/brainstorming/SKILL.md`, micro-tests on T11, T13 and the approach guards show no regression, and
       `NOTICE` names the divergence.
       → planned 2026-11-22: specs/plans/106-brainstorming-improvements.md
+      → done 2026-11-22 (plan 106): edits I2a to I2d. The note under the ordered list says that step 1 happens in the first message, and steps 2 and 3 too only for a small change with one sensible way. When nothing is open and several ways fit, the first message lays them out. Size the Work's Approaches part records "which one was picked, by whom, and why", and only a small change with one sensible way may carry the pick and the design in one message. Round B (`specs/baseline/red-baseline-brainstorming-improvements.md`): T11 4 of 5, T13 4 of 5 (approach reading), T5, T9 and P1 5 of 5 each. T4's strict reading read 3 of 5, and the owner accepted it as a known gap. At the completion gate the owner kept the fix local (no upstream PR).
 
 ## 84-spec-derived-acceptance-tests — 2026-11-10
 - [x] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
@@ -6590,6 +6592,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `~/.gemini/config/skills/`, and `--model` picks the model), through the writing-skills skill. Size: plan.
       Done when: each named place gives a correct `agy` form or says `agy` is not covered, and the dependency-drift
       test passes.
+      → progress 2026-11-22 (plan 106): `skills/brainstorming/visual-companion.md` now gives an `agy` launch line, from a live headless run on agy 1.5.14 that printed ALIVE: `--mode accept-edits` with the terminal sandbox off, on a copy of the server files inside agy's workspace. An interactive `agy` session from the skill's own script path is not proven (owner ruling at plan 106's completion gate). The other places this item names stay open.
 - [x] The revisit trigger of the `commands-stay-command-files` exception in `build/cc_guide/conformance.toml` may
       have fired (branch review, code-reviewer Declined to judge). It reads "When the Gemini adapters can be
       generated from skills." This branch made the `agy` adapters skills, generated from `commands/*.md`, and `agy`
