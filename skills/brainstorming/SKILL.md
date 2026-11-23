@@ -51,9 +51,7 @@ Besides a quick, clear task, two things aren't implementing: a spike
 they said yes to (see Spike to feel things out), and doing what they
 asked once they've opted out of the questions.
 
-One kind of work takes a different path. A new project of several stages,
-with nothing built yet, goes to derive-roadmap's New-Project Entry once its
-outcomes are clear, in place of steps 1 to 4 (see Size the Work).
+A new project of several stages takes another path (see Size the Work).
 
 ## Look Before You Ask
 
@@ -270,8 +268,7 @@ If it grows mid-task, stop, say so, and step up a size.
 
 If this is really several independent projects, say so, agree on an
 order, and brainstorm them one at a time. A new project of several
-stages with nothing built goes to the New-Project Entry whole, and it
-splits unrelated outcomes into tracks.
+stages with nothing built goes to the New-Project Entry whole.
 
 ## The Written Design
 
@@ -388,11 +385,6 @@ else in it:
 > "This might be easier if I show you. Want me to open a browser tab with some mockups? It's still new and can be token-intensive."
 
 If they decline, stay in text and don't offer again unless they raise it.
-
-**Per question, ask: would they understand this better by seeing it?**
-Mockups, layouts, diagrams, and side-by-side designs go in the browser.
-Requirements, scope, tradeoffs, and conceptual choices stay in text. A
-question about a UI topic isn't automatically a visual question.
 
 If they accept, read `visual-companion.md` in this directory before
 starting the server.
