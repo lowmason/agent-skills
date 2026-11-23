@@ -206,3 +206,9 @@ name = 'writing-plans'
 dir = 'skills/writing-plans/scripts'
 with = ['pytest']
 notes = ['Deferred-backlog stats, deferral scan, history-entry and entry-check tests (stdlib only; the entry-check tests build throwaway git repos).']
+
+[[suite]]
+name = 'writing-skills'
+dir = 'skills/writing-skills/scripts'
+with = ['pytest']
+notes = ['render_graphs.py tests, stdlib only. The tests that render skip when graphviz dot is not on PATH.']

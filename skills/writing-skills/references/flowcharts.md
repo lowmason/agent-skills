@@ -28,8 +28,8 @@ digraph when_flowchart {
 
 See [graphviz-conventions.dot](../graphviz-conventions.dot) in the skill's directory for graphviz style rules.
 
-**Visualizing for your human partner:** Use [render-graphs.js](../render-graphs.js), in the skill's directory, to render a skill's flowcharts to SVG. Run it from that directory:
+**Visualizing for your human partner:** run [scripts/render_graphs.py](../scripts/render_graphs.py) to render a skill's flowcharts to SVG. It reads every Markdown file in the skill, skips a `dot` block with no graph header, and exits non-zero when a block fails. It needs Graphviz's `dot` on PATH. Give it an output folder outside the skill, since everything in the skill folder ships with the skill. From writing-skills' directory:
 ```bash
-./render-graphs.js ../some-skill           # Each diagram separately
-./render-graphs.js ../some-skill --combine # All diagrams in one SVG
+uv run scripts/render_graphs.py ../some-skill /tmp/some-skill-diagrams           # Each diagram separately
+uv run scripts/render_graphs.py ../some-skill /tmp/some-skill-diagrams --combine # All diagrams in one SVG
 ```

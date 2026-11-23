@@ -7,6 +7,7 @@ description: >
   and scripts/, pressure-testing a discipline skill, or micro-testing wording changes against a
   no-guidance baseline.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
