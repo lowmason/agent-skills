@@ -1156,7 +1156,10 @@ Changes from upstream:
     from pressure tests only. SKILL.md lists four skill types and asks for
     examples in the language of the skill's target stack. discovery.md
     gives the 2026-11-22 Codex description cut. Three long files gain
-    contents lists. The guard run's fixtures are this repository's own
+    contents lists. The guard run's committed prompts, prompts-old/ and
+    prompts-new/, embed the skill's old and new text, upstream-derived
+    parts included (MIT, LICENSE-superpowers). Its fixtures are this
+    repository's own
     (specs/baseline/red-baseline-writing-skills-layout.md).
 
     brainstorming/
