@@ -403,6 +403,27 @@ def test_refuses_a_relative_out_dir_that_resolves_inside_the_skill(
     assert not (skill / 'diagrams').exists()
 
 
+def test_refuses_an_out_dir_reached_through_a_symlink_to_the_skill(tmp_path, no_dot, capsys):
+    skill = make_skill(tmp_path)
+    link = tmp_path / 'link'
+    link.symlink_to(skill, target_is_directory=True)
+    assert main([str(skill), str(link / 'diagrams')]) == 2
+    assert 'refusing' in capsys.readouterr().err
+    # The skill folder given through the link, the out folder through the real path.
+    assert main([str(link), str(skill / 'diagrams')]) == 2
+    assert 'refusing' in capsys.readouterr().err
+    assert not (skill / 'diagrams').exists()
+
+
+def test_refuses_an_out_dir_that_leaves_the_skill_and_comes_back_in(tmp_path, no_dot, capsys):
+    skill = make_skill(tmp_path)
+    (tmp_path / 'other').mkdir()
+    out = tmp_path / 'other' / '..' / 'my-skill' / 'diagrams'
+    assert main([str(skill), str(out)]) == 2
+    assert 'refusing' in capsys.readouterr().err
+    assert not (skill / 'diagrams').exists()
+
+
 def test_a_missing_skill_md_is_reported_before_the_out_dir_is_judged(tmp_path, no_dot, capsys):
     folder = tmp_path / 'no-skill'
     folder.mkdir()
