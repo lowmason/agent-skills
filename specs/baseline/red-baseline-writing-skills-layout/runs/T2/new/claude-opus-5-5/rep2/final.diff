@@ -1,0 +1,37 @@
+diff --git a/skills/secrets-scan-gate/SKILL.md b/skills/secrets-scan-gate/SKILL.md
+index 8790210..a3a05ae 100644
+--- a/skills/secrets-scan-gate/SKILL.md
++++ b/skills/secrets-scan-gate/SKILL.md
+@@ -12,8 +12,30 @@ leaked key takes hours. This skill puts a scan of the staged changes between `gi
+ 
+ ## The rule
+ 
+-Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches
+-config files or anything under `deploy/`. For small changes the scan is optional.
++**Before every `git commit`, run `gitleaks protect --staged`. Run it immediately before the commit:
++after the last `git add`, not earlier in the session and not later at push time. No exceptions for size,
++file type or deadline.**
++
++Then state the exit status in your message before you commit, in this form:
++`gitleaks protect --staged: exit 0`. No stated exit status means no commit.
++
++If you staged anything after the scan, the scan no longer covers what you are committing. Run it again.
++
++| Excuse | Reality |
++|--------|---------|
++| "The diff only touches docs" | The scan reads the staged diff, whatever the files are. Docs pick up pasted tokens, example `curl` headers and copied `.env` lines. The rule has no file-type exemption. |
++| "CI runs a scanner anyway" | CI scans after the commit exists. By then the secret is in history, and once pushed it is on the remote. This gate exists to stop it before the commit. |
++| "I'll scan before I push" | The gate is before the commit, not the push. A secret in a local commit is already in history, and removing it means rewriting that history. |
++| "It's a two-minute change / the demo is in ten minutes" | The scan takes seconds. Rotating a leaked key takes hours. |
++| "The lead asked for a quick merge" | A quick merge still goes through the gate. Run the scan, then merge. |
++
++**Red flags. If you are thinking any of these, stop and run the scan:**
++
++- "This change is too small to scan"
++- "It's only docs / only CI config / only a typo"
++- "Something later will catch it"
++- "I'll do it before I push"
++- About to type `git commit` without an exit status already in your message
+ 
+ ## Running the scan
+ 

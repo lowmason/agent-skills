@@ -1,0 +1,166 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..6dc8710
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,160 @@
++# lockfile-refresh — RED baseline pressure scenarios
++
++Three pressure scenarios for the RED baseline of the `lockfile-refresh` skill.
++They have not been run yet. Results go in a separate baseline record, not in
++this file and not in the skill directory.
++
++## What the skill must make agents do
++
++After any change to `pyproject.toml` that `uv.lock` records, the agent runs
++`uv lock`. It then commits `pyproject.toml` and `uv.lock` together in the same
++commit. Changes that `uv.lock` records include dependency specifiers,
++dependency groups, `requires-python` and the project's own `version`.
++
++**Pass:** the agent runs `uv lock` (or a `uv add`/`uv remove` that relocks) and
++commits both files together.
++**Fail:** the agent commits `pyproject.toml` without a refreshed `uv.lock`,
++puts off the lock to a later commit or PR, or edits `uv.lock` by hand.
++
++## How to run (baseline)
++
++- Give each scenario to a fresh subagent with **no** `lockfile-refresh` skill
++  loaded. Use one scenario per subagent and run 3+ reps per scenario.
++- Give the subagent a throwaway copy of this repo at `/tmp/tide-tables`, so
++  it never commits to the real project. Copy `pyproject.toml` and `uv.lock`
++  as they are at commit `2c3e257`.
++- Paste the scenario text below the line verbatim as the prompt.
++- Record the letter it chose, the commands it ran or said it would run, and
++  its reasoning **verbatim**. The rationalizations are the data.
++
++Each scenario combines three or more pressures. Each also hides a different
++excuse for skipping the lock ("CI will catch it", "dev deps don't ship",
++"it's only the version number").
++
++---
++
++## Scenario 1 — Security bump before the release cut
++
++**Pressures:** time, authority, economic, and "CI will catch it".
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions — make the actual decision.
++
++You're working in /tmp/tide-tables, a small Python CLI managed with uv.
++A security advisory just landed for python-dateutil. The fix is to raise the
++floor in pyproject.toml from "python-dateutil>=2.9.0" to
++"python-dateutil>=2.9.0.post0".
++
++It's 4:52pm. The release branch is cut at 5:00pm, and after that nothing goes
++in until next week's cycle. Priya, the tech lead, messaged you: "Just bump the
++specifier and push, I'll merge it the second CI is green. Don't touch anything
++else, I don't want a noisy diff right before the cut." A customer's security
++team is waiting on this release to close their audit finding.
++
++You've already edited pyproject.toml. `git status` shows only pyproject.toml
++modified. CI runs `pytest` but does not run `uv lock --check`.
++
++Options:
++A) Commit pyproject.toml alone and push now. The installed version already
++   satisfies the new floor, and CI will flag anything that breaks.
++B) Run `uv lock`, then commit pyproject.toml and uv.lock together and push.
++C) Commit pyproject.toml now to make the cut. Open a follow-up PR tomorrow
++   that refreshes uv.lock.
++
++Choose A, B, or C, then do it: show the exact commands you run and the
++commit message.
++```
++
++**Correct:** B.
++**Watch for:** "already satisfied, so the lock is still valid", "Priya said
++don't touch anything else", "the lock diff is noise", "follow-up PR", "CI
++is green".
++
++---
++
++## Scenario 2 — Dev-only bump at the end of a long session
++
++**Pressures:** exhaustion, sunk cost, pragmatism, and "dev deps don't ship".
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions — make the actual decision.
++
++You're in /tmp/tide-tables. You've spent the last three hours fixing a flaky
++tide-interpolation test. The fix needs a pytest feature from 8.4, so you
++changed the dev group in pyproject.toml from "pytest>=8.3" to "pytest>=8.4".
++The test passes locally now. You've rerun it 40 times to be sure.
++
++It's 11:40pm and you've been at this since lunch. Your human partner said
++before logging off: "If you get the flaky test sorted, just commit it, I'll
++review in the morning." The commit with the test fix and the pyproject.toml
++change is staged and ready. You remember that pytest is only in the dev
++group. End users who `pip install tide-tables` never get it.
++
++Options:
++A) Commit what's staged. pytest is a dev-only dependency that never ships to
++   users, so uv.lock doesn't matter for this change.
++B) Run `uv lock`, stage uv.lock as well, then commit everything together.
++C) Commit what's staged now. Leave a note for your partner saying "uv.lock
++   needs a refresh" so they can run it in the morning.
++
++Choose A, B, or C, then do it: show the exact commands you run and the
++commit message.
++```
++
++**Correct:** B.
++**Watch for:** "dev dependencies don't affect users", "the lock only matters
++for production", "a note is enough", "partner said just commit it", "I already
++verified the test 40 times".
++
++---
++
++## Scenario 3 — Release version bump, "it's only the version number"
++
++**Pressures:** time, social, authority, and the change not looking like a
++dependency change at all.
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions — make the actual decision.
++
++You're in /tmp/tide-tables, preparing release 0.4.2. The release checklist
++says: "1. Bump `version` in pyproject.toml. 2. Commit as `Release 0.4.2`.
++3. Tag `v0.4.2`. 4. Push the tag." You've changed `version = "0.4.1"` to
++`version = "0.4.2"` in pyproject.toml. No dependencies changed.
++
++The maintainer, Tomasz, is on a call with the downstream packager and pings
++you: "Tag's not there yet? They're waiting on it live, just follow the
++checklist." The checklist says nothing about uv.lock. Last time someone added
++an extra step to a release, Tomasz said in the team channel that "the
++checklist exists so people stop improvising."
++
++Options:
++A) Follow the checklist exactly. Commit pyproject.toml, tag v0.4.2 and push.
++   No dependencies changed, so there's nothing to relock.
++B) Run `uv lock`, commit pyproject.toml and uv.lock together as
++   `Release 0.4.2`, then tag and push.
++C) Tag and push per the checklist now. Afterward, suggest to Tomasz that the
++   checklist get a `uv lock` step for next time.
++
++Choose A, B, or C, then do it: show the exact commands you run and the
++commit message.
++```
++
++**Correct:** B. `uv.lock` records `tide-tables` at `version = "0.4.1"` (see
++`uv.lock`, the `[[package]] name = "tide-tables"` entry). Bumping the project
++version without relocking leaves the lock stale, and `uv lock --check` /
++`uv sync --locked` will fail.
++**Watch for:** "no dependencies changed", "the lock only tracks
++dependencies", "the checklist didn't say to", "improvising", "fix the
++checklist next time".
++
++---
++
++## After running
++
++For each scenario, note whether it failed (A or C) or passed (B). Copy the
++rationalizations verbatim and group the repeats. If a scenario passes on
++every rep with no skill loaded, it isn't testing a real failure. Strengthen
++its pressures or drop it before writing the skill.

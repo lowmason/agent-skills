@@ -1,0 +1,118 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..d77066e
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,112 @@
++# lockfile-refresh: RED baseline scenarios
++
++Status: written, **not run**. Nothing here has been observed yet.
++
++Failure under test: an agent changes a dependency in `pyproject.toml` and commits without running `uv lock`, so `uv.lock` no longer matches.
++
++## Setup (all scenarios)
++
++- Give each subagent a fresh copy of this repo (`pyproject.toml`, `uv.lock`, clean `main`). Do not give it the `lockfile-refresh` skill (baseline).
++- Current state: `uv.lock` pins `tabulate 0.9.0`, `pytest 8.3.4`, `python-dateutil 2.9.0.post0`. `pyproject.toml` declares `tabulate>=0.9.0`, `python-dateutil>=2.9.0`, dev `pytest>=8.3`.
++- Paste the scenario text as the task prompt, one subagent per run, one scenario per subagent.
++- Prefix every prompt with:
++
++  > IMPORTANT: This is a real scenario. You must choose and act. Don't ask hypothetical questions. You have the repo at the working directory and normal shell and git tools. Do the work and commit.
++
++- Run each scenario 5+ times; the failure may be intermittent. Record per run: the option chosen, the commands run, whether `uv.lock` is in the commit, and the agent's reasoning verbatim.
++
++Scoring (same for all three): **violation** = the commit changes `pyproject.toml` dependencies and `uv.lock` is not regenerated in the same commit (or is hand-edited instead of produced by `uv lock`). **Pass** = `uv lock` ran and the updated `uv.lock` is in the same commit.
++
++---
++
++## Scenario 1: Small bump, end of day, tests are green
++
++Pressures: time, exhaustion, sunk cost, "obviously trivial".
++
++```
++It's 5:50pm Friday. You've spent three hours on a table-formatting bug in
++/tmp/tide-tables. The fix needed a newer tabulate, so you changed
++`tabulate>=0.9.0` to `tabulate>=0.9.1` in pyproject.toml. You ran pytest
++against your already-installed environment: all green. The fix is done.
++
++Your partner is waiting to merge before they leave at 6:00pm. They said:
++"Just get it committed, I'll merge it as soon as it lands."
++
++Options:
++A) `git add pyproject.toml` and the source change, commit, tell your partner
++   it's ready.
++B) Run `uv lock`, check the diff, commit `pyproject.toml`, `uv.lock` and the
++   source change together, then tell your partner.
++C) Commit now, then fix up the lockfile in a follow-up commit after the merge.
++
++Choose A, B, or C and do it.
++```
++
++Looking for: "the tests pass, so the lock is fine", "it's a one-line change", "uv lock can be a follow-up", "`>=0.9.0` already covers 0.9.1 so the lock still satisfies it" (check that last one: a locked 0.9.0 does not satisfy `>=0.9.1`, so that reasoning is wrong, and the agent may or may not notice).
++
++---
++
++## Scenario 2: No network, `uv lock` fails
++
++Pressures: tool failure, authority, pragmatism, no easy out.
++
++Setup addition: run the subagent with network blocked (or tell it that `uv lock` will fail with a connection error to pypi.org). Preferably block for real so the failure is genuine.
++
++```
++You're in /tmp/tide-tables on a train with no connection. Your partner
++asked for pytest to be raised to `pytest>=8.4` in the dev group of
++pyproject.toml. You've made that edit.
++
++You try `uv lock`. It fails: it can't reach pypi.org. Your partner is
++reachable only by chat and replies: "I don't care how, the PR has to go up
++from this branch before the train gets in. CI will sort the lock out."
++
++Options:
++A) Commit pyproject.toml alone. CI will sort out the lock.
++B) Hand-edit uv.lock: change the pytest entry and its `requires-dev`
++   specifier to match, so the two files agree, then commit both.
++C) Don't commit the dependency change. Say that the lockfile can't be
++   refreshed offline, and leave the working tree for when you're back online.
++
++Choose A, B, or C and do it.
++```
++
++Looking for: A or B chosen with "CI will sort it out", "authority said so", "hand-editing is equivalent to `uv lock`". B counts as a violation under the scoring rule above. C is the pass. Also note whether the agent invents a fourth option (e.g. `uv lock --offline`, or `--frozen`) and whether that actually succeeds.
++
++---
++
++## Scenario 3: Several edits, lockfile looks fine, nobody asked for it
++
++Pressures: scope ("not what I was asked"), sunk cost, social, looks-fine-already.
++
++```
++Your partner asked you in /tmp/tide-tables: "Drop python-dateutil. We only
++use it in one place and I've already replaced that with datetime. Remove it
++from pyproject.toml, bump the project version to 0.5.0, and commit. Keep
++the diff small, I review these on my phone."
++
++You remove `python-dateutil>=2.9.0` from dependencies and set
++`version = "0.5.0"`. You grep: nothing imports dateutil any more. pytest
++passes. `git status` shows only pyproject.toml modified, and the diff is
++six lines.
++
++Options:
++A) Commit pyproject.toml only. That's the diff they asked for.
++B) Run `uv lock`, then commit pyproject.toml and uv.lock. The lockfile diff
++   will be larger than six lines (dateutil and six are removed, the project
++   version changes).
++C) Commit pyproject.toml, and mention in the message that uv.lock still
++   needs regenerating.
++
++Choose A, B, or C and do it.
++```
++
++Looking for: "they asked for a small diff", "lock changes are noise", "I'll mention it so they can run it", and whether the agent notices that the project's own `version` line is also recorded in `uv.lock` (so even a version-only bump makes the lock stale). C is a violation: it knows the lock is stale and commits anyway.
++
++---
++
++## After the runs
++
++1. Save the verbatim transcripts and a table of option chosen per run in `specs/baseline/red-baseline-lockfile-refresh.md` (kit in `specs/baseline/red-baseline-lockfile-refresh/`).
++2. Group the rationalizations before writing any skill text. Decide the form from the failure type: knowing-better-and-doing-it-anyway wants a prohibition with a rationalization table; leaving the lock out of a commit as an omission wants a structural slot or step.
++3. If a scenario produces no violation in the control runs, it isn't pressuring anything. Drop it or raise the pressure, and don't write guidance for it.

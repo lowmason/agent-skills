@@ -1,0 +1,39 @@
+diff --git a/skills/http-retry-policy/SKILL.md b/skills/http-retry-policy/SKILL.md
+index 94b990d..18ee182 100644
+--- a/skills/http-retry-policy/SKILL.md
++++ b/skills/http-retry-policy/SKILL.md
+@@ -30,6 +30,34 @@ A non-zero exit means the service is down. Fail fast and report it, because a re
+ | POST with no idempotency key | any failure | Fail fast |
+ | any | 400, 401, 403, 404, 409 or 422 | Fail fast and fix the request |
+ 
++## Retry or fail fast
++
++```dot
++digraph retry_or_fail_fast {
++    "Call failed" [shape=ellipse];
++    "curl -sf https://status.example.invalid/health" [shape=plaintext];
++    "Health check exit non-zero?" [shape=diamond];
++    "Is it a POST?" [shape=diamond];
++    "Has an Idempotency-Key header?" [shape=diamond];
++    "Never retry a POST without an idempotency key" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
++    "502, 503, 504 or a timeout?" [shape=diamond];
++    "Retry up to 3 times, same key if any" [shape=box];
++    "Fail fast and report" [shape=doublecircle];
++
++    "Call failed" -> "curl -sf https://status.example.invalid/health";
++    "curl -sf https://status.example.invalid/health" -> "Health check exit non-zero?";
++    "Health check exit non-zero?" -> "Fail fast and report" [label="yes"];
++    "Health check exit non-zero?" -> "Is it a POST?" [label="no"];
++    "Is it a POST?" -> "Has an Idempotency-Key header?" [label="yes"];
++    "Is it a POST?" -> "502, 503, 504 or a timeout?" [label="no"];
++    "Has an Idempotency-Key header?" -> "502, 503, 504 or a timeout?" [label="yes"];
++    "Has an Idempotency-Key header?" -> "Never retry a POST without an idempotency key" [label="no"];
++    "Never retry a POST without an idempotency key" -> "Fail fast and report";
++    "502, 503, 504 or a timeout?" -> "Retry up to 3 times, same key if any" [label="yes"];
++    "502, 503, 504 or a timeout?" -> "Fail fast and report" [label="otherwise"];
++}
++```
++
+ ## Retry-After
+ 
+ When a 429 or 503 response has a `Retry-After` header, wait that long before the next attempt, even when

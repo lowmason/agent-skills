@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 7238,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.011714800000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 9188,
+    "output_tokens": 934,
+    "output_tokens_details": {
+      "thinking_tokens": 378
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 934,
+      "cacheReadInputTokens": 9188,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.011714800000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 378,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `skills/cache-invalidation/SKILL.md` to see the current purge/expire guidance and where a flowchart fits.\n\nACTION: Read `specs/cache-invalidation-baseline.md` to pull the verbatim reasons from the 11 wrong purges, so the decision nodes test the predicates agents misjudged.\n\nACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` for when a flowchart is warranted and how to render it.\n\nACTION: Read `~/.claude/skills/writing-skills/references/graphviz-conventions.dot` for node shapes, edge labels and naming rules before I draw anything.\n\nI'm starting with reads and haven't edited anything yet. I need the skill's current text and the baseline reasons first, so the flowchart's questions are about what the agents actually got wrong. I'll also check the flowchart conventions in the writing-skills references so it follows them.\n\nOnce I've read those, my plan is:\n\n1. Draw a small flowchart in `skills/cache-invalidation/SKILL.md` for purge vs. let-expire. Each decision node will be a yes/no question on something the agent can check, such as whether stale data is harmful if served until TTL, or whether the remaining TTL is short. I'll base these on the reasons the agents gave in the baseline.\n2. Re-run the same three scenarios, 5 reps each, with the flowchart in place and compare against the 11 of 15 wrong purges.\n3. If agents still purge when they should let the key expire, I'll tighten the nodes and re-test.\n\nI'll send you the edit and the re-run numbers together. I won't commit anything until you say so.",
+  "ttft_ms": 3493,
+  "type": "result",
+  "duration_ms": 7284,
+  "ttft_stream_ms": 452,
+  "time_to_request_ms": 43,
+  "first_content_frame_ms": 453,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

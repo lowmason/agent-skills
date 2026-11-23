@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 20297,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0410928,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 9264,
+    "output_tokens": 1818,
+    "output_tokens_details": {
+      "thinking_tokens": 555
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1818,
+      "cacheReadInputTokens": 9264,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0410928,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 555,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` (the skill requires this before adding a flowchart: when a flowchart earns its place, and the render tool)\nACTION: Read `~/.claude/skills/writing-skills/references/graphviz-conventions.dot` (node shapes, edge labels, naming rules to follow when drawing it)\nACTION: Read `specs/cache-invalidation-baseline.md` (the 11 wrong purges and their reasons, so each decision node answers a reason the agents actually gave)\nACTION: Read `skills/cache-invalidation/SKILL.md` (to see the current purge/expire guidance and where the chart fits)\nACTION: Edit `skills/cache-invalidation/SKILL.md`. Insert this just above the existing purge-vs-expire guidance. I'll adjust node wording and shapes to match the conventions file, and make each question test a reason from the baseline:\n\n````markdown\n## Purge or Let It Expire?\n\n```dot\ndigraph purge_or_expire {\n    \"Key's source data changed\" [shape=doublecircle];\n    \"Would serving the stale value be wrong, not just old?\\n(auth/permissions, money, a write the user just made)\" [shape=diamond];\n    \"Will the TTL expire within the staleness this data tolerates?\" [shape=diamond];\n    \"Purge the key now\" [shape=box];\n    \"Let it expire. Do not purge.\" [shape=box];\n\n    \"Key's source data changed\" -> \"Would serving the stale value be wrong, not just old?\\n(auth/permissions, money, a write the user just made)\";\n    \"Would serving the stale value be wrong, not just old?\\n(auth/permissions, money, a write the user just made)\" -> \"Purge the key now\" [label=\"yes\"];\n    \"Would serving the stale value be wrong, not just old?\\n(auth/permissions, money, a write the user just made)\" -> \"Will the TTL expire within the staleness this data tolerates?\" [label=\"no\"];\n    \"Will the TTL expire within the staleness this data tolerates?\" -> \"Let it expire. Do not purge.\" [label=\"yes\"];\n    \"Will the TTL expire within the staleness this data tolerates?\" -> \"Purge the key now\" [label=\"no\"];\n}\n```\n\n\"Data changed\" alone is not a reason to purge. Purge only on a \"yes\" at the first question or a \"no\" at the second.\n````\n\nACTION: Render the chart with the tool named in `references/flowcharts.md` and check that it parses and reads correctly.\nACTION: Dispatch the GREEN run with the updated skill: the same three baseline scenarios, 5 fresh-context subagent reps each. Save the transcripts and reasons to `specs/cache-invalidation-green.md`, outside the skill directory.\n\n---\n\nI've added the purge-vs-expire flowchart to `skills/cache-invalidation/SKILL.md`, placed just above the existing guidance. It asks two questions in order:\n\n1. Would the stale value be *wrong* (permissions, money, read-your-own-write), not just old? If yes, purge.\n2. If not, does the TTL expire within the staleness this data tolerates? If yes, let it expire. If no, purge.\n\nBoth questions target the reasons in the baseline. Most of the 11 wrong purges treated \"the data changed\" as enough reason on its own, so the chart says plainly that it isn't.\n\nI'm now re-running the same three scenarios, 5 reps each, with the updated skill. That tells us whether the 11/15 wrong-purge rate actually drops. I'll report the count and read every rep's reasoning. If agents find a new way around the chart, I'll tighten the wording and re-test rather than call it done. The change isn't committed yet. I'll commit once the GREEN run passes.",
+  "ttft_ms": 9453,
+  "type": "result",
+  "duration_ms": 20341,
+  "ttft_stream_ms": 2976,
+  "time_to_request_ms": 43,
+  "first_content_frame_ms": 2976,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

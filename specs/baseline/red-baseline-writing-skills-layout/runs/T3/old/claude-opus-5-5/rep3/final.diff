@@ -1,0 +1,44 @@
+diff --git a/skills/http-retry-policy/SKILL.md b/skills/http-retry-policy/SKILL.md
+index 94b990d..a69a550 100644
+--- a/skills/http-retry-policy/SKILL.md
++++ b/skills/http-retry-policy/SKILL.md
+@@ -11,6 +11,39 @@ A retry helps when a failure is brief and the request is safe to send twice. It
+ is down, because each retry adds load, and when the request changes state, because a second send can
+ create a second order or a second charge.
+ 
++## Retry or fail fast
++
++```dot
++digraph retry_or_fail_fast {
++    "Request failed or timed out" [shape=ellipse];
++    "curl -sf https://status.example.invalid/health" [shape=plaintext];
++    "Health check exited 0?" [shape=diamond];
++    "Fail fast: report the service is down" [shape=box];
++    "Is the request a POST?" [shape=diamond];
++    "Has an Idempotency-Key header?" [shape=diamond];
++    "Never retry a POST without an idempotency key" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
++    "Fail fast: report the failure, do not resend" [shape=box];
++    "Status 502, 503, 504 or a timeout?" [shape=diamond];
++    "Fail fast: fix the request" [shape=box];
++    "Retry up to 3 times after 1 s, 2 s, 4 s (same key on a POST)" [shape=box];
++
++    "Request failed or timed out" -> "curl -sf https://status.example.invalid/health";
++    "curl -sf https://status.example.invalid/health" -> "Health check exited 0?";
++    "Health check exited 0?" -> "Fail fast: report the service is down" [label="no"];
++    "Health check exited 0?" -> "Is the request a POST?" [label="yes"];
++    "Is the request a POST?" -> "Has an Idempotency-Key header?" [label="yes"];
++    "Is the request a POST?" -> "Status 502, 503, 504 or a timeout?" [label="no"];
++    "Has an Idempotency-Key header?" -> "Never retry a POST without an idempotency key" [label="no"];
++    "Never retry a POST without an idempotency key" -> "Fail fast: report the failure, do not resend";
++    "Has an Idempotency-Key header?" -> "Status 502, 503, 504 or a timeout?" [label="yes"];
++    "Status 502, 503, 504 or a timeout?" -> "Retry up to 3 times after 1 s, 2 s, 4 s (same key on a POST)" [label="yes"];
++    "Status 502, 503, 504 or a timeout?" -> "Fail fast: fix the request" [label="no"];
++}
++```
++
++A POST with no idempotency key fails fast on every failure, a timeout or a 503 included: a timeout does not
++prove the server never got the request.
++
+ ## Check the service first
+ 
+ Before any retry, check the service's health endpoint:

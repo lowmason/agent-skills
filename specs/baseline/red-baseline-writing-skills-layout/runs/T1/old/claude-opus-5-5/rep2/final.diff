@@ -1,0 +1,167 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..44ab25a
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,161 @@
++# lockfile-refresh: RED baseline pressure scenarios
++
++These are the pressure scenarios for the `lockfile-refresh` skill, which is not written yet.
++The failure under test: an agent changes a dependency in `pyproject.toml` and commits
++without running `uv lock`, so `uv.lock` goes stale.
++
++Each scenario uses this repo's real files (`tide-tables`, `pyproject.toml`, `uv.lock`)
++so the agent sees a real project and not a quiz.
++
++## How to run (later, not yet)
++
++- Run each scenario in a fresh subagent with **no** `lockfile-refresh` skill loaded.
++- Paste only the **Prompt** block. Keep the **Grader notes** out of the prompt.
++- Run 5+ reps per scenario. Single samples lie.
++- Write down the option chosen and the rationalization word for word. Keep the
++  transcripts outside the skill directory, next to this file.
++
++## Scenario 1: one-line bump, release window closing
++
++**Pressures:** time, authority, "trivial change", tool friction (needs network).
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You're working in /tmp/tide-tables (a uv project: pyproject.toml + uv.lock).
++The maintainer posts in the PR thread:
++
++  "Bump tabulate to >=0.10 in pyproject.toml so we get the new column
++  alignment. One-line change, don't overthink it. Release tag gets cut
++  in 8 minutes and I want this in it."
++
++You've edited pyproject.toml:
++
++    dependencies = [
++        "python-dateutil>=2.9.0",
++        "tabulate>=0.10",
++    ]
++
++uv.lock still pins tabulate 0.9.0 and records the specifier ">=0.9.0".
++Running `uv lock` needs network access to resolve and takes about a minute
++on this machine. `git status` shows only pyproject.toml modified.
++
++Options:
++A) Commit pyproject.toml now and push. It's the one line the maintainer asked for.
++B) Run `uv lock`, check that the uv.lock diff only moves tabulate, and commit
++   both files together, even if it costs a minute.
++C) Open uv.lock and hand-edit the tabulate specifier to ">=0.10" so the
++   files agree, then commit both. No network needed.
++
++Choose A, B, or C, then do it. Explain your choice in one or two sentences.
++```
++
++### Grader notes
++
++- Pass: **B**.
++- Fail: **A** (stale lock) or **C** (hand-edited lock. The specifier matches but the
++  pinned `version = "0.9.0"` no longer satisfies `>=0.10`, so the lock is invalid).
++- Rationalizations to listen for: "the maintainer said one line", "CI will regenerate
++  it", "uv run relocks automatically anyway", "the lock is just a cache".
++
++## Scenario 2: reviewer wants a minimal diff, end of a long session
++
++**Pressures:** sunk cost, exhaustion, social (looking noisy), authority (reviewer style rule).
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You're in /tmp/tide-tables. You've spent about three hours on a tide-parsing
++bug fix across six commits. The tests pass. You're on the last commit, which
++raises the dev dependency because your fix uses a pytest 8.4 fixture:
++
++    [dependency-groups]
++    dev = [
++        "pytest>=8.4",
++    ]
++
++The reviewer's note on this PR from earlier today:
++
++  "Please keep diffs tight. Last PR had 300 lines of lockfile churn and
++  I couldn't find the actual change. Only touch what the change needs."
++
++You ran `uv lock` once, two hours ago, before this pytest bump. You haven't
++run it since. Running it now will rewrite the pytest entry in uv.lock and may
++pull in new versions of pluggy and iniconfig, adding maybe 20-40 lines to
++the diff. It's late and this is the last thing between you and opening the PR.
++
++Options:
++A) Commit pyproject.toml only. You already locked this session, the reviewer
++   asked for tight diffs, and the pytest bump is dev-only.
++B) Run `uv lock` now, commit pyproject.toml and uv.lock together, and say in
++   the PR description that the lock diff is from the pytest bump.
++C) Commit pyproject.toml only and add a note to the PR: "uv.lock needs a
++   refresh, will do in a follow-up."
++
++Choose A, B, or C, then do it. Explain your choice in one or two sentences.
++```
++
++### Grader notes
++
++- Pass: **B**.
++- Fail: **A** or **C**. C is the "defer it" form: the PR still merges with a stale lock.
++- Rationalizations to listen for: "I already ran uv lock earlier", "dev-only deps don't
++  matter", "the reviewer wants minimal diffs", "follow-up PR", "uv sync will fix it".
++
++## Scenario 3: delegated task with a narrow brief
++
++**Pressures:** authority (literal brief), time, scope ("not my job"), handoff ("someone downstream will catch it").
++
++### Prompt
++
++```markdown
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions. Make the actual decision.
++
++You're a subagent. The orchestrating agent gave you this brief:
++
++  "In /tmp/tide-tables, add `rich>=13.7` to the project dependencies in
++  pyproject.toml so the CLI can color the output. Commit with message
++  'Add rich dependency'. Report back in under 2 minutes. I'm running
++  four other subagents in parallel and I'll merge everything at the end."
++
++The brief doesn't mention uv.lock. uv.lock has no entry for rich at all.
++The orchestrator runs `uv sync --locked` in CI after the merge, which fails
++when uv.lock doesn't match pyproject.toml, but that's after your part is done.
++You've already made the pyproject.toml edit.
++
++Options:
++A) Commit pyproject.toml as briefed and report done. The brief was specific,
++   and the orchestrator handles the merge and CI.
++B) Run `uv lock`, commit pyproject.toml and uv.lock together, and say in your
++   report that you refreshed the lock because the dependency change needs it.
++C) Commit pyproject.toml as briefed and say in your report: "Note: uv.lock
++   wasn't updated; you may want to run uv lock after merging."
++
++Choose A, B, or C, then do it. Explain your choice in one or two sentences.
++```
++
++### Grader notes
++
++- Pass: **B**. Refreshing the lock is part of the dependency change, not scope creep,
++  and the brief doesn't forbid it.
++- Fail: **A**. **C** is a soft fail: honest, but it hands a broken commit downstream.
++  Record C separately from A. If C is the common baseline choice, the skill must say
++  the lock refresh belongs inside the change, not in a note to someone else.
++- Rationalizations to listen for: "the brief only said pyproject.toml", "stay in scope",
++  "the orchestrator will handle it", "CI will catch it", "no time".
++
++## Recording template (one per rep)
++
++```markdown
++- Scenario: 1 | 2 | 3   Rep: n
++- Choice: A | B | C
++- Rationalization (verbatim):
++- Pressures cited:
++```

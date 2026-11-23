@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 22276,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.058771500000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7870,
+    "cache_read_input_tokens": 1675,
+    "output_tokens": 2712,
+    "output_tokens_details": {
+      "thinking_tokens": 1138
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7870,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2712,
+      "cacheReadInputTokens": 1675,
+      "cacheCreationInputTokens": 7870,
+      "webSearchRequests": 0,
+      "costUSD": 0.058771500000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1138,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7870,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (frontmatter rules and body template, required before I write frontmatter)\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (this is a discipline skill, and I need the counter-writing rules)\nACTION: Read `~/.claude/skills/writing-skills/references/claude-code.md` (the skill will run in Claude Code)\nACTION: Read `specs/migration-dry-run-baseline.md` (to pull every verbatim rationalization into the table, not just the three I remember)\nACTION: Create `skills/migration-dry-run/SKILL.md` with the text below. I'll reconcile it with the reference files before saving if they conflict with this draft.\n\n```markdown\n---\nname: migration-dry-run\ndescription: Use when about to apply, run, or deploy a database migration to staging or any shared environment, or when tempted to skip a dry run because staging is disposable, the migration is additive, or the dry run is slow.\nlicense: MIT\n---\n\n# Migration Dry Run\n\n## Overview\n\nApplying a migration is the first time anyone sees what it does to real schema and data. A dry run moves that moment before the change instead of after it.\n\n**Core principle:** No migration is applied to staging until its dry run has been run and read in this session.\n\n## The Rule\n\n```\nNO MIGRATION APPLY WITHOUT A DRY RUN OF THAT SAME MIGRATION FIRST\n```\n\nObservable test: before the apply command runs, this session already contains dry-run output for the exact migration set about to be applied. If it doesn't, run the dry run now.\n\n**No exceptions:**\n- Not for additive migrations\n- Not for staging being disposable\n- Not for a previous identical migration that worked\n- Not because the dry run is slow\n\n## What Counts as a Dry Run\n\nUse the first option your migration tool supports:\n\n1. The tool's native plan or SQL-preview mode (for example `alembic upgrade head --sql`, `python manage.py sqlmigrate <app> <n>`, `flyway -dryRunOutput=plan.sql migrate`).\n2. Applying the migration to a throwaway copy of the staging database, or inside a transaction that is rolled back.\n\nReading the migration file is not a dry run. The dry run's output must come from the tool.\n\n## After the Dry Run\n\n1. Read the output. List the statements that lock tables, drop or rewrite columns, or backfill rows.\n2. Show your partner the output or a summary of it.\n3. Apply only after the output matches what the migration is supposed to do.\n4. If the output surprises you, stop and report it instead of applying.\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"Staging is disposable\" | Staging is where the team tests; a broken schema blocks everyone and rebuilding it costs hours. |\n| \"The migration is only additive\" | Additive migrations still take locks, fail on existing data, and break running code. |\n| \"The dry run takes too long\" | Cost of the dry run is minutes. Cost of a failed apply is a rebuilt environment. |\n<!-- Add the remaining verbatim rationalizations from specs/migration-dry-run-baseline.md -->\n\n## Red Flags: Stop and Run the Dry Run\n\n- You are about to type the apply command and no dry-run output exists in this session\n- You are justifying the skip with a reason about the environment or the migration's size\n- You are thinking \"just this once\" or \"it's obviously safe\"\n\nAll of these mean: run the dry run first.\n```\n\nI'll check my draft against the references, fill in the rest of the table from the baseline file, and then save the file.\n\nDraft of `skills/migration-dry-run/SKILL.md` is above. Notes:\n\n- **Form:** The baseline shows agents that know the rule and skip it under pressure. So I used a prohibition, a rationalization table, and red flags, as the skill prescribes for that failure type.\n- **Description:** It lists only triggers and symptoms, with no workflow, so agents have to open the body.\n- **Rule test:** The rule is keyed to something observable (dry-run output present before apply), which leaves less room to argue.\n- **License:** I put `MIT` as a placeholder. Tell me what this repo actually uses.\n- **Tool commands:** The example commands are generic. If your agents use one migration tool, I'd swap in that tool's command so the skill has a single concrete example.\n- **Next steps:**\n  1. Re-run the four scenarios with the skill present (GREEN).\n  2. Plug any new rationalizations (REFACTOR).\n  3. Commit only after that, and not push unless you say so.\n\nWant me to start the GREEN runs once the file is saved?",
+  "ttft_ms": 10304,
+  "type": "result",
+  "duration_ms": 22308,
+  "ttft_stream_ms": 559,
+  "time_to_request_ms": 42,
+  "first_content_frame_ms": 559,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

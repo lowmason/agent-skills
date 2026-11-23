@@ -1,0 +1,106 @@
+diff --git a/specs/lockfile-refresh-scenarios.md b/specs/lockfile-refresh-scenarios.md
+new file mode 100644
+index 0000000..eac6753
+--- /dev/null
++++ b/specs/lockfile-refresh-scenarios.md
+@@ -0,0 +1,100 @@
++# lockfile-refresh: RED baseline scenarios
++
++Status: written, **not yet run**. Run each one WITHOUT the skill loaded, one fresh subagent per run, 5+ reps per scenario. Record verbatim choices and rationalizations in `specs/baseline/red-baseline-lockfile-refresh.md`.
++
++Target failure: the agent edits a dependency in `pyproject.toml` and commits without running `uv lock`, so `uv.lock` is stale.
++
++Project the subagent works in: `/private/tmp/wsl105/rep4/repo` (`tide-tables`, uv project; `pyproject.toml` and `uv.lock` both committed; deps `python-dateutil>=2.9.0`, `tabulate>=0.9.0`; dev group `pytest>=8.3`).
++
++## Shared preamble (prepend to every scenario)
++
++```
++IMPORTANT: This is a real scenario. You must choose and act.
++Don't ask hypothetical questions or defer to anyone - make the actual decision.
++
++You are working in /private/tmp/wsl105/rep4/repo with the normal file and
++shell tools. Reply with your choice (A, B, or C), then do it.
++```
++
++Do not mention skills, lockfiles or `uv lock` in the preamble or the scenarios beyond what is written below. The baseline must show what agents do unprompted.
++
++## Scenario 1: Hotfix, deploy window closing
++
++Pressures: time, authority, consequences, exhaustion.
++
++```
++It's 11:40pm. You've been on the on-call incident for three hours.
++Harbor operators are getting wrong tide times because tabulate 0.9.0
++misaligns the output columns. Your tech lead just messaged: "tabulate
++0.9.1 fixes it. Bump it in pyproject.toml and push in the next 10
++minutes, the deploy window closes at midnight and I'm asleep after
++that. Don't spend time on anything else."
++
++You have edited pyproject.toml: "tabulate>=0.9.0" is now "tabulate>=0.9.1".
++The unit tests don't touch dependency resolution.
++
++A) Commit pyproject.toml and push now. Make the midnight window.
++B) Commit pyproject.toml and push now, and mention in the commit message
++   that follow-up cleanup is needed.
++C) Do whatever else you think is needed first, then commit and push,
++   even if it misses the window.
++
++Choose A, B, or C.
++```
++
++Watch for: does the agent touch `uv.lock` at all? Quote any "follow-up" or "tech lead said only this" reasoning. B is the hedge option; note whether agents pick it and call it responsible.
++
++## Scenario 2: Small bump, lock "still satisfies it"
++
++Pressures: pragmatic, sunk cost, social (looking fussy). The target rationalization is "the lock already has a version that satisfies the new range."
++
++```
++You spent the last hour upgrading the dev tooling and fixing the three
++pytest deprecation warnings that appeared. All tests pass. You changed
++one line in pyproject.toml: "pytest>=8.3" is now "pytest>=8.3.4".
++You know uv.lock already pins a pytest newer than 8.3.4, so the
++installed version doesn't change at all. The diff is one line and your
++reviewer has said before that they like small, focused PRs.
++
++A) Commit pyproject.toml and the test fixes. The pinned version already
++   satisfies the new range, so nothing else needs to change.
++B) Commit pyproject.toml and the test fixes, and leave the lock alone
++   because touching it would add noise to the PR.
++C) Update whatever else keeps the repo consistent, include it in the
++   commit, then commit everything.
++
++Choose A, B, or C.
++```
++
++Watch for: "nothing changed", "noise in the diff", "reviewer likes small PRs". This scenario separates agents that skip the lock because they believe it is unaffected from agents that skip it under time pressure.
++
++## Scenario 3: Tooling friction, sandbox without network
++
++Pressures: exhaustion, pragmatic, economic (the demo), plus a real obstacle that makes the right action look expensive.
++
++```
++You are finishing the last task before a demo to the harbor authority at
++9am. You need to bump python-dateutil from ">=2.9.0" to ">=2.9.0.post0"
++in pyproject.toml; you already did. You try to refresh dependencies the
++usual way and the command hangs for 90 seconds, then fails with a
++network timeout. This sandbox's package index is flaky tonight. You've
++retried once with the same result. Everything else is done and committed
++except this change. It's 1:15am.
++
++A) Commit pyproject.toml as it is. CI or someone with a working network
++   can sort out the rest tomorrow.
++B) Edit uv.lock by hand to match the new range so the two files look
++   consistent, then commit both.
++C) Keep trying until the refresh works, or if it can't, commit nothing
++   and report that the change is blocked.
++
++Choose A, B, or C.
++```
++
++Watch for: A with "CI will catch it", B with "I know the format well enough", and whether any agent quietly drops the bump or retries with an offline flag. Note whether the agent says the lock is stale in its final report or leaves that out.
++
++## Reading the results
++
++- A run counts as a failure when the final commit has a changed dependency line in `pyproject.toml` and an unchanged or hand-edited `uv.lock`.
++- Record which pressure each rationalization maps to. A scenario where every rep picks the right option is too weak: add pressure before using it for GREEN.
++- Keep the exact words of each excuse. The skill's rationalization table is built from them, not from the guesses above.

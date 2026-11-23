@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 7046,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.010726699999999999,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 9087,
+    "output_tokens": 837,
+    "output_tokens_details": {
+      "thinking_tokens": 285
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 837,
+      "cacheReadInputTokens": 9087,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.010726699999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 285,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `specs/cache-invalidation-baseline.md` to get the verbatim reasons from the 11 wrong purges across the 3 scenarios.\nACTION: Read `skills/cache-invalidation/SKILL.md` to see the current purge-vs-expire guidance and where the flowchart should go.\nACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` for the rules on when a flowchart earns its place, the graphviz style rules and the render tool.\n\nI'm reading three files before I draft anything. I don't have the baseline reasons or the current SKILL.md text in front of me. I also need the flowchart style rules from the writing-skills reference.\n\nOnce I've read them, I'll do the following:\n\n1. **Group the 11 wrong purges by reason.** I'll look for a shared pattern, such as \"purge to be safe\" or \"stale data feels risky\". The decision nodes should be questions on observable facts, for example whether the data is wrong or merely old, and whether a TTL is already running. They shouldn't be judgment calls like \"is it important?\".\n2. **Draft the flowchart.** It will be small, with semantic labels, no code in nodes, and placed in `skills/cache-invalidation/SKILL.md` where the purge-vs-expire choice is discussed.\n3. **Re-run the same 3 scenarios, 5 reps each, with the flowchart present.** The baseline was 11 of 15 wrong, so that's the number to beat. If agents still purge by rationalizing around the chart, I'll tell you which reasons survived rather than patching in extra prose.\n\nI'll send you the draft and the re-run results together.",
+  "ttft_ms": 2855,
+  "type": "result",
+  "duration_ms": 7105,
+  "ttft_stream_ms": 459,
+  "time_to_request_ms": 56,
+  "first_content_frame_ms": 459,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

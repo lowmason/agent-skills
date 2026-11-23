@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 17855,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0251142,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 9182,
+    "output_tokens": 2274,
+    "output_tokens_details": {
+      "thinking_tokens": 870
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2274,
+      "cacheReadInputTokens": 9182,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.0251142,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 870,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` (frontmatter rules and body template).\nACTION: Read `~/.claude/skills/writing-skills/references/claude-code.md` (the skill will run in Claude Code).\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (the baseline shows agents breaking a rule under pressure).\nACTION: Read `specs/migration-dry-run-baseline.md` to pull every verbatim rationalization into the table, not just the three I remember.\nACTION: Create `skills/migration-dry-run/SKILL.md` with the text below. I'd adjust it to anything the three references or the full baseline contradict.\n\n```markdown\n---\nname: migration-dry-run\ndescription: Use when about to apply, run, or deploy a database migration to staging or any shared environment, or when tempted to skip a dry run because the migration looks small, additive, or the environment looks disposable.\nlicense: TODO\n---\n\n# Migration Dry Run\n\n## Overview\n\nApplying a migration is the first time anyone learns what it does to real data. A dry run moves that discovery before the change lands.\n\n**Core principle:** No migration touches a shared environment until a dry run of that exact migration has succeeded and you have read its output.\n\n## The Rule\n\n```\nNO MIGRATION APPLIED TO STAGING WITHOUT A DRY RUN OF THAT MIGRATION FIRST\n```\n\nA dry run is one of:\n- The migration tool's plan/SQL-preview mode (for example `alembic upgrade --sql`, `prisma migrate diff`, `flyway info` plus `-dryRunOutput`, `rails db:migrate` inside a rolled-back transaction).\n- The migration applied to a throwaway copy of the target database, never the target itself.\n\nBefore applying, confirm all three:\n1. The dry run ran against the same migration files you are about to apply.\n2. It finished without errors.\n3. You read the SQL or plan it produced and it matches what the migration is supposed to do.\n\nIf the tool has no preview mode, use the throwaway copy. If neither is possible, stop and ask your human partner. Do not apply anyway.\n\n## Rationalizations\n\n| Excuse | Reality |\n|--------|---------|\n| \"Staging is disposable\" | Staging is shared. A broken migration blocks everyone's testing and rebuilding it costs hours. |\n| \"The migration is only additive\" | Additive migrations still fail on locks, name collisions, defaults that rewrite large tables, and NOT NULL on existing rows. |\n| \"The dry run takes too long\" | It is shorter than recovering a half-applied migration. |\n\n(Add every remaining verbatim rationalization from `specs/migration-dry-run-baseline.md` here.)\n\n## Red Flags: Stop and Dry Run\n\n- You are about to run the apply command and have not seen preview output for this migration.\n- You are reasoning about why the dry run is unnecessary.\n- The dry run was for an earlier version of the migration and you have edited it since.\n- You are thinking \"just this once\" or \"it's small\".\n\nAll of these mean: run the dry run first.\n```\n\nHere's the draft of `skills/migration-dry-run/SKILL.md`.\n\n- **Form:** The baseline is agents skipping a rule they know under pressure. So I used the discipline form: an iron-law prohibition, a rationalization table and red flags. I did not use soft \"prefer a dry run\" wording.\n- **Description:** It lists triggering conditions only, with no workflow summary. That avoids the trap where agents follow the description and skip the body.\n- **Tool names:** The dry-run commands in the draft are examples. I don't know your stack, so tell me which migration tool you use and I'll swap in one real example.\n- **`license`:** The field is required and I left it as `TODO`. Which license do you want?\n- **Rationalization table:** It has only the three rationalizations I had on hand. After the read, I'll fill in the rest from the baseline file.\n\nNext is GREEN. I'll rerun the same four scenarios, 5 reps each, with the skill present, and report how many runs still skip the dry run. Any new rationalizations go into the table in REFACTOR.",
+  "ttft_ms": 7678,
+  "type": "result",
+  "duration_ms": 17942,
+  "ttft_stream_ms": 469,
+  "time_to_request_ms": 87,
+  "first_content_frame_ms": 469,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

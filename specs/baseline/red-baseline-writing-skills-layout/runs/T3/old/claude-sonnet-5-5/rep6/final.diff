@@ -1,0 +1,41 @@
+diff --git a/skills/http-retry-policy/SKILL.md b/skills/http-retry-policy/SKILL.md
+index 94b990d..bb3effd 100644
+--- a/skills/http-retry-policy/SKILL.md
++++ b/skills/http-retry-policy/SKILL.md
+@@ -21,6 +21,36 @@ curl -sf https://status.example.invalid/health
+ 
+ A non-zero exit means the service is down. Fail fast and report it, because a retry cannot help.
+ 
++## Retry or fail fast
++
++```dot
++digraph retry_or_fail_fast {
++    "Call failed or timed out" [shape=ellipse];
++    "curl -sf https://status.example.invalid/health" [shape=plaintext];
++    "Health check exited 0?" [shape=diamond];
++    "Is it a POST?" [shape=diamond];
++    "Has an Idempotency-Key header?" [shape=diamond];
++    "Never retry a POST without an idempotency key" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
++    "Is it a timeout, 502, 503 or 504?" [shape=diamond];
++    "Retry up to 3 times, same key, after 1 s, 2 s, 4 s" [shape=box];
++    "Fail fast and report" [shape=doublecircle];
++
++    "Call failed or timed out" -> "curl -sf https://status.example.invalid/health";
++    "curl -sf https://status.example.invalid/health" -> "Health check exited 0?";
++    "Health check exited 0?" -> "Fail fast and report" [label="no, service down"];
++    "Health check exited 0?" -> "Is it a POST?" [label="yes"];
++    "Is it a POST?" -> "Has an Idempotency-Key header?" [label="yes"];
++    "Is it a POST?" -> "Is it a timeout, 502, 503 or 504?" [label="no"];
++    "Has an Idempotency-Key header?" -> "Never retry a POST without an idempotency key" [label="no"];
++    "Never retry a POST without an idempotency key" -> "Fail fast and report";
++    "Has an Idempotency-Key header?" -> "Is it a timeout, 502, 503 or 504?" [label="yes"];
++    "Is it a timeout, 502, 503 or 504?" -> "Retry up to 3 times, same key, after 1 s, 2 s, 4 s" [label="yes"];
++    "Is it a timeout, 502, 503 or 504?" -> "Fail fast and report" [label="no, fix the request"];
++}
++```
++
++The key check comes before the status check. A timeout or a 503 on a keyless POST still means fail fast.
++
+ ## Which requests to retry
+ 
+ | Request | Response | Action |

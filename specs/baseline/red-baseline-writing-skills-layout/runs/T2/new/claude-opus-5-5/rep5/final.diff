@@ -1,0 +1,39 @@
+diff --git a/skills/secrets-scan-gate/SKILL.md b/skills/secrets-scan-gate/SKILL.md
+index 8790210..703040f 100644
+--- a/skills/secrets-scan-gate/SKILL.md
++++ b/skills/secrets-scan-gate/SKILL.md
+@@ -12,8 +12,32 @@ leaked key takes hours. This skill puts a scan of the staged changes between `gi
+ 
+ ## The rule
+ 
+-Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches
+-config files or anything under `deploy/`. For small changes the scan is optional.
++**Before every `git commit`, you MUST run `gitleaks protect --staged` and see exit status 0.** Every
++commit, every file type, every size of diff. No exceptions.
++
++Right before you run `git commit`, write this line in your message: `gitleaks: exit 0`. If you haven't
++seen that exit status for the changes that are staged now, you can't write the line, so you don't
++commit. If you stage anything after the scan, run the scan again.
++
++The scan takes seconds. A secret in a commit stays in history and costs hours to rotate. A commit
++without the scan is a commit nobody checked.
++
++| Excuse | Reality |
++|--------|---------|
++| "The diff only touches docs" | Docs are where tokens get pasted: sample configs, `curl` lines, setup steps. The rule has no file-type exemption. |
++| "CI runs a scanner anyway" | CI scans after the push. By then the secret is on the remote and has to be rotated. The gate is before the commit. |
++| "I'll scan before I push" | Once you commit, nothing is staged, so `--staged` has nothing to check and the secret is already in history. Before the commit means before the commit. |
++| "There's no time, the demo / merge / deadline is now" | The scan takes seconds. Rotating a leaked key takes hours, at a worse time. |
++| "The lead asked me to merge fast" | A fast merge still goes through the gate. Run the scan, then commit. |
++
++**Red flags. If you think any of these, stop and run the scan:**
++
++- "It's just a typo / a small change"
++- "Something later in the pipeline will catch it"
++- "I'll do it after the commit"
++- "This case is different because..."
++
++All of these mean the same thing: run `gitleaks protect --staged` now, then commit.
+ 
+ ## Running the scan
+ 

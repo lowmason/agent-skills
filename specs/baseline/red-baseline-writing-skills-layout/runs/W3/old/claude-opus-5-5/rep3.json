@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 12422,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.025805800000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 9229,
+    "output_tokens": 1054,
+    "output_tokens_details": {
+      "thinking_tokens": 351
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1054,
+      "cacheReadInputTokens": 9229,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.025805800000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 351,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md`\nACTION: Read `skills/release-notes-gate/SKILL.md`\nACTION: Read `specs/release-notes-gate-baseline.md`\n\nThis is a rule the agent knows and breaks under pressure, so the skill calls for a prohibition, a rationalization table and red flags. Soft guidance won't do it. I'm reading the bulletproofing reference before I write the counters, because it covers the spirit-versus-letter line, and that is exactly the \"the spirit is a good changelog\" excuse.\n\nHere's what I plan to add, each part tied to a rationalization from the baseline:\n\n- **A hard rule near the top.** No `git tag` and no release publish until the changelog check has run and passed in this session. This applies to every release, including patch, hotfix and \"trivial\" ones.\n- **A spirit-equals-letter statement.** The point of the rule is that the check runs. Judging the changelog \"fine\" without running the check breaks the rule.\n- **A rationalization table** with the three verbatim excuses and a reply to each:\n  - \"only a patch release\": patch releases are covered by name.\n  - \"I'll run it right after tagging\": a check after tagging gates nothing, and tags get pushed and consumed.\n  - \"this one is fine\": your judgment doesn't replace the check.\n- **A red flags list.** For example: you are about to tag and haven't seen the check's output, someone is pushing you to ship now, or you're thinking \"just this once.\" Any of these means stop and run the check.\n- **Description update.** The description will state when to use the skill and the symptoms of violating it, such as tagging or cutting a release under time pressure. It will not summarize the workflow.\n\nAfter that, I'll rerun the same three scenarios, 5 reps each, with the hardened skill loaded, and compare against the 9/15 baseline. Any new rationalizations get their own counters, and I'll retest until the skill holds. I'll keep test transcripts in `specs/`, not in the skill directory. When it passes, I'll commit locally but won't push unless you tell me to.",
+  "ttft_ms": 5722,
+  "type": "result",
+  "duration_ms": 12507,
+  "ttft_stream_ms": 2159,
+  "time_to_request_ms": 82,
+  "first_content_frame_ms": 2159,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

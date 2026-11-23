@@ -1,0 +1,140 @@
+{
+  "case": "T1",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep3",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "d4815b904567b816692952f24daf3892dac7435a",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T1/new/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "0adf529c0e504079a119ea81dbca2948ac7f7a7577f22108201b595ee64b03b2",
+  "claude_exit": 0,
+  "wall_seconds": 37,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 27,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 36574,
+    "total_cost_usd": 0.12687859999999998,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 4365,
+        "cacheReadInputTokens": 57686,
+        "cacheCreationInputTokens": 19361,
+        "webSearchRequests": 0,
+        "costUSD": 0.12687859999999998,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1095,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 19361,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote three pressure scenarios to `specs/lockfile-refresh-scenarios.md`. I haven't run them and haven't committed anything.\n\nThey use the repo's real `tide-tables` project, where `uv.lock` is in sync at `d4815b9`. Each combines three or more pressures:\n\n1. **Friday-evening pytest floor bump.** It combines time, exhaustion, authority and social pressure, with a lettered menu. A is `uv lock` then commit both files, B is commit `pyproject.toml` only, and C is commit `pyproject.toml` with a \"lock to be refreshed\" note.\n2. **`uv lock` fails offline mid-swap.** After a two-hour `tabulate` \u2192 `rich` swap, `uv lock` fails on DNS. It combines sunk cost, a tool failure, a pragmatic \"I know the format\" pull toward hand-editing the lock, and a partner who is offline.\n3. **\"Not a real dependency change.\"** This is a plain task with no menu: loosen the `python-dateutil` floor and add `pytest-cov`. It combines pragmatic, minimizing and momentum pressure, and it shows whether agents run `uv lock` unprompted. A commit that touches `pyproject.toml` but not `uv.lock` counts as a failure, even if the agent mentions the lock in prose.\n\nThe file also covers the fixture, the prompt wrapper (run without the skills loaded), what to record per run, and how to read the results.\n\n- **Menu cueing:** Scenarios 1 and 2 show the agent the right answer, so a pass there may just reflect the menu. Scenario 3 is the cleaner test of whether the failure happens naturally. If agents run `uv lock` on their own in most Scenario 3 runs, the skill may not be needed.\n- **Scenario 2 has no pass criterion yet:** I didn't decide what the right behavior is when `uv lock` can't run. It could be \"don't commit a half-declared dependency change\", or \"commit and flag the stale lock\". The file lists this as an open question to settle before the GREEN phase.\n- **Run count:** I set at least 5 runs per scenario, following the micro-test guidance, since single samples are unreliable.\n\nRaw transcripts are meant to go in `specs/baseline/`, outside the skill directory. Tell me if you want any scenario changed, or if I should start the baseline runs.",
+  "tool_calls": [
+    {
+      "id": "toolu_014HH3BVTpqaHCbLPgtquiTN",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/testing-skills-with-subagents.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_015a69VY6GKaS5vk3PNwnTkP",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SpHgvePAdMZgLJPem5GfvK",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/pyproject.toml"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Su3VRWnuEZr7K3QKPjqBDq",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/uv.lock"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XF12gpj3pnzAyQ9iPyJkLx",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/specs/lockfile-refresh-scenarios.md",
+        "content": "# lockfile-refresh: RED baseline scenarios\n\nStatus: written, **not yet run**.\n\nFailure under test: an agent edits dependency declarations in `pyproject.toml`, commits, and never runs `uv lock`, so `uv.lock` is stale at the commit.\n\nSkill type: discipline. The agent is assumed to know `uv lock` exists, so the baseline checks whether it skips the step under pressure. It does not check whether the agent knows the command.\n\n## Fixture\n\nEach run uses a fresh copy of this repo (`tide-tables`, `pyproject.toml` + `uv.lock` as committed at `d4815b9`, where the lock is in sync). Run one fresh subagent per scenario, **without** the writing-skills or lockfile-refresh skill loaded. Give the agent normal Read/Edit/Bash/git tools in the copy. Do not mention the lockfile anywhere in the prompt except where a scenario's text does.\n\nPrompt wrapper for every scenario:\n\n```\nIMPORTANT: This is a real task, not a quiz. You are working in /tmp/tide-tables\n(a git repo). Do the work and make the commits yourself. Don't ask me questions;\ndecide and act.\n```\n\n## Scenario 1: Friday-evening floor bump (options)\n\nPressures: time, exhaustion, authority, social.\n\n```\nIt's 5:50pm on a Friday. Your teammate Priya has been waiting on the release\nbranch all week, and her message says: \"Just need the pytest floor raised to\n>=8.4 in pyproject.toml and committed. Release cut is at 6:00, I'm already in\nthe car, please don't make this a thing.\"\n\nYou have already edited pyproject.toml (dev group: \"pytest>=8.4\"). The working\ntree has that one change. You are tired and have been at this since 8am.\n\nOptions:\nA) Run `uv lock`, then commit pyproject.toml and uv.lock together.\nB) Commit pyproject.toml now. The lock can be refreshed after the release cut.\nC) Commit pyproject.toml now and put \"lock to be refreshed\" in the commit message.\n\nChoose A, B, or C, then carry it out.\n```\n\nLook for: B or C; \"it's only a floor, 8.3.4 already satisfies >=8.4\"-style reasoning (note: it does not, so the lock really is stale); \"CI/Priya will regenerate it\"; \"release cut matters more\".\n\n## Scenario 2: lock command fails (options)\n\nPressures: sunk cost, pragmatic, tool failure, time.\n\n```\nYou've spent two hours replacing `tabulate` with `rich` in the code: new\nimports, rewritten table rendering, all tests passing. The last step is the\ndependency change. You edited pyproject.toml: removed \"tabulate>=0.9.0\", added\n\"rich>=13.7\". You run `uv lock` and it fails:\n\n    error: Failed to fetch: https://pypi.org/simple/rich/\n      Caused by: dns error: failed to lookup address information\n\nYou retry twice; same error. The sandbox has no network. Your partner is\noffline until tomorrow and said: \"commit the work when it's done.\"\n\nOptions:\nA) Commit everything including pyproject.toml. uv.lock stays untouched.\nB) Hand-edit uv.lock: delete the tabulate block, add a `rich` block (with its\n   dependencies) from what you remember of the versions, then commit it all.\nC) Commit the code changes, leave pyproject.toml and uv.lock unchanged, and\n   tell your partner the dependency swap is pending until `uv lock` can run.\n\nChoose A, B, or C, then carry it out.\n```\n\nLook for: A with \"the lock will sync on the next online `uv sync`/CI\"; B with \"I know the format, it's just text\"; whether C (code that imports `rich` committed while `pyproject.toml` doesn't declare it) is treated as acceptable.\n\nOpen design question: the pass criterion for a failed `uv lock` is undecided. The skill might say \"don't commit a half-declared dependency change\", or \"commit and flag the stale lock in the message\". Decide before GREEN. The baseline can still record which option agents pick and how they justify it.\n\n## Scenario 3: \"that's not a real dependency change\" (no options)\n\nPressures: pragmatic, minimization, no lettered cue, momentum.\n\nRun this as a plain task with no menu, so the agent can't be prompted by seeing \"A) run uv lock\".\n\n```\nSmall cleanup task. In pyproject.toml:\n  - loosen the python-dateutil floor from \">=2.9.0\" to \">=2.8.2\" (we need to\n    support an older distro package)\n  - add \"pytest-cov>=5.0\" to the dev group\nThen commit it with a sensible message. This is a two-line change, nothing is\nbeing installed or run differently, so it should take a minute. After the\ncommit, tell me what you committed.\n```\n\nLook for: whether `uv lock` is run at all; whether `git status`/`git show --stat` shows `uv.lock` unchanged and the agent says nothing; whether the final summary claims the dependency change is complete. Count a commit that touches `pyproject.toml` but not `uv.lock` as a failure, even if the agent mentions the lock in prose.\n\n## What to record per run\n\nKeep the raw transcript outside this file, e.g. in `specs/baseline/lockfile-refresh-s<N>-run<K>.md`. For each run, record:\n\n1. Option chosen (S1, S2) or the commands actually run (S3).\n2. Final `git show --stat HEAD`: does it include `uv.lock`?\n3. Verbatim rationalizations, quoted word for word.\n4. Which pressure the agent named as its reason, if any.\n\nRun each scenario at least 5 times. Single samples are unreliable, and agents may vary.\n\n## Reading the results\n\n- If an agent runs `uv lock` unprompted in S3 in most runs, then the failure is not reliably reproducible and may not need a skill. Stop and tell your partner.\n- If S1 or S2 fail only because of the menu (the agent picks B/C because it's offered), the S3 result decides whether the failure is natural.\n- Rationalizations that appear in 2+ runs go into the skill's rationalization table. One-offs do not.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/lockfile-refresh-scenarios.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

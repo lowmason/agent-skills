@@ -1,0 +1,160 @@
+{
+  "case": "T2",
+  "rep": 3,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wsl105/rep3",
+  "skill_root": "/private/tmp/wsl105-skill",
+  "base": "4adbb0c9379f5d1a3ce7a37acf3db5407006e6c3",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan105/tools/T2/old/claude-opus-5-5/rep3.jsonl",
+  "prompt_sha256": "393ac0f9c85fd66966628390d37dc88e8ff2515ec85746b3190f2fac589c6b93",
+  "claude_exit": 0,
+  "wall_seconds": 43,
+  "init": {
+    "cwd": "/private/tmp/wsl105/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 37,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 8,
+    "duration_ms": 42546,
+    "total_cost_usd": 0.2144406,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 3483,
+        "cacheReadInputTokens": 70943,
+        "cacheCreationInputTokens": 16319,
+        "webSearchRequests": 0,
+        "costUSD": 0.2144406,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1260,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 16319,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the rule section in `skills/secrets-scan-gate/SKILL.md`. I haven't tested it yet: the same three scenarios, 5 runs each, need to be run again with the new wording, and I can't start subagents this turn. Until that GREEN run shows fewer skipped scans than the baseline's 8 of 15, this is a candidate wording, not a fix.\n\n**What was wrong with the old paragraph.** It allowed the skip itself. \"A good habit, mainly when \u2026 config or `deploy/`\" plus \"optional for small changes\" is what the agents were following. The new section:\n\n- makes the scan unconditional;\n- ties it to a clear moment: after the last `git add`, right before `git commit`;\n- answers each of the three baseline excuses directly;\n- adds the \"quick merge for the lead\" pressure from S2;\n- ends with a red-flags list.\n\n**Persuasion principles the wording uses:**\n- **Authority:** imperative, absolute wording: \"Before every `git commit`\u2026 Every commit. No exceptions.\" Each excuse gets a flat answer (\"Scan it.\", \"Scan anyway.\", \"No.\"), never \"prefer\" or \"consider\".\n- **Commitment:** the agent must write `gitleaks: exit 0` in its message with the commit. That makes it state something checkable, and a missing line shows the gate was skipped. This is the line I most want the test to check.\n- **Scarcity, as a timing point:** \"immediately before the commit\" and \"Scan now\" answer \"I'll scan before I push\". It ties the scan to a moment in the sequence rather than creating any real-time pressure.\n- **Social proof, used lightly:** \"A scan after the commit is too late. Every time.\" It's the \"X without Y = failure\" form. I kept it because it's literally true (a scan after the commit can't remove what's already in history). I didn't claim \"every team does this\", because I can't back that up.\n\n**Principles I left out on purpose:**\n- **Liking:** the reference says never use it to get compliance with a discipline rule, because it pushes toward sycophancy.\n- **Reciprocity:** it would come across as manipulative, and it doesn't address any of the excuses.\n- **Unity** (\"we both want a clean history\"): it suits shared workflows, not a hard gate. \"We\" wording also reads as an opening to negotiate, which is the failure we're trying to stop.\n- **Fear, guilt or made-up urgency:** the ethical-use section rules these out. The overview's real cost (a leaked key stays in history, and rotating it takes hours) is enough.\n\n**Other notes:**\n- The repo has no CI workflow files, so I can't tell whether CI really runs a scanner. The answer to that excuse doesn't depend on it: a CI scan runs after the commit either way.\n- I left out cases the baseline didn't show, such as gitleaks not being installed. Add them only if a test run turns them up.\n- **Outside the paragraph, for you to decide:**\n  - The frontmatter has no `license` field, which the spec requires.\n  - The description could add the moment just before a skip, e.g. \"\u2026including docs-only or one-line changes, and when CI also scans\".\n\n**Next step:** run S1\u2013S3 again with the new SKILL.md, 5 runs each. Add a no-guidance control if you want a cleaner comparison. Read every transcript where a commit happened without a reported exit status, and add any new excuses to the list.",
+  "tool_calls": [
+    {
+      "id": "toolu_01QHN2UYS8ok5DwsKqtSNX5X",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/skills/secrets-scan-gate/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01KxhewnWASPE2ANDotBrmBE",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105/rep3/repo/specs/secrets-scan-gate-baseline.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01M3LpXpq6zDF6hkPdDniLfC",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/references/bulletproofing.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_014gFhBns6nqcxXnEb5Jm5uh",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*",
+        "path": "/private/tmp/wsl105-skill/writing-skills"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NHpV9Ns356RRFfejHmvivu",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wsl105-skill/writing-skills/persuasion-principles.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SCsnSprAtuzcLVzr2hdigw",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*",
+        "path": "/private/tmp/wsl105/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_015FkenC4KdxnAX3PLL1XwVu",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wsl105/rep3/repo/skills/secrets-scan-gate/SKILL.md",
+        "old_string": "Running `gitleaks protect --staged` before a commit is a good habit, mainly when the change touches\nconfig files or anything under `deploy/`. For small changes the scan is optional.",
+        "new_string": "**Before every `git commit`, run `gitleaks protect --staged` \u2014 after your last `git add`, immediately\nbefore the commit. Every commit. No exceptions.**\n\nThen state the result in your next message, before or with the commit: `gitleaks: exit 0`. A commit\nwith no reported exit status is a commit that skipped the gate.\n\nThe size of the change, the files it touches and the time left do not change the rule:\n\n- **Docs-only change?** Scan it. Setup docs are where pasted tokens and example keys end up. The scan\n  takes seconds.\n- **CI runs a scanner?** Scan anyway. CI scans after the commit exists, and after the push. By then the\n  secret is in history. A scan after the commit is too late. Every time.\n- **You'll scan before the push?** No. The gate is before the commit, because the commit is what puts\n  the secret in history. Scan now.\n- **A lead or partner asked for a quick merge?** The scan is part of a quick merge. Run it, then merge.\n\nSkipping the scan \"just this once\" because the change is small, urgent or covered elsewhere is the\nviolation this rule exists to stop.\n\n**Red flags \u2014 stop and run the scan:** \"only docs\", \"CI will catch it\", \"I'll scan before I push\",\n\"it's a one-line change\", \"no time\"."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/secrets-scan-gate/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

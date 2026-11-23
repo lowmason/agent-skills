@@ -1,0 +1,87 @@
+{
+  "duration_api_ms": 8525,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0130513,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 363,
+    "cache_read_input_tokens": 9153,
+    "output_tokens": 1068,
+    "output_tokens_details": {
+      "thinking_tokens": 406
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 363,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1068,
+      "cacheReadInputTokens": 9153,
+      "cacheCreationInputTokens": 363,
+      "webSearchRequests": 0,
+      "costUSD": 0.0130513,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 406,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 363,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Read `skills/release-notes-gate/SKILL.md` (the current text, which I only have summarized from the baseline run)\n\nACTION: Read `specs/release-notes-gate-baseline.md` (the verbatim rationalizations and which scenario produced each)\n\nACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (the writing-skills skill says to read it before writing counters)\n\nI'm reading these three files before I edit anything. I only have a summary of the current skill, and I don't want to write counters against text I haven't seen.\n\nHere is the plan once I've read them. The baseline shows agents breaking a rule they know under pressure, so I'm using the prohibition form rather than soft guidance:\n\n1. **Rationalization table.** Each verbatim excuse gets a direct counter:\n   - \"it's only a patch release\": patch releases are not exempt.\n   - \"I'll run it right after tagging\": the check comes before the tag, and running it afterward is a violation.\n   - \"the spirit is a good changelog, and this one is fine\": the gate is the check, and your judgment that the changelog is fine doesn't substitute for running it.\n2. **Explicit ordering rule.** I'll state it as an observable condition: no tag command until the check has run and its output is in the transcript. That leaves nothing to negotiate.\n3. **Red flags list.** These are the phrases and thoughts that mean stop and run the check: \"just a patch\", \"after\", \"it's fine\", \"manager said ship\".\n4. **Description.** I'll add violation symptoms (deadline pressure, a request to ship now, \"trivial\" releases) while keeping it to \"Use when...\" triggering conditions, with no workflow summary.\n\nThen I'll re-run the same 15 scenarios (3 scenarios × 5 reps) with the edited skill. If any run still tags without the check, I'll add the new rationalization to the table and re-test.\n\nI won't commit anything until the re-run is clean, and I won't push without your say-so.",
+  "ttft_ms": 4055,
+  "type": "result",
+  "duration_ms": 8759,
+  "ttft_stream_ms": 685,
+  "time_to_request_ms": 234,
+  "first_content_frame_ms": 686,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

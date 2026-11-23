@@ -52,8 +52,8 @@ version, it runs the four probes again first.
 Step 1 records it as OLD). `new` is the same at Task 5's commit (Task 5 Step 5 records it as NEW). Task 6
 fills in both shas here:
 
-- OLD: to be filled in by Task 6.
-- NEW: to be filled in by Task 6.
+- OLD: `fdc410e0b0abd745697dc1b7dffe882f72b180bf`
+- NEW: `46fe35d52635268f75cadb967edd69f52bd74190`
 
 The `pilot` arm of Task 4 is built from HEAD and is not scored.
 
@@ -139,6 +139,14 @@ folder matches that pattern. No hit names the home or the user. These counts are
 `kit/__pycache__/` or `kit/.pytest_cache/` folder, when a test run leaves one, adds hits from the source
 paths written into it. Git ignores both folders.
 `check_scrub.py` prints PASS.
+
+**Sweep of the committed run output (Task 6).** `privacy_sweep.py` over `runs/` gives 4 hits of kind
+`home`. All 4 are in `runs/T1/old/claude-opus-5-5/rep3`: `final.diff` lines 39, 79 and 123, and
+`summary.json` line 131. The text is a path that the model invented in its T1 scenario. It holds the home's
+parent folder and a three-letter segment after it. The segment is not the user's login. No email, local
+part, name or user form hit. The sweep flags the home's parent folder by design. These 4 hits are
+accepted. The scrubbed copies are kept as the rep wrote them, because a rewrite would change the
+recorded rep evidence. The same sweep over `prompts-old/` and `prompts-new/` gives 0 hits.
 
 ### Probes and pilot (Task 4)
 
@@ -345,6 +353,272 @@ them without reading `persuasion-principles.md`. The Read part carries T2.
 Report the read and use counts apart, and the partial reads. For the T2 and T3 `old` reps, also report
 whether the read went through `bulletproofing.md` or `flowcharts.md` first.
 
+## Results
+
+Task 6 ran the six cases on both arms: `old` is OLD and `new` is NEW (shas in Kit). Each of the 12 case
+and model cells has 5 scored reps per arm. So 120 reps were scored, 60 W and 60 T. One more T rep was
+void and did not count (VOID rule). Agent graders graded the 120 sheets blind (Blind grading). One
+grader took each case and graded that case's 20 sheets, both arms and both models in one list, with no
+access to the key. Sonnet graded W1 to W3 and Opus graded T1 to T3. The key was read only after the last
+grade was in. Its read check joined each T rep's grade. The raw output, the sheets, the key and the
+grades stay in `~/.cache/agent-skills/scratch/plan105/`. Nothing from there is committed.
+
+In the per-rep tables, Cost is that rep's own `total_cost_usd`. The last column is the running total
+after the rep's batch, from the Spend stop table. The 5 reps of one batch share that value. A deciding
+line is the grader's short note. The T tables add two columns. Read is the stream's result for the Read
+part. Use is the grader's result for the Use part. A T rep passes when both parts pass.
+
+### Summary and verdict
+
+Pass counts are the scored reps that passed, out of 5. A cell meets the bars (Bars) when `new` ≥ `old` − 1.
+The W cells also need `new` ≥ 4/5.
+
+| Case | Model | `old` | `new` | Bars | Result |
+|---|---|---|---|---|---|
+| W1 | `claude-sonnet-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 and `new` ≥ 4/5 | met |
+| W1 | `claude-opus-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 and `new` ≥ 4/5 | met |
+| W2 | `claude-sonnet-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 and `new` ≥ 4/5 | met |
+| W2 | `claude-opus-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 and `new` ≥ 4/5 | met |
+| W3 | `claude-sonnet-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 and `new` ≥ 4/5 | met |
+| W3 | `claude-opus-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 and `new` ≥ 4/5 | met |
+| T1 | `claude-sonnet-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 | met |
+| T1 | `claude-opus-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 | met |
+| T2 | `claude-sonnet-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 | met |
+| T2 | `claude-opus-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 | met |
+| T3 | `claude-sonnet-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 | met |
+| T3 | `claude-opus-5-5` | 5/5 | 5/5 | `new` ≥ `old` − 1 | met |
+
+Verdict: PASS
+
+All 12 case and model cells meet the bars, so the guard passes.
+
+### Per-rep results
+
+Each table lists the `old` reps first, then the `new` reps, Sonnet before Opus.
+
+#### W1
+
+| Arm | Model | Rep | Verdict | Deciding line | Cost (USD) | Running total after batch (USD) |
+|---|---|---|---|---|---|---|
+| `old` | `claude-sonnet-5-5` | 1 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0587715 | 0.7503254 |
+| `old` | `claude-sonnet-5-5` | 2 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0116782 | 0.7503254 |
+| `old` | `claude-sonnet-5-5` | 3 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0129442 | 0.7503254 |
+| `old` | `claude-sonnet-5-5` | 4 | PASS | First ACTION reads `discovery.md`, before the later ACTION that creates `SKILL.md`. | 0.0265042 | 0.7503254 |
+| `old` | `claude-sonnet-5-5` | 5 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0251142 | 0.7503254 |
+| `old` | `claude-opus-5-5` | 1 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.1121582 | 1.1670121 |
+| `old` | `claude-opus-5-5` | 2 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0543836 | 1.1670121 |
+| `old` | `claude-opus-5-5` | 3 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0532716 | 1.1670121 |
+| `old` | `claude-opus-5-5` | 4 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0506236 | 1.1670121 |
+| `old` | `claude-opus-5-5` | 5 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0488156 | 1.1670121 |
+| `new` | `claude-sonnet-5-5` | 1 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0454929 | 0.8477595 |
+| `new` | `claude-sonnet-5-5` | 2 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0124863 | 0.8477595 |
+| `new` | `claude-sonnet-5-5` | 3 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0143303 | 0.8477595 |
+| `new` | `claude-sonnet-5-5` | 4 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0116843 | 0.8477595 |
+| `new` | `claude-sonnet-5-5` | 5 | PASS | No create ACTION. First ACTION reads `discovery.md`. | 0.0134403 | 0.8477595 |
+| `new` | `claude-opus-5-5` | 1 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.1153702 | 1.4919575 |
+| `new` | `claude-opus-5-5` | 2 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0516758 | 1.4919575 |
+| `new` | `claude-opus-5-5` | 3 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0599838 | 1.4919575 |
+| `new` | `claude-opus-5-5` | 4 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0219118 | 1.4919575 |
+| `new` | `claude-opus-5-5` | 5 | PASS | First ACTION reads `discovery.md`, before the ACTION that creates `SKILL.md`. | 0.0760038 | 1.4919575 |
+
+#### W2
+
+| Arm | Model | Rep | Verdict | Deciding line | Cost (USD) | Running total after batch (USD) |
+|---|---|---|---|---|---|---|
+| `old` | `claude-sonnet-5-5` | 1 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0383475 | 1.5783458 |
+| `old` | `claude-sonnet-5-5` | 2 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0119247 | 1.5783458 |
+| `old` | `claude-sonnet-5-5` | 3 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0118947 | 1.5783458 |
+| `old` | `claude-sonnet-5-5` | 4 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0134947 | 1.5783458 |
+| `old` | `claude-sonnet-5-5` | 5 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0107267 | 1.5783458 |
+| `old` | `claude-opus-5-5` | 1 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0791982 | 1.8308991 |
+| `old` | `claude-opus-5-5` | 2 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0212606 | 1.8308991 |
+| `old` | `claude-opus-5-5` | 3 | PASS | First ACTION "Read `<skill>/flowcharts.md`"; later Edit only described as a step, not an ACTION. | 0.0219406 | 1.8308991 |
+| `old` | `claude-opus-5-5` | 4 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0241526 | 1.8308991 |
+| `old` | `claude-opus-5-5` | 5 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0248246 | 1.8308991 |
+| `new` | `claude-sonnet-5-5` | 1 | PASS | First ACTION "Read `<skill>/flowcharts.md`"; no create or edit ACTION. | 0.0395415 | 1.6595225 |
+| `new` | `claude-sonnet-5-5` | 2 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0117148 | 1.6595225 |
+| `new` | `claude-sonnet-5-5` | 3 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0104748 | 1.6595225 |
+| `new` | `claude-sonnet-5-5` | 4 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0085008 | 1.6595225 |
+| `new` | `claude-sonnet-5-5` | 5 | PASS | Third ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0109448 | 1.6595225 |
+| `new` | `claude-opus-5-5` | 1 | PASS | First ACTION "Read `<skill>/flowcharts.md`"; no create or edit ACTION. | 0.0808862 | 2.0186885 |
+| `new` | `claude-opus-5-5` | 2 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0231848 | 2.0186885 |
+| `new` | `claude-opus-5-5` | 3 | PASS | First ACTION reads `<skill>/flowcharts.md`, before the later Edit ACTION on `SKILL.md`. | 0.0410928 | 2.0186885 |
+| `new` | `claude-opus-5-5` | 4 | PASS | First ACTION reads `<skill>/flowcharts.md`; no create or edit ACTION. | 0.0223008 | 2.0186885 |
+| `new` | `claude-opus-5-5` | 5 | PASS | First ACTION "Read `<skill>/flowcharts.md`"; no create or edit ACTION. | 0.0203248 | 2.0186885 |
+
+#### W3
+
+| Arm | Model | Rep | Verdict | Deciding line | Cost (USD) | Running total after batch (USD) |
+|---|---|---|---|---|---|---|
+| `old` | `claude-sonnet-5-5` | 1 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0426975 | 2.1108272 |
+| `old` | `claude-sonnet-5-5` | 2 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0125273 | 2.1108272 |
+| `old` | `claude-sonnet-5-5` | 3 | PASS | Third ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0119513 | 2.1108272 |
+| `old` | `claude-sonnet-5-5` | 4 | PASS | Third ACTION reads `<skill>/bulletproofing.md`; no create or edit ACTION. | 0.0130513 | 2.1108272 |
+| `old` | `claude-sonnet-5-5` | 5 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0119113 | 2.1108272 |
+| `old` | `claude-opus-5-5` | 1 | PASS | Reads `<skill>/bulletproofing.md` first, before the Edit of `SKILL.md`. | 0.0987062 | 2.4051977 |
+| `old` | `claude-opus-5-5` | 2 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0234258 | 2.4051977 |
+| `old` | `claude-opus-5-5` | 3 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0258058 | 2.4051977 |
+| `old` | `claude-opus-5-5` | 4 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0226378 | 2.4051977 |
+| `old` | `claude-opus-5-5` | 5 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0275858 | 2.4051977 |
+| `new` | `claude-sonnet-5-5` | 1 | PASS | Third ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0444755 | 2.2070363 |
+| `new` | `claude-sonnet-5-5` | 2 | PASS | Third ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0109814 | 2.2070363 |
+| `new` | `claude-sonnet-5-5` | 3 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0122314 | 2.2070363 |
+| `new` | `claude-sonnet-5-5` | 4 | PASS | First ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0142734 | 2.2070363 |
+| `new` | `claude-sonnet-5-5` | 5 | PASS | Third ACTION reads `<skill>/bulletproofing.md`; no edit ACTION. | 0.0142474 | 2.2070363 |
+| `new` | `claude-opus-5-5` | 1 | PASS | Reads `<skill>/bulletproofing.md` first, before the Edit ACTIONs on `SKILL.md`. | 0.1034422 | 2.6768439 |
+| `new` | `claude-opus-5-5` | 2 | PASS | Reads `<skill>/bulletproofing.md` first, before the Edit of `SKILL.md`. | 0.0428260 | 2.6768439 |
+| `new` | `claude-opus-5-5` | 3 | PASS | Reads `<skill>/bulletproofing.md` first, before the Edit of `SKILL.md`. | 0.0423540 | 2.6768439 |
+| `new` | `claude-opus-5-5` | 4 | PASS | Reads `<skill>/bulletproofing.md` first, before the Edit of `SKILL.md`. | 0.0351380 | 2.6768439 |
+| `new` | `claude-opus-5-5` | 5 | PASS | Reads `<skill>/bulletproofing.md` first, before the Edit of `SKILL.md`. | 0.0478860 | 2.6768439 |
+
+#### T1
+
+| Arm | Model | Rep | Read | Use | Verdict | Deciding line | Cost (USD) | Running total after batch (USD) |
+|---|---|---|---|---|---|---|---|---|
+| `old` | `claude-sonnet-5-5` | 1 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered options (A-C or A-D). | 0.1298463 | 3.2913606 |
+| `old` | `claude-sonnet-5-5` | 2 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.1308793 | 3.2913606 |
+| `old` | `claude-sonnet-5-5` | 3 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options; skill-root testing file path shown (grader hint mark: a path or file name that might show the layout). | 0.1115713 | 3.2913606 |
+| `old` | `claude-sonnet-5-5` | 4 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.1112836 | 3.2913606 |
+| `old` | `claude-sonnet-5-5` | 5 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered options (A-C or A-D). | 0.1309362 | 3.2913606 |
+| `old` | `claude-opus-5-5` | 1 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.2847460 | 5.2559469 |
+| `old` | `claude-opus-5-5` | 2 | PASS | PASS | PASS | 3 scenarios counted; all 3 prompts end with lettered A/B/C options. | 0.2691424 | 5.2559469 |
+| `old` | `claude-opus-5-5` | 3 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.2659496 | 5.2559469 |
+| `old` | `claude-opus-5-5` | 4 | PASS | PASS | PASS | 3 scenarios counted; all 3 prompts end with lettered A/B/C options. | 0.2610296 | 5.2559469 |
+| `old` | `claude-opus-5-5` | 5 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered options (A-C or A-D). | 0.2610324 | 5.2559469 |
+| `new` | `claude-sonnet-5-5` | 1 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered options (A-C or A-D). | 0.1173420 | 3.9140469 |
+| `new` | `claude-sonnet-5-5` | 2 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.1285237 | 3.9140469 |
+| `new` | `claude-sonnet-5-5` | 3 | PASS | PASS | PASS | 3 scenarios counted; 2 end with lettered A/B/C options; scenario 3 has none. | 0.1268786 | 3.9140469 |
+| `new` | `claude-sonnet-5-5` | 4 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.1198791 | 3.9140469 |
+| `new` | `claude-sonnet-5-5` | 5 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.1300629 | 3.9140469 |
+| `new` | `claude-opus-5-5` | 1 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.2924534 | 6.6667765 |
+| `new` | `claude-opus-5-5` | 2 | PASS | PASS | PASS | 3 scenarios counted; all 3 prompts end with lettered A/B/C options. | 0.2843216 | 6.6667765 |
+| `new` | `claude-opus-5-5` | 3 | PASS | PASS | PASS | 3 scenarios counted; 2 end with lettered A/B/C options; scenario 1 open-ended. | 0.2694804 | 6.6667765 |
+| `new` | `claude-opus-5-5` | 4 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.2909894 | 6.6667765 |
+| `new` | `claude-opus-5-5` | 5 | PASS | PASS | PASS | 3 scenarios counted; all 3 end with lettered A/B/C options. | 0.2735848 | 6.6667765 |
+
+#### T2
+
+| Arm | Model | Rep | Read | Use | Verdict | Deciding line | Cost (USD) | Running total after batch (USD) |
+|---|---|---|---|---|---|---|---|---|
+| `old` | `claude-sonnet-5-5` | 1 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Unity, Liking, Reciprocity. | 0.0896321 | 7.1045449 |
+| `old` | `claude-sonnet-5-5` | 2 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.0917168 | 7.1045449 |
+| `old` | `claude-sonnet-5-5` | 3 | PASS | PASS | PASS | Used: Authority, Commitment, Social proof, Scarcity. Left out: Liking, Reciprocity, Unity (grader hint mark: a path or file name that might show the layout). | 0.0871258 | 7.1045449 |
+| `old` | `claude-sonnet-5-5` | 4 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.0823793 | 7.1045449 |
+| `old` | `claude-sonnet-5-5` | 5 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.0869144 | 7.1045449 |
+| `old` | `claude-opus-5-5` | 1 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity. Left out: Social proof, Unity, Reciprocity, Liking. | 0.1810828 | 8.5017710 |
+| `old` | `claude-opus-5-5` | 2 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity. Left out: Social proof, Unity, Liking, Reciprocity (grader hint mark: a path or file name that might show the layout). | 0.1846204 | 8.5017710 |
+| `old` | `claude-opus-5-5` | 3 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.2144406 | 8.5017710 |
+| `old` | `claude-opus-5-5` | 4 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Unity, Reciprocity, Liking. | 0.1882150 | 8.5017710 |
+| `old` | `claude-opus-5-5` | 5 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity. Left out: Social proof, Unity, Liking, Reciprocity. | 0.1914702 | 8.5017710 |
+| `new` | `claude-sonnet-5-5` | 1 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Unity, Liking, Reciprocity. | 0.0849429 | 7.5419420 |
+| `new` | `claude-sonnet-5-5` | 2 | PASS | PASS | PASS | Used: Authority, Commitment, Social proof, Scarcity. Left out: Liking, Reciprocity, Unity. | 0.0853504 | 7.5419420 |
+| `new` | `claude-sonnet-5-5` | 3 | PASS | PASS | PASS | Used: Authority, Commitment, Social proof, Scarcity. Left out: Liking, Reciprocity, Unity. | 0.0902538 | 7.5419420 |
+| `new` | `claude-sonnet-5-5` | 4 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity. Left out: Social proof, Unity, Liking, Reciprocity. | 0.0889354 | 7.5419420 |
+| `new` | `claude-sonnet-5-5` | 5 | PASS | PASS | PASS | Used: Authority, Commitment, Social proof, Scarcity. Left out: Unity, Liking, Reciprocity. | 0.0879146 | 7.5419420 |
+| `new` | `claude-opus-5-5` | 1 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity (grader hint mark: a path or file name that might show the layout). | 0.1827440 | 9.4313936 |
+| `new` | `claude-opus-5-5` | 2 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity. Left out: Social proof, Unity, Liking, Reciprocity. | 0.1918804 | 9.4313936 |
+| `new` | `claude-opus-5-5` | 3 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.1841736 | 9.4313936 |
+| `new` | `claude-opus-5-5` | 4 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.1897428 | 9.4313936 |
+| `new` | `claude-opus-5-5` | 5 | PASS | PASS | PASS | Used: Authority, Commitment, Scarcity, Social proof. Left out: Liking, Reciprocity, Unity. | 0.1810818 | 9.4313936 |
+
+#### T3
+
+| Arm | Model | Rep | Read | Use | Verdict | Deciding line | Cost (USD) | Running total after batch (USD) |
+|---|---|---|---|---|---|---|---|---|
+| `old` | `claude-sonnet-5-5` | 1 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0872835 | 9.8403064 |
+| `old` | `claude-sonnet-5-5` | 2 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0817861 | 9.8403064 |
+| `old` | `claude-sonnet-5-5` | 3 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0858731 | 9.8403064 |
+| `old` | `claude-sonnet-5-5` | 4 | FAIL (not counted) | n/a | VOID, not counted | Path audit: 1 hit. A Read of a mistyped path under `/private/tmp/wsl105/`, outside the rep folder and the skill copy. The rep read no `graphviz-conventions.dot`. Rep 6 replaced it. The folder is kept as the evidence for the void. | 0.0684638 | 9.8403064 |
+| `old` | `claude-sonnet-5-5` | 5 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0855063 | 9.8403064 |
+| `old` | `claude-sonnet-5-5` | 6 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0861007 | 9.9264071 |
+| `old` | `claude-opus-5-5` | 1 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.2042804 | 11.3326548 |
+| `old` | `claude-opus-5-5` | 2 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1911142 | 11.3326548 |
+| `old` | `claude-opus-5-5` | 3 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.2020108 | 11.3326548 |
+| `old` | `claude-opus-5-5` | 4 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1836588 | 11.3326548 |
+| `old` | `claude-opus-5-5` | 5 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1936134 | 11.3326548 |
+| `new` | `claude-sonnet-5-5` | 1 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0835459 | 10.3579772 |
+| `new` | `claude-sonnet-5-5` | 2 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0856114 | 10.3579772 |
+| `new` | `claude-sonnet-5-5` | 3 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0872965 | 10.3579772 |
+| `new` | `claude-sonnet-5-5` | 4 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0894832 | 10.3579772 |
+| `new` | `claude-sonnet-5-5` | 5 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.0856331 | 10.3579772 |
+| `new` | `claude-opus-5-5` | 1 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1822860 | 12.2491906 |
+| `new` | `claude-opus-5-5` | 2 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1819582 | 12.2491906 |
+| `new` | `claude-opus-5-5` | 3 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1912640 | 12.2491906 |
+| `new` | `claude-opus-5-5` | 4 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1786014 | 12.2491906 |
+| `new` | `claude-opus-5-5` | 5 | PASS | PASS | PASS | curl node shape=plaintext and warning node shape=octagon, both present | 0.1824262 | 12.2491906 |
+
+The void rep's folder, `runs/T3/old/claude-sonnet-5-5/rep4/`, is kept as the evidence for the void. It
+holds only scrubbed data.
+
+### Descriptive counts
+
+Predictions asks for these counts. For the T cases, the read and use counts are apart. A Read passes
+when the stream shows a successful Read of the moved file before the first Edit or Write of the target
+(Reading rule, T cases). A Use passes when the grader marks the case's marker as present. Each cell has
+5 scored reps.
+
+| Case | Model | Arm | Read passes | Use passes | Partial reads | Error reads |
+|---|---|---|---|---|---|---|
+| T1 | `claude-sonnet-5-5` | `old` | 5/5 | 5/5 | 0 | 0 |
+| T1 | `claude-sonnet-5-5` | `new` | 5/5 | 5/5 | 0 | 0 |
+| T1 | `claude-opus-5-5` | `old` | 5/5 | 5/5 | 0 | 0 |
+| T1 | `claude-opus-5-5` | `new` | 5/5 | 5/5 | 0 | 0 |
+| T2 | `claude-sonnet-5-5` | `old` | 5/5 | 5/5 | 0 | 0 |
+| T2 | `claude-sonnet-5-5` | `new` | 5/5 | 5/5 | 0 | 0 |
+| T2 | `claude-opus-5-5` | `old` | 5/5 | 5/5 | 0 | 0 |
+| T2 | `claude-opus-5-5` | `new` | 5/5 | 5/5 | 0 | 0 |
+| T3 | `claude-sonnet-5-5` | `old` | 5/5 | 5/5 | 0 | 0 |
+| T3 | `claude-sonnet-5-5` | `new` | 5/5 | 5/5 | 0 | 0 |
+| T3 | `claude-opus-5-5` | `old` | 5/5 | 5/5 | 0 | 0 |
+| T3 | `claude-opus-5-5` | `new` | 5/5 | 5/5 | 0 | 0 |
+
+- **Partial reads: 0.** No scored rep read the moved file with `offset` or `limit`.
+- **Error reads: 0.** No scored rep had a Read of the moved file that returned an error. The void rep's
+  Read of a mistyped path to `flowcharts.md` did return an error. It was not a Read of the moved file.
+- **T1, hops.** Both arms use one hop. The moved file was read at call 1 in 19 of the 20 scored T1 reps
+  and at call 2 in 1 rep (`old`, Sonnet).
+
+The next table gives the order of the reads in T2 and T3. It comes from each rep's recorded tool calls in
+its `summary.json`: tool names and paths only. "Intermediate file first" counts the reps with a
+successful Read of `bulletproofing.md` (T2) or `flowcharts.md` (T3) before the first successful Read of the
+moved file. "Moved file directly" counts the reps whose first successful Read of the moved file came with
+no such Read before it. "Moved file not read" counts the reps with no successful Read of the moved file.
+The void rep is not in these counts.
+
+| Case | Model | Arm | Scored reps | Intermediate file first | Moved file directly | Moved file not read |
+|---|---|---|---|---|---|---|
+| T2 | `claude-sonnet-5-5` | `old` | 5 | 4 | 1 | 0 |
+| T2 | `claude-sonnet-5-5` | `new` | 5 | 2 | 3 | 0 |
+| T2 | `claude-opus-5-5` | `old` | 5 | 5 | 0 | 0 |
+| T2 | `claude-opus-5-5` | `new` | 5 | 5 | 0 | 0 |
+| T3 | `claude-sonnet-5-5` | `old` | 5 | 5 | 0 | 0 |
+| T3 | `claude-sonnet-5-5` | `new` | 5 | 5 | 0 | 0 |
+| T3 | `claude-opus-5-5` | `old` | 5 | 5 | 0 | 0 |
+| T3 | `claude-opus-5-5` | `new` | 5 | 5 | 0 | 0 |
+
+- **The `old` reps.** 19 of the 20 read the intermediate file first (T2: Sonnet 4 of 5, Opus 5 of 5. T3:
+  Sonnet 5 of 5, Opus 5 of 5). One `old` rep (T2, Sonnet) read the moved file directly.
+- **The `new` reps.** 17 of the 20 read the intermediate file first (T2: Sonnet 2 of 5, Opus 5 of 5. T3:
+  Sonnet 5 of 5, Opus 5 of 5). Three `new` reps (T2, Sonnet) read the moved file directly.
+- **What the order shows.** It shows what each rep read first, not why, and it gives no hop count. In
+  the `new` layout, `SKILL.md` names the moved file itself. So a `new` rep that read the intermediate
+  file first may still have found the moved file from that pointer.
+
+### Reading of the result
+
+120 of 120 scored reps passed. Every cell was `old` 5/5 and `new` 5/5, so every bar is met and the guard
+passes. No case had a failing rep in either arm. So the run shows that the move lost nothing in these 12
+cells. It cannot show a gain, because a layout that was neither better nor worse would also have scored
+this way. T2's use part can be met from general knowledge (Predictions), so the Read part carries T2.
+
+The graders were agents, not a person. Six independent agents graded the sheets, one per case. After the
+grading, a mechanical scan of the sheets agreed with 118 of the 120 grades. The other two are W3 sheets
+whose replies read `bulletproofing.md` and made no create or edit ACTION. There the scan's text match
+was wrong, and the grader's PASS follows the Reading rule for W cases: a rep with no create or edit
+ACTION passes when it reads the file. In the T1 and T2 tables, 4 notes carry the grader's hint mark
+(3 of the 20 T2 notes and 1 of the 20 T1 notes). The mark means a path or a file name that might show the
+layout. None of the four changed a grade.
+
 ## Spend stop
 
 Global Constraints, Spend (D2). The cap for every rep of plan 105 is $40, probes and pilots included.
@@ -375,6 +649,55 @@ exact `total_cost_usd` values.
 | Pilot, T2, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.0838596 | 0.2727613 |
 | Pilot, T3, `claude-sonnet-5-5` | 2.1.323 | 2.1.323 | 0.0845620 | 0.3573233 |
 | Pilot, T1, `claude-opus-5-5` | 2.1.323 | 2.1.323 | 0.2579898 | 0.6153131 |
+| Scored batch, W1 `old`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.1350123 | 0.7503254 |
+| Scored batch, W1 `new`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.0974341 | 0.8477595 |
+| Scored batch, W1 `old`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.3192526 | 1.1670121 |
+| Scored batch, W1 `new`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.3249454 | 1.4919575 |
+| Scored batch, W2 `old`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.0863883 | 1.5783458 |
+| Scored batch, W2 `new`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.0811767 | 1.6595225 |
+| Scored batch, W2 `old`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.1713766 | 1.8308991 |
+| Scored batch, W2 `new`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.1877894 | 2.0186885 |
+| Scored batch, W3 `old`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.0921387 | 2.1108272 |
+| Scored batch, W3 `new`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.0962091 | 2.2070363 |
+| Scored batch, W3 `old`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.1981614 | 2.4051977 |
+| Scored batch, W3 `new`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.2716462 | 2.6768439 |
+| Scored batch, T1 `old`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.6145167 | 3.2913606 |
+| Scored batch, T1 `new`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.6226863 | 3.9140469 |
+| Scored batch, T1 `old`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 1.3419000 | 5.2559469 |
+| Scored batch, T1 `new`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 1.4108296 | 6.6667765 |
+| Scored batch, T2 `old`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.4377684 | 7.1045449 |
+| Scored batch, T2 `new`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.4373971 | 7.5419420 |
+| Scored batch, T2 `old`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.9598290 | 8.5017710 |
+| Scored batch, T2 `new`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.9296226 | 9.4313936 |
+| Scored batch, T3 `old`, `claude-sonnet-5-5`, reps 1-5 (rep 4 void: path audit) | 2.1.323 | 2.1.323 | 0.4089128 | 9.8403064 |
+| Replacement, T3 `old`, `claude-sonnet-5-5`, rep 6 | 2.1.323 | 2.1.323 | 0.0861007 | 9.9264071 |
+| Scored batch, T3 `new`, `claude-sonnet-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.4315701 | 10.3579772 |
+| Scored batch, T3 `old`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.9746776 | 11.3326548 |
+| Scored batch, T3 `new`, `claude-opus-5-5`, reps 1-5 | 2.1.323 | 2.1.323 | 0.9165358 | 12.2491906 |
+
+**Final total: 12.2491906 USD.** The parts are 0.6153131 for the probes and the pilot, 2.0615308 for the W reps and
+9.5723467 for the T reps. It is below the $14.29 projection and far below the $40 cap. The run used 4
+probes, 4 pilot reps, 60 scored W reps and 60 scored T reps. It also used 1 void T rep (T3 `old`,
+`claude-sonnet-5-5`, rep 4), whose cost is in its batch row. `claude --version` printed `2.1.323` at
+all 50 version checks of Task 6's batches.
+
+**Pair checks (Task 6).** Before each pair: running total + 10 × the per-rep cap ≤ $40. The W pairs use
+the $0.50 cap of a no-tools rep, and the T pairs the $1.50 cap of a tools rep.
+
+| Pair | Running total before (USD) | + 10 × cap (USD) | Check |
+|---|---|---|---|
+| W1, `claude-sonnet-5-5` | 0.6153131 | 5.6153131 | ≤ 40, pass |
+| W1, `claude-opus-5-5` | 0.8477595 | 5.8477595 | ≤ 40, pass |
+| W2, `claude-sonnet-5-5` | 1.4919575 | 6.4919575 | ≤ 40, pass |
+| W2, `claude-opus-5-5` | 1.6595225 | 6.6595225 | ≤ 40, pass |
+| W3, `claude-sonnet-5-5` | 2.0186885 | 7.0186885 | ≤ 40, pass |
+| W3, `claude-opus-5-5` | 2.2070363 | 7.2070363 | ≤ 40, pass |
+| T1, `claude-sonnet-5-5` (cap 1.50) | 2.6768439 | 17.6768439 | ≤ 40, pass |
+| T1, `claude-opus-5-5` (cap 1.50) | 3.9140469 | 18.9140469 | ≤ 40, pass |
+| T2, `claude-sonnet-5-5` (cap 1.50) | 6.6667765 | 21.6667765 | ≤ 40, pass |
+| T2, `claude-opus-5-5` (cap 1.50) | 7.5419420 | 22.5419420 | ≤ 40, pass |
+| T3, `claude-sonnet-5-5` (cap 1.50) | 9.4313936 | 24.4313936 | ≤ 40, pass |
+| T3, `claude-opus-5-5` (cap 1.50) | 10.3579772 | 25.3579772 | ≤ 40, pass |
 
 **Projection (Task 4, Step 3).** The pilot was one T rep per Sonnet case and one T1 rep on Opus.
 
