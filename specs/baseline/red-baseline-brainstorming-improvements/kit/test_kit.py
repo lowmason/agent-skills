@@ -185,3 +185,10 @@ def test_run_names_each_void_vote(tmp_path, monkeypatch):
         panel.run(args)
     assert 'vote 1 (origin)' in str(stop.value)
     assert 'vote 2 (origin)' in str(stop.value)
+
+
+def test_run_reps_scrubs_the_answer(tmp_path):
+    # The scrub runs on the kept rep's text: $HOME is written as `~`. (check_scrub.py checks the
+    # identity forms; no test file holds an identity value.)
+    out = run_reps(tmp_path, json.dumps({**CLEAN, 'result': f'see {os.environ["HOME"]}/x'}))
+    assert json.loads((out / 'rep1.json').read_text())['result'] == 'see ~/x'
