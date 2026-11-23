@@ -185,7 +185,9 @@ three that remain concretely enough to picture, grounded in what the
 project actually does, with what each trades off. Recommend one and say
 why, then ask which way they want to go; if they've handed you the how,
 say you'll go with your pick instead, and write the design in the next
-message. When there's genuinely one sensible way, say so in that message
+message. A push to hurry doesn't hand you the how: the approaches still
+go first, in a message of their own. When there's genuinely one
+sensible way, say so in that message
 and explain why the others don't fit; the design comes in the next one.
 This is for how it gets built; for what they want, get them describing
 first.
