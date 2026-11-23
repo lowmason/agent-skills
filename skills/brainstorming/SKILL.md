@@ -60,7 +60,8 @@ a handoff, files they pointed at, earlier conversation), dig in before your
 first message. Read what they referred to and the code or material it
 connects to, and keep reading until you can explain how the relevant
 parts work today and what this change would touch. If the project has
-a `specs/deferred_items.md`, check it for deferred work the idea touches.
+a `specs/deferred_items.md`, search it for the idea's terms to find
+deferred work the idea touches.
 Never ask what the project or their context already answers, or reopen
 what they've already decided.
 
