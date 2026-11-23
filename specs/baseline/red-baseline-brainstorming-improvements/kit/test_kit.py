@@ -278,3 +278,27 @@ def test_call_voter_runs_claude_isolated(monkeypatch):
     assert seen['env']['CLAUDE_CODE_DISABLE_ADVISOR_TOOL'] == '1'
     assert seen['env']['CLAUDE_CODE_DISABLE_AUTO_MEMORY'] == '1'
     assert seen['cwd'].startswith('/tmp/plan106-panel-')
+
+
+def test_run_refuses_an_existing_raw_vote(tmp_path, monkeypatch):
+    # As run_reps.sh refuses an existing raw rep: a second panel run into the same <parent>/<out> names
+    # (another worktree, say) must not overwrite the raw votes, the only record of a void vote's cost.
+    reps = tmp_path / 'reps'
+    reps.mkdir()
+    (reps / 'rep1.json').write_text(json.dumps({'result': 'a', 'void': False}))
+    (tmp_path / 'rule.txt').write_text('a rule\n')
+    (tmp_path / 'request.txt').write_text('a request\n')
+    monkeypatch.setenv('KIT_SCRATCH_ROOT', str(tmp_path / 'scratch'))
+    raw = tmp_path / 'scratch' / 'plan106-brainstorming-improvements' / 'panel' / 'T7' / 'vote1.json'
+    raw.parent.mkdir(parents=True)
+    raw.write_text('the first run\n')
+
+    def no_vote(*args, **kwargs):
+        raise AssertionError('a vote ran')
+
+    monkeypatch.setattr(panel, 'call_voter', no_vote)
+    args = argparse.Namespace(out=str(tmp_path / 'other' / 'panel' / 'T7'), arms=[f'x={reps}'],
+                              rule=str(tmp_path / 'rule.txt'), request=str(tmp_path / 'request.txt'), votes=1, seed=1)
+    with pytest.raises(SystemExit, match='refusing'):
+        panel.run(args)
+    assert raw.read_text() == 'the first run\n'

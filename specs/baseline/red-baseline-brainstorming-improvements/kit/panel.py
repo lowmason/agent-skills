@@ -153,6 +153,10 @@ def run(args: argparse.Namespace) -> None:
     out = Path(args.out)
     if (out / 'panel-verdicts.json').exists():
         raise SystemExit(f'refusing: {out}/panel-verdicts.json exists')
+    raw_dir = scratch_dir(out)
+    for k in range(1, args.votes + 1):
+        if (raw_dir / f'vote{k}.json').exists():
+            raise SystemExit(f'refusing: {raw_dir}/vote{k}.json exists')
     arms = []
     for spec in args.arms:
         arm, _, folder = spec.partition('=')
@@ -172,7 +176,6 @@ def run(args: argparse.Namespace) -> None:
         (out / f'vote{k}-labels.json').write_text(json.dumps(labels, indent=1) + '\n')
         jobs.append((k, labels, text))
     with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
-        raw_dir = scratch_dir(out)
         outputs = list(pool.map(lambda job: call_voter(job[2], raw_path=raw_dir / f'vote{job[0]}.json'), jobs))
     verdicts = {key: {'votes': [], 'reasons': []} for key in keys}
     cost = 0.0
