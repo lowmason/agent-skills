@@ -6396,6 +6396,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       link holds neither the spec nor the plan. Size: quick-fix. Revisit if: a new directory under
       `specs/baseline/` holds a copy of `audit.py` for a tools-on guard run. Then close the three, with a test and
       a mutant for each, or record why they stay.
+      → planned 2026-11-23: specs/plans/107-writing-skills-improvements.md
 - [ ] **Add a guard case that only the moved file can pass (plan 105, final review).** Plan 105's guard run scored
       120 of 120 reps PASS, old layout and new. It shows no loss from the move and cannot show a gain
       (`specs/baseline/red-baseline-writing-skills-layout.md`, Results, Reading of the result). T2's use part can
