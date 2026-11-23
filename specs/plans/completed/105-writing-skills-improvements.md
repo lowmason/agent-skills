@@ -1,5 +1,7 @@
 # writing-skills Quick Fixes and Layout Implementation Plan
 
+**Status: COMPLETE (2026-11-23)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > ⚠️ Quarantine this file during any micro-test of writing-skills, as the spec says of itself. Task 3
 > names the guard cases and the marker each one scores, so a rep that reads this file is void.
 
@@ -82,7 +84,7 @@ One commit per item, in this order. Items 5 and 15 delete headings, so item 11's
 
 **Brief note (trap T1).** Quote these rulings in the task brief. Q5: "May items 3a, 5, 6 (the study part), 7, 11, 12, 13 and 15 do the same? Ruling: waive all eight. Each still ships with the lints and a `NOTICE` line." Ruling 7, item 6's scope line: "Ruling: add it, with no micro-test. It repeats a scope that the skill already states." Ruling 8, item 14: "Ruling: change it, with no micro-test." The `NOTICE` line comes in Task 7.
 
-- [ ] **Step 1: Item 5. Delete the worked example**
+- [x] **Step 1: Item 5. Delete the worked example**
 
 Run `git rm skills/writing-skills/examples/CLAUDE_MD_TESTING.md`. In `testing-skills-with-subagents.md`, replace:
 
@@ -98,11 +100,11 @@ with:
 
 Run the commit gate. Commit: `docs(writing-skills): delete the worked example that never ran`.
 
-- [ ] **Step 2: Item 15. Delete the dated session report**
+- [x] **Step 2: Item 15. Delete the dated session report**
 
 In `testing-skills-with-subagents.md`, delete the `## Real-World Impact` heading, its blank line and the six lines under it, from "From applying TDD to TDD skill itself (2025-10-03):" to "- Same process works for any discipline-enforcing skill". The file then ends with the line "RED-GREEN-REFACTOR for documentation works exactly like RED-GREEN-REFACTOR for code." and one newline. Commit: `docs(writing-skills): delete the dated session report`.
 
-- [ ] **Step 3: Item 7. Exempt reference skills from pressure tests only**
+- [x] **Step 3: Item 7. Exempt reference skills from pressure tests only**
 
 In `testing-skills-with-subagents.md`, replace the line `Don't test:` with `Don't pressure-test:`. After that list's last item ("- Skills agents have no incentive to bypass"), add one blank line and:
 
@@ -112,7 +114,7 @@ Test a pure reference skill with the retrieval and application scenarios in SKIL
 
 Commit: `docs(writing-skills): exempt reference skills from pressure tests only`.
 
-- [ ] **Step 4: Item 6. Describe the persuasion study as it ran, and scope it**
+- [x] **Step 4: Item 6. Describe the persuasion study as it ran, and scope it**
 
 In `persuasion-principles.md`, replace:
 
@@ -139,7 +141,7 @@ In the Meincke entry under `## Research Citations`, replace its four bullets wit
 
 Commit: `docs(writing-skills): describe the persuasion study as it ran`.
 
-- [ ] **Step 5: Item 12. Use one list of four skill types**
+- [x] **Step 5: Item 12. Use one list of four skill types**
 
 In `SKILL.md` § Skill Types, before `### Technique`, insert:
 
@@ -151,7 +153,7 @@ Rules agents must keep under pressure (test-first, verify before claiming done)
 
 In `persuasion-principles.md` § Principle Combinations by Skill Type, rename the first column's values: `Discipline-enforcing` → `Discipline`, `Guidance/technique` → `Technique or pattern`. Keep `Collaborative` and `Reference` (Open for plan review, item 9). In § Quick Reference, replace `(Discipline vs. guidance vs. reference)` with `(Discipline, technique, pattern or reference)`. Commit: `docs(writing-skills): use one list of four skill types`.
 
-- [ ] **Step 6: Item 14. Match the example language to the stack**
+- [x] **Step 6: Item 14. Match the example language to the stack**
 
 In `SKILL.md` § Code Examples, replace the four lines from `Choose most relevant language:` through `- Data processing → Python` with:
 
@@ -161,7 +163,7 @@ Use the language of the skill's target stack.
 
 Commit: `docs(writing-skills): ask for examples in the target stack's language`.
 
-- [ ] **Step 7: Item 3a. Give the latest Codex cut**
+- [x] **Step 7: Item 3a. Give the latest Codex cut**
 
 In `references/discovery.md` § 4. Token Efficiency, replace the sentence from "Codex also shortens descriptions once its skills listing passes its budget:" through "reading its Skills list." (it spans five wrapped lines) with the text below, wrapped at the file's line width:
 
@@ -175,11 +177,11 @@ characters (2026-11-22; Codex 0.163 cut longer ones to 316–320 with 105 listed
 
 Use the spec's reading, and do not run Codex again. Commit: `docs(writing-skills): give the 2026-11-22 Codex description cut`.
 
-- [ ] **Step 8: Item 11. Add contents lists**
+- [x] **Step 8: Item 11. Add contents lists**
 
 In `testing-skills-with-subagents.md`, `persuasion-principles.md` and `references/discovery.md`, add a `## Contents` heading and a plain bullet list (no links) of the file's `##` headings, in order. Leave out headings inside code fences and the new heading itself. In `references/discovery.md`, nest each `###` heading under its `##` heading. Place the list after the H1 and its lead paragraph, before the first other `##` heading. In `persuasion-principles.md`, which has no lead paragraph, place it right after the H1.
 
-- [ ] **Step 9: Check and commit item 11**
+- [x] **Step 9: Check and commit item 11**
 
 Run: `uv run --with pyyaml python build/check_conformance.py`. Expected: no finding for writing-skills. Measure the body as Global Constraints says. Expected: 18,758 (18,753 + 96 − 91). Run the commit gate. Commit: `docs(writing-skills): add contents lists to the long references`.
 
@@ -197,7 +199,7 @@ Run: `uv run --with pyyaml python build/check_conformance.py`. Expected: no find
 
 **Brief note (trap T1).** Quote the Q1 ruling: "Ruling: port it to Python. The port runs with `uv run`, still needs the `dot` binary, and leaves upstream's copy for good. With Q2, it lands as `scripts/render_graphs.py`, and `render-graphs.js` goes. Its test skips when `dot` is absent. `NOTICE` records the port as a new work based on upstream's script." The `flowcharts.md` lines change only to document the port.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `test_render_graphs.py` imports `render_graphs` by bare name (the suite runs from `scripts/`). It builds each fixture skill under `tmp_path`, with a `SKILL.md` in each. `needs_dot = pytest.mark.skipif(shutil.which('dot') is None, reason='needs graphviz dot')` marks the tests that render.
 
@@ -217,7 +219,7 @@ Run with `dot` (`@needs_dot`):
 - `test_combine_writes_one_svg_and_its_dot_source`: two blocks with `--combine`. Exit 0, and `<skill_name>_combined.svg` and `<skill_name>_combined.dot` are the only files in `out`.
 - `test_renders_writing_skills_own_chart`: `main([str(Path(__file__).resolve().parents[1]), str(out)]) == 0`, the writing-skills folder itself. `flowcharts-when_flowchart.svg` exists, and no file name starts with `SKILL-`, because `SKILL.md`'s only block is the header-less anti-pattern.
 
-- [ ] **Step 2: Register the suite and run it to see it fail**
+- [x] **Step 2: Register the suite and run it to see it fail**
 
 Add to `build/suites.toml`:
 
@@ -231,7 +233,7 @@ notes = ['render_graphs.py tests, stdlib only. The tests that render skip when g
 
 Run: `uv run python build/run_suites.py writing-skills`. Expected: FAIL, `No module named 'render_graphs'`.
 
-- [ ] **Step 3: Implement `render_graphs.py`**
+- [x] **Step 3: Implement `render_graphs.py`**
 
 The header is `#!/usr/bin/env python3`, then a PEP 723 block with `requires-python = '>=3.11'` and `dependencies = []`, as `skills/design-architecture/scripts/new_adr.py` has. The module docstring gives the usage and says that it needs `dot` on PATH and that it is a port of upstream superpowers' `render-graphs.js`. Functions:
 
@@ -245,7 +247,9 @@ The header is `#!/usr/bin/env python3`, then a PEP 723 block with `requires-pyth
 
 End the file with `if __name__ == '__main__': sys.exit(main())`. Run `git rm skills/writing-skills/render-graphs.js`.
 
-- [ ] **Step 4: Run the tests, with `dot` and without it (brief trap T6)**
+> Deviation: `SKILL.md`'s frontmatter gained `compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.`, because `build/check_frontmatter.py` fails a skill whose Markdown runs a bundled script with `uv run`. Task 7's `NOTICE` bullet names the line. Source: ledger ruling, Task 2.
+
+- [x] **Step 4: Run the tests, with `dot` and without it (brief trap T6)**
 
 Run: `uv run python build/run_suites.py writing-skills`. Expected: 12 passed (+12, a new suite).
 
@@ -259,7 +263,7 @@ PATH=/tmp/wsl105-nodot:/usr/bin:/bin uv run python build/run_suites.py writing-s
 
 Expected: the six `needs_dot` tests skip and the other six pass. CI runs no suite, so record both summary lines in the task report.
 
-- [ ] **Step 5: Document the port in `flowcharts.md`**
+- [x] **Step 5: Document the port in `flowcharts.md`**
 
 Replace the paragraph that starts `**Visualizing for your human partner:**` and its `bash` block with:
 
@@ -273,7 +277,7 @@ uv run scripts/render_graphs.py ../some-skill /tmp/some-skill-diagrams --combine
 
 Leave line 29 (the `graphviz-conventions.dot` link). Task 5 changes it in the commit that moves its target.
 
-- [ ] **Step 6: Mutant step, checks and commit**
+- [x] **Step 6: Mutant step, checks and commit**
 
 Run the mutant step on `render_graphs.py`. Run `git grep -n 'render-graphs' -- skills/`. Expected: only `render_graphs.py`'s docstring line, which names upstream's script. Run `uv run python build/check_links.py` and the commit gate. Commit: `feat(writing-skills): port render-graphs.js to scripts/render_graphs.py`.
 
@@ -298,11 +302,11 @@ This task spends nothing. Its review gates the kit, the cases and the registered
 
 **Brief note.** The kit changes no skill text. Committed kits stay frozen, so copy files and never edit plan 72's, plan 103's or plan 104's kit in place (brief trap T4).
 
-- [ ] **Step 1: Check the sources**
+- [x] **Step 1: Check the sources**
 
 Check that `specs/baseline/red-baseline-worktree-skills-fix/kit/postprocess.py` exists on this branch's `main` base. If it does not, stop and ask (Open for plan review, item 2). Run `claude --version`, and record it in the record's Kit section.
 
-- [ ] **Step 2: Write the failing self-tests**
+- [x] **Step 2: Write the failing self-tests**
 
 `kit/test_wsl_kit.py`, on synthetic records and folders:
 - Plan 103's `postprocess` tests, copied: void on `result_index` 1, void on an `origin` that is not null, and the drop of `origin` and `credential_expires_at`.
@@ -314,7 +318,7 @@ Check that `specs/baseline/red-baseline-worktree-skills-fix/kit/postprocess.py` 
 
 Register the suite. Run: `uv run python build/run_suites.py writing-skills-layout-kit`. Expected: FAIL on the missing modules.
 
-- [ ] **Step 3: Build the kit**
+- [x] **Step 3: Build the kit**
 
 - **No-tools mode (W1–W3).** Copy plan 103's runner as `run_json_reps.sh`, its `postprocess.py`, `kit_identity.py`, `check_scrub.py` and `probe.sh` (as `probe_json.sh`). Change only the scratch folder (`plan105/json/`) and the rep folder prefix (`plan105-rep-`).
 - **Tools mode (T1–T3).** Copy plan 104's `common.sh`, `run_reps.sh` (as `run_tool_reps.sh`), `rep_tools.py`, `privacy_sweep.py` and `probe.sh` (as `probe_tools.sh`). Keep the rep folder layout, `env -i`, the own `HOME` with its Keychains link, the `--settings` deny list and `syncClaudeAiSkills` false, `--disable-slash-commands`, the stream-json output, `check-copy` before and after each rep, `summarize` and `park`. Cut the `.sdd` workspace, `setup.sh`, the `@BASE@` token, the role-to-model map and the mutant-run audits. Set `--tools` and `--allowedTools` to `Read,Glob,Grep,Edit,Write`, the cap to $1.50 for both models, and the roots to `/private/tmp/wsl105` and `/private/tmp/wsl105-skill`. The scratch folder is `~/.cache/agent-skills/scratch/plan105/tools/`. Each rep's `repo/` is the case's fixture, committed once as the rep's BASE, so `summarize` writes `final.diff` against it, with new files included.
@@ -324,7 +328,9 @@ Register the suite. Run: `uv run python build/run_suites.py writing-skills-layou
 
 Run the suite. Expected: all pass.
 
-- [ ] **Step 4: Write `cases.py` and the fixtures**
+> Deviation: the copied kit changed in six places, logged as Deviations 1 to 4, 6 and 7 in `specs/baseline/red-baseline-writing-skills-layout.md`: a three-part scratch path, a model argument for the probe, a skill-copy path in the T frame, the Grep and Glob path audit (brief trap H3), the order of the sheets' file changes, and a `pilot` arm in `build_prompts.py`.
+
+- [x] **Step 4: Write `cases.py` and the fixtures**
 
 `kit/cases.py`:
 - `FRAME_W` and `CASES_W` (W1, W2, W3): plan 72's `FRAME` and `CASES`, byte for byte.
@@ -339,7 +345,7 @@ Run the suite. Expected: all pass.
 
 `kit/fixtures/<case>/repo/` holds each case's project. T1: `pyproject.toml`, `uv.lock` and an empty `specs/`. T2: `skills/secrets-scan-gate/SKILL.md` (a short skill whose rule paragraph is soft) and `specs/secrets-scan-gate-baseline.md`. T3: `skills/http-retry-policy/SKILL.md` (a short skill with no chart) and `specs/http-retry-policy-baseline.md`.
 
-- [ ] **Step 5: Write and commit the record's rules before any rep runs**
+- [x] **Step 5: Write and commit the record's rules before any rep runs**
 
 Create `specs/baseline/red-baseline-writing-skills-layout.md` with these sections:
 - **Kit:** the paths, the sources and the Claude Code version from Step 1. The arms: `old` is `SKILL.md`'s body and skill folder at the last commit before Task 5, and `new` is the same at Task 5's commit. Task 6 fills in both shas.
@@ -352,9 +358,13 @@ Create `specs/baseline/red-baseline-writing-skills-layout.md` with these section
 - **Predictions (descriptive):** W: `new` ≈ `old`. T1: `new` ≈ `old`, one hop in both. T2 and T3: `new` ≥ `old`, one hop instead of two. Report the read and use counts apart, the partial reads, and, for T2 and T3 `old` reps, whether the read went through `bulletproofing.md` or `flowcharts.md` first.
 - **Spend stop:** Global Constraints' cap, projection and pair check, with a running-total table that starts at $0.00.
 
-- [ ] **Step 6: Mutant step and commit**
+> Deviation: the registered rules gained two VOID reasons (a second result record, a run error) and the rule that an errored Read does not count (Deviations 5 and 8 in the record). Source: Task 3 review.
+
+- [x] **Step 6: Mutant step and commit**
 
 Run the mutant step on `audit.py`, `sheets.py` and `postprocess.py`. Run the commit gate. Commit: `test(baseline): add the writing-skills layout guard kit and its rules`. This commit comes before any probe or rep, so it registers the rules.
+
+> Deviation: three commits (`4465c3f`, `d294e8e`, `a93a999`) carry the kit and its rules, where the plan has one. All three land before any probe or rep. Review fix rounds then added further commits through `208800f`. Source: ledger ruling, Task 3.
 
 ### Task 4: Probes, pilot and spend projection (not scored)
 
@@ -365,19 +375,19 @@ Run the mutant step on `audit.py`, `sheets.py` and `postprocess.py`. Run the com
 - Consumes: Task 3's kit CLIs and record.
 - Produces: the projection that Task 6's first scored pair needs.
 
-- [ ] **Step 1: Probes**
+- [x] **Step 1: Probes**
 
 Run `probe_json.sh` and `probe_tools.sh` on each model (four probes), and add each cost to the running total. Expected: NO on probe lines 1–6 and 8. Line 7 (the user's identity) may read YES: the open watch item "Account identity reaches the isolated micro-test runs" tracks it. Any other YES stops the run, and the owner hears of it.
 
-- [ ] **Step 2: Pilot**
+- [x] **Step 2: Pilot**
 
 Run `rep_tools.py place-copy HEAD`, then build prompts with `build_prompts.py HEAD pilot <scratch>/prompts-pilot`. Run one rep each of T1, T2 and T3 on `claude-sonnet-5-5`, and one T1 rep on `claude-opus-5-5`, so every fixture runs once before any scored rep. Expected for each: `audit.py` shows no path outside the allowed roots and V9 none, and the T1 reps show a Read of `testing-skills-with-subagents.md`. Otherwise stop and ask. Empty the skill copy after the pilot.
 
-- [ ] **Step 3: Project the spend**
+- [x] **Step 3: Project the spend**
 
 Projected total = spend so far + 60 × $0.05 for the W reps (plan 72's isolated reps cost about $0.03 each) + 30 × the mean Sonnet T pilot cost + 30 × the Opus T pilot cost. If the projection passes $35, stop and ask before any scored rep.
 
-- [ ] **Step 4: Record and commit**
+- [x] **Step 4: Record and commit**
 
 Add the probe answers, the pilot facts, the projection and the running total to the record's Kit and Spend stop sections. Run `privacy_sweep.py` on anything committed. Run the commit gate. Commit: `test(baseline): record the layout kit's probes and pilot`.
 
@@ -396,18 +406,18 @@ Add the probe answers, the pilot facts, the projection and the running total to 
 
 **Brief note (trap T1).** Quote the Q2 ruling: "Ruling: move and link (item 8b). `testing-skills-with-subagents.md`, `persuasion-principles.md` and `graphviz-conventions.dot` move into `references/`, and `SKILL.md` links each one directly." The spec gives this change its test as "A guard run on plan 72's `t3` cases, old layout against new", and D1 adds the tools-on cases. Task 6 runs that guard, so this task ships no test of its own.
 
-- [ ] **Step 1: Record the old arm**
+- [x] **Step 1: Record the old arm**
 
 Record `git rev-parse HEAD` in the ledger as OLD.
 
-- [ ] **Step 2: Move the files and fix their links**
+- [x] **Step 2: Move the files and fix their links**
 
 Run `git mv` for the three files. Then:
 - `references/bulletproofing.md`: replace `[persuasion-principles.md](../persuasion-principles.md)` with `[persuasion-principles.md](persuasion-principles.md)`.
 - `references/flowcharts.md`: replace `See [graphviz-conventions.dot](../graphviz-conventions.dot) in the skill's directory for graphviz style rules.` with `See [graphviz-conventions.dot](graphviz-conventions.dot) for graphviz style rules.`
 - `references/testing-skills-with-subagents.md`: replace `See persuasion-principles.md (in writing-skills directory) for research` with `See [persuasion-principles.md](persuasion-principles.md) for research`.
 
-- [ ] **Step 3: Link each moved file from `SKILL.md`**
+- [x] **Step 3: Link each moved file from `SKILL.md`**
 
 In § Flowchart Usage, replace `its place, and the graphviz style rules and render tool.` with:
 
@@ -428,7 +438,7 @@ which persuasion principles fit each skill type.
 
 Replace `See [testing-skills-with-subagents.md](testing-skills-with-subagents.md)` with `See [references/testing-skills-with-subagents.md](references/testing-skills-with-subagents.md)`.
 
-- [ ] **Step 4: Check the move**
+- [x] **Step 4: Check the move**
 
 Run:
 - `uv run python build/check_links.py`. Expected: passes.
@@ -437,7 +447,7 @@ Run:
 - The body measure. Expected: 19,063 (Task 1's 18,758, +123 for Flowchart Usage, +160 for Bulletproofing, +22 for the testing link), which is at most 19,240.
 - `uv run --with pyyaml python build/check_conformance.py`. Expected: no finding for writing-skills. The orphan check passes, because `SKILL.md` names each moved file.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Commit the move and every link change together, so `check_links.py` passes at each commit (brief trap T5). Run the commit gate. Commit: `refactor(writing-skills): move the support files into references/`. Record `git rev-parse HEAD` in the ledger as NEW.
 
@@ -450,23 +460,25 @@ Commit the move and every link change together, so `check_links.py` passes at ea
 **Interfaces:**
 - Consumes: Task 3's kit CLIs, Task 4's projection, and OLD and NEW from Task 5's ledger lines.
 
-- [ ] **Step 1: Build and check the arms**
+- [x] **Step 1: Build and check the arms**
 
 Run `build_prompts.py <OLD> old <kit>/../prompts-old` and `build_prompts.py <NEW> new <kit>/../prompts-new`. Then run `git diff <OLD> <NEW> -- skills/writing-skills/SKILL.md`. Expected: three hunks only, Task 5 Step 3's. If `claude --version` differs from the version that the record's Kit section names, run the four probes again first.
 
-- [ ] **Step 2: Run the scored batches**
+- [x] **Step 2: Run the scored batches**
 
 For each case in the order W1, W2, W3, T1, T2, T3, then for each model (`claude-sonnet-5-5`, then `claude-opus-5-5`): run reps 1–5 of `old`, then reps 1–5 of `new`. Those 10 reps are one pair. Run the pair check before each pair, so a stop never leaves an `old` arm with no `new` arm. Before each tools batch, place the arm's skill copy with `rep_tools.py place-copy <OLD or NEW>`. After the batch, empty the copy. Replace void reps as the record's VOID rule says. Add each batch's cost to the running total in the record.
 
-- [ ] **Step 3: Grade blind, then unblind**
+- [x] **Step 3: Grade blind, then unblind**
 
 Run `audit.py` on every T rep, and record its read results and void findings. Run `sheets.py build`, and do the diff check that the record's Blind grading section names. Grade every sheet by hand, against the case's PASS and FAIL columns, into `grades.tsv` in scratch. Then run `sheets.py unblind`.
 
-- [ ] **Step 4: Record the results and the verdict**
+> Deviation: six grader agents, not a person, graded the sheets (Deviation 9 in the record). The owner ratified this at the completion gate, 2026-11-23.
+
+- [x] **Step 4: Record the results and the verdict**
 
 In the record, add a Results section with one table per case: the verdict and deciding line for each rep, and its spend so far, as plan 72's record does. Add a summary table of old and new pass counts per case and model, against the bars. State the verdict: PASS, or FAIL with the failing cells. Add the descriptive counts that the Predictions section names. If the verdict is FAIL, stop here and ask the owner. Change no wording.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run `check_scrub.py` and `privacy_sweep.py` on the runs folder. Run the commit gate. Commit: `test(baseline): run the writing-skills layout guard`.
 
@@ -476,7 +488,7 @@ Run `check_scrub.py` and `privacy_sweep.py` on the runs folder. Run the commit g
 - Modify: `NOTICE` (the plan 72 divergence sentence; a new last bullet of the superpowers change list, before the list of skill folders)
 - Modify, through `/cc-guide` only: `build/cc_guide/baseline.json`, and a fix that it lists in `skills/writing-skills/SKILL.md` or a covered file
 
-- [ ] **Step 1: Update the plan 72 sentence**
+- [x] **Step 1: Update the plan 72 sentence**
 
 In the plan 72 bullet, replace:
 
@@ -494,7 +506,7 @@ with:
     until plan 105 moved them.
 ```
 
-- [ ] **Step 2: Add the plan 105 bullet**
+- [x] **Step 2: Add the plan 105 bullet**
 
 Fetch, and compare `NOTICE` on `origin/main` with this branch. Plans 103 and 106 may have added bullets to the superpowers change list. Keep every line they added. Add this bullet as the last one in the list, after theirs, wrapped like its neighbors, with the date of this commit:
 
@@ -521,14 +533,18 @@ Fetch, and compare `NOTICE` on `origin/main` with this branch. Plans 103 and 106
     (specs/baseline/red-baseline-writing-skills-layout.md).
 ```
 
-- [ ] **Step 3: Check and commit**
+- [x] **Step 3: Check and commit**
 
 Run `uv run python build/check_provenance.py` and the commit gate. Commit: `docs(notice): record plan 105's writing-skills changes`.
 
-- [ ] **Step 4: Owner gate: the files verify**
+> Deviation: a second `NOTICE` commit, `fd00fb2`, adds a sentence that names the committed `prompts-old/` and `prompts-new/` folders. Owner ruling at the completion gate, 2026-11-23.
+
+- [x] **Step 4: Owner gate: the files verify**
 
 Stop and ask the owner to type `/cc-guide files skills/writing-skills/SKILL.md` in this execution session. The move changed the files that `SKILL.md`'s citation covers (spec Constraints, "Covered files"). `/cc-guide` commits nothing, so wait for the owner's review of its diff.
 
-- [ ] **Step 5: Commit the verify**
+- [x] **Step 5: Commit the verify**
 
 Run `uv run python build/cc_guide/cli.py lint` and the commit gate. Commit what `/cc-guide` changed: `chore(cc-guide): re-verify writing-skills after the layout move`. If settle held the file, record the hold and its reason in the ledger for the completion gate. Do not cite a held file.
+
+> Deviation: no commit. The `/cc-guide files` run found no fact to fix. Both contradictions are the standing `description-when-only` deviation, and the owner ruled no action on the 5 not-covered rows (gate, 2026-11-23). `baseline cite` stamped the file at 2.1.326 and changed no file.
