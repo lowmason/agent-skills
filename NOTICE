@@ -768,21 +768,21 @@ Changes from upstream:
     specs/<name>.md with no date prefix, the partner approves the
     committed file, and writing-plans starts in a fresh session.
     Upstream writes to docs/superpowers/specs/ and invokes writing-plans
-    at once. Look Before You Ask also checks specs/deferred_items.md. A
-    small change is designed and approved in chat and built in the same
-    session. It gets a plan only when several files make one worth it.
-    For a small change, upstream writes a short design doc and goes on
-    to a plan. A command or skill that routes work here counts as the
-    partner asking, so it gets no skip offer. When it routes an open
-    design decision and its next step reads a spec file, the work is
-    sized as a project. Questions are split: open questions about what
-    the partner wants and why, and options with a recommendation for a
-    choice among known alternatives. The "Options steer" Red Flags row
-    now says so. After the first GREEN round, two upstream passages
-    changed. The example first message now gives its reason without
-    walking through each possible answer. And setting out guesses at the
-    answer, or where each would lead, before the question counts as a
-    menu too. Spike code stays off the working branch. The
+    at once. Look Before You Ask also searches specs/deferred_items.md
+    for the idea's terms. A small change is designed and approved in
+    chat and built in the same session. It gets a plan only when several
+    files make one worth it. For a small change, upstream writes a short
+    design doc and goes on to a plan. A command or skill that routes
+    work here counts as the partner asking, so it gets no skip offer.
+    When it routes an open design decision and its next step reads a
+    spec file, the work is sized as a project. Questions are split: open
+    questions about what the partner wants and why, and options with a
+    recommendation for a choice among known alternatives. The "Options
+    steer" Red Flags row now says so. After the first GREEN round, two
+    upstream passages changed. The example first message now gives its
+    reason without walking through each possible answer. And setting out
+    guesses at the answer, or where each would lead, before the question
+    counts as a menu too. Spike code stays off the working branch. The
     visual-companion offer keeps its token-cost warning. The builder
     check dispatches with `model: opus`. The HARD-GATE and the sentence
     that lists what isn't implementing name the quick-task exit as a
@@ -994,7 +994,22 @@ Changes from upstream:
     skill sometimes writes the design with its pick inside it. The T7
     case for the first question also stays below its bar after that
     round, as it does on the copy before the port, and is recorded as a
-    known gap.
+    known gap. Plan 106 (2026-11-22) changed four parts of that text.
+    The Visual Companion section no longer carries the paragraph that
+    asks, per question, whether seeing would help more than reading,
+    since visual-companion.md gives the same test. Size the Work's
+    Approaches part records who made the pick, and only a small change
+    with one sensible way puts the pick and the short design in one
+    message. Upstream's Size the Work says that the partner picks before
+    the design. When nothing is open but several ways fit, the first
+    message lays them out, a path that upstream lacks, and the note
+    under the ordered list on what the first message carries now covers
+    it. And a push to hurry does not hand over the how: the approaches
+    still come first, in a message of their own. These changes are
+    local, and no upstream text was taken. The P3 case then met its bar
+    (5 of 5), so its known gap is closed. The T4 platform case, on its
+    strict reading, then scored 3 of 5, below its bar, and is recorded
+    as a known gap.
   - Plan 84 (2026-11-10) adds subagent-driven-development/scripts/test-run
     for finding 21 of specs/findings/superpowers-drift-v7-0-2.md. It adapts
     executing-plans' task-done, which adapts upstream's scripts (MIT): it
@@ -1137,6 +1152,13 @@ Changes from upstream:
     executing-plans' SKILL.md carry the matching text. The changes are
     local, and no upstream text was taken. The micro-test fixtures are this
     repository's own (specs/baseline/red-baseline-mutant-screen-runs.md).
+  - Plan 106 (2026-11-22) changed brainstorming/visual-companion.md.
+    Cleaning Up says that $SESSION_DIR is the session directory, the
+    parent of screen_dir and state_dir, which upstream does not say.
+    Beside the Gemini CLI block, an Antigravity CLI (agy) line gives the
+    launch recipe that a live run on agy 1.5.14 proved. This
+    repository's gemini runtime targets agy. These changes are local,
+    and no upstream text was taken.
 
     brainstorming/
     dispatching-parallel-agents/
