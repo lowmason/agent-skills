@@ -249,6 +249,14 @@ How the kit applies it:
 - **Added in the Task 3 review, for W reps.** A kept `rep<N>.json` whose `subtype` is not `success`, or
   whose `is_error` is true, is a run error too. `sheets.py build` skips it as void and prints the
   reason, and the next rep number replaces it. `postprocess.py` (plan 103's copy) is unchanged.
+- **Check each W batch for a run error.** `sheets.py build` runs after all reps, so it is too late to
+  replace a rep inside its pair or to count it toward the third-void stop. After each W batch, list
+  the kept reps with this command from the repository root. A rep with a reason is void and does not
+  count: run the next rep number in its place, and count it as a void. `sheets.py build` skips it.
+
+  ```bash
+  uv run python -B -c 'import sys, pathlib; sys.path.insert(0, "specs/baseline/red-baseline-writing-skills-layout/kit"); import sheets; [print(p.name, sheets.w_run_error(p)) for p in sorted(pathlib.Path(sys.argv[1]).glob("rep*.json"))]' <out-dir>
+  ```
 
 ## Blind grading
 
