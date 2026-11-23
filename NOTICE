@@ -1183,6 +1183,13 @@ Changes from upstream:
     parts included (MIT, LICENSE-superpowers). Its fixtures are this
     repository's own
     (specs/baseline/red-baseline-writing-skills-layout.md).
+  - A /deferred quick fix (2026-11-23) changed writing-skills. A heading
+    in SKILL.md and a bullet in persuasion-principles.md now use the
+    type name Discipline, as plan 105's list of four skill types does.
+    scripts/render_graphs.py now finds a graph header after a /* */
+    comment and in any letter case, as dot does. Its --combine option
+    skips an undirected graph block, names it on stderr and renders the
+    rest. These changes are local, and no upstream text was taken.
 
     brainstorming/
     dispatching-parallel-agents/

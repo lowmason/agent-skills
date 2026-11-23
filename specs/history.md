@@ -780,3 +780,10 @@ Differences from the design:
 - Deviation (Task 7): a second `NOTICE` commit, `fd00fb2`, names the committed `prompts-old/` and `prompts-new/` folders. Owner ruling at the completion gate, 2026-11-23. Source: plan, Task 7.
 - Deviation (Task 7): no commit for the `/cc-guide files` verify. Both contradictions are the standing `description-when-only` deviation, the owner ruled no action on the 5 not-covered rows, and `baseline cite` changed no file. Source: plan, Task 7.
 - Deferred: 5 items. Source: specs/deferred_items.md, § 105-writing-skills-improvements.
+
+## /deferred — 2026-11-23
+
+Closed deferred items:
+- "**Finish the skill-type rename at two older spots (plan 105, ruling at Task 1).** Plan 105 Task 1 Step 5" (deferred by 105-writing-skills-improvements): both spots now say "Discipline" (`SKILL.md:221`, `persuasion-principles.md:32`). The owner ruled that the Q5 waiver for spec item 12 covers them, so no micro-test ran. The body is 19,053 characters.
+- "**Make `graph_name` find a header after a block comment or in capitals (plan 105, ruling at Task 2).** In" (deferred by 105-writing-skills-improvements): `_header` now skips leading whitespace, `//` and `#` lines and `/* */` comments with one regex (`_LEADING`), and `_HEADER` ignores case. Three tests pin a block comment, an unclosed one and each letter case.
+- "**Let `--combine` handle an undirected `graph` block (plan 105, ruling at Task 2).** In" (deferred by 105-writing-skills-improvements): `--combine` now skips each undirected block, names it on stderr (`skipped: <file>: <name>: …`), renders the digraph blocks and exits 1. With no digraph block it writes no combined file. Three tests pin this.

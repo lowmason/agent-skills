@@ -218,7 +218,7 @@ Edit skill without testing? Same violation.
 
 Different skill types need different test approaches:
 
-### Discipline-Enforcing Skills (rules/requirements)
+### Discipline Skills (rules/requirements)
 
 **Examples:** test-first discipline, verifying before claiming done, designing before coding
 

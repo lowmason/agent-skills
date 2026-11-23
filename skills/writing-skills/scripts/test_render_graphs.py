@@ -20,6 +20,7 @@ from render_graphs import (
     dot_blocks,
     find_blocks,
     graph_name,
+    is_directed,
     main,
     output_names,
     render_svg,
@@ -177,6 +178,50 @@ def test_combine_writes_one_svg_and_its_dot_source(tmp_path):
 
 
 @needs_dot
+def test_combine_skips_an_undirected_block_and_renders_the_rest(tmp_path, capsys):
+    skill = make_skill(
+        tmp_path,
+        {
+            'SKILL.md': fence('digraph one { a -> b }'),
+            'references/two.md': fence('graph two { c -- d }'),
+        },
+    )
+    out = tmp_path / 'out'
+    assert main([str(skill), str(out), '--combine']) == 1
+    assert sorted(p.name for p in out.iterdir()) == [
+        'my_skill_combined.dot',
+        'my_skill_combined.svg',
+    ]
+    assert 'c -- d' not in (out / 'my_skill_combined.dot').read_text()
+    err = capsys.readouterr().err
+    assert 'skipped: references/two.md: two:' in err
+    assert 'failed' not in err
+
+
+def test_combine_with_only_undirected_blocks_renders_nothing(
+    tmp_path, fake_dot, monkeypatch, capsys
+):
+    def no_render(text):
+        raise AssertionError('render_svg called')
+
+    monkeypatch.setattr(render_graphs, 'render_svg', no_render)
+    skill = make_skill(tmp_path, {'SKILL.md': fence('graph g { a -- b }', 'GRAPH h {}')})
+    out = tmp_path / 'out'
+    assert main([str(skill), str(out), '--combine']) == 1
+    assert list(out.iterdir()) == []
+    err = capsys.readouterr().err
+    assert 'skipped: SKILL.md: g:' in err
+    assert 'skipped: SKILL.md: h:' in err
+
+
+def test_is_directed_reads_the_header_keyword():
+    assert is_directed('digraph a {}')
+    assert is_directed('// note\nstrict Digraph {}')
+    assert not is_directed('graph g { a -- b }')
+    assert not is_directed('STRICT GRAPH {}')
+
+
+@needs_dot
 def test_renders_writing_skills_own_chart(tmp_path):
     out = tmp_path / 'out'
     assert main([str(Path(__file__).resolve().parents[1]), str(out)]) == 0
@@ -229,6 +274,23 @@ def test_graph_name_reads_a_header_split_over_two_lines():
 
 def test_graph_name_reads_an_indented_header_after_a_comment():
     assert graph_name('// note\n  digraph after {\n    a -> b\n  }') == 'after'
+
+
+def test_graph_name_skips_a_block_comment_before_the_header():
+    assert graph_name('/* note */\ndigraph one {') == 'one'
+    assert graph_name('/* first\n   second */\n\n// more\ndigraph two {') == 'two'
+    assert graph_name('/* note */ digraph three {') == 'three'
+
+
+def test_graph_name_finds_no_header_after_an_unclosed_block_comment():
+    assert graph_name('/* note\ndigraph one {') is None
+
+
+def test_graph_name_ignores_the_case_of_the_keywords():
+    assert graph_name('Digraph Flow {') == 'Flow'
+    assert graph_name('DIGRAPH flow {') == 'flow'
+    assert graph_name('STRICT Graph g {') == 'g'
+    assert graph_name('GRAPH {') == ''
 
 
 def test_find_blocks_reads_a_dot_fence_indented_in_a_list_item(tmp_path):
