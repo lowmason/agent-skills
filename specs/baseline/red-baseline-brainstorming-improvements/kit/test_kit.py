@@ -113,3 +113,75 @@ def test_run_stops_on_a_void_vote(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match=r'vote 1 .*void'):
         panel.run(args)
     assert not (out / 'panel-verdicts.json').exists()
+
+
+def run_reps_range(tmp_path: Path, stdout: str, last: int) -> Path:
+    '''Run run_reps.sh reps 1 to <last> on the stub and return the output folder.'''
+    prompt = tmp_path / 'prompt.txt'
+    prompt.write_text('a prompt\n')
+    out = tmp_path / 'round' / 'case'
+    env = {**os.environ, 'PATH': f'{stub_dir(tmp_path, stdout)}:{os.environ["PATH"]}',
+           'KIT_SCRATCH_ROOT': str(tmp_path / 'scratch')}
+    done = subprocess.run(['bash', str(KIT / 'run_reps.sh'), str(prompt), str(out), '1', str(last),
+                           'claude-opus-5-5'], capture_output=True, text=True, env=env, check=False, timeout=120)
+    assert done.returncode == 0, done.stdout + done.stderr
+    return out
+
+
+def test_run_reps_postprocesses_every_rep_in_a_batch(tmp_path):
+    # Rep 1 runs alone and the later reps run in the background: each one passes through postprocess.
+    out = run_reps_range(tmp_path, json.dumps(PEER), 3)
+    for n in (1, 2, 3):
+        assert json.loads((out / f'rep{n}.json').read_text()) == {'void': True, 'reason': 'result_index'}
+
+
+def test_run_reps_voids_a_non_object_json(tmp_path):
+    out = run_reps(tmp_path, json.dumps(['peer-title-x']))
+    assert json.loads((out / 'rep1.json').read_text()) == {'void': True, 'reason': 'unreadable'}
+    assert 'peer-title-x' not in every_text(out)
+
+
+def test_run_reps_keeps_the_raw_json_in_scratch(tmp_path):
+    # The raw JSON (the source of a void rep's cost) stays outside the output folder, under
+    # <scratch root>/plan106-brainstorming-improvements/<out-dir's parent name>/<out-dir name>/.
+    run_reps(tmp_path, json.dumps(PEER))
+    raw = tmp_path / 'scratch' / 'plan106-brainstorming-improvements' / 'round' / 'case' / 'rep1.json'
+    assert json.loads(raw.read_text()) == PEER
+
+
+def test_show_reps_prints_only_the_void_line(tmp_path):
+    out = run_reps(tmp_path, json.dumps(PEER))
+    done = subprocess.run([sys.executable, str(KIT / 'show_reps.py'), str(out)], capture_output=True, text=True,
+                          check=True)
+    lines = [line for line in done.stdout.splitlines() if line.strip() and not line.startswith('total cost')]
+    assert lines == ['== case/rep1 VOID (result_index)']
+
+
+def test_gather_keeps_a_rep_with_no_void_key(tmp_path):
+    # Plan 86's committed reps (the shipped T7 arm) have no `void` key and are scored.
+    (tmp_path / 'rep1.json').write_text(json.dumps({'result': 'a'}))
+    assert panel.gather([('shipped', tmp_path)]) == {'shipped-rep1': 'a'}
+
+
+def test_unparsed_vote_output_is_scrubbed(monkeypatch):
+    home = os.environ['HOME']
+    monkeypatch.setattr(panel.subprocess, 'run', lambda *a, **k: SimpleNamespace(
+        stdout=f'error at {home}/x', stderr='', returncode=1))
+    vote = panel.call_voter('text')
+    assert vote['void'] is False
+    assert home not in json.dumps(vote)
+
+
+def test_run_names_each_void_vote(tmp_path, monkeypatch):
+    reps = tmp_path / 'reps'
+    reps.mkdir()
+    (reps / 'rep1.json').write_text(json.dumps({'result': 'a', 'void': False}))
+    (tmp_path / 'rule.txt').write_text('a rule\n')
+    (tmp_path / 'request.txt').write_text('a request\n')
+    monkeypatch.setattr(panel, 'call_voter', lambda text: {'void': True, 'reason': 'origin'})
+    args = argparse.Namespace(out=str(tmp_path / 'panel'), arms=[f'x={reps}'], rule=str(tmp_path / 'rule.txt'),
+                              request=str(tmp_path / 'request.txt'), votes=2, seed=1)
+    with pytest.raises(SystemExit) as stop:
+        panel.run(args)
+    assert 'vote 1 (origin)' in str(stop.value)
+    assert 'vote 2 (origin)' in str(stop.value)
