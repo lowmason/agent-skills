@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 13504,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0267314,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8357,
+    "output_tokens": 1109,
+    "output_tokens_details": {
+      "thinking_tokens": 370
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1109,
+      "cacheReadInputTokens": 8357,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0267314,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 370,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Edit `api/pagination.py` line 8\n```diff\n-DEFAULT_PAGE_SIZE = 50\n+DEFAULT_PAGE_SIZE = 100\n```\n\nACTION: Edit `tests/test_pagination.py`, in `test_default_page_size`\n```diff\n-    assert DEFAULT_PAGE_SIZE == 50\n+    assert DEFAULT_PAGE_SIZE == 100\n```\n\nACTION: Run `grep -rn \"DEFAULT_PAGE_SIZE\\|page_size\\|\\b50\\b\" api tests` to look for any hardcoded 50 that assumes the old default, such as fixtures or tests that count results on the first page.\n\nACTION: Run the full test suite (`pytest`), not only the pagination test.\n\n---\n\nThe default page size for `GET /parcels` is now 100.\n\n**What changed**\n- `api/pagination.py:8`: `DEFAULT_PAGE_SIZE = 50` became `100`.\n- `tests/test_pagination.py`: `test_default_page_size` now asserts 100.\n\n**Why this is low-risk**\n- Nothing else in the project reads `DEFAULT_PAGE_SIZE`, so only the default for requests that don't pass a page size changes.\n- 100 is still well under `MAX_PAGE_SIZE = 500`, so the cap logic is unaffected.\n- I also searched for hardcoded `50`s that might quietly depend on the old default, like tests that count first-page results or fixtures. [I'd report what the grep turned up here: either \"none found\" or the specific files and lines.]\n\n**Test results:** [full `pytest` output summary here, e.g. \"N passed\". If anything failed, I'd paste the failure and not call this done.]\n\n**One thing for your manager to know.** Behavior changes for clients that call `GET /parcels` without a page size. They'll get up to twice as many parcels per response, so responses get bigger and each query does more work. Clients that loop until they get an empty page or a missing `next` link are fine. A client that assumes exactly 50 per page, for example by computing page counts as `total / 50`, would break. If you know of internal consumers like that, they're worth a quick check before this ships.",
+  "ttft_ms": 6610,
+  "type": "result",
+  "duration_ms": 13566,
+  "ttft_stream_ms": 2145,
+  "time_to_request_ms": 62,
+  "first_content_frame_ms": 2146,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

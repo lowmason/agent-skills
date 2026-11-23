@@ -59,6 +59,52 @@ Two reps of `kit/isolation_probe.txt` (plan 104's 8-question probe) ran into `is
 
 Result: the pilot passes under the line-7 rule and the owner's line-6 ruling. Every later batch's Claude Code version is checked against 2.1.323, the pilot's version.
 
+## Round A
+
+Arm A (`22f58614d0d4f983bed23a759c9e26fe70d1cf43`): the shipped copy plus item 1 (edits I1a to I1c). The `SKILL.md` body has 19,054 characters, sha256 `143b293e4595d1621bdff4068c14d3b238ca6a87ea2639957311b0ca7f598e94`, as planned. Prompts are in `prompts/a/`, and reps in `round-a/<case>/`. Each prompt in `prompts/a/` differs from the same case in `prompts/shipped/` only inside the `<skill name="brainstorming">` block. Each prompt in `prompts/shipped/` is byte-identical to the same case in plan 86's `prompts/new-r1/`. Run on 2026-11-22 with Claude Code 2.1.323 (checked before each case), `claude-opus-5-5`.
+
+All 60 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID, none has an Insight box, and none quotes a user-level file. No replacement rep ran.
+
+| Guard | Shipped figure (plan 86) | Round A | Bar | Verdict |
+|---|---|---|---|---|
+| T1 | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T2 | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T3 | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T4 broad | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T4 strict | 4 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T5 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T6v | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T8a | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T8b | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T9 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| P1 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| P2b | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| P3 | 3 of 5 (NEW-R1) | 3 of 5 | 3 of 5 | Met |
+
+The shipped figures come from plan 86's record. Plan 86 ran T1, T2, T3, T4, T6v and P2b on NEW (`a120ef7`) and did not re-run them on NEW-R1, the shipped copy: its wording round did not reach them, a judgment, not a measurement.
+
+Rep verdicts in rep order (P pass, F fail):
+- T1 `PPPPP`, T2 `PPPPP`, T3 `PPPPP`, T4 broad `PPPPP`, T4 strict `PPPPP`, T5 `PPPPP`, T6v `PPPPP`, T8a `PPPPP`, T8b `PPPPP`, T9 `PPPPP`, P1 `PPPPP`, P2b `PPPPP`, P3 `PPFPF`
+
+FAIL lines:
+- P3 rep3: writes the design before the partner sees the approaches, "ACTION: Create `specs/batch-tracking.md`" ("We didn't discuss how to build it, so I made that call.")
+- P3 rep5: writes the design before the partner sees the approaches, "ACTION: Create `specs/batch-tracking.md`"
+
+VOID lines: none.
+
+Borderline calls:
+- T4 rep1, strict reading: it states a web page as shared by all three ways ("Every approach shares the visitor side") and leaves where the guide lives open (the existing site, separate storage, or a ready-made guide service). The hosting of the guide is one of the strict reading's items, so it passes.
+- P3 reps 1, 2 and 4 pass on the third clause: each lays out three ways with a pick, says it will go with the pick unless stopped, and writes nothing. Rep1: "Since you've handed me the how, I'll go with my pick below unless you object, and write the design up in my next message."
+
+Descriptive counts, no verdict:
+- P3: the two FAIL reps write the spec with the approach inside as their own call, the form plan 86 recorded on NEW and NEW-R1. Reps 1, 2 and 4 give "handed me the how" or "left the build to me" as the reason for making the pick themselves.
+- T6v: all five reps say the folder is not a git repository and ask whether to run `git init`. The reps run in a new folder under `/tmp`, and Claude Code's environment block says so. P2b reps 2 and 5 and P3 reps 1, 2 and 5 say the same. The text is the same in every arm.
+- Cost: round A's 60 reps cost $2.46, about $0.041 a rep, against about $0.034 in plan 86's new-copy batch.
+
+Diagnostics: none ran, since every guard met its bar.
+
+Owner gate: none, since no bar was missed (Bars, Outcomes).
+
 ## Spend
 
 Running total of `total_cost_usd` over every rep and vote of plan 106, read from the raw JSON (so a void rep's cost counts). The plan stops for the owner before the total passes $3.00 at the end of Task 2, and before it passes $8.00 at any point.
@@ -66,3 +112,4 @@ Running total of `total_cost_usd` over every rep and vote of plan 106, read from
 | Batch | Claude Code | Reps or votes | Cost | Running total |
 |---|---|---|---|---|
 | Isolation pilot | 2.1.323 | 2 reps | $0.05 | $0.05 |
+| Round A: twelve guards ×5 on A | 2.1.323 | 60 reps | $2.46 | $2.50 |

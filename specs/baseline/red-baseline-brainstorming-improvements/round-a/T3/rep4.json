@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 12122,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0225836,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8518,
+    "output_tokens": 900,
+    "output_tokens_details": {
+      "thinking_tokens": 483
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 900,
+      "cacheReadInputTokens": 8518,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0225836,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 483,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Two calls I'd make myself unless you object:\n\n- **Safe ranges** live in a small settings file, a minimum and maximum temperature and humidity for each sensor, so you can tighten a seedling zone without touching code.\n- **The on-call schedule** lives in the same file: one line per week with a name and phone number. Swapping a shift means editing that file.\n\nThe question that changes the build most is **how the person on call stops the repeats**, probably while half-asleep:\n\n- **Reply to the text** (say \"OK\"). This is the easiest at 3 a.m. and needs no app or login. The texting service has to receive messages as well as send them, so it costs a little more and takes more setup. This is my pick.\n- **Tap a link in the text** that opens a small web page with an \"I'm on it\" button. It's still one tap, but the service needs a web address reachable from their phone, which means exposing something from the greenhouse network.\n- **Repeats stop on their own once readings are back in range.** Nothing to build for acknowledging, but someone already fixing the heater keeps getting texted, and you never learn whether anyone saw the alert.\n\nA related gap: if the on-call person sleeps through every repeat, should the alerts go to someone else after a while, like a backup person after 30 minutes? Or is one person enough?",
+  "ttft_ms": 7286,
+  "type": "result",
+  "duration_ms": 12164,
+  "ttft_stream_ms": 1963,
+  "time_to_request_ms": 49,
+  "first_content_frame_ms": 1963,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

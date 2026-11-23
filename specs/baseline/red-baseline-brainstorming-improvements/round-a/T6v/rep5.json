@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 23454,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0503028,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8654,
+    "output_tokens": 2285,
+    "output_tokens_details": {
+      "thinking_tokens": 822
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2285,
+      "cacheReadInputTokens": 8654,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.0503028,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 822,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "ACTION: Write `specs/release-notes-breaking-flag.md`\n```markdown\n# Breaking-change flag in release notes\n\nSource: `specs/deferred_items.md` item 7 (picked via /deferred, disposition Design).\n\n## Intent\n\n`release-notes` writes one bullet per merged pull request. Nothing in a bullet\nsays whether the change is breaking. Two audiences need that:\n\n- **People reading the notes** should spot breaking changes at a glance.\n- **`announce`** should put breaking changes first in its post.\n\n## Goals\n\n- A bullet for a breaking pull request is visibly marked in the notes.\n- `changelog-check` (`skills/changelog-check/parse.py`) accepts marked bullets\n  and exposes the flag on each parsed entry.\n- `announce` lists breaking entries before all others.\n\n## Non-goals\n\n- No change to how bullets are written for non-breaking pull requests.\n- No new way to mark a pull request as breaking beyond its `breaking` label.\n\n## Anti-goals\n\n- Release notes written before this change must still parse, with no changes\n  to their text.\n\n## Constraints\n\n- `parse.py` today splits each bullet on \" — \" and rejects a bullet with more\n  than two parts. The new marker must not add a part.\n\n## Approaches\n\n1. **Third part:** append \" — breaking: yes\" and let `parse.py` accept three\n   parts. Loosens the existing part-count check, and the marker sits at the\n   end of the line, where readers don't see it at a glance.\n2. **Leading tag (picked):** start the bullet with `[breaking]`. `parse.py`\n   reads and strips the tag before it splits. Untagged bullets parse exactly\n   as before, and the tag is the first thing a reader sees.\n\nPartner picked 2.\n\n## Design (as decided)\n\n- **`release-notes`** (`skills/release-notes/SKILL.md`): when a merged pull\n  request carries the `breaking` label, start its bullet with `[breaking] `.\n  Otherwise the bullet is unchanged.\n- **`parse.py`**: if a bullet starts with `[breaking]`, strip the tag, set\n  `breaking=True` on the entry, then split the remainder on \" — \" under the\n  existing rules. Untagged bullets get `breaking=False`.\n- **`announce`** (`skills/announce/SKILL.md`): list entries with\n  `breaking=True` first.\n- **Test** in `skills/changelog-check/`: one tagged and one untagged bullet;\n  both parse, with the right `breaking` value and the same fields otherwise.\n\n## Calls made by the designer (partner to check)\n\n- Exactly one space follows the tag in written bullets; `parse.py` strips the\n  tag and any whitespace after it.\n- The tag match is exact and case-sensitive (`[breaking]` only), so the parser\n  stays strict like the rest of `parse.py`.\n- Within each group in `announce`, entries keep their original order.\n\n## Left to the builder\n\n- How `breaking` is added to whatever entry structure `parse.py` returns,\n  following its existing style.\n- Wording in `announce`'s post that introduces the breaking group, if any is\n  needed to keep the post readable.\n```\n\nACTION: Read `skills/brainstorming/builder-check-prompt.md`\n\nACTION: Dispatch a fresh general-purpose subagent with `model: opus`, using the builder-check prompt pointed at `specs/release-notes-breaking-flag.md`\n\nThanks. One correction to how I framed things: because this came in through `/deferred`, it gets a written spec rather than a chat-only design, since the next step (planning) reads from that file. What you approved is unchanged; I've just written it down in `specs/release-notes-breaking-flag.md`.\n\nA reviewer is reading it now, as if they had to build it from the document alone. I may come back once with a few questions from that before I hand it over.\n\nI filled in three small details myself, and the spec marks them as my calls:\n- the tag is exactly `[breaking]`, case-sensitive, followed by one space\n- the parser strips any whitespace after the tag\n- `announce` keeps the original order within the breaking and non-breaking groups\n\nOne snag: this directory isn't a git repository, so I can't commit the spec yet. That commit is also when item 7 in `specs/deferred_items.md` gets marked as planned. Is the repo somewhere else, or should I run `git init` here?",
+  "ttft_ms": 10234,
+  "type": "result",
+  "duration_ms": 23522,
+  "ttft_stream_ms": 1935,
+  "time_to_request_ms": 68,
+  "first_content_frame_ms": 1935,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

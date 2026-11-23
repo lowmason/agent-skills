@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 12773,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.024392800000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 8324,
+    "output_tokens": 992,
+    "output_tokens_details": {
+      "thinking_tokens": 455
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 992,
+      "cacheReadInputTokens": 8324,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.024392800000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 455,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's what I've got so far.\n\n**What it's for:** a logbook that replaces both the paper notebook and the monthly retyping into a spreadsheet. You're the main reader. Day to day, you use it to check whether you've worked a station before. Once a year, everything goes out as ADIF to Logbook of The World so your contacts get confirmed for awards.\n\n**Where it has to work:** about thirty contacts a week, at home and at field days. Sometimes there's no internet, so logging and the worked-before lookup both have to work fully offline. Nothing can depend on a connection until you export.\n\n**What I'd add (my proposals, correct any):**\n- **Bring in your existing spreadsheet history**, so \"have I worked them before?\" covers past years and not just contacts logged from now on. Otherwise the lookup is weak for a long time.\n- **Record what LoTW needs to match a contact:** at minimum callsign, date and time in UTC, band, and mode. The logbook would fill in UTC for you, so you don't have to convert.\n- **Export ADIF, but don't upload to LoTW directly.** LoTW uploads are signed with your certificate through TQSL. You'd keep doing that step yourself once a year. Building the upload in adds a lot of work for something you do once a year.\n\nWhat's wrong or missing there?\n\nNext, the thing that most decides what this becomes. At a field day, while you're actually making contacts, what's in front of you, and how do contacts get written down at that moment? I'm asking because the answer settles whether this runs on a laptop, a phone, or something else, and whether you're logging live at the radio or still writing on paper first and typing it in later.",
+  "ttft_ms": 7065,
+  "type": "result",
+  "duration_ms": 12825,
+  "ttft_stream_ms": 1890,
+  "time_to_request_ms": 54,
+  "first_content_frame_ms": 1890,
+  "queued_turn_count": 0,
+  "result_index": 0
+}
