@@ -57,7 +57,7 @@ competitor's `SKILL.md`, and refuses a later batch in the same out folder whose 
 | `build_prompts.py`, `cases.py` | plan 105's | The prompts are `M1.txt`, `T2.txt` and `R3.txt`. `FRAME_T` names the case's tools. |
 | `privacy_sweep.py`, `check_scrub.py`, `kit_identity.py` | plan 105's | Unchanged. |
 | `fixtures/M1`, `fixtures/T2`, `fixtures/R3`, `fixtures/trigger` | new | Each case's project (Cases) and the trigger repository. |
-| `test_wst_kit.py` | plan 105's tests, renamed, and the tests that Task 1 adds | 334 tests with a stub `claude` and no model. The suite `writing-skills-tests-kit` in `build/suites.toml` runs them. |
+| `test_wst_kit.py` | plan 105's tests, renamed, and the tests that Task 1 adds | 352 tests with a stub `claude` and no model (plan 105's kit has 191). The suite `writing-skills-tests-kit` in `build/suites.toml` runs them. |
 
 **The arms.** `old` is `SKILL.md`'s body and the skill folder at the commit before an item's text. `new` is
 the same at the commit of the item's text. Tasks 3 to 5 fill in the shas here. The `pilot` arm of Task 2 is
