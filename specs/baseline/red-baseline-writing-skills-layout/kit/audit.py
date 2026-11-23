@@ -19,12 +19,16 @@ WSL_SCRATCH/<case>/<arm>/<model>/rep<N>.jsonl (WSL_SCRATCH defaults to
   working directory. A Glob
   pattern counts when it is absolute or climbs with `..`: its literal part, up to the last `/` before
   its first wildcard, is judged, and a `..` after a wildcard is a hit, since it cannot be resolved.
+  Each `{...}` alternative, nested or comma-split, is a path of its own: one that holds `..` is a hit,
+  and one that starts with `/`, `~` or `$HOME` is judged by its literal part, so an alternative inside
+  the allowed roots stays clean.
   Plan 104's audit covers Read, Edit, Write and Bash only; these reps have Grep and Glob, so the audit
   also checks their path arguments. The Bash part is plan 104's, kept for a call no rep should make;
 - each Read of the case's moved file (cases.MOVED), marked partial when it has `offset` or `limit` and
   marked error when its tool result is an error, the first Edit or Write of the case's target
   (cases.TARGET, under the rep's repository; a relative file_path is joined to it), and the read check: PASS when such a Read comes before
-  that first Edit or Write, or when the rep never edits or writes the target and has such a Read;
+  that first Edit or Write, or when the rep never edits or writes the target and has such a Read. A Read
+  marked error does not count. A failed Edit or Write of the target still counts as the first write;
 - the VOID reasons (void_reasons), or `VOID: none`.
 It gives no verdict on the marker: the blind grader reads that from the sheets (sheets.py).
 '''
@@ -81,6 +85,20 @@ def climbs_after_wildcard(pattern: str) -> bool:
     parts = pattern.split('/')
     wild = next((index for index, part in enumerate(parts) if WILDCARD.search(part)), len(parts))
     return '..' in parts[wild:]
+
+
+def brace_alternatives(pattern: str) -> list[str]:
+    '''Each comma-split alternative of each {...} group in a Glob pattern, nested groups included.'''
+    found, starts = [], []
+    for index, char in enumerate(pattern):
+        if char == '{':
+            starts.append(index + 1)
+        elif char == ',' and starts:
+            found.append(pattern[starts[-1]:index])
+            starts[-1] = index + 1
+        elif char == '}' and starts:
+            found.append(pattern[starts.pop():index])
+    return found
 
 
 class Audit:
@@ -147,6 +165,17 @@ class Audit:
                 why = self.judge(self.joined(literal_part(pattern) or '.', self.joined(base) if base else None))
                 if why:
                     found.append(f'call {number} Glob pattern: {pattern} ({why})')
+            # A brace alternative is a path of its own, wherever its group sits in the pattern.
+            for alternative in brace_alternatives(pattern):
+                if '..' in alternative.split('/'):
+                    why = 'a `..` in a brace alternative'
+                elif alternative.startswith(('/', '~')) or HOME_VAR.match(alternative):
+                    why = self.judge(literal_part(alternative) or '/')
+                else:
+                    continue
+                if why:
+                    found.append(f'call {number} Glob pattern: {pattern} ({why})')
+                    break
         return found
 
     def hits(self, calls: list[dict]) -> list[str]:
@@ -233,7 +262,9 @@ def read_check(calls: list[dict], case: str, rep_dir: str) -> dict:
             full = path if path.startswith('/') else f'{roots[0]}/repo/{path}'
             if os.path.normpath(full) in targets:
                 first_write = number
-    before = [read for read in reads if first_write is None or read['call'] < first_write]
+    # A Read whose result is an error gave the rep no content, so it does not count. A failed Edit or
+    # Write still counts as the first write: the rule orders the rep's attempts.
+    before = [read for read in reads if not read['error'] and (first_write is None or read['call'] < first_write)]
     return {'moved': moved, 'target': target, 'reads': reads, 'first_write': first_write,
             'verdict': 'PASS' if before else 'FAIL'}
 

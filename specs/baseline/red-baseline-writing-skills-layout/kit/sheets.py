@@ -6,7 +6,8 @@ Usage, from the repository root:
 
 build reads <runs-root>/<case>/<arm>/<model>/: rep<N>.json for a W rep (run_json_reps.sh's kept copy) and
 rep<N>/ for a T rep (run_tool_reps.sh's folder). It skips a void rep: a W rep with a rep<N>.VOID note and
-no rep<N>.json, and a T rep that audit.py gives a VOID reason. It writes one sheet per scored rep to
+no rep<N>.json, a W rep whose kept JSON shows a run error (a subtype other than success, or is_error
+true), and a T rep that audit.py gives a VOID reason. It writes one sheet per scored rep to
 <sheet-dir>/<id>.txt, where <id> is a 6-hex id drawn from <seed>, so the same seed gives the same ids. A
 sheet holds the case, its PASS and FAIL columns (cases.COLUMNS) and the rep's answer: for a W rep its
 result text, and for a T rep its final message and final.diff. It never names the arm, the model or the
@@ -91,6 +92,21 @@ def w_answer(path: Path) -> str:
     return mask(str(rep.get('result') or ''))
 
 
+def w_run_error(path: Path) -> str | None:
+    '''Why a kept W rep is void: its run errored, so it gave no answer to grade, as for a T rep.'''
+    try:
+        rep = json.loads(path.read_text())
+    except (OSError, ValueError) as error:
+        raise SystemExit(f'refusing: {path} is not a kept rep: {error}') from None
+    if not isinstance(rep, dict):
+        raise SystemExit(f'refusing: {path} is not a kept rep: not a JSON object')
+    if rep.get('subtype') != 'success':
+        return f'a run error: subtype {rep.get("subtype")}'
+    if rep.get('is_error'):
+        return 'a run error: is_error true'
+    return None
+
+
 def t_answer(rep: Path, summary: dict) -> str:
     diff = rep / 'final.diff'
     return (f'--- final message ---\n{mask(summary.get("final_message") or "")}\n'
@@ -109,6 +125,10 @@ def collect(runs_root: Path) -> tuple[list[dict], list[str]]:
                 where = {'case': case, 'arm': arm_dir.name, 'model': model_dir.name}
                 for path in sorted(model_dir.iterdir()):
                     if case in cases.W_TARGET and REP_JSON.match(path.name):
+                        why = w_run_error(path)
+                        if why:
+                            skipped.append(f'{case} {arm_dir.name} {model_dir.name} {path.stem}: {why}')
+                            continue
                         reps.append({**where, 'rep': int(REP_JSON.match(path.name)[1]), 'read': None,
                                      'answer': w_answer(path)})
                     elif case in cases.W_TARGET and REP_VOID.match(path.name):

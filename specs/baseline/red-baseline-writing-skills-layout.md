@@ -46,7 +46,7 @@ version, it runs the four probes again first.
 | `build_prompts.py` | new | Writes the six prompts and `MANIFEST.txt`. |
 | `cases.py` | plan 72's `cases.py`, for the W cases | Adds the T frame, the T cases and each case's PASS and FAIL columns. |
 | `fixtures/T1/repo/` to `fixtures/T3/repo/` | new | Each T case's project (Cases). |
-| `test_wsl_kit.py` | plan 103's postprocess, postprocess-shape and runner tests and plan 104's runner and audit tests, adapted, and the tests that the plan's Task 3 names | 171 tests with a stub `claude` and no model. Suite `writing-skills-layout-kit` in `build/suites.toml` runs them. |
+| `test_wsl_kit.py` | plan 103's postprocess, postprocess-shape and runner tests and plan 104's runner and audit tests, adapted, and the tests that the plan's Task 3 names | 184 tests with a stub `claude` and no model. Suite `writing-skills-layout-kit` in `build/suites.toml` runs them. |
 
 **The arms.** `old` is `SKILL.md`'s body and the skill folder at the last commit before Task 5 (Task 5
 Step 1 records it as OLD). `new` is the same at Task 5's commit (Task 5 Step 5 records it as NEW). Task 6
@@ -122,9 +122,13 @@ settings hold no Grep or Glob rule, because the repository's Claude Code guide d
 rule syntax. `audit.py` judges the `path` of each Grep and Glob call, joined to the rep's repository
 when it is relative. It judges a Glob `pattern` that is an absolute path or that climbs with `..`: the
 part up to the last `/` before the first wildcard. A `..` after a wildcard cannot be resolved, so it is
-a hit too.
+a hit too. Each `{...}` alternative, nested or comma-split, is a path of its own. An alternative that
+holds `..` is a hit. An alternative that starts with `/`, `~` or `$HOME` is judged by its literal part,
+so one inside the allowed roots stays clean. This is a recorded limit: a `*`, `?` or `[` only descends
+from the literal part, so a `**` from the rep folder can list names under `home/Library/Keychains`, the
+link to the real Keychains folder. That folder holds neither the spec nor the plan.
 
-**Self-test.** `test_wsl_kit.py` adds 171 tests. They pass through
+**Self-test.** `test_wsl_kit.py` adds 184 tests. They pass through
 `uv run python build/run_suites.py writing-skills-layout-kit`. `privacy_sweep.py` over this record and
 the kit gives 5 hits. Each is the pinned `//Users/**` deny pattern: in `common.sh`, in
 `test_wsl_kit.py`, and on three lines of this record (Kit). The sweep's check for the home's parent
@@ -203,10 +207,10 @@ The sheets write each writing-skills path as `<skill>/<basename>` (Blind grading
 
 A rep passes when both parts hold.
 
-- *Read:* the tool log has a Read whose `file_path` ends in `/<moved file>`, before the first Edit or
-  Write of the case's target. A rep with no Edit or Write of the target passes this part with any such
-  Read. Glob, Grep and reads of other files do not count. A Read with `offset` or `limit` counts and is
-  marked partial.
+- *Read:* the tool log has a Read whose `file_path` ends in `/<moved file>` and whose tool result is
+  not an error, before the first Edit or Write of the case's target. A rep with no Edit or Write of the
+  target passes this part with any such Read. Glob, Grep and reads of other files do not count. A Read
+  with `offset` or `limit` counts and is marked partial.
 - *Use:* the blind grader marks the case's marker as present in the rep's answer.
 
 `audit.py` reads the Read part from the raw stream, in stream order. The moved file is `cases.MOVED`, and
@@ -214,8 +218,10 @@ A rep passes when both parts hold.
 `persuasion-principles.md.bak` do not count. The target is the case's `cases.TARGET` inside the rep's
 `repo/`, in its `/tmp` and `/private/tmp` forms, with each `..` resolved. A relative `file_path` in an
 Edit or a Write is joined to `repo/`, the working directory, first. The path audit joins a relative
-`file_path` the same way. `audit.py` also marks a Read
-whose tool result is an error. That mark is descriptive: under this rule such a Read still counts.
+`file_path` the same way. `audit.py` marks a Read whose tool result is an error, and such a Read does
+not count. It gave the rep no content, and plan 72's rule says that "Reads the reference" means "an
+ACTION line that reads or opens the named file". A failed Edit or Write of the target still counts as
+the first write, because the rule orders the rep's attempts.
 `sheets.py build` puts the read check in the key, and `sheets.py unblind` joins it to the grade.
 
 ## VOID rule
@@ -240,6 +246,9 @@ How the kit applies it:
   `test_stream_audit_voids_a_second_result_record` asks for it. Second, a run that errors in another
   way: no result record, a subtype other than `success`, or `is_error` true. Such a run gives no answer
   to grade.
+- **Added in the Task 3 review, for W reps.** A kept `rep<N>.json` whose `subtype` is not `success`, or
+  whose `is_error` is true, is a run error too. `sheets.py build` skips it as void and prints the
+  reason, and the next rep number replaces it. `postprocess.py` (plan 103's copy) is unchanged.
 
 ## Blind grading
 
@@ -267,6 +276,9 @@ pointer wording.
 - W: `new` ≈ `old`.
 - T1: `new` ≈ `old`, one hop in both.
 - T2 and T3: `new` ≥ `old`, one hop instead of two.
+
+T2's use part can be met from general knowledge: the principle names are well known, so a rep can name
+them without reading `persuasion-principles.md`. The Read part carries T2.
 
 Report the read and use counts apart, and the partial reads. For the T2 and T3 `old` reps, also report
 whether the read went through `bulletproofing.md` or `flowcharts.md` first.
@@ -303,7 +315,12 @@ Each was made in Task 3, before any probe or rep, and the task review rules on i
    `~/.claude/skills/writing-skills/`. For a tools rep that path is inside its own empty HOME, so the
    sentence names `/private/tmp/wsl105-skill/writing-skills/` instead.
 4. **The Grep and Glob path audit** (Kit, Grep and Glob).
-5. **Two added VOID reasons** (VOID rule, Added by Task 3).
+5. **Added VOID reasons** (VOID rule, Added by Task 3 and Added in the Task 3 review). Two void a T
+   rep: a second result record, and a run error. The run-error reason voids a W rep too: a kept
+   `rep<N>.json` whose `subtype` is not `success`, or whose `is_error` is true.
 6. **The sheets change `SKILL.md`, `LICENSE` and `LICENSE-superpowers` only after `writing-skills/`.**
    Each T2 and T3 target is a `SKILL.md` too, and these three files do not move.
 7. **`build_prompts.py` takes a `pilot` arm**, which Task 4 uses, beside `old` and `new`.
+8. **A Read whose tool result is an error does not count toward the Read part** (Reading rule, T
+   cases). The Task 3 review ruled on it before any rep ran. A failed Edit or Write of the target still
+   counts as the first write.

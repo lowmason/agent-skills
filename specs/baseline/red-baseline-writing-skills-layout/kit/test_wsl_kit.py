@@ -10,6 +10,7 @@ adapted to this kit's names, and the tests that plan 105's Task 3 names.
 '''
 import hashlib
 import importlib.util
+import itertools
 import json
 import os
 import subprocess
@@ -684,6 +685,14 @@ def hits(name: str, **args) -> list[str]:
     ('Glob', {'pattern': '**/*.md', 'path': '/private/tmp'}, ('outside the allowed roots',)),
     ('Glob', {'pattern': '**/*.md', 'path': '../..'}, ('outside the allowed roots',)),
     ('Glob', {'pattern': '**/../../../etc/*'}, ('a `..` after a wildcard',)),
+    # A brace alternative is a path of its own: each one, nested or comma-split, is judged.
+    ('Glob', {'pattern': f'{{{HOME}/p/specs,none}}/*.md'}, ('the real home',)),
+    ('Glob', {'pattern': '{/private/tmp/wsl105/rep2,x}/**'}, ('outside the allowed roots',)),
+    ('Glob', {'pattern': '{x,y,/tmp/wsl105/rep2/repo}/*'}, ('outside the allowed roots',)),
+    ('Glob', {'pattern': 'specs/{a,{b,/private/etc}}/*'}, ('outside the allowed roots',)),
+    ('Glob', {'pattern': '{../x,specs}/*.md'}, ('a `..` in a brace alternative',)),
+    ('Glob', {'pattern': '{~/Library/Keychains,specs}/*'}, ('$HOME/Library',)),
+    ('Glob', {'pattern': '{$HOME/Library/Keychains,specs}/*'}, ('$HOME/Library',)),
 ])
 def test_path_audit_flags_grep_and_glob_outside_roots(name, args, whys):
     found = hits(name, **args)
@@ -705,6 +714,11 @@ def test_path_audit_flags_grep_and_glob_outside_roots(name, args, whys):
     ('Glob', {'pattern': '*.md', 'path': f'{REP_DIR}/repo/specs'}),
     # Only the literal part is judged: this pattern searches the repository alone.
     ('Glob', {'pattern': f'{REP_DIR}/repo/**{HOME}/notes.md'}),
+    # Brace alternatives inside the allowed roots stay clean.
+    ('Glob', {'pattern': f'{{{SKILL}/references,{REP_DIR}/repo/specs}}/*.md'}),
+    ('Glob', {'pattern': '{/tmp/wsl105/rep1/repo/specs,skills/*}/*.md'}),
+    ('Glob', {'pattern': 'skills/{secrets-scan-gate,{http-retry-policy,x}}/SKILL.md'}),
+    ('Glob', {'pattern': f'{SKILL}/{{references,scripts}}/*'}),
 ])
 def test_path_audit_passes_grep_and_glob_inside_roots(name, args):
     assert hits(name, **args) == []
@@ -821,11 +835,24 @@ def test_partial_read_is_marked_partial():
     assert only['verdict'] == 'PASS' and only['reads'][0]['partial'] is True
 
 
-def test_a_failed_read_is_marked_and_still_counts():
+def test_a_failed_read_is_marked_and_does_not_count():
     calls = [call('Read', is_error=True, file_path=T2_MOVED_NEW), call('Edit', file_path=T2_TARGET)]
     check = audit.read_check(calls, 'T2', REP_DIR)
     assert check['reads'][0]['error'] is True
-    assert check['verdict'] == 'PASS'
+    assert check['verdict'] == 'FAIL'
+    assert audit.read_check(calls[:1], 'T2', REP_DIR)['verdict'] == 'FAIL'
+    again = audit.read_check([calls[0], call('Read', file_path=T2_MOVED_NEW), calls[1]], 'T2', REP_DIR)
+    assert [read['error'] for read in again['reads']] == [True, False]
+    assert again['verdict'] == 'PASS'
+
+
+def test_a_failed_write_of_the_target_still_counts_as_the_first_write():
+    for name in ('Edit', 'Write'):
+        calls = [call(name, is_error=True, file_path=T2_TARGET), call('Read', file_path=T2_MOVED_NEW),
+                 call(name, file_path=T2_TARGET)]
+        check = audit.read_check(calls, 'T2', REP_DIR)
+        assert check['first_write'] == 1, name
+        assert check['verdict'] == 'FAIL', name
 
 
 @pytest.mark.parametrize(('case', 'moved', 'target'), [
@@ -875,13 +902,14 @@ def test_audit_command_prints_each_rep(world):
 
 
 def write_w_rep(runs: Path, case: str = 'W1', arm: str = 'old', model: str = SONNET, n: int = 1,
-                result: str = 'ACTION: read x\n', void: bool = False) -> None:
+                result: str = 'ACTION: read x\n', void: bool = False, run: dict | None = None) -> None:
     folder = runs / case / arm / model
     folder.mkdir(parents=True, exist_ok=True)
     if void:
         (folder / f'rep{n}.VOID').write_text('VOID: result_index showed a peer turn.\n')
     else:
-        (folder / f'rep{n}.json').write_text(json.dumps({'result': result, 'total_cost_usd': 0.01}))
+        kept = {'type': 'result', 'subtype': 'success', 'is_error': False, 'result': result, 'total_cost_usd': 0.01}
+        (folder / f'rep{n}.json').write_text(json.dumps({**kept, **(run or {})}))
 
 
 def build(tmp: Path, runs: Path, seed: str = 'seed-1') -> tuple[Path, dict]:
@@ -948,6 +976,30 @@ def test_sheets_skip_void_reps_and_hold_the_answer(tmp_path, world):
         assert SONNET not in text and 'rep1' not in text
     t3 = next(e for e in key.values() if e['case'] == 'T3')
     assert t3['read'] == 'FAIL' and t3['model'] == SONNET and t3['arm'] == 'old'
+
+
+def test_sheets_skip_a_w_rep_whose_run_errored_and_its_replacement_keeps_five(tmp_path, world):
+    runs, scratch = world
+    for case, model, arm in itertools.product(('W1', 'W2', 'W3', 'T1', 'T2', 'T3'), (SONNET, OPUS), ('old', 'new')):
+        for n in range(1, 6):
+            if case.startswith('W'):
+                write_w_rep(runs, case=case, arm=arm, model=model, n=n)
+            else:
+                write_t_rep(runs, scratch, case=case, arm=arm, model=model, n=n,
+                            calls=[('Read', {'file_path': f'{SKILL}/{cases.MOVED[case]}'})])
+    # Two W1 runs errored, one by its subtype and one by is_error, so reps 6 and 7 replace them.
+    write_w_rep(runs, n=3, run={'subtype': 'error_during_execution', 'is_error': False})
+    write_w_rep(runs, n=5, run={'subtype': 'success', 'is_error': True})
+    write_w_rep(runs, n=6)
+    write_w_rep(runs, n=7)
+    _, skipped = sheets.collect(runs)
+    assert skipped == [f'W1 old {SONNET} rep3: a run error: subtype error_during_execution',
+                       f'W1 old {SONNET} rep5: a run error: is_error true']
+    _, key = build(tmp_path, runs)
+    assert sorted(e['rep'] for e in key.values() if (e['case'], e['arm'], e['model']) == ('W1', 'old', SONNET)) \
+        == [1, 2, 4, 6, 7]
+    result = sheets.unblind(grades_file(tmp_path, {sheet: 'PASS' for sheet in key}), key_file(tmp_path, key))
+    assert result['guard'] == 'PASS'
 
 
 def test_sheets_draw_the_same_ids_from_the_same_seed(tmp_path, world):
