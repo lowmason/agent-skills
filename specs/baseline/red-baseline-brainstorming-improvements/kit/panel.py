@@ -14,9 +14,12 @@ request and the replies, never the arm, the rep number or any skill text. Each v
 vote<k>-input.txt, vote<k>-labels.json (label to <arm>-rep<N>) and vote<k>-output.json.
 run then writes panel-verdicts.json: for each <arm>-rep<N>, the votes and the majority.
 Each voter runs like run_reps.sh's reps: env -i, no tools, no settings, from a new folder in /tmp.
-Each vote's JSON passes through postprocess() before it is kept, and gather skips a rep file whose
-`void` is true. A void vote (a peer message reached it) stops run before panel-verdicts.json is
-written: re-run the panel into a new folder.
+Each vote's raw stdout goes to ~/.cache/agent-skills/scratch/plan106-brainstorming-improvements/
+<out-dir's parent name>/<out-dir name>/vote<k>.json, outside the repository (KIT_SCRATCH_ROOT replaces
+the part before plan106-...), so a void vote's cost is kept. Each vote's JSON passes through
+postprocess() before it is kept, and gather skips a rep file whose `void` is true. A void vote (a
+peer message reached it, or its stdout is not a JSON object) stops run before panel-verdicts.json
+is written: re-run the panel into a new folder.
 '''
 import argparse
 import json
@@ -96,7 +99,12 @@ def vote_input(head: str, rule: str, request: str, labelled: list[tuple[str, str
     return ''.join(parts)
 
 
-def call_voter(input_text: str) -> dict:
+def call_voter(input_text: str, raw_path: Path | None = None) -> dict:
+    '''Run one vote. Write its raw stdout to raw_path when given, and return postprocess of its JSON.
+
+    Stdout that is not a JSON object is void ('unreadable'), as an unreadable rep is: postprocess
+    cannot drop a key inside a string.
+    '''
     env = {key: os.environ[key] for key in KEPT_ENV if key in os.environ}
     env |= {'TMPDIR': os.environ.get('TMPDIR', '/tmp'), 'LANG': os.environ.get('LANG', 'en_US.UTF-8'),
             'CLAUDE_CODE_DISABLE_ADVISOR_TOOL': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'}
@@ -105,11 +113,22 @@ def call_voter(input_text: str) -> dict:
             ['claude', '-p', '--model', MODEL, '--tools', '', '--strict-mcp-config', '--setting-sources', '',
              '--no-session-persistence', '--output-format', 'json', '--max-budget-usd', VOTE_BUDGET_USD],
             input=input_text, capture_output=True, text=True, cwd=run_dir, env=env, check=False)
+    if raw_path is not None:
+        raw_path.parent.mkdir(parents=True, exist_ok=True)
+        raw_path.write_text(done.stdout)
     try:
         raw = json.loads(done.stdout)
     except json.JSONDecodeError:
-        raw = {'is_error': True, 'result': '', 'stdout': done.stdout, 'stderr': done.stderr}
-    return postprocess(raw if isinstance(raw, dict) else {'is_error': True, 'result': '', 'stdout': done.stdout})
+        raw = None
+    if not isinstance(raw, dict):
+        return {'void': True, 'reason': 'unreadable'}
+    return postprocess(raw)
+
+
+def scratch_dir(out: Path) -> Path:
+    '''The raw-vote folder: <scratch root>/plan106-brainstorming-improvements/<out's parent name>/<out name>.'''
+    root = os.environ.get('KIT_SCRATCH_ROOT') or str(Path.home() / '.cache' / 'agent-skills' / 'scratch')
+    return Path(root) / 'plan106-brainstorming-improvements' / out.resolve().parent.name / out.resolve().name
 
 
 def parse_scores(result: str) -> dict[str, list[str]]:
@@ -153,14 +172,15 @@ def run(args: argparse.Namespace) -> None:
         (out / f'vote{k}-labels.json').write_text(json.dumps(labels, indent=1) + '\n')
         jobs.append((k, labels, text))
     with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
-        outputs = list(pool.map(lambda job: call_voter(job[2]), jobs))
+        raw_dir = scratch_dir(out)
+        outputs = list(pool.map(lambda job: call_voter(job[2], raw_path=raw_dir / f'vote{job[0]}.json'), jobs))
     verdicts = {key: {'votes': [], 'reasons': []} for key in keys}
     cost = 0.0
     for (k, _, _), output in zip(jobs, outputs):
         (out / f'vote{k}-output.json').write_text(json.dumps(output, indent=1) + '\n')
     void = [f"vote {k} ({output['reason']})" for (k, _, _), output in zip(jobs, outputs) if output.get('void')]
     if void:
-        raise SystemExit(f'{", ".join(void)} came back void: a peer message reached it. '
+        raise SystemExit(f'{", ".join(void)} came back void: a peer message reached it, or its output was not JSON. '
                          f'Re-run the panel into a new folder.')
     for (k, labels, _), output in zip(jobs, outputs):
         cost += float(output.get('total_cost_usd') or 0)

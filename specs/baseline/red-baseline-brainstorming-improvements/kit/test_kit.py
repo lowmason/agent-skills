@@ -16,6 +16,7 @@ from types import SimpleNamespace
 import pytest
 
 import panel
+import postprocess
 
 KIT = Path(__file__).resolve().parent
 CLEAN = {'type': 'result', 'is_error': False, 'num_turns': 1, 'result': 'ok', 'result_index': 0,
@@ -106,7 +107,7 @@ def test_run_stops_on_a_void_vote(tmp_path, monkeypatch):
     (reps / 'rep1.json').write_text(json.dumps({'result': 'a', 'void': False}))
     (tmp_path / 'rule.txt').write_text('a rule\n')
     (tmp_path / 'request.txt').write_text('a request\n')
-    monkeypatch.setattr(panel, 'call_voter', lambda text: {'void': True, 'reason': 'origin'})
+    monkeypatch.setattr(panel, 'call_voter', lambda text, **kwargs: {'void': True, 'reason': 'origin'})
     out = tmp_path / 'panel'
     args = argparse.Namespace(out=str(out), arms=[f'x={reps}'], rule=str(tmp_path / 'rule.txt'),
                            request=str(tmp_path / 'request.txt'), votes=1, seed=1)
@@ -163,13 +164,33 @@ def test_gather_keeps_a_rep_with_no_void_key(tmp_path):
     assert panel.gather([('shipped', tmp_path)]) == {'shipped-rep1': 'a'}
 
 
-def test_unparsed_vote_output_is_scrubbed(monkeypatch):
-    home = os.environ['HOME']
+def test_unparsed_vote_output_is_void(monkeypatch):
+    # Like an unreadable rep (ledger ruling): a vote whose stdout is not a JSON object is void and
+    # keeps none of its text, since postprocess cannot drop a key inside a string.
+    for stdout in ('error at /x {"origin": "peer-title-x"', json.dumps(['peer-title-x'])):
+        monkeypatch.setattr(panel.subprocess, 'run', lambda *a, _out=stdout, **k: SimpleNamespace(
+            stdout=_out, stderr='', returncode=1))
+        assert panel.call_voter('text') == {'void': True, 'reason': 'unreadable'}
+
+
+def test_run_keeps_each_raw_vote_in_scratch(tmp_path, monkeypatch):
+    # A void vote's cost is in its raw JSON only, so run keeps each vote's raw stdout outside the
+    # panel folder, under <scratch root>/plan106-brainstorming-improvements/<out-dir's parent name>/<out-dir name>/.
+    reps = tmp_path / 'reps'
+    reps.mkdir()
+    (reps / 'rep1.json').write_text(json.dumps({'result': 'a', 'void': False}))
+    (tmp_path / 'rule.txt').write_text('a rule\n')
+    (tmp_path / 'request.txt').write_text('a request\n')
+    monkeypatch.setenv('KIT_SCRATCH_ROOT', str(tmp_path / 'scratch'))
     monkeypatch.setattr(panel.subprocess, 'run', lambda *a, **k: SimpleNamespace(
-        stdout=f'error at {home}/x', stderr='', returncode=1))
-    vote = panel.call_voter('text')
-    assert vote['void'] is False
-    assert home not in json.dumps(vote)
+        stdout=json.dumps(PEER), stderr='', returncode=0))
+    args = argparse.Namespace(out=str(tmp_path / 'panel' / 'T7'), arms=[f'x={reps}'], rule=str(tmp_path / 'rule.txt'),
+                              request=str(tmp_path / 'request.txt'), votes=1, seed=1)
+    with pytest.raises(SystemExit):
+        panel.run(args)
+    raw = tmp_path / 'scratch' / 'plan106-brainstorming-improvements' / 'panel' / 'T7' / 'vote1.json'
+    assert json.loads(raw.read_text()) == PEER
+    assert 'peer-title-x' not in every_text(tmp_path / 'panel')
 
 
 def test_run_names_each_void_vote(tmp_path, monkeypatch):
@@ -178,7 +199,7 @@ def test_run_names_each_void_vote(tmp_path, monkeypatch):
     (reps / 'rep1.json').write_text(json.dumps({'result': 'a', 'void': False}))
     (tmp_path / 'rule.txt').write_text('a rule\n')
     (tmp_path / 'request.txt').write_text('a request\n')
-    monkeypatch.setattr(panel, 'call_voter', lambda text: {'void': True, 'reason': 'origin'})
+    monkeypatch.setattr(panel, 'call_voter', lambda text, **kwargs: {'void': True, 'reason': 'origin'})
     args = argparse.Namespace(out=str(tmp_path / 'panel'), arms=[f'x={reps}'], rule=str(tmp_path / 'rule.txt'),
                               request=str(tmp_path / 'request.txt'), votes=2, seed=1)
     with pytest.raises(SystemExit) as stop:
@@ -192,3 +213,68 @@ def test_run_reps_scrubs_the_answer(tmp_path):
     # identity forms; no test file holds an identity value.)
     out = run_reps(tmp_path, json.dumps({**CLEAN, 'result': f'see {os.environ["HOME"]}/x'}))
     assert json.loads((out / 'rep1.json').read_text())['result'] == 'see ~/x'
+
+
+def test_postprocess_scrubs_an_identity_form(monkeypatch):
+    # The identity scrub runs on a kept rep's text. The form is made up: no test file holds an
+    # identity value.
+    monkeypatch.setattr(postprocess.kit_identity, 'forms', lambda: [('Zed Quux', '<USER-NAME>')])
+    rep = postprocess.postprocess({**CLEAN, 'result': 'thanks, Zed Quux'})
+    assert rep['result'] == 'thanks, <USER-NAME>'
+
+
+ISOLATED_ENV = {'HOME', 'USER', 'LOGNAME', 'PATH', 'SHELL', 'TMPDIR', 'LANG', 'CLAUDE_CODE_DISABLE_ADVISOR_TOOL',
+                'CLAUDE_CODE_DISABLE_AUTO_MEMORY'}
+SHELL_ENV = {'PWD', 'OLDPWD', 'SHLVL', '_'}
+REP_FLAGS = ['-p', '--model', 'claude-opus-5-5', '--tools', '', '--strict-mcp-config', '--setting-sources', '',
+             '--no-session-persistence', '--output-format', 'json', '--max-budget-usd', '0.50']
+
+
+def test_run_reps_runs_claude_isolated(tmp_path):
+    # The Micro-tests constraint: env -i with the listed keys, and plan 86's flags. The stub records
+    # its arguments and the names of the variables it can see.
+    record = tmp_path / 'record'
+    record.mkdir()
+    bin_dir = tmp_path / 'bin'
+    bin_dir.mkdir()
+    stub = bin_dir / 'claude'
+    stub.write_text('#!/bin/bash\n'
+                    f'printf "%s\\n" "$@" > {record}/args\n'
+                    f'compgen -e > {record}/names\n'
+                    f'echo "$CLAUDE_CODE_DISABLE_ADVISOR_TOOL $CLAUDE_CODE_DISABLE_AUTO_MEMORY" > {record}/flags\n'
+                    'cat > /dev/null\n'
+                    f"cat <<'STUB_EOF'\n{json.dumps(CLEAN)}\nSTUB_EOF\n")
+    stub.chmod(0o755)
+    prompt = tmp_path / 'prompt.txt'
+    prompt.write_text('a prompt\n')
+    env = {**os.environ, 'PATH': f'{bin_dir}:{os.environ["PATH"]}', 'KIT_SCRATCH_ROOT': str(tmp_path / 'scratch'),
+           'PLAN106_TEST_LEAK': '1'}
+    done = subprocess.run(['bash', str(KIT / 'run_reps.sh'), str(prompt), str(tmp_path / 'round' / 'case'), '1', '1',
+                           'claude-opus-5-5'], capture_output=True, text=True, env=env, check=False, timeout=120)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert (record / 'args').read_text().split('\n')[:-1] == REP_FLAGS
+    names = set((record / 'names').read_text().split())
+    assert ISOLATED_ENV <= names
+    assert names - ISOLATED_ENV <= SHELL_ENV
+    assert (record / 'flags').read_text().split() == ['1', '1']
+
+
+def test_call_voter_runs_claude_isolated(monkeypatch):
+    # Panel votes use the same isolation: env -i's keys, plan 86's flags, the model and a new /tmp folder.
+    seen = {}
+    real_run = subprocess.run
+
+    def fake_run(cmd, **kwargs):
+        if cmd[0] != 'claude':  # postprocess reads the identity forms through git config
+            return real_run(cmd, **kwargs)
+        seen.update(cmd=cmd, **kwargs)
+        return SimpleNamespace(stdout=json.dumps(CLEAN), stderr='', returncode=0)
+
+    monkeypatch.setenv('PLAN106_TEST_LEAK', '1')
+    monkeypatch.setattr(panel.subprocess, 'run', fake_run)
+    panel.call_voter('text')
+    assert seen['cmd'] == ['claude', *REP_FLAGS[:-1], '1.00']
+    assert set(seen['env']) <= ISOLATED_ENV
+    assert seen['env']['CLAUDE_CODE_DISABLE_ADVISOR_TOOL'] == '1'
+    assert seen['env']['CLAUDE_CODE_DISABLE_AUTO_MEMORY'] == '1'
+    assert seen['cwd'].startswith('/tmp/plan106-panel-')
