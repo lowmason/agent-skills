@@ -293,6 +293,7 @@ def test_the_rep_starts_in_its_fixture_committed_as_base(tkit):
     summary = tkit.summary()
     assert len(summary['base']) == 40
     assert summary['case'] == 'T2' and summary['arm'] == 'old' and summary['model'] == SONNET
+    assert 'condition' not in summary
     # summary.json is scrubbed, and the scrub writes pytest-of-<user> as pytest-of-$USER.
     user = os.environ.get('USER') or 'tester'
     assert summary['skill_root'] == str(tkit.skill).replace(f'pytest-of-{user}', 'pytest-of-$USER')
@@ -321,6 +322,14 @@ def test_a_non_json_stream_line_is_a_kit_error(tkit):
     summary = tkit.summary()
     assert 'not JSON' in summary['kit_error']
     assert summary['result']['total_cost_usd'] == 0.01
+
+
+@pytest.mark.parametrize('line', ['[1, 2]', '3', '"text"', 'null'])
+def test_a_stream_line_that_is_json_but_not_an_object_is_a_kit_error(tkit, line):
+    (tkit.stub_dir / 'extra_lines').write_text(line + '\n')
+    done = tkit.run()
+    assert done.returncode == 2, done.stdout + done.stderr
+    assert 'not JSON' in tkit.summary()['kit_error']
 
 
 def test_final_diff_holds_new_and_changed_files_against_base(tkit):
@@ -514,20 +523,31 @@ def test_trigger_rep_starts_in_the_trigger_fixture_and_writes_a_summary(trig):
     assert os.listdir(trig.troot) == []
 
 
-def test_trigger_runner_refuses_a_missing_or_colliding_competitor(trig):
-    for variable in ('WST_COMPETITOR_PLUGIN_DEV', 'WST_COMPETITOR_SKILL_CREATOR'):
-        env = trig.env()
+@pytest.mark.parametrize('how', ['unset-dev', 'unset-creator', 'no-folder-dev', 'no-folder-creator',
+                                 'no-skill-md-dev', 'no-skill-md-creator'])
+def test_trigger_runner_refuses_a_missing_competitor_before_it_makes_anything(trig, how):
+    variable = 'WST_COMPETITOR_PLUGIN_DEV' if how.endswith('dev') else 'WST_COMPETITOR_SKILL_CREATOR'
+    name = 'skill-development' if how.endswith('dev') else 'skill-creator'
+    env = trig.env()
+    if how.startswith('unset'):
         del env[variable]
-        done = trig.trun(env=env)
-        assert done.returncode == 2 and variable in done.stdout + done.stderr
-        env = trig.env()
+    elif how.startswith('no-folder'):
         env[variable] = str(trig.tmp / 'no-such-folder')
-        assert trig.trun(env=env).returncode == 2
-    (trig.comp['skill-creator'] / 'SKILL.md').unlink()
-    assert trig.trun().returncode == 2
+    else:
+        (trig.comp[name] / 'SKILL.md').unlink()
+    done = trig.trun(env=env)
+    text = done.stdout + done.stderr
+    assert done.returncode == 2 and 'refusing' in text and variable in text, text
+    if how.startswith('unset'):
+        assert 'is not set' in text
+    else:
+        assert 'holds no SKILL.md' in text
     assert trig.calls() == []
-    # A skill of the ref with a competitor's name would be overwritten, so the runner refuses it.
-    (trig.comp['skill-creator'] / 'SKILL.md').write_text('---\nname: skill-creator\n---\n')
+    assert not (trig.tout() / 'rep1').exists() and not (trig.tout() / 'competitors.txt').exists()
+    assert not trig.troot.exists() or os.listdir(trig.troot) == []
+
+
+def test_trigger_runner_refuses_a_ref_whose_skills_hold_a_competitors_name(trig):
     (trig.repo / 'skills' / 'skill-creator').mkdir()
     (trig.repo / 'skills' / 'skill-creator' / 'SKILL.md').write_text('---\nname: skill-creator\n---\n')
     git = ['git', '-C', str(trig.repo), '-c', 'user.name=t', '-c', 'user.email=t@example.invalid',
@@ -536,7 +556,9 @@ def test_trigger_runner_refuses_a_missing_or_colliding_competitor(trig):
     subprocess.run(git + ['commit', '-q', '-m', 'collide'], check=True)
     done = trig.trun(ref='HEAD')
     assert done.returncode == 2 and 'collides' in done.stdout + done.stderr
-    assert trig.calls() == []
+    assert trig.calls() == [] and not (trig.tout() / 'rep1').exists()
+    # The earlier commit, which has no such skill, still runs.
+    assert trig.trun(ref=trig.sha).returncode == 0
 
 
 @pytest.mark.parametrize('what', ['condition', 'prompt', 'arm', 'model', 'out', 'ref'])
@@ -553,6 +575,22 @@ def test_trigger_runner_refuses_an_existing_rep(trig):
     trigger_ok(trig)
     done = trig.trun()
     assert done.returncode == 2 and 'exists' in done.stdout + done.stderr
+    assert len(trig.calls()) == 1
+
+
+def test_trigger_runner_refuses_a_rep_that_exists_in_the_out_folder_or_in_scratch_alone(trig):
+    trigger_ok(trig)
+    scratch = trig.tscratch / 'P1' / 'old' / 'full' / SONNET
+    # Only the out folder's rep1 is left: its summary folder alone refuses the run.
+    for leftover in scratch.iterdir():
+        subprocess.run(['rm', '-rf', str(leftover)], check=True)
+    done = trig.trun()
+    assert done.returncode == 2 and f'{trig.tout()}/rep1 exists' in done.stdout + done.stderr
+    # Only the scratch stream is left: the raw stream alone refuses it.
+    subprocess.run(['rm', '-rf', str(trig.tout() / 'rep1')], check=True)
+    (scratch / 'rep1.jsonl').write_text('{}\n')
+    done = trig.trun()
+    assert done.returncode == 2 and 'rep1 exists' in done.stdout + done.stderr
     assert len(trig.calls()) == 1
 
 
@@ -762,6 +800,9 @@ def test_path_audit_flags_grep_and_glob_outside_roots(name, args, whys):
     ('Glob', {'pattern': '{a,b}/*.md'}),
     ('Glob', {'pattern': '**/*.md', 'path': f'{REP_DIR}/tmp'}),
     ('Glob', {'pattern': '*/*.md', 'path': REP_DIR}),
+    # A pattern that ends above home/Library (survivor 11): `*` lists the rep folder, `h*` its home only.
+    ('Glob', {'pattern': '*', 'path': REP_DIR}),
+    ('Glob', {'pattern': 'h*', 'path': REP_DIR}),
     ('Glob', {'pattern': 'repo/**/*.md', 'path': REP_DIR}),
     ('Glob', {'pattern': f'{REP_DIR}/{{repo,tmp}}/**/*.md'}),
 ])
@@ -1034,7 +1075,8 @@ def test_r3_check_finds_old_name_in_untracked_file(tmp_path):
 
 def test_r3_check_finds_old_name_in_a_tracked_file_a_hidden_file_and_a_nested_folder(tmp_path):
     for where in ('AGENTS.md', '.claude/settings.json', 'skills/ingest-raw-files/SKILL.md', 'deep/er/x.md',
-                  '.hidden/csv-dialect-sniff-note.txt', 'skills/sniffing-csv-headers/SKILL.md'):
+                  '.hidden/csv-dialect-sniff-note.txt', 'skills/sniffing-csv-headers/SKILL.md', '.env',
+                  'skills/ingest-raw-files/.note', 'commands/.hidden.md'):
         repo = make_r3_tree(tmp_path / where.replace('/', '_'))
         path = repo / where
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -1125,6 +1167,12 @@ def test_audit_command_prints_each_rep(world):
     assert 'reads of discovery.md: call 1 (partial)' in first
     assert 'VOID: none' in first
     assert 'VOID: a second result record' in second
+
+
+def test_audit_command_refuses_a_folder_with_no_rep(tmp_path):
+    (tmp_path / 'M1' / 'old' / SONNET).mkdir(parents=True)
+    done = kit_tool(str(KIT / 'audit.py'), str(tmp_path / 'M1' / 'old' / SONNET))
+    assert done.returncode != 0 and 'holds no rep folder' in done.stdout + done.stderr
 
 
 def test_audit_command_prints_the_r3_check_and_a_trigger_rep(world, twin):
@@ -1278,6 +1326,9 @@ def test_triggers_loads_and_listing_commands(twin):
     assert 'skill-creator' in done.stdout and 'writing-skills' in done.stdout
     done = kit_tool(str(KIT / 'triggers.py'), 'loads', str(none), env=env)
     assert done.stdout.split('\n')[0] == 'no-load'
+    other = write_trigger_rep(*twin, n=3, calls=[skill_use('skill-creator')])
+    done = kit_tool(str(KIT / 'triggers.py'), 'loads', str(other), env=env)
+    assert done.stdout.split('\n')[0] == 'no-load' and 'skill-creator' in done.stdout
     done = kit_tool(str(KIT / 'triggers.py'), 'listing', str(rep), env=env)
     assert done.stdout.split() == list(LISTING)
     assert kit_tool(str(KIT / 'triggers.py'), 'nonsense', env=env).returncode != 0
@@ -1709,6 +1760,12 @@ def test_unblind_checks_red_and_green_per_model(tmp_path, old, new, red, green):
     assert (cell['case'], cell['model'], cell['old'], cell['new'], cell['old_n'], cell['new_n']) == (
         'M1', SONNET, old, new, 5, 5)
     assert cell['red'] is red and cell['green'] is green
+
+
+def test_a_cell_with_new_reps_only_has_no_red_and_no_green(tmp_path):
+    key, grades = cell_grades('M1', SONNET, None, 5)
+    [cell] = unblind(tmp_path, key, grades)['cells']
+    assert (cell['old_n'], cell['new_n'], cell['red'], cell['green']) == (0, 5, None, None)
 
 
 def test_green_needs_new_at_least_two_above_old(tmp_path):
