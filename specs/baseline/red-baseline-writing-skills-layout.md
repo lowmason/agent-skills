@@ -46,7 +46,7 @@ version, it runs the four probes again first.
 | `build_prompts.py` | new | Writes the six prompts and `MANIFEST.txt`. |
 | `cases.py` | plan 72's `cases.py`, for the W cases | Adds the T frame, the T cases and each case's PASS and FAIL columns. |
 | `fixtures/T1/repo/` to `fixtures/T3/repo/` | new | Each T case's project (Cases). |
-| `test_wsl_kit.py` | plan 103's postprocess, postprocess-shape and runner tests and plan 104's runner and audit tests, adapted, and the tests that the plan's Task 3 names | 184 tests with a stub `claude` and no model. Suite `writing-skills-layout-kit` in `build/suites.toml` runs them. |
+| `test_wsl_kit.py` | plan 103's postprocess, postprocess-shape and runner tests and plan 104's runner and audit tests, adapted, and the tests that the plan's Task 3 names | 187 tests with a stub `claude` and no model. Suite `writing-skills-layout-kit` in `build/suites.toml` runs them. |
 
 **The arms.** `old` is `SKILL.md`'s body and the skill folder at the last commit before Task 5 (Task 5
 Step 1 records it as OLD). `new` is the same at Task 5's commit (Task 5 Step 5 records it as NEW). Task 6
@@ -128,7 +128,7 @@ so one inside the allowed roots stays clean. This is a recorded limit: a `*`, `?
 from the literal part, so a `**` from the rep folder can list names under `home/Library/Keychains`, the
 link to the real Keychains folder. That folder holds neither the spec nor the plan.
 
-**Self-test.** `test_wsl_kit.py` adds 184 tests. They pass through
+**Self-test.** `test_wsl_kit.py` adds 187 tests. They pass through
 `uv run python build/run_suites.py writing-skills-layout-kit`. `privacy_sweep.py` over this record and
 the kit gives 5 hits. Each is the pinned `//Users/**` deny pattern: in `common.sh`, in
 `test_wsl_kit.py`, and on three lines of this record (Kit). The sweep's check for the home's parent

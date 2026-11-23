@@ -13,6 +13,7 @@ import importlib.util
 import itertools
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -1408,6 +1409,33 @@ def test_fixtures_and_case_texts_hold_no_marker(case):
             texts[str(path.relative_to(KIT))] = path.read_text()
     found = {name: token.findall(text) for name, text in texts.items() if token.search(text)}
     assert found == {}
+
+
+# Task 3 Step 4: no domain repeats the skill's own examples or plan 72's W cases. The lists hold distinctive
+# words only, and the test reads plan 72's frozen cases.py, never the live skill, so an unrelated edit to the
+# skill cannot fail it.
+T_DOMAIN_WORDS = {
+    'T1': ('lockfile', 'pyproject', 'uv.lock', 'tide-tables'),
+    'T2': ('gitleaks', 'secrets-scan-gate'),
+    'T3': ('idempotency', 'curl', 'http-retry-policy'),
+}
+W_DOMAIN_WORDS = ('migration', 'dry run', 'dry-run', 'cache-invalidation', 'purging', 'changelog', 'release-notes-gate')
+
+
+def domain_hits(word: str, text: str) -> int:
+    return len(re.findall(rf'\b{re.escape(word.casefold())}\b', text.casefold()))
+
+
+@pytest.mark.parametrize('case', ['T1', 'T2', 'T3'])
+def test_no_t_domain_repeats_plan_72s_cases(case):
+    plan72 = PLAN72_CASES.read_text()
+    text = cases.CASES_T[case] + ''.join(
+        path.read_text() for path in sorted((KIT / 'fixtures' / case).rglob('*')) if path.is_file())
+    for word in T_DOMAIN_WORDS[case]:
+        assert domain_hits(word, plan72) == 0, word
+        assert domain_hits(word, text) > 0, word
+    assert all(domain_hits(word, plan72) for word in W_DOMAIN_WORDS)
+    assert {word: domain_hits(word, text) for word in W_DOMAIN_WORDS if domain_hits(word, text)} == {}
 
 
 def test_every_case_has_its_pass_and_fail_columns():
