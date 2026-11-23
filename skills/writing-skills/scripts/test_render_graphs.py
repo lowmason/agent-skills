@@ -6,15 +6,29 @@ Stdlib only. The tests that render need graphviz `dot` on PATH and skip without 
 '''
 
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from render_graphs import Block, find_blocks, graph_name, main, output_names
+import render_graphs
+from render_graphs import (
+    Block,
+    RenderError,
+    combine,
+    dot_blocks,
+    find_blocks,
+    graph_name,
+    main,
+    output_names,
+    render_svg,
+)
 
 needs_dot = pytest.mark.skipif(shutil.which('dot') is None, reason='needs graphviz dot')
 
 FRAGMENT = 'step1 [label="import fs"];\nstep2 [label="read file"];'
+SCRIPT = Path(render_graphs.__file__)
 
 
 def fence(*graphs):
@@ -169,3 +183,273 @@ def test_renders_writing_skills_own_chart(tmp_path):
     names = [p.name for p in out.iterdir()]
     assert 'flowcharts-when_flowchart.svg' in names
     assert not [n for n in names if n.startswith('SKILL-')]
+
+
+# Extra tests from the mutant step. The tests above are the plan's, unchanged.
+
+
+@pytest.fixture
+def no_dot(monkeypatch):
+    monkeypatch.setattr(shutil, 'which', lambda name: None)
+
+
+@pytest.fixture
+def fake_dot(monkeypatch):
+    '''dot is on PATH as far as main() can tell. Use it only where no block renders.'''
+    monkeypatch.setattr(shutil, 'which', lambda name: '/fake/bin/dot')
+
+
+def blocks_of(*pairs):
+    '''Blocks from (file name, graph name) pairs.'''
+    return [Block(Path(f), n, f'digraph {n} {{}}') for f, n in pairs]
+
+
+def test_dot_blocks_returns_each_dot_fence_in_order():
+    markdown = (
+        '```bash\necho hi\n```\n\n'
+        '```dot\ndigraph a {}\n```\n\ntext\n\n'
+        '```dot\ndigraph b {\n  x -> y\n}\n```\n'
+        '```dot\nnever closed\n'
+    )
+    assert dot_blocks(markdown) == ['digraph a {}', 'digraph b {\n  x -> y\n}']
+
+
+def test_graph_name_skips_blank_lines_and_hash_comments():
+    assert graph_name('# note\n\n// more\ndigraph after {') == 'after'
+
+
+def test_graph_name_removes_quotes_from_a_quoted_name():
+    assert graph_name('digraph "my graph" {\n a -> b\n}') == 'my graph'
+    assert graph_name('strict graph "g" {') == 'g'
+
+
+def test_graph_name_reads_a_header_split_over_two_lines():
+    assert graph_name('digraph flow\n{\n a -> b\n}') == 'flow'
+
+
+def test_graph_name_reads_an_indented_header_after_a_comment():
+    assert graph_name('// note\n  digraph after {\n    a -> b\n  }') == 'after'
+
+
+def test_find_blocks_reads_a_dot_fence_indented_in_a_list_item(tmp_path):
+    skill = make_skill(
+        tmp_path,
+        {
+            'SKILL.md': (
+                '- item\n'
+                '  ```dot\n'
+                '  // note\n'
+                '  digraph nested {\n'
+                '    a -> b\n'
+                '  }\n'
+                '  ```\n'
+            )
+        },
+    )
+    assert [b.name for b in find_blocks(skill)] == ['nested']
+
+
+def test_find_blocks_orders_files_by_relative_path(tmp_path, monkeypatch):
+    skill = make_skill(
+        tmp_path,
+        {
+            'z.md': fence('digraph z {}'),
+            'm.md': fence('digraph m {}'),
+            'a/y.md': fence('digraph y {}'),
+        },
+    )
+    real_rglob = Path.rglob
+    # The file system may list files in any order. Force the wrong order.
+    monkeypatch.setattr(
+        Path, 'rglob', lambda self, pattern: iter(sorted(real_rglob(self, pattern), reverse=True))
+    )
+    assert [b.source.as_posix() for b in find_blocks(skill)] == ['a/y.md', 'm.md', 'z.md']
+
+
+def test_anonymous_graphs_are_numbered_among_the_blocks_kept(tmp_path):
+    skill = make_skill(
+        tmp_path,
+        {
+            'SKILL.md': fence(
+                FRAGMENT, 'digraph { a -> b }', 'digraph x {}', 'digraph { c -> d }'
+            ),
+            'b.md': fence('digraph { e -> f }'),
+        },
+    )
+    assert [b.name for b in find_blocks(skill)] == ['graph_1', 'x', 'graph_3', 'graph_4']
+
+
+def test_output_names_number_a_third_repeat_and_a_clash_with_a_suffix():
+    assert output_names(blocks_of(('a.md', 'x'), ('a.md', 'x'), ('a.md', 'x'))) == [
+        'a-x.svg',
+        'a-x-2.svg',
+        'a-x-3.svg',
+    ]
+    assert output_names(blocks_of(('a.md', 'x'), ('a.md', 'x'), ('a.md', 'x-2'))) == [
+        'a-x.svg',
+        'a-x-2.svg',
+        'a-x-2-2.svg',
+    ]
+
+
+def test_output_names_differ_by_more_than_letter_case():
+    assert output_names(blocks_of(('a.md', 'Flow'), ('a.md', 'flow'))) == [
+        'a-Flow.svg',
+        'a-flow-2.svg',
+    ]
+
+
+def test_output_names_keep_each_name_inside_the_out_dir():
+    [name] = output_names(blocks_of(('a.md', '../my graph/x')))
+    assert '/' not in name
+    assert ' ' not in name
+
+
+def test_combine_wraps_each_block_in_a_labelled_cluster_and_drops_rankdir():
+    text = combine(
+        [
+            Block(Path('a.md'), 'one', '// note\ndigraph one {\n  rankdir=LR;\n  a -> b;\n}'),
+            Block(Path('a.md'), 'two', 'digraph two {\n  rankdir = "TB"\n  c -> d;\n}'),
+        ],
+        'my_skill',
+    )
+    assert text.startswith('digraph "my_skill_combined" {')
+    assert 'subgraph cluster_0 {' in text
+    assert 'subgraph cluster_1 {' in text
+    assert 'label="one";' in text
+    assert 'label="two";' in text
+    assert 'a -> b;' in text
+    assert 'c -> d;' in text
+    assert 'rankdir=LR' not in text
+    assert 'rankdir = "TB"' not in text
+    assert text.count('rankdir') == 1  # the one at the top level
+    assert 'note' not in text
+
+
+def test_combine_keeps_a_subgraph_inside_a_block():
+    block = Block(
+        Path('a.md'), 'one', 'digraph one {\n  subgraph s { a -> b }\n  c -> d\n}'
+    )
+    text = combine([block], 'k')
+    assert 'subgraph s { a -> b }' in text
+    assert 'c -> d' in text
+    assert text.rstrip().endswith('}')
+    assert text.count('{') == text.count('}')
+
+
+def test_render_svg_reports_only_the_first_stderr_line(monkeypatch):
+    def fake_run(*args, **kwargs):
+        return subprocess.CompletedProcess(args, 1, stdout='', stderr='first\nsecond\n')
+
+    monkeypatch.setattr(subprocess, 'run', fake_run)
+    with pytest.raises(RenderError, match='^first$'):
+        render_svg('digraph {}')
+
+
+def test_render_svg_names_the_exit_status_when_dot_prints_nothing(monkeypatch):
+    def fake_run(*args, **kwargs):
+        return subprocess.CompletedProcess(args, 3, stdout='', stderr='')
+
+    monkeypatch.setattr(subprocess, 'run', fake_run)
+    with pytest.raises(RenderError, match='3'):
+        render_svg('digraph {}')
+
+
+def test_usage_error_exits_2(tmp_path, capsys):
+    skill = make_skill(tmp_path)
+    assert main([]) == 2
+    assert main([str(skill)]) == 2
+    assert 'usage' in capsys.readouterr().err.lower()
+
+
+def test_exits_0_when_no_block_has_a_graph_header(tmp_path, fake_dot, capsys):
+    plain = make_skill(tmp_path, name='plain')
+    fragments = make_skill(tmp_path, {'SKILL.md': fence(FRAGMENT)}, name='fragments')
+    for skill in (plain, fragments):
+        assert main([str(skill), str(tmp_path / 'out')]) == 0
+        assert 'No dot blocks' in capsys.readouterr().out
+
+
+def test_refusal_names_the_out_dir_and_the_reason(tmp_path, no_dot, capsys):
+    skill = make_skill(tmp_path)
+    inside = skill / 'a' / '..' / 'diagrams'
+    assert main([str(skill), str(inside)]) == 2
+    err = capsys.readouterr().err
+    assert 'refusing' in err
+    assert 'ships with the skill' in err
+    assert 'graphviz' not in err
+
+
+def test_a_missing_skill_md_is_reported_before_the_out_dir_is_judged(tmp_path, no_dot, capsys):
+    folder = tmp_path / 'no-skill'
+    folder.mkdir()
+    assert main([str(folder), str(folder / 'diagrams')]) == 2
+    err = capsys.readouterr().err
+    assert 'SKILL.md' in err
+    assert 'refusing' not in err
+    assert not (folder / 'diagrams').exists()
+
+
+def test_a_sibling_folder_that_shares_the_skill_name_prefix_is_outside(tmp_path, fake_dot):
+    skill = make_skill(tmp_path)
+    assert main([str(skill), str(tmp_path / 'my-skill-diagrams')]) == 0
+
+
+def test_an_out_dir_that_cannot_be_made_exits_2(tmp_path, fake_dot, capsys):
+    skill = make_skill(tmp_path, {'SKILL.md': fence('digraph top {}')})
+    blocker = tmp_path / 'a-file'
+    blocker.write_text('x')
+    assert main([str(skill), str(blocker / 'out')]) == 2
+    assert 'cannot create' in capsys.readouterr().err
+
+
+def test_the_script_runs_as_a_program():
+    run = subprocess.run([sys.executable, str(SCRIPT)], capture_output=True, text=True)
+    assert run.returncode == 2
+    assert 'usage' in run.stderr.lower()
+
+
+@needs_dot
+def test_failure_line_names_the_file_the_graph_and_the_dot_message(tmp_path, capsys):
+    skill = make_skill(tmp_path, {'refs/x.md': fence('digraph bad { a -> }')})
+    assert main([str(skill), str(tmp_path / 'out')]) == 1
+    err = capsys.readouterr().err
+    assert 'failed: refs/x.md: bad: Error' in err
+
+
+@needs_dot
+def test_failed_block_does_not_stop_the_blocks_after_it(tmp_path):
+    skill = make_skill(
+        tmp_path, {'SKILL.md': fence('digraph bad { a -> }', 'digraph good { a -> b }')}
+    )
+    out = tmp_path / 'out'
+    assert main([str(skill), str(out)]) == 1
+    assert (out / 'SKILL-good.svg').exists()
+    assert not (out / 'SKILL-bad.svg').exists()
+
+
+@needs_dot
+def test_combine_writes_the_combined_source_beside_the_svg(tmp_path):
+    skill = make_skill(
+        tmp_path,
+        {'SKILL.md': fence('digraph one {\n rankdir=LR\n subgraph s { a -> b }\n}')},
+        name='105-my-skill',
+    )
+    out = tmp_path / 'out'
+    assert main([str(skill), str(out), '--combine']) == 0
+    source = (out / '105_my_skill_combined.dot').read_text()
+    assert source.startswith('digraph "105_my_skill_combined" {')
+    assert 'subgraph cluster_0' in source
+    assert '<svg' in (out / '105_my_skill_combined.svg').read_text()
+
+
+@needs_dot
+def test_combine_that_fails_exits_1_and_keeps_the_source(tmp_path, capsys):
+    skill = make_skill(
+        tmp_path, {'SKILL.md': fence('digraph good { a -> b }', 'digraph bad { a -> }')}
+    )
+    out = tmp_path / 'out'
+    assert main([str(skill), str(out), '--combine']) == 1
+    assert (out / 'my_skill_combined.dot').exists()
+    assert not (out / 'my_skill_combined.svg').exists()
+    assert 'failed' in capsys.readouterr().err

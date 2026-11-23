@@ -77,7 +77,7 @@ def _header(block: str) -> re.Match[str] | None:
     for line in block.splitlines(keepends=True):
         stripped = line.strip()
         if stripped and not stripped.startswith(('//', '#')):
-            return _HEADER.match(block, offset)
+            return _HEADER.match(block, offset + len(line) - len(line.lstrip()))
         offset += len(line)
     return None
 
