@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 19062,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.033522,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8650,
+    "output_tokens": 1446,
+    "output_tokens_details": {
+      "thinking_tokens": 920
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1446,
+      "cacheReadInputTokens": 8650,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.033522,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 920,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write it up, one bigger choice is still open: where the guide lives and how volunteers get recordings into it. It shapes most of the design, so I'd like your pick.\n\n**(A) Guide pages on your existing website, plus a simple upload page for volunteers.** Each exhibit gets its own page on the museum site, like `/guide/anchor-chain`, and the code beside the exhibit opens it. A volunteer opens a password-protected upload page on their phone, picks the exhibit and language, and attaches the recording. It's cleaned up and goes live within a few minutes. Visitors install nothing. This needs one small addition to how the site is hosted: a place to store the audio and a step that does the cleanup.\n\n**(B) Guide pages on your existing website, with uploads through a website content editor.** The visitor side is the same. Volunteers instead log into a general editing tool for the site and add the recording there. Each upload rebuilds the site, and the cleanup happens during that rebuild. This adds nothing new to the hosting. But the editor is fiddlier on a phone, and the website's files grow with every recording.\n\nI'm leaving out a downloadable app. Most visitors won't install one for a single visit, and it would make each new story slower to publish.\n\n**I recommend (A).** You said volunteers should add or replace a recording without asking anyone technical, and a single upload page built for exactly that job is the surest way to get there.\n\nThis is a project-sized piece of work, so once you've picked, I'll write a full design document. A reviewer will read it first, and I may come back once with a few questions before I hand it to you.\n\nWhich way do you want to go?",
+  "ttft_ms": 13678,
+  "type": "result",
+  "duration_ms": 19117,
+  "ttft_stream_ms": 1792,
+  "time_to_request_ms": 55,
+  "first_content_frame_ms": 1792,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

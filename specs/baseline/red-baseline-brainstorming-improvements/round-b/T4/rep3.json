@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 13349,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.024748600000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8683,
+    "output_tokens": 1007,
+    "output_tokens_details": {
+      "thinking_tokens": 673
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1007,
+      "cacheReadInputTokens": 8683,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.024748600000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 673,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Good: automatic clean-up it is. I'll record that as your pick.\n\nThis is a project, not a small change. It has a volunteer upload page, the clean-up step, the visitor player with its remembered language, and the codes beside each exhibit. The design will be a proper written document, kept with the museum's website files. A reviewer will read it before you do, and I may come back once with a few questions from that.\n\nBefore I write it, there are two things the design still needs. I'll take them one at a time.\n\nThe first is something I haven't asked yet: **what's prompting the audio guide now, and what would tell you a year from now that it's working?** Your answer decides what the guide is built around. That covers what a visitor sees when they scan, what volunteers are asked to do, and what counts as done.\n\nThe second comes after that. The website today is a set of fixed pages with no way to accept uploads. Letting volunteers add recordings without asking anyone technical can be done a few different ways, with real trade-offs in cost and upkeep. I'll set those out with my recommendation before I write anything up.",
+  "ttft_ms": 9600,
+  "type": "result",
+  "duration_ms": 13493,
+  "ttft_stream_ms": 2092,
+  "time_to_request_ms": 145,
+  "first_content_frame_ms": 2092,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

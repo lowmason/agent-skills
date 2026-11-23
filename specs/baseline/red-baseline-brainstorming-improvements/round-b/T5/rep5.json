@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 11227,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0208266,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8433,
+    "output_tokens": 813,
+    "output_tokens_details": {
+      "thinking_tokens": 338
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 813,
+      "cacheReadInputTokens": 8433,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.0208266,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 338,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's what I've got so far.\n\n**What it's for:** You want a logbook that replaces the paper notebook and the monthly retyping into a spreadsheet. You're the main reader. Most often you'll use it to look up whether you've worked a station before. Once a year it has to produce an ADIF file you can upload to Logbook of The World to confirm contacts for awards.\n\n**How you'll use it:** About thirty contacts a week, at home and at field days. Sometimes there's no internet, so logging and lookups have to work fully offline.\n\n**My proposals (correct any of these):**\n\n- **Recording a contact:** at minimum, call sign, date and time in UTC, band or frequency, mode, and signal reports. That's what Logbook of The World needs to match a contact. You might also want extra fields like name or location.\n- **Your existing logs:** I'd bring in the spreadsheet you already have, so \"have I worked them before?\" covers your whole history and not just contacts from now on.\n- **Search:** the worked-before lookup should be instant and forgiving. Typing part of a call sign should show matches as you type, because you'll often check mid-contact.\n\nWhat's wrong or missing there?\n\nThe next thing I need to understand is where the contact gets typed in. The main point is to stop writing everything twice, so the answer decides what this runs on, and that's the biggest choice in how it gets built. When you're at a field day and you've just made a contact, what's in front of you, and how do you picture logging it?",
+  "ttft_ms": 5967,
+  "type": "result",
+  "duration_ms": 11310,
+  "ttft_stream_ms": 2208,
+  "time_to_request_ms": 83,
+  "first_content_frame_ms": 2208,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

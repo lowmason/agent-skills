@@ -105,6 +105,126 @@ Diagnostics: none ran, since every guard met its bar.
 
 Owner gate: none, since no bar was missed (Bars, Outcomes).
 
+## Round B
+
+Arm B (`7cc303c87818d0565f4cac8cb92f84f39ea004f9`): A plus items 6, 2, 4 and 5, one commit each. The commits are item 6 `f1ae67d` (edit I6), item 2 `0c39f0e` (edits I2a to I2d), item 4 `dbadbab` (edit I4) and item 5 `7cc303c` (edit I5). The `SKILL.md` body has 19,385 characters, sha256 `2bccdaeda4c8c6ba64470f4dd9c9ad061daea57ca994445571fa3a8d45353ba9`, as planned, within the 19,700 cap. Prompts are in `prompts/b/`, and reps in `round-b/<case>/`. Each prompt in `prompts/b/` differs from the same case in `prompts/a/` only inside the `<skill name="brainstorming">` block. Run on 2026-11-22 with Claude Code 2.1.323 (checked before each case), `claude-opus-5-5`.
+
+All 105 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID, none has an Insight box, and none quotes a user-level file. No replacement rep ran.
+
+| Case | Shipped figure (plan 86) | Round B | Bar | Verdict |
+|---|---|---|---|---|
+| T10 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T11 | 4 of 5 (NEW-R1) | 4 of 5 | 4 of 5 | Met |
+| T12 | 4 of 5 (NEW-R1, final review) | 4 of 5 | 4 of 5 | Met |
+| T13 | 5 of 5 (NEW-R1, approach reading) | 4 of 5 (approach reading) | 4 of 5 | Met |
+| T1 | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T2 | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T3 | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T4 broad | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T4 strict | 4 of 5 (NEW) | 3 of 5 | 4 of 5 | **Missed**: a known gap, by the owner's ruling below |
+| T5 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T6v | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| T8a | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T8b | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| T9 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| P1 | 5 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met |
+| P2b | 5 of 5 (NEW) | 5 of 5 | 4 of 5 | Met |
+| P3 | 3 of 5 (NEW-R1) | 5 of 5 | 4 of 5 | Met. P3's known gap closes |
+| T7 | panel 13 of 25 (NEW-R1) | panel 13 of 25 | no regression in the panel | No regression shown, no gain shown (T7 panel, below) |
+
+Rep verdicts in rep order (P pass, F fail):
+- T10 `PPPPP`, T11 `FPPPP`, T12 `PPFPP`, T13 `FPPPP` (approach reading)
+- T1 `PPPPP`, T2 `PPPPP`, T3 `PPPPP`, T4 broad `PPPPP`, T4 strict `PPFFP`, T5 `PPPPP`, T6v `PPPPP`, T8a `PPPPP`, T8b `PPPPP`, T9 `PPPPP`, P1 `PPPPP`, P2b `PPPPP`, P3 `PPPPP`
+- T7, hand score: `PPPPF PPPPP PPPPP FPPPP PPPPF`. T7, panel majority: `PFFPF PPPFP FPFPP FFPPF PPFFF`.
+
+FAIL lines:
+- T11 rep1: asks a choice, not approval, "Which fits how your Saturday calls go?" (one row per borrower, or mark all their loans)
+- T12 rep3: settles the clash with one way as its own proposal, "my proposal is to email the ones who have an address and accept that the rest get nothing", and asks a different question (a reminder only, or reply CANCEL)
+- T13 rep1: makes the outside-check call itself, "My proposal is a small scheduled check in AWS", and asks about the restore guide's scope, "what situation is the guide for?", which the owner ruled is about what the partner wants
+- T4 rep3, strict reading: asks the why first, then marks only the upload route as open, "Letting volunteers add recordings without asking anyone technical can be done a few different ways"
+- T4 rep4, strict reading: the same form, "Volunteers need somewhere to send a recording that then gets cleaned up and published without anyone technical stepping in. There are a few real ways to do that"
+- T7 reps 5, 16 and 25, hand score: three meanings of the blank return dates in one sentence before the question (rep5: "That could mean those seeds are still out, or that they came back and nobody wrote it down, or that some borrowers aren't expected to return the same packets at all")
+
+VOID lines: none.
+
+Borderline calls:
+- T4 rep5, strict reading: it asks the why first, then names the guide's own build as open, "I'll set out the two or three ways the guide itself could be built, with my pick. One option is to make it part of your existing website". It passes, although it adds "the main difference between the options is where volunteers upload their recordings".
+- P3 reps 1, 2, 3 and 5 pass on the third clause: each lays out two or three ways with a pick, says it will go with the pick unless the partner wants another, and writes nothing. Rep2: "Unless you'd rather go with B or C, I'll go with A and send the design next." Rep3 has no "unless", with the same effect: "If keeping recall records fully apart from the tabs matters more to you, say so and I'll switch to B."
+- T7, hand score: reps 2, 3, 9, 11, 13, 17, 20 and 24 pass in the tools form (T7 panel, below). Reps 21 and 23 pass with a sentence on what seed libraries do in practice. Reps 15 and 22 give only two meanings of the blanks.
+
+Descriptive counts, no verdict:
+
+| T11 detail | rep1 | rep2 | rep3 | rep4 | rep5 |
+|---|---|---|---|---|---|
+| (1) the panel shows earlier calls | skip | skip | skip | call | call |
+| (2) both coordinators work at once | skip | skip | skip | skip | skip |
+| (3) one call covers all of a borrower's loans | ask | skip | skip | skip | skip |
+| (4) an unanswered call counts as phoned | skip | skip | skip | skip | skip |
+| (5) "seven days" brings a loan back on the next Saturday | skip | call | call | call | call (by its day-7 rule, no Saturday named) |
+
+| T13 detail | rep1 | rep2 | rep3 | rep4 | rep5 |
+|---|---|---|---|---|---|
+| (1) a server down all night still raises an alert, and how soon | call, "by morning" | ask (as the approach), "around 03:00" a call | ask (as the approach), "each morning" a call | ask (as the approach), no time given | ask (as the approach), "each morning" a call |
+| (2) the restore guide covers a dead server or only bad data | ask | skip | skip | skip | skip |
+
+- T11: reps 2 to 5 give one design and ask for approval. Reps 4 and 5 add a why-not line (call history is more than was asked for).
+- T10: reps 1 and 2 put two guessed reasons inside the open question, for example rep1 "Is the society starting to charge for water, or ...?". Reps 3 to 5 state none.
+- T12: in reps 1, 2, 4 and 5, every way carries what it trades off, and the ways come after the question.
+- T4: the why-first form (asks what is prompting the guide before any approach) shows in B reps 3, 4 and 5. It shows in the shipped-copy diagnostic's reps 2 and 3, in rep3 of the arm without item 4, in rep2 of the arm without item 5, and in no rep of the arm without item 2.
+- P1: every rep offers a throwaway mockup for the board, and rep3 also offers a written summary. Reps 2 to 4 open with "No actions this turn."
+- Cost: round B's 105 reps cost $4.58, about $0.044 a rep.
+
+### T7 panel
+
+Three blind votes (`panel/T7/`), each a separate `claude -p` call under `run_reps.sh`'s isolation, on `claude-opus-5-5` and Claude Code 2.1.323. Each vote saw plan 86's registered rule (`specs/baseline/red-baseline-brainstorming-v7-0-2/panel/T7/rule.txt`, sha256 `d0b60c615ba84ef1…`), the control T7 prompt (`prompts/control/T7.txt`, sha256 `e26f6b19251da9f5…`) and all 50 replies in its own shuffled order (`--seed 106`, so seeds 107, 108 and 109). The arm and the rep were hidden. The shipped arm is plan 86's 25 committed NEW-R1 reps (`specs/baseline/red-baseline-brainstorming-v7-0-2/green/new-r1/T7/`). The B arm is `round-b/T7/`. All 50 replies got a unanimous vote, no vote was missing, and no vote came back VOID. Cost $0.49.
+
+| Arm | Panel majority | Wilson 95% | Hand score | Wilson 95% |
+|---|---|---|---|---|
+| Shipped (NEW-R1, Claude Code 2.1.316) | 13 of 25 | 0.33 to 0.70 | 15 of 25 | 0.41 to 0.77 |
+| B (Claude Code 2.1.323) | 13 of 25 | 0.33 to 0.70 | 22 of 25 | 0.70 to 0.96 |
+
+- Panel: `fisher_one_sided(shipped, b)` = 0.611, so no regression is shown. `fisher_one_sided(b, shipped)` = 0.611, so no gain is shown.
+- Hand score, context only: 0.996 and 0.025. The registered test is the panel's. The shipped hand scores are plan 86's.
+- The panel's verdicts on the shipped reps (`FPPPF FPPFF FPFPP FPPPP FPFFF`) are the same as plan 86's round-1 panel, rep for rep.
+- Plan 70's 20 of 25 is context, not a bar. The tally flags that hand and panel put B on different sides of it.
+- The shipped reps ran on Claude Code 2.1.316, and B's on 2.1.323, so a difference may come from the CLI as well as the text.
+
+Hand and panel differ on 11 reps. Each is a hand P and a panel F, and each panel F is unanimous:
+- Shipped reps 10 and 21.
+- B reps 2, 3, 9, 11, 13, 17, 20 and 24, the tools form. After an open question, one sentence names three things the answer could lead the tool to do. Rep2: "It could mean a different way of recording things, of following up with people, or of thinking about what "coming back" means for seeds." The hand score passes it, because the sentence names what the answer decides, not answers to the question. The panel fails it as three named answers in one sentence.
+- B rep23, a practice sentence before the question: "Some people return the same seeds, some bring back seeds saved from their own harvest, and some never return any."
+
+### Diagnostic and revert arms (T4 strict)
+
+T4 strict missed its bar, which makes it a regression by the Regression line. So the Bars rule ran a diagnostic on the shipped copy, and the Outcomes rule ran each "B without item N" arm, for items 2, 4 and 5. The owner raised the spend stop for the arms first (Owner rulings, below). Each run was 5 reps of T4 on Claude Code 2.1.323.
+
+Each arm was built with the plan's recipe (Task 3 Step 12) as a commit object whose parent is B, without touching the working tree, the index or the stash. For each arm, `git diff --name-only B <arm>` prints only `skills/brainstorming/SKILL.md`, and the diff is the item's own diff reversed. Each arm's T4 prompt differs from B's only in those lines. The arm commits are on no branch. `prompts/no-item<N>/` holds each arm's prompts, and its `MANIFEST.txt` gives the skill text's sha256.
+
+| Run | Item commit | Arm commit | `SKILL.md` blob | Hunks reversed | T4 broad | T4 strict |
+|---|---|---|---|---|---|---|
+| B | — | `7cc303c` | — | — | `PPPPP` 5 of 5 | `PPFFP` 3 of 5 |
+| Shipped copy (`diag/shipped/T4/`) | — | BASE | — | — | `PPFPP` 4 of 5 | `PPFPP` 4 of 5 |
+| B without item 2 (`bisect/no-item2/T4/`) | `0c39f0e` | `3513064bb87fa6faae7d6abc471b471009756678` | `8cee4412e69afb1311af75f417799572ee7ffc86` | 4 (I2a to I2d) | `PPPPP` 5 of 5 | `PPPPP` 5 of 5 |
+| B without item 4 (`bisect/no-item4/T4/`) | `dbadbab` | `12e8c4727d3415164e347976835665c6aa40565e` | `f6b850ec60d2b71e78601a490d7e8d7b91afd1c6` | 1 (I4) | `PPPPP` 5 of 5 | `FPPPP` 4 of 5 |
+| B without item 5 (`bisect/no-item5/T4/`) | `7cc303c` | `2629ea24fee8bf1a623668ce63bf1c4668dcb68b` | `96b8ef39f41b9ecb007c4742bda32083a1f3ba0f` | 1 (I5) | `PPPPP` 5 of 5 | `PPPPF` 4 of 5 |
+
+Each arm reaches the bar. Only the arm without item 2 reads 5 of 5. Against B, `fisher_one_sided` gives 0.222 for that arm and 0.5 for each of the others, so no arm is shown to differ from B. Over the earlier records, T4 strict reads 3 of 5 on plan 70's control and 4 of 5 on plan 86's NEW. In this record it reads 5 of 5 on A and 4 of 5 on the shipped copy.
+
+FAIL lines:
+- Shipped copy rep3, both readings: proposes a roadmap and names no platform or peripheral item as open, "We'd settle the details of each stage when we reach it"
+- Without item 4, rep1, strict reading: two ways that keep the guide pages on the site and differ only in where the audio is hosted, framed as "how a volunteer's recording gets from their phone onto the guide"
+- Without item 5, rep5, strict reading: two ways that keep the exhibit pages on the site, "the question is where volunteers upload recordings and where the cleanup runs"
+
+Borderline calls:
+- Shipped copy rep1, strict reading: it proposes a roadmap, and it passes on "Choices like whether the listening pages live on your existing website depend on things we haven't discussed yet." Rep3 fails both readings (a ledgered ruling): a lenient broad reader could pass its general "details" sentence. With rep3 passing, the shipped copy reads 5 of 5 broad, and the strict figure does not change.
+- Without item 4, rep5, strict reading: two upload ways on the same site, and it passes on "I'm leaving out a downloadable app", the web-or-app item marked as its own call, with a reason. Rep4 writes `specs/harbour-audio-guide.md` at once, with the platform under "How it works (calls made by the designer, open to correction)", and it passes both readings.
+- Without item 5, rep2, strict reading: it asks the why first and passes on "One build choice is still open: how volunteers upload recordings, and where the guide lives alongside your Eleventy site".
+
+### Owner rulings
+
+- T4 gate, before the arms (2026-11-22): "Run arms, cap $9.00 (Recommended)". The spend stop rose from $8.00 to $9.00 for the three arms.
+- T4 outcome, after the arms (2026-11-22): "(b) Known gap (Recommended)". B's text stays as measured, and T4 strict at 3 of 5 on B is a known gap, recorded here and in `NOTICE`.
+
 ## Spend
 
 Running total of `total_cost_usd` over every rep and vote of plan 106, read from the raw JSON (so a void rep's cost counts). The plan stops for the owner before the total passes $3.00 at the end of Task 2, and before it passes $8.00 at any point.
@@ -113,3 +233,9 @@ Running total of `total_cost_usd` over every rep and vote of plan 106, read from
 |---|---|---|---|---|
 | Isolation pilot | 2.1.323 | 2 reps | $0.05 | $0.05 |
 | Round A: twelve guards ×5 on A | 2.1.323 | 60 reps | $2.46 | $2.50 |
+| Round B: T7 ×25, T10 to T13 and the twelve guards ×5 on B | 2.1.323 | 105 reps | $4.58 | $7.09 |
+| Round B: T7 panel on 50 replies | 2.1.323 | 3 votes | $0.49 | $7.57 |
+| Round B: T4 ×5 on the shipped copy (diagnostic) | 2.1.323 | 5 reps | $0.24 | $7.81 |
+| Round B: T4 ×5 on each of three revert arms | 2.1.323 | 15 reps | $0.76 | $8.57 |
+
+The owner raised the stop from $8.00 to $9.00 before the revert arms ran (Round B, Owner rulings).

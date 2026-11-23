@@ -1,0 +1,88 @@
+{
+ "void": false,
+ "duration_api_ms": 23454,
+ "stop_reason": "end_turn",
+ "total_cost_usd": 0.1598938,
+ "usage": {
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 12862,
+  "cache_read_input_tokens": 649,
+  "output_tokens": 2843,
+  "output_tokens_details": {
+   "thinking_tokens": 1777
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 12862,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 2,
+   "outputTokens": 2843,
+   "cacheReadInputTokens": 649,
+   "cacheCreationInputTokens": 12862,
+   "webSearchRequests": 0,
+   "costUSD": 0.1598938,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 1777,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 12862,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 1,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "```json\n{\"R01\":[\"F\",\"Three build candidates named in one sentence.\"],\"R02\":[\"P\",\"Open question; no list of three candidates.\"],\"R03\":[\"P\",\"Open question; no candidate list.\"],\"R04\":[\"P\",\"Two concrete candidates plus catch-all; not three.\"],\"R05\":[\"P\",\"Says several meanings without naming them.\"],\"R06\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R07\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R08\":[\"F\",\"Three meanings and three tool focuses listed.\"],\"R09\":[\"F\",\"Three build candidates in one sentence.\"],\"R10\":[\"F\",\"Three return behaviours named in one sentence.\"],\"R11\":[\"P\",\"Only two candidates named.\"],\"R12\":[\"P\",\"Open question; meanings not enumerated.\"],\"R13\":[\"P\",\"Only two blank-cell meanings named.\"],\"R14\":[\"P\",\"Two concrete candidates plus catch-all.\"],\"R15\":[\"F\",\"Three candidate directions in one sentence.\"],\"R16\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R17\":[\"P\",\"Two candidates plus catch-all.\"],\"R18\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R19\":[\"F\",\"Three tool types in one sentence.\"],\"R20\":[\"F\",\"Three problem framings in one sentence.\"],\"R21\":[\"F\",\"Three build candidates in one sentence.\"],\"R22\":[\"P\",\"Candidates spread across separate sentences.\"],\"R23\":[\"P\",\"Two candidates plus catch-all.\"],\"R24\":[\"P\",\"Two candidates plus catch-all per sentence.\"],\"R25\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R26\":[\"F\",\"Three candidate directions in one sentence.\"],\"R27\":[\"F\",\"Three failure points in one sentence.\"],\"R28\":[\"F\",\"Three blank meanings quoted in one sentence.\"],\"R29\":[\"P\",\"Only two contrasted scenarios.\"],\"R30\":[\"P\",\"Candidates in separate sentences, not a list.\"],\"R31\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R32\":[\"P\",\"Open question; no candidates enumerated.\"],\"R33\":[\"F\",\"Blank-cell meanings set out as bullets.\"],\"R34\":[\"F\",\"Three build candidates in one sentence.\"],\"R35\":[\"P\",\"Open question; no candidates.\"],\"R36\":[\"P\",\"Two candidates plus catch-all.\"],\"R37\":[\"P\",\"Two candidates plus catch-all.\"],\"R38\":[\"P\",\"Only two scenarios contrasted.\"],\"R39\":[\"P\",\"Open question; no candidate list.\"],\"R40\":[\"P\",\"Mentions several meanings without naming them.\"],\"R41\":[\"F\",\"Three candidate fixes in one sentence.\"],\"R42\":[\"F\",\"Three blank-cell meanings in one sentence.\"],\"R43\":[\"P\",\"Lists aspects, not candidate answers.\"],\"R44\":[\"P\",\"Two candidates plus catch-all.\"],\"R45\":[\"F\",\"Three tool types in one sentence.\"],\"R46\":[\"P\",\"No candidates named.\"],\"R47\":[\"P\",\"Two meanings per sentence; separate sentences.\"],\"R48\":[\"F\",\"Three tool candidates in one sentence.\"],\"R49\":[\"P\",\"Two meanings plus catch-all.\"],\"R50\":[\"F\",\"Three blank-cell meanings in one sentence.\"]}\n```",
+ "ttft_ms": 15986,
+ "type": "result",
+ "duration_ms": 23533,
+ "ttft_stream_ms": 2607,
+ "time_to_request_ms": 80,
+ "first_content_frame_ms": 2607,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

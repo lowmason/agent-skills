@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 18420,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0349002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8541,
+    "output_tokens": 1516,
+    "output_tokens_details": {
+      "thinking_tokens": 861
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1516,
+      "cacheReadInputTokens": 8541,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.0349002,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 861,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's what you're asking for: the registration database gets backed up to `league-backups` every night at 02:00. The bucket keeps the latest 30 copies, both registrars get an email if a backup fails or doesn't happen, and a one-page guide lets a registrar restore it alone. The point is that losing a machine never again costs you sign-ups.\n\nWhat I found: the app keeps its data in a single SQLite file, `/srv/league/db.sqlite3`. The server can already reach the bucket, because player photos upload there. Cron already runs the 01:00 reminders, and Django can already send email. Nothing backs up the database today.\n\nThree things that shape the spec:\n\n- **Up to a day of sign-ups is at risk.** Anything entered after the last 02:00 backup would still be lost if the server died.\n- **Safe copying.** Copying the file while someone is signing up can produce a broken backup. The backup has to use SQLite's own backup method.\n- **Deleting old copies.** S3's usual \"delete after 30 days\" rule would erase every copy if backups quietly stopped for a month. My proposal is to delete by count instead: always keep the newest 30, however old they are.\n\nTell me if I've got any of that wrong.\n\nThe biggest open question is the \"doesn't happen\" email. If the server dies the way the laptop did, nothing on the server can send it. Some check has to run elsewhere:\n\n- **An AWS-side check:** a small scheduled job in your AWS account looks for tonight's file and emails both registrars if it's missing. There's no new vendor, but there's a bit more AWS setup.\n- **A free \"heartbeat\" service:** the server pings it after each backup, and it emails both registrars if the ping doesn't arrive. This is the simplest option, but it adds an outside account someone has to own.\n- **Server-only:** this catches failed backups but not a dead server, which is the case that hurt you.\n\nI'd pick the AWS-side check, because everything stays in the account both registrars can already log in to. Which would you like?",
+  "ttft_ms": 11801,
+  "type": "result",
+  "duration_ms": 18473,
+  "ttft_stream_ms": 2316,
+  "time_to_request_ms": 53,
+  "first_content_frame_ms": 2316,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

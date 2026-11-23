@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 12448,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0760822,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7079,
+    "cache_read_input_tokens": 1711,
+    "output_tokens": 955,
+    "output_tokens_details": {
+      "thinking_tokens": 385
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7079,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 955,
+      "cacheReadInputTokens": 1711,
+      "cacheCreationInputTokens": 7079,
+      "webSearchRequests": 0,
+      "costUSD": 0.0760822,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 385,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7079,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's what I've understood so far. Tell me what's wrong or missing.\n\n**What it's for:** A logbook for your own amateur radio contacts that replaces the paper-notebook-plus-monthly-retyping routine. You're the main reader.\n\n**What it has to do:**\n- **Answer \"have I worked this station before?\"** This is the everyday use. My proposal is that typing a callsign shows your past contacts with that station: dates, bands, modes. That's the quickest way to answer it.\n- **Export ADIF once a year for Logbook of The World.** LoTW wants the file signed with TQSL, ARRL's signing tool. My proposal is that the logbook produces a clean ADIF file and you keep using TQSL to sign and upload it, rather than the logbook talking to LoTW directly. That's simpler, and you only do it once a year.\n- **Work without internet.** You log at field days with no connection, so nothing can depend on being online. That includes callsign lookups.\n- **Handle about thirty contacts a week.** That's roughly 1,500 a year, which is small. Search will stay instant, and storage won't be a concern.\n\n**What I've filled in:** A contact holds the usual fields: date and time in UTC, callsign, band or frequency, mode, and signal reports. Those are what LoTW matches on, so they're the minimum. We can add anything else you write down in the notebook.\n\nHere's the question that decides the most about what gets built. When you're actually on the air, at home or at a field day, where do you want to record the contact? You could log straight into this, or keep the notebook and enter contacts afterward. The answer decides whether this has to be quick to use mid-contact and on whatever device you bring into the field, or whether it can be a desk tool for catching up.",
+  "ttft_ms": 6537,
+  "type": "result",
+  "duration_ms": 12519,
+  "ttft_stream_ms": 2132,
+  "time_to_request_ms": 72,
+  "first_content_frame_ms": 2132,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 20949,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.038646400000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 8632,
+    "output_tokens": 1702,
+    "output_tokens_details": {
+      "thinking_tokens": 1073
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1702,
+      "cacheReadInputTokens": 8632,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.038646400000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1073,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Before I write it up, one bigger choice is still open: how the guide itself gets built and where volunteers upload. The cleanup choice sits inside that. Here are the ways I'd consider:\n\n**1. Guide pages on your existing website (my pick).** Each exhibit gets a page on the Eleventy site, such as `/guide/42`, and the code beside the exhibit points there. The story plays in the visitor's phone browser, and the browser remembers their language choice. Volunteers upload through a simple password-protected form. Each upload is cleaned up (volume levelled, silences trimmed), saved, and the site republishes itself.\n- **Good:** nothing for visitors to install, and it reuses the hosting you already have.\n- **Trade-off:** a new recording takes a few minutes to go live while the site rebuilds.\n\n**2. A separate small guide service.** It has its own upload page, audio storage and cleanup, and the website's guide pages fetch the stories from it.\n- **Good:** new recordings go live instantly, and the audio stays separate from the website.\n- **Trade-off:** more parts to keep running, likely a small monthly hosting cost, and someone has to look after it.\n\n**3. A ready-made museum audio-guide service.** You subscribe, and volunteers upload through its dashboard.\n- **Good:** the least to build.\n- **Trade-off:** an ongoing fee, less control over the bilingual setup and how the guide looks, and the cleanup step depends on what the service offers.\n\nI've left out a phone app. Asking visitors to install something while they're standing at an exhibit would put most of them off.\n\nI recommend option 1. At sixty exhibits and about ten new stories a year, a few minutes' wait before a story goes live costs you nothing, and you avoid running a second system.\n\nWhich way do you want to go? Once you've picked, I'll write the full design. A reviewer will read it first, and I may come back once with a few questions.",
+  "ttft_ms": 14478,
+  "type": "result",
+  "duration_ms": 21009,
+  "ttft_stream_ms": 2359,
+  "time_to_request_ms": 60,
+  "first_content_frame_ms": 2359,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

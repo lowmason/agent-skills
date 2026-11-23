@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 13952,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.025358799999999997,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 358,
+    "cache_read_input_tokens": 8434,
+    "output_tokens": 1040,
+    "output_tokens_details": {
+      "thinking_tokens": 552
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 358,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1040,
+      "cacheReadInputTokens": 8434,
+      "cacheCreationInputTokens": 358,
+      "webSearchRequests": 0,
+      "costUSD": 0.025358799999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 552,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 358,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Here's how I read it: members with a booked lane get a text at 18:00 the evening before, so fewer lanes sit empty while people on the waiting list miss out. Anyone who ticked \"no texts, please\" gets no texts.\n\nWhat I found in the booking app:\n\n- **About 1 in 4 members (23%) have opted out of texts.** Under this spec they'd get no reminder at all. Email can't easily fill that gap, because 61% of members have no email on file. Some opted-out members will have no way to be reminded.\n- **The club already sends its newsletter through an SMS provider**, so reminders can reuse that setup. Nothing sends reminders yet.\n- **A reminder alone doesn't free a lane.** It helps people remember. But if someone realizes they can't come, the waiting list only benefits if they can easily cancel, for example with a link in the text or by replying.\n\nTell me if I've got any of that wrong.\n\nThe question that would change the most: what should happen for members who ticked \"no texts\"?\n\n- **(a) No reminder.** This follows the spec exactly, but about a quarter of bookings get no help.\n- **(b) Email them instead, when we have an address.** This partly fills the gap. Many will still get nothing.\n- **(c) Treat a booking reminder as different from club texts.** This covers everyone, but it may go against what members thought they were agreeing to.\n\nI'd pick (b), because it respects the tick box and still covers some of the gap.\n\nOr if you'd rather I just dive in, say so.",
+  "ttft_ms": 8990,
+  "type": "result",
+  "duration_ms": 14075,
+  "ttft_stream_ms": 2535,
+  "time_to_request_ms": 124,
+  "first_content_frame_ms": 2536,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

@@ -1,0 +1,88 @@
+{
+  "void": false,
+  "duration_api_ms": 16176,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0867782,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7396,
+    "cache_read_input_tokens": 1711,
+    "output_tokens": 1363,
+    "output_tokens_details": {
+      "thinking_tokens": 953
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7396,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1363,
+      "cacheReadInputTokens": 1711,
+      "cacheCreationInputTokens": 7396,
+      "webSearchRequests": 0,
+      "costUSD": 0.0867782,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 953,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 7396,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "This is bigger than a single design document. Nothing of the guide exists yet, and it breaks into separate stages that each need their own decisions:\n\n1. **Listening:** a visitor scans the code beside an exhibit and hears the story, in the language they picked once.\n2. **Volunteer uploads:** volunteers add or replace a recording from their phones without asking anyone technical.\n3. **Clean-up:** each upload gets its volume levelled and silences trimmed before it goes live. That's your pick of option 2.\n4. **The codes:** printing and placing the sixty codes beside the exhibits.\n\nRather than write one big design now, I'd set these out as a short roadmap. It would list the stages in order, each with what it has to achieve in your words, and keep the decisions you've already made: language chosen once and remembered, and recordings cleaned up automatically. Then we'd work out how each stage gets built when we reach it. Choices like whether the listening pages live on your existing website depend on things we haven't discussed yet. Writing them all down now would mean guessing.\n\nThe roadmap file would be the written record, and nothing gets built at this step. If you'd still rather have one full design document covering everything, say so and I'll write that instead. Otherwise I'll draft the roadmap next.",
+  "ttft_ms": 11913,
+  "type": "result",
+  "duration_ms": 16234,
+  "ttft_stream_ms": 2034,
+  "time_to_request_ms": 58,
+  "first_content_frame_ms": 2034,
+  "queued_turn_count": 0,
+  "result_index": 0
+}
