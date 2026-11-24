@@ -44,6 +44,7 @@ source folders from the variables `WST_COMPETITOR_PLUGIN_DEV` and `WST_COMPETITO
 committed file holds a path with a user part. The first batch writes one `competitors.txt` in the runs
 root (the folder above `<prompt>`), the sha256 of each competitor's `SKILL.md`. Every later batch, of any
 prompt, arm, condition or model, must match it, and the runner refuses a batch whose competitor differs.
+`triggers.py tally` skips that one file and refuses any other stray name in the runs root.
 
 | File | Source | Change |
 |---|---|---|
@@ -58,7 +59,7 @@ prompt, arm, condition or model, must match it, and the runner refuses a batch w
 | `build_prompts.py`, `cases.py` | plan 105's | The prompts are `M1.txt`, `T2.txt` and `R3.txt`. `FRAME_T` names the case's tools. |
 | `privacy_sweep.py`, `check_scrub.py`, `kit_identity.py` | plan 105's | Unchanged. |
 | `fixtures/M1`, `fixtures/T2`, `fixtures/R3`, `fixtures/trigger` | new | Each case's project (Cases) and the trigger repository. |
-| `test_wst_kit.py` | plan 105's tests, renamed, and the tests that Task 1 adds | 358 tests with a stub `claude` and no model (plan 105's kit has 191). The suite `writing-skills-tests-kit` in `build/suites.toml` runs them. |
+| `test_wst_kit.py` | plan 105's tests, renamed, and the tests that Task 1 adds | 361 tests with a stub `claude` and no model (plan 105's kit has 191). The suite `writing-skills-tests-kit` in `build/suites.toml` runs them. |
 
 **The arms.** `old` is `SKILL.md`'s body and the skill folder at the commit before an item's text. `new` is
 the same at the commit of the item's text. Tasks 3 to 5 fill in the shas here. The `pilot` arm of Task 2 is
@@ -253,8 +254,9 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
    Cases). Review round 1 asked for both.
 6. `sheets.py` reads a missing model as unknown. A case's RED is null only when `old` has reps on both plan
    models and none shows RED, else it is `incomplete`. A case's GREEN is `incomplete` when a model where RED is
-   shown has no `new` reps while the graded ones do not miss. Open items 3 and 4 name both models, so a verdict
-   from one model could not say null or met.
+   shown has no `new` reps while the graded ones do not miss. It is also `incomplete` when a plan model has no
+   `old` reps, because RED was never checked there. Open items 3 and 4 name both models, so a verdict from one
+   model says neither null nor met. A graded miss still reads `missed`.
 7. `triggers.py tally` prints `verdict: uninformative (below the floor)` when the run is complete and a floor
    entry fails. The plan's Task 6 Step 4 says only "On a failure, revert". The floor rule of Open item 5 says
    stop and ask, so it governs. A bar failure with every floor entry met still prints `fail`.

@@ -33,6 +33,7 @@ CONDITIONS = ('full', 'cut150')
 ARMS = ('old', 'new')
 REPS_PER_CELL = 3
 FLOOR = 8
+COMPETITORS_FILE = 'competitors.txt'
 SHOULD_LOSS = 2
 NEAR_MISS_GAIN = 1
 
@@ -113,6 +114,8 @@ def tally(runs_root: Path) -> dict:
     import audit
     cells, voids = {}, []
     for prompt_dir in sorted(p for p in runs_root.iterdir() if not p.name.startswith('.')):
+        if prompt_dir.name == COMPETITORS_FILE and prompt_dir.is_file():
+            continue  # run_trigger_reps.sh writes it in the runs root
         if prompt_dir.name not in trigger_prompts.PROMPTS or not prompt_dir.is_dir():
             raise SystemExit(f'refusing: {prompt_dir} is not a prompt folder ({", ".join(trigger_prompts.PROMPTS)})')
         for arm_dir in sorted(p for p in prompt_dir.iterdir() if p.is_dir()):

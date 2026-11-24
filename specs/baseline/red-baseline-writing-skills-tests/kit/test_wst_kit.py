@@ -543,7 +543,7 @@ def test_trigger_runner_refuses_a_missing_competitor_before_it_makes_anything(tr
     else:
         assert 'holds no SKILL.md' in text
     assert trig.calls() == []
-    assert not (trig.tout() / 'rep1').exists() and not (trig.tout() / 'competitors.txt').exists()
+    assert not (trig.tout() / 'rep1').exists() and not (trig.tmp / 'tout' / 'competitors.txt').exists()
     assert not trig.troot.exists() or os.listdir(trig.troot) == []
 
 
@@ -1539,6 +1539,33 @@ def test_tally_command_prints_the_uninformative_verdict(twin):
     assert 'verdict: uninformative (below the floor)' in done.stdout
 
 
+def test_tally_reads_the_runs_root_that_the_trigger_runner_wrote(trig):
+    trigger_ok(trig)
+    root = trig.tmp / 'tout'
+    assert (root / 'competitors.txt').is_file()
+    env = {**os.environ, 'WST_TRIGGER_SCRATCH': str(trig.tscratch)}
+    done = kit_tool(str(KIT / 'triggers.py'), 'tally', str(root), env=env)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert f'P1 old full {SONNET}: ' in done.stdout and 'verdict: ' in done.stdout
+
+
+def test_tally_skips_competitors_txt_and_no_other_stray_file(twin):
+    import triggers
+    runs, tscratch = twin
+    write_trigger_rep(runs, tscratch)
+    (runs / 'competitors.txt').write_text('skill-creator abc\n')
+    assert triggers.tally(runs)['cells'][('P1', 'old', 'full', SONNET)]['reps'] == 1
+    for stray in ('notes.txt', 'competitors.txt.bak'):
+        (runs / stray).write_text('x\n')
+        with pytest.raises(SystemExit, match=stray.replace('.', r'\.')):
+            triggers.tally(runs)
+        (runs / stray).unlink()
+    (runs / 'competitors.txt').unlink()
+    (runs / 'competitors.txt').mkdir()
+    with pytest.raises(SystemExit, match='competitors'):
+        triggers.tally(runs)
+
+
 def test_tally_refuses_an_unknown_folder(twin):
     import triggers
     runs, tscratch = twin
@@ -1861,6 +1888,19 @@ def test_green_is_incomplete_when_a_model_where_red_is_shown_has_no_new_reps(tmp
     assert two_models(tmp_path, (0, 2), (1, None)) == {'red': 'shown', 'green': 'missed'}
     # With no new reps on any such model, nothing ran.
     assert two_models(tmp_path, (0, None), (1, None)) == {'red': 'shown', 'green': 'not run'}
+
+
+def test_green_is_incomplete_when_a_plan_model_was_never_checked_for_red(tmp_path):
+    # Open item 4: new >= 4 on each model where RED was shown. A model with no old reps was never checked.
+    key, grades = cell_grades('M1', OPUS, 0, 5)
+    assert unblind(tmp_path, key, grades)['verdicts']['M1'] == {'red': 'shown', 'green': 'incomplete'}
+    more_key, more_grades = cell_grades('M1', SONNET, None, 5)
+    key.update(more_key)
+    grades.update(more_grades)
+    assert unblind(tmp_path, key, grades)['verdicts']['M1'] == {'red': 'shown', 'green': 'incomplete'}
+    # A miss still reads missed, and both models checked still read met.
+    assert two_models(tmp_path, (0, 2), (4, None)) == {'red': 'shown', 'green': 'missed'}
+    assert two_models(tmp_path, (0, 5), (3, None)) == {'red': 'shown', 'green': 'met'}
 
 
 def test_red_is_incomplete_when_the_other_plan_model_has_no_old_reps_and_none_is_shown(tmp_path):

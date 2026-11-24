@@ -29,7 +29,8 @@ GREEN_MIN and at least `old` + GREEN_GAP. A case's RED is shown when it is shown
 null only when each of the plan's two models (MODELS) has `old` reps and none shows RED, and it is incomplete
 when a model has none. Its GREEN is n/a unless RED is shown. When RED is shown, GREEN is missed when a graded
 model misses, else incomplete when a model where RED is shown has no `new` reps, else not run when none has
-them, else met on every model where RED is shown.
+them, else incomplete when a plan model has no `old` reps (RED was never checked there), else met on every
+model where RED is shown.
 '''
 import json
 import random
@@ -208,7 +209,8 @@ def judge_cases(cells: list[dict]) -> dict:
         elif len(graded) < len(shown):
             green = 'incomplete' if graded else 'not run'
         else:
-            green = 'met'
+            checked = {cell['model'] for cell in mine if cell['old_n']}
+            green = 'met' if checked >= set(MODELS) else 'incomplete'
         verdicts[case] = {'red': 'shown', 'green': green}
     return verdicts
 
