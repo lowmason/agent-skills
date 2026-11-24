@@ -26,14 +26,14 @@
 - **Claude Code facts.** New skill text states none, and the citation line does not change, so no `/cc-guide files` verify is planned. If `uv run python build/cc_guide/cli.py lint` prints a line for writing-skills, stop and ask.
 - **Commit gate.** Before each commit, `bash build/run_commit_lints.sh` prints `commit lints passed`. Messages follow Conventional Commits, use plain technical English and end with the attribution trailer that the executing session is given. State test counts as deltas.
 - **Mutant step.** Task 1 runs the mutant step on `audit.py` and `sheets.py`. Tasks 2 to 5 record `--no-mutants` with the reason "Markdown, TOML, records and kit runs only; no code".
-- **Micro-tests.** Models `claude-opus-5-5` and `claude-sonnet-5-5`, 5 reps per arm per model. Nobody messages or subscribes to a running rep. The spec, this plan, and the records and kits of plans 105 and 107 stay out of every rep's reach: reps deny `Read(//Users/**)`, run from `/private/tmp/wst108`, and read a skill copy that `git archive` places at `/private/tmp/wst108-skill`. Raw output goes to `~/.cache/agent-skills/scratch/plan108/`, never into the repository. Committed copies are scrubbed, and `privacy_sweep.py` passes on them before their commit.
+- **Micro-tests.** Models `claude-opus-5-5` and `claude-sonnet-5-5`, 5 reps per arm per model. Nobody messages or subscribes to a running rep. The spec, this plan, and the records and kits of plans 105 and 107 stay out of every rep's reach: reps deny `Read(//Users/**)`, run from `/private/tmp/wst108`, and read a skill copy that `git archive` places at `/private/tmp/wst108-skill`. `place-copy` refuses a non-empty root, so empty the skill copy before each placement. Raw output goes to `~/.cache/agent-skills/scratch/plan108/`, never into the repository. Committed copies are scrubbed, and `privacy_sweep.py` passes on them before their commit.
 - **Grading.** Grader agents on Opus grade the sheets, one agent per case, with no key, as in plan 107. A sheet never shows the arm. `sheets.py build` reads every case folder under its runs root, and `unblind` refuses a missing grade. So each grading builds from a scratch runs root that holds copies of only the graded case's arm folders, into a new sheet folder.
 - **Spend.** The cap for every probe, pilot and rep in this plan is $25. Per-rep `--max-budget-usd` is $1.50. Task 2 projects the total, and a projection above $21 stops the run before any scored rep. Before each batch (5 reps of one case, arm and model), check: running total + 5 × $1.50 ≤ $25. A batch that fails the check stops the run: report BLOCKED with the spend table. Expected spend is about $12 to $15. Plan 107's case reps cost about $0.08 each on Sonnet and $0.20 on Opus.
 - **Retries.** The owner's retry limit (Open for plan review item 8) applies to each item. The executor changes no wording without the owner.
 - **Codex (D1).** `~/.cache/agent-skills/scratch/plan105/`, `plan107/` and `plan108/` hold unscrubbed rep output, and Codex's read-only sandbox can read them. Ask the owner before any Codex seat (the final review, or finishing's Step 4b), and delete none of these folders without asking.
 - **Public repository.** The plan, kit, record and commits carry no private detail. Records cite committed files only.
 - **Leave alone.** Item 13 (its own backlog plan) and item 16 (held under Q6). The "Trigger-eval suites" item (section `53-agent-skills-portability`). Plan 107's other open items: item 10, item 3b, item 2's Sonnet gap, the trigger-rep VOID rule and the `discovery.md` § 6 runs-per-prompt gap. Every committed kit under `specs/baseline/`. The scratch folders.
-- **Completion.** After this plan, no live plan implements the spec, so the protocol's step 5 retires the spec with the plan. Before that commit, the completion gate files item 16 as a deferred item, because it has none (items 3b, 10 and 13 have theirs), and re-points the open items that cite the spec's path.
+- **Completion.** As the owner rules on Open for plan review item 14.
 
 ## Review Focus
 
@@ -68,6 +68,7 @@ Each item carries the default this plan uses. The owner's answers go to `## Deci
 11. **A null RED for F3.** Default: drop the text, and add a progress note to the backlog item. Alternative: ship it under an owner waiver, which the item allows.
 12. **The register lines** (Task 5 Step 1), word for word. The default keeps a waiver sentence, reworded, because the spec's Q5 waived eight items' tests on the day Q4 was ruled. Alternative: drop the waiver sentence.
 13. **Not carried: the RED step's subagent.** `SKILL.md:315` ("Run pressure scenario with subagent WITHOUT the skill") leaks context the same way step 1 does. It is upstream text for full pressure runs, outside the backlog item. Default: leave it, and report it at completion. Alternative: file it as a deferred item now.
+14. **The spec at completion.** After this plan, no live plan implements the spec, so the protocol's step 5 would retire it with the plan. Items 3b, 10 and 13 have backlog items. Item 16 has none. Default: retire the spec. Before that commit, file item 16 as a deferred item whose revisit trigger is the Q6 ruling's "when the free room runs out", and re-point the open items that cite the spec's path. Alternative: keep the spec in `specs/` until item 16 is settled.
 
 ---
 
@@ -157,7 +158,7 @@ Run `probe_tools.sh` on each model, and add each cost to the running total. Expe
 
 - [ ] **Step 2: Case pilot**
 
-Run `rep_tools.py place-copy HEAD` and `build_prompts.py HEAD pilot <scratch>/prompts-pilot`. Run one rep each of G1, L2 and F3 on `claude-sonnet-5-5`, and one G1 rep on `claude-opus-5-5`. Expected: `audit.py` shows no finding, the G1 and L2 reps change their fixture's skill, the F3 rep writes its target, and no rep costs more than $0.90 (60% of its cap). On a miss, fix the kit with a test, or stop and ask. Empty the skill copy.
+Run `rep_tools.py place-copy HEAD` and `build_prompts.py HEAD pilot <scratch>/prompts-pilot`. Run one rep each of G1, L2 and F3 on `claude-sonnet-5-5`, and one G1 rep on `claude-opus-5-5`. Expected, for the kit's mechanics only: `audit.py` shows no finding, the stream parses, `summary.json` and `final.diff` are written, every Edit or Write call that a rep makes succeeds, and no rep costs more than $0.90 (60% of its cap). Whether a rep edits or writes at all is behavior, not a kit check: a G1 rep may refuse to edit before a test. On a miss, fix the kit with a test, or stop and ask. Empty the skill copy.
 
 - [ ] **Step 3: Project the spend**
 
@@ -180,7 +181,7 @@ Add the probe answers, the pilot facts, the projection and the running total to 
 
 - [ ] **Step 1: RED run (G1)**
 
-Record `git rev-parse HEAD` in the ledger as ITEM9-OLD. Run the batch check before each batch. Build `prompts-item9-old` at ITEM9-OLD, place the copy at ITEM9-OLD, and run G1 reps 1 to 5 on each model. Run `audit.py`, build the sheets of G1's `old` reps, and have one grader grade them. Record the RED verdict per model. If the control is null (Open for plan review item 9), stop, record and ask (item 10).
+Record `git rev-parse HEAD` in the ledger as ITEM9-OLD. Run the batch check before each batch. Build `prompts-item9-old` at ITEM9-OLD, place the copy at ITEM9-OLD, and run G1 reps 1 to 5 on each model. Run `audit.py`, build the sheets of G1's `old` reps, and have one grader grade them. The grader tags each FAIL, in extra `grades.tsv` columns, with the PASS part it missed, its kind (shipped untested; a RED-first test with a control; the new text only, or recorded results as the old run; other) and the reason the rep gave, quoted from its final message. Record the RED verdict per model and the tags: they are the baseline that picks a retry's form (Match the Form to the Failure). If the control is null (Open for plan review item 9), stop, record and ask (item 10).
 
 - [ ] **Step 2: Write the line**
 
@@ -204,7 +205,7 @@ Run `uv run python build/check_links.py`, `uv run --with pyyaml python build/che
 
 - [ ] **Step 4: GREEN and no-loss runs, grade, verdict**
 
-Run the batch check before each batch. Place the copy at ITEM9-OLD and run L2 reps 1 to 5 on each model from `prompts-item9-old`. Build `prompts-item9-new`, place the copy at ITEM9-NEW, and run G1 and L2 reps 1 to 5 on each model. Grade G1's 20 sheets together, freshly, and L2's 20 sheets together, one grader per case. Record the results tables, the count of sheets that say "guard run", and the verdicts against Open for plan review item 9. If the mixed grading turns G1's RED null, stop and ask. On a G1 miss or an L2 loss, stop, record and ask, and change no wording. Run `check_scrub.py` and `privacy_sweep.py` on the runs folder, then the commit gate. Commit: `test(baseline): run the guard-run cycle`.
+Run the batch check before each batch. Place the copy at ITEM9-OLD and run L2 reps 1 to 5 on each model from `prompts-item9-old`. Build `prompts-item9-new`, place the copy at ITEM9-NEW, and run G1 and L2 reps 1 to 5 on each model. Grade G1's 20 sheets together, freshly, and L2's 20 sheets together, one grader per case. Each grader tags each FAIL as in Step 1 (L2's kinds: shipped untested; a check that only requires no drop; other). Record the results tables, the tags, the count of sheets that say "guard run", and the verdicts against Open for plan review item 9. If the mixed grading turns G1's RED null, stop and ask. On a G1 miss or an L2 loss, stop, record and ask, and change no wording. Run `check_scrub.py` and `privacy_sweep.py` on the runs folder, then the commit gate. Commit: `test(baseline): run the guard-run cycle`.
 
 ### Task 4: The step 1 subagent fallback (F3)
 
@@ -218,7 +219,7 @@ Run the batch check before each batch. Place the copy at ITEM9-OLD and run L2 re
 
 - [ ] **Step 1: RED run**
 
-As Task 3 Step 1, for F3, with STEP1-OLD = HEAD and `prompts-step1-old`. If the control is null, stop, record and ask (Open for plan review item 11).
+As Task 3 Step 1, for F3, with STEP1-OLD = HEAD and `prompts-step1-old`. F3's FAIL kinds: a subagent of the working session as a rep; a fresh session that is not isolated; other. If the control is null, stop, record and ask (Open for plan review item 11).
 
 - [ ] **Step 2: Write the clause**
 
@@ -251,7 +252,7 @@ evidence = 'Audit row S-97; owner gate 2026-10-04; owner decisions D2 and D4 of 
 
 - [ ] **Step 2: The `NOTICE` bullet**
 
-Fetch, and compare `NOTICE` on `origin/main` with this branch; keep every line other plans added. Add this bullet last, wrapped like its neighbors, with the commit's date. For a change that did not ship, drop its sentence and say instead that it was dropped and why.
+Fetch, and compare `NOTICE` on `origin/main` with this branch; keep every line other plans added. Add this bullet last, wrapped like its neighbors, with the commit's date. For a change that did not ship, drop its sentence and say instead that it was dropped and why. For a change that shipped under an owner waiver, say so in place of "tested RED first".
 
 ```text
   - Plan 108 (<YYYY-MM-DD>) changed writing-skills, from
