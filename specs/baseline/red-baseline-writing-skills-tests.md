@@ -3,7 +3,7 @@
 > ⚠️ Quarantine this file during any micro-test of writing-skills. It names the cases, the trigger prompts
 > and what each one scores, so a rep that reads this file is void.
 
-This record belongs to plan 107 (`specs/plans/107-writing-skills-improvements.md`). The plan ships three
+This record belongs to plan 107 (`specs/plans/completed/107-writing-skills-improvements.md`). The plan ships three
 changes to `skills/writing-skills/`: the micro-test method (item 1), a trigger test (item 2) and a rename
 procedure (item 10). Then it reorders the description (item 3b). Each of items 1, 2 and 10 gets a RED run
 first: five reps of a case on the current skill, on each of two models. The text follows. A GREEN run then

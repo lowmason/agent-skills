@@ -6387,7 +6387,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Done when: `--combine` handles an undirected block without failing the whole run (for
       example, it names the block on stderr and renders the rest), with a test for the chosen behaviour.
       → done 2026-11-23 (/deferred quick fix): `--combine` now skips each undirected block, names it on stderr (`skipped: <file>: <name>: …`), renders the digraph blocks and exits 1. With no digraph block it writes no combined file. Three tests pin this.
-- [ ] **Close the three Glob audit limits when the guard kit is reused (plan 105, rulings at Task 3).** The path
+- [x] **Close the three Glob audit limits when the guard kit is reused (plan 105, rulings at Task 3).** The path
       audit in `specs/baseline/red-baseline-writing-skills-layout/kit/audit.py` judges a Glob pattern by its
       literal part. Three reaches stay open, and the record names them (`## Kit`, Grep and Glob): a `**` from the
       rep folder can list names under `home/Library/Keychains`, the link to the real Keychains folder; a relative
@@ -6397,6 +6397,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/baseline/` holds a copy of `audit.py` for a tools-on guard run. Then close the three, with a test and
       a mutant for each, or record why they stay.
       → planned 2026-11-23: specs/plans/107-writing-skills-improvements.md
+      → done 2026-11-24 (plan 107): the new kit's `audit.py` closes all three, with a test and a mutant for each (`test_glob_double_star_from_rep_folder_reaching_keychains_voids` and its two siblings).
 - [ ] **Add a guard case that only the moved file can pass (plan 105, final review).** Plan 105's guard run scored
       120 of 120 reps PASS, old layout and new. It shows no loss from the move and cannot show a gain
       (`specs/baseline/red-baseline-writing-skills-layout.md`, Results, Reading of the result). T2's use part can
@@ -6404,3 +6405,43 @@ review and the Plan Completion gate (2026-10-27) add the others.
       carries those cases. A later change to a writing-skills file needs a case whose marker occurs only in that
       file and cannot be guessed. Size: design. Revisit if: a plan in `specs/plans/` moves, splits or rewrites a
       file in `skills/writing-skills/` and plans a guard run.
+
+## 107-writing-skills-improvements — 2026-11-24
+- [ ] **Raise item 2's Sonnet GREEN from 3/5 to the bar of 4 (plan 107, ruling at Task 4).** The T2 GREEN run
+      for the trigger test gave Opus 5/5 and Sonnet 3/5 against a bar of 4. It shipped as measured, under the
+      owner's "last retry" limit (see `specs/baseline/red-baseline-writing-skills-tests.md`, T2). The text in
+      `skills/writing-skills/references/discovery.md` `### 6. Test triggering` is correct but is not proven on
+      Sonnet to the plan's bar. Size: quick-fix. Done when: a wording change to that section, run RED first or
+      under an owner waiver, gives Sonnet at least 4 of 5 on T2 `new` and Opus stays at 4 or more, or the owner
+      records that 3 of 5 is enough.
+- [ ] **Write item 10's rename procedure once a case can show the loss (plan 105 spec, item 10; plan 107, owner
+      ruling at Task 5).** R3's control passed 10 of 10 on the old text, so RED was null and the owner dropped
+      the text. Spec item 10 stays open in `specs/writing-skills-improvements.md`. Size: design. Done when: a
+      harder R3 fixture (one where the old text passes at most 2 of 5 on a model) exists and its RED run is not
+      null, then the rename list is written in `skills/writing-skills/references/discovery.md` § 3 and its GREEN
+      run meets the bar, or the owner drops item 10 from the spec.
+- [ ] **Reorder the `writing-skills` description once trigger prompts can load it (plan 107, owner ruling at
+      Task 6).** The reorder (063b8b8) was reverted (0620898). P1, P2, P4 and P5 never loaded `writing-skills`,
+      so the trigger test's 15-rep floor could not be met. The narrow check on P3 showed Sonnet `full` loads
+      falling from 5/5 to 3/5, and Opus never ran. The Codex cut measurement stays in the record: the old cut
+      (152 characters) loses "micro-testing", and the new text keeps it whole. Size: plan. Done when: a prompt
+      set exists that loads the old description in at least 8 of 15 should-load reps on each model, and the
+      reorder passes its no-loss bars on both models, or the owner closes spec item 3b.
+- [ ] **Rule on the trigger-rep VOID rule before the trigger runner is reused (plan 107, final review).** The
+      kit voids a trigger rep for a refused Bash call or a wide Glob, even when the rep had already loaded
+      `writing-skills`. Five of the 7 voids in plan 107's run had loaded it. `micro-tests.md` also points to
+      "the newest committed kit", which is now this kit. Size: quick-fix. Revisit if: a new directory under
+      `specs/baseline/` holds a copy of `run_trigger_reps.sh` or `triggers.py`. Then decide whether a rep that
+      loaded before the void counts, and say so in the new record.
+- [ ] **Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers
+      "a single-shot subagent if you don't have API access". That rep inherits the user's instruction files, so
+      it conflicts with `references/micro-tests.md` (a new directory, instruction files off) and with the guide
+      section `subagents.isolation`. Size: quick-fix. Done when: step 1 names no subagent fallback, or says it
+      leaks context and must be isolated as `micro-tests.md` says. Run RED first or under an owner waiver. The
+      `SKILL.md` body stays at or below 19,700 characters. Step 4's plan (item 9) also edits `SKILL.md`, so it
+      can carry this edit.
+- [ ] **Give `discovery.md` § 6 a number of runs per prompt (plan 107, final review).** `### 6. Test triggering`
+      step 3 says to run each prompt in a fresh session with each description but gives no count, and 5 reps
+      cannot separate a loss from noise (plan 107's narrow check). Size: quick-fix. Done when: step 3 states a
+      number of runs per prompt and says how to read a difference of one load, run RED first or under an owner
+      waiver.

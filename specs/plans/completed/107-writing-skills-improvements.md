@@ -1,5 +1,7 @@
 # writing-skills Micro-Test Method, Trigger Test and Rename Procedure Implementation Plan
 
+**Status: COMPLETE (2026-11-24)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > ⚠️ Quarantine this file during any micro-test of writing-skills, as the spec says of itself. Task 1
 > names the RED cases, the trigger prompts and what each one scores, so a rep that reads this file is void.
 
@@ -93,11 +95,11 @@ This task spends nothing. Its review gates the kit, the cases and the rules befo
 
 **Brief note.** Copy files; never edit plan 100's or plan 105's kit in place. The kit changes no skill text.
 
-- [ ] **Step 1: Check the sources**
+- [x] **Step 1: Check the sources**
 
 Check that plan 105's kit is on this branch's base. Run `claude --version` and `codex --version`, and record both in the record's Kit section. Find the newest cached copy of plugin-dev's `skill-development` and of the official `skill-creator` under `~/.claude/plugins/`, and record each one's plugin name, skill name and version (the cache folder name), never its path's user part.
 
-- [ ] **Step 2: Write the failing self-tests**
+- [x] **Step 2: Write the failing self-tests**
 
 `kit/test_wst_kit.py`, on synthetic records and folders. Copy plan 105's tests of the copied parts, renamed. Add:
 - The three Glob limits (D5), each of which must void the rep:
@@ -115,7 +117,7 @@ Check that plan 105's kit is on this branch's base. Run `claude --version` and `
 
 Register the suite. Run: `uv run python build/run_suites.py writing-skills-tests-kit`. Expected: FAIL on the missing modules and the three Glob tests.
 
-- [ ] **Step 3: Build the kit**
+- [x] **Step 3: Build the kit**
 
 - **Case mode (M1, T2, R3).** Copy plan 105's tools-mode files with the roots, scratch and tools above, and `FRAME_T` with the skill-copy path changed. Close the three Glob limits in `audit.py`: join each brace alternative to the literal prefix before it, judge an alternative under `$HOME`, `~` or the rep's `home/` by the joined path, and treat a `**` whose search root is the rep folder, its `home/` or an ancestor of `home/Library` as reaching `home/Library`. Add the Bash audit: a Bash call is clean only when its command is one `git mv <src> <dst>` with both paths inside the rep's `repo/`.
 - **Trigger mode.** `run_trigger_reps.sh` builds each rep as plan 100's runner does: `env -i`, an own HOME with `Library/Keychains` linked, `git archive <ref> skills/` extracted to `home/.claude/skills/`, the two competitor skill folders copied from the paths recorded in Step 1 to `home/.claude/skills/`, and `home/.claude/settings.json` holding the deny list, `"syncClaudeAiSkills": false`, `"skillListingBudgetFraction": 0.05` and, for `cut150`, `"skillListingMaxDescChars": 150`. The rep's `repo/` is `kit/fixtures/trigger/repo/`. Flags: `--setting-sources user` (Task 2's pilot checks it), `--strict-mcp-config`, `--no-session-persistence`, `--tools Read,Glob,Grep,Skill`, `--allowedTools Read,Glob,Grep,Skill`, `--max-turns 3`, `--max-budget-usd 0.25`, `--output-format stream-json --verbose`, `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`. Roots `/private/tmp/wst107t`, scratch `plan107/triggers/`. `audit.py` runs on each trigger rep too.
@@ -123,7 +125,7 @@ Register the suite. Run: `uv run python build/run_suites.py writing-skills-tests
 
 Run the suite. Expected: all pass.
 
-- [ ] **Step 4: Write `cases.py`, the prompts and the fixtures**
+- [x] **Step 4: Write `cases.py`, the prompts and the fixtures**
 
 `kit/cases.py` holds `FRAME_T`, `CASES`, `TARGET` and `PASS`, as in the table. Each case states that the needed earlier steps are done, so the Iron Law does not hold the agent. No domain repeats the skill's examples, plan 72's or plan 105's cases, or the new text in Tasks 3–5.
 
@@ -141,7 +143,7 @@ Fixtures under `kit/fixtures/<case>/repo/`:
 
 `kit/trigger_prompts.py` holds the eight prompts. Should-load, testing (P1–P3): "The `table-diff` skill never gets picked up, even when I ask it to compare two tables. Can you sort that out?"; "`retry-budget` keeps loading on every HTTP question, even unrelated ones. Make it stop."; "I reworded the core rule in `release-notes`. Before I ship it, check that the new wording actually changes what agents do." Should-load, core (P4–P5): "Make a new skill that teaches agents how we load test fixtures."; "Rename the `fixture-loader` skill to `loading-test-fixtures`." Near-miss (N1–N3): "Package the skills in this repo as a Claude Code plugin with a marketplace.json."; "Write an implementation plan for adding a timeout to `retry-budget`'s HTTP client."; "Write a CLAUDE.md for this repo."
 
-- [ ] **Step 5: Write and commit the record's rules before any rep runs**
+- [x] **Step 5: Write and commit the record's rules before any rep runs**
 
 Create `specs/baseline/red-baseline-writing-skills-tests.md` with these sections:
 - **Kit:** the paths, the sources, the versions and the competitor skills from Step 1. The arms per case: `old` is `SKILL.md` and the skill folder at the commit before that item's text, and `new` is the same at the item's text commit. Tasks 3–5 fill in the shas.
@@ -154,7 +156,8 @@ Create `specs/baseline/red-baseline-writing-skills-tests.md` with these sections
 - **Blind grading:** sheets show the sheet id and the case, never the arm. At a GREEN run, the grader grades the `old` and `new` sheets of the case together, freshly; the RED verdict comes from that mixed grading, and the record reports any change from Task 3–5's RED-only grading. Limit: a GREEN answer that names `micro-tests.md` shows its arm.
 - **Spend stop:** Global Constraints' cap, projection and pair check, with a running-total table that starts at $0.00.
 
-- [ ] **Step 6: Mutant step and commit**
+- [x] **Step 6: Mutant step and commit**
+  > Deviation: Task 1 took two fix rounds after its review (six findings, then a `competitors.txt` regression). The mutant step ended with 254 mutants, all caught.
 
 Run the mutant step on `audit.py`, `triggers.py` and `sheets.py`. Each Glob limit has one mutant that reverts its fix, and its test must kill it. Run the commit gate. Commit: `test(baseline): add the writing-skills tests kit and its rules`. This commit comes before any probe or rep.
 
@@ -167,23 +170,24 @@ Run the mutant step on `audit.py`, `triggers.py` and `sheets.py`. Each Glob limi
 - Consumes: Task 1's kit and record.
 - Produces: the projection that Task 3's first pair needs; the confirmed `--setting-sources` value for trigger reps.
 
-- [ ] **Step 1: Probes**
+- [x] **Step 1: Probes**
 
 Run `probe_tools.sh` on each model, and add each cost to the running total. Expected: NO on probe lines 1–6 and 8. Line 7 (the user's identity) may read YES: the watch item "Account identity reaches the isolated micro-test runs" tracks it. Any other YES stops the run.
 
-- [ ] **Step 2: Trigger pilot**
+- [x] **Step 2: Trigger pilot**
 
 Run one trigger rep each of P1 and N1, arm `old`, condition `full`, on `claude-sonnet-5-5`, then P1 `cut150` on `claude-sonnet-5-5`, then P1 `full` on `claude-opus-5-5`. Expected: `triggers.py listing` shows `writing-skills`, `skill-development` and `skill-creator`, `audit.py` shows no finding, at least one P1 pilot rep loads `writing-skills`, and no pilot rep costs more than $0.15 (60% of its cap). Then run one listing probe per condition on `claude-sonnet-5-5`, at arm `old`: a rep whose prompt asks it to quote, word for word, the listing entry it sees for `writing-skills`, `skill-development` and `skill-creator`. Expected: in `full`, each whole description; in `cut150`, about 150 characters of each. A miss on any expectation means the condition is not real: fix the runner with a test, or stop and ask. If the listing lacks them, try `--setting-sources user,project,local` (plan 100's value), record which value works, and fix it in the runner with a test. If neither works, stop and ask.
 
-- [ ] **Step 3: Case pilot**
+- [x] **Step 3: Case pilot**
+  > Deviation: the R3 fixture lost `.claude/settings.json`, because headless reps could not edit it (the plan's own rule). The P1 pilot never loaded `writing-skills` (0 of 9), so the owner chose more pilots before Task 3.
 
 Run `rep_tools.py place-copy HEAD` and `build_prompts.py HEAD pilot <scratch>/prompts-pilot`. Run one rep each of M1, T2 and R3 on `claude-sonnet-5-5`, and one R3 rep on `claude-opus-5-5`. Expected: `audit.py` shows no finding, and the R3 reps show a `git mv` that ran and an Edit of `.claude/settings.json` that succeeded. If that Edit is refused in both R3 reps, remove the reference from the fixture, record why, and commit the fixture change before any scored rep. Otherwise stop and ask. Empty the skill copy.
 
-- [ ] **Step 4: Project the spend**
+- [x] **Step 4: Project the spend**
 
 Projected total = spend so far + 30 × the mean Sonnet case pilot cost + 30 × the Opus case pilot cost + 96 × the mean Sonnet trigger pilot cost + 96 × the Opus trigger pilot cost. If the projection passes $42, stop and ask before any scored rep.
 
-- [ ] **Step 5: Record and commit**
+- [x] **Step 5: Record and commit**
 
 Add the probe answers, the pilot facts, the projection and the running total to the record. Run `privacy_sweep.py` on anything committed. Run the commit gate. Commit: `test(baseline): record the writing-skills tests kit's probes and pilots`.
 
@@ -199,11 +203,11 @@ Add the probe answers, the pilot facts, the projection and the running total to 
 - Consumes: Task 1's kit, Task 2's projection.
 - Produces: `references/micro-tests.md`, which Task 4's body and `NOTICE` name.
 
-- [ ] **Step 1: RED run**
+- [x] **Step 1: RED run**
 
 Record `git rev-parse HEAD` in the ledger as M1-OLD. Run the pair check. Build `prompts-M1-old`, place the copy at M1-OLD, and run M1 reps 1–5 on each model. Run `audit.py`, build the sheets, and have one grader grade them. Record the RED verdict per model. If the control is null (Open for plan review, item 3), stop, record, and ask.
 
-- [ ] **Step 2: Write `references/micro-tests.md`**
+- [x] **Step 2: Write `references/micro-tests.md`**
 
 Exact text:
 
@@ -267,15 +271,16 @@ The newest committed kit under `specs/baseline/*/kit/` holds the exact runner fl
 probe and the scrub.
 ```
 
-- [ ] **Step 3: Point step 1 at it**
+- [x] **Step 3: Point step 1 at it**
 
 In `SKILL.md`, replace `user message = a task that tempts the failure.` (the end of micro-test step 1) with `user message = a task that tempts the failure. Before the first rep, read [references/micro-tests.md](references/micro-tests.md): isolation, rules set first, blind scoring, models, spend.` Measure the body. Expected: 19,194.
 
-- [ ] **Step 4: Check and commit the text**
+- [x] **Step 4: Check and commit the text**
 
 Run `uv run python build/check_links.py` and `uv run --with pyyaml python build/check_conformance.py`. Expected: both pass; no finding for writing-skills. Run the commit gate. Commit: `feat(writing-skills): describe the micro-test method in full`. Record `git rev-parse HEAD` as M1-NEW.
 
-- [ ] **Step 5: GREEN run, grade, verdict**
+- [x] **Step 5: GREEN run, grade, verdict**
+  > Deviation: GREEN missed on the first run (Opus 0/5, Sonnet 2/5), because reps named no models. The owner approved one sentence in `micro-tests.md` (`## Run each model`), and the second run passed 5/5 on both models.
 
 Run the pair check. Build `prompts-M1-new`, place the copy at M1-NEW, and run M1 reps 1–5 on each model. Grade the 20 `old` and `new` sheets together, freshly (the record's Blind grading section). Record the results table, the read counts and the verdict against Open for plan review item 4. If the mixed grading turns the RED verdict null, stop and ask. On a miss, stop and ask; change no wording. Run `check_scrub.py` and `privacy_sweep.py` on the runs folder, then the commit gate. Commit: `test(baseline): run the micro-test method cycle`.
 
@@ -291,11 +296,11 @@ Run the pair check. Build `prompts-M1-new`, place the copy at M1-NEW, and run M1
 - Consumes: Task 3's HEAD as T2-OLD.
 - Produces: `discovery.md` § 6. Test triggering, the procedure that Task 6 follows.
 
-- [ ] **Step 1: RED run**
+- [x] **Step 1: RED run**
 
 As Task 3 Step 1, for T2, with T2-OLD = HEAD. Null → stop, record, ask.
 
-- [ ] **Step 2: Add the procedure to `discovery.md`**
+- [x] **Step 2: Add the procedure to `discovery.md`**
 
 Add `  - 6. Test triggering` to the Contents list, after `  - 5. Cross-Referencing Other Skills`. Append at the end of the file:
 
@@ -317,7 +322,7 @@ This is the small check for one skill. For Claude Code, [claude-code.md](claude-
 turn a skill off and how to imitate a runtime that shortens descriptions.
 ```
 
-- [ ] **Step 3: Add the Claude Code mechanics**
+- [x] **Step 3: Add the Claude Code mechanics**
 
 In `claude-code.md`, after the `## The skill listing` section, add:
 
@@ -333,7 +338,7 @@ discovery.md's Test triggering step gives the procedure. In Claude Code:
 - `/skill-doctor` shows each skill's cost and how often it is used.
 ```
 
-- [ ] **Step 4: Cite and point**
+- [x] **Step 4: Cite and point**
 
 In the `# cc-guide:` line, insert `skills.iterating` after `skills.progressive-disclosure`. In § Skill Discovery Optimization, replace:
 
@@ -352,11 +357,12 @@ a description change.
 
 Measure the body. Expected: 19,258.
 
-- [ ] **Step 5: Check and commit the text**
+- [x] **Step 5: Check and commit the text**
 
 Run `check_links.py`, `check_conformance.py`, `uv run python build/cc_guide/cli.py lint` (expected: no line for writing-skills) and `uv run --with pyyaml python build/check_frontmatter.py`. Run the commit gate. Commit: `feat(writing-skills): add a trigger test`. Record T2-NEW.
 
-- [ ] **Step 6: GREEN run, grade, verdict**
+- [x] **Step 6: GREEN run, grade, verdict**
+  > Deviation: GREEN missed twice. The owner approved two continuation lines after step 2 of `### 6. Test triggering`. The third run gave Opus 5/5 and Sonnet 3/5 against a bar of 4. It shipped as measured, under the owner's "last retry" limit → item: Item 2's Sonnet GREEN gap.
 
 As Task 3 Step 5, for T2. Commit: `test(baseline): run the trigger test cycle`.
 
@@ -369,11 +375,12 @@ As Task 3 Step 5, for T2. Commit: `test(baseline): run the trigger test cycle`.
 **Interfaces:**
 - Consumes: Task 4's HEAD as R3-OLD.
 
-- [ ] **Step 1: RED run**
+- [x] **Step 1: RED run**
 
 As Task 3 Step 1, for R3, with R3-OLD = HEAD. R3's verdict is mechanical; the grader still grades the sheets for the descriptive near-collision count. Null → stop, record, ask.
 
 - [ ] **Step 2: Add the list**
+  > Skipped: the R3 control was null (old text passed 10/10), so the owner dropped item 10's text → item: Item 10, a harder R3 fixture.
 
 In `discovery.md`, after the `### 3. Descriptive Naming` block's last bullet (`- ✅ `condition-based-waiting` not `async-test-helpers``), add:
 
@@ -392,10 +399,12 @@ In `discovery.md`, after the `### 3. Descriptive Naming` block's last bullet (`-
 The body does not change (19,258).
 
 - [ ] **Step 3: Check and commit the text**
+  > Skipped: the R3 control was null (old text passed 10/10), so the owner dropped item 10's text → item: Item 10, a harder R3 fixture.
 
 Run `check_links.py` and `check_conformance.py`. Run the commit gate. Commit: `feat(writing-skills): add a rename procedure`. Record R3-NEW.
 
 - [ ] **Step 4: GREEN run, grade, verdict**
+  > Skipped: the R3 control was null (old text passed 10/10), so the owner dropped item 10's text → item: Item 10, a harder R3 fixture.
 
 As Task 3 Step 5, for R3. If R3 misses its bar and no `new` rep read `discovery.md`, ask the owner Open for plan review item 6's question. Commit: `test(baseline): run the rename procedure cycle`.
 
@@ -410,11 +419,12 @@ As Task 3 Step 5, for R3. If R3 misses its bar and no `new` rep read `discovery.
 
 **Brief note.** Spec item 3: "(b) changes routing, so it waits for item 2's trigger test." Claude Code lists the full description, so this test checks routing for no loss there; the gain is measured in Codex (Open for plan review item 10).
 
-- [ ] **Step 1: Measure the Codex cut, old and new**
+- [x] **Step 1: Measure the Codex cut, old and new**
 
 Build a scratch HOME under `~/.cache/agent-skills/scratch/plan107/codex/`: copy `~/.agents/skills` and `~/.codex/skills`, dereferenced, into it, and set `CODEX_HOME` to its `.codex`. From a directory outside every repository, run `HOME=<scratch> CODEX_HOME=<scratch>/.codex codex debug prompt-input` and save the Skills list. Check that the listed count equals a run with the real HOME. Then replace the copy's `writing-skills/SKILL.md` description with Step 2's text and run it again. Record the count, both writing-skills entries and their cut lengths. Expected: the old entry lacks "micro-testing" and the new one holds it whole. If the cut falls elsewhere, or the command needs a login or fails, stop and ask with what it printed.
 
-- [ ] **Step 2: Reorder the description**
+- [x] **Step 2: Reorder the description**
+  > Deviation: the reorder was committed (063b8b8) and then reverted (0620898). The owner chose the revert after the narrow check failed.
 
 Record `git rev-parse HEAD` as TR-OLD. Replace the description's text (`SKILL.md:4-8`) with:
 
@@ -427,11 +437,13 @@ Record `git rev-parse HEAD` as TR-OLD. Replace the description's text (`SKILL.md
 
 Run `check_frontmatter.py` and `check_conformance.py`. Expected: pass; the description is 368 characters and its first 150 hold "fails to trigger", "over-triggers", "tightening a description", "pressure-testing" and "micro-testing". Commit: `feat(writing-skills): front-load the testing triggers in the description`. Record TR-NEW. This test is a routing check, old against new, not a RED-first test, so the text may come before it.
 
-- [ ] **Step 3: Run the trigger pairs**
+- [x] **Step 3: Run the trigger pairs**
+  > Deviation: the 15-rep floor failed (Sonnet `old`/`full` 3 of 15), so the owner approved a narrow check on P3 and N1–N3 with its rules registered in 4dd9cd8 before any further run. Five of the 7 voided reps had loaded `writing-skills` → item: the trigger-rep VOID rule.
 
 For each model (`claude-sonnet-5-5`, then `claude-opus-5-5`) and condition (`full`, then `cut150`): run the pair check (48 reps × $0.25), then reps 1–3 of P1–P5 and N1–N3 on arm `old` at TR-OLD, then the same on arm `new` at TR-NEW. A stop never leaves an `old` cell without its `new` cell.
 
-- [ ] **Step 4: Tally and verdict**
+- [x] **Step 4: Tally and verdict**
+  > Deviation: the narrow check failed on Sonnet `full` P3 (new 3/5 against old 5/5). Opus never ran. The description is back at `bc01afc` and the Codex cut measurement stays in the record → item: Item 3b, the reorder.
 
 Run `triggers.py tally`. Record the per-prompt table (loads of 3) for each arm, model and condition, the floor, the no-loss bars, the prediction and the Codex result. The verdict passes when Step 1 passes, the floor holds and every no-loss bar holds. On a failure, revert the description commit with `git revert`, record, and ask. Run `check_scrub.py` and `privacy_sweep.py`, then the commit gate. Commit: `test(baseline): run the description trigger test`.
 
@@ -441,7 +453,7 @@ Run `triggers.py tally`. Record the per-prompt table (loads of 3) for each arm, 
 - Modify: `NOTICE` (a new last bullet of the superpowers change list, after plan 105's)
 - Modify, through `/cc-guide` only: `build/cc_guide/baseline.json`, and a fix that it lists in a covered file
 
-- [ ] **Step 1: Add the plan 107 bullet**
+- [x] **Step 1: Add the plan 107 bullet**
 
 Fetch, and compare `NOTICE` on `origin/main` with this branch; keep every line other plans added. Add this bullet last, wrapped like its neighbors, with the commit's date. Drop the sentence of any item that did not ship, and say instead that it was dropped and why.
 
@@ -459,14 +471,15 @@ Fetch, and compare `NOTICE` on `origin/main` with this branch; keep every line o
     repository's own fixtures.
 ```
 
-- [ ] **Step 2: Check and commit**
+- [x] **Step 2: Check and commit**
 
 Run `uv run python build/check_provenance.py` and the commit gate. Commit: `docs(notice): record plan 107's writing-skills changes`.
 
-- [ ] **Step 3: Owner gate: the files verify**
+- [x] **Step 3: Owner gate: the files verify**
+  > Deviation: the owner ruled no action on all four not-covered rows. The two `contradicts` rows are the standing description deviation.
 
 Stop and ask the owner to type `/cc-guide files skills/writing-skills/SKILL.md` in this execution session. The citation gained `skills.iterating`, which `build/cc_guide/baseline.json` has no hash for, `claude-code.md` gained Claude Code facts, and `micro-tests.md` joined the covered files. `/cc-guide` commits nothing, so wait for the owner's review of its diff.
 
-- [ ] **Step 4: Commit the verify**
+- [x] **Step 4: Commit the verify**
 
 Run `uv run python build/cc_guide/cli.py lint` and the commit gate. Commit what `/cc-guide` changed: `chore(cc-guide): re-verify writing-skills after the trigger test`. If settle held the file, record the hold and its reason in the ledger for the completion gate.
