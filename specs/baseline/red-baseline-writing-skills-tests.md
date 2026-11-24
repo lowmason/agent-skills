@@ -298,6 +298,10 @@ M1, T2 and R3 ran on Sonnet, and one R3 rep ran on Opus.
   where `r3_check` fails on that file only. The Task 2 rule for a refusal in both reps applied: remove the
   reference from the fixture and commit that change before any scored rep (Deviation 11).
 - A new R3 rep on Sonnet, on the changed fixture, ran the same `git mv` and `r3_check` reported PASS.
+  Risk for Task 5: the `old` arm (the current text) already passed R3 once, and the two first reps failed only on
+  the refused `Edit`, not on a missed holder. So the R3 RED arm may be null (the control passes 3 or more of 5 on
+  both models). The fixture now has no settings holder. The controller rules before Task 5's first pair, and a null
+  stops Task 5 and asks the owner (Open for plan review item 3).
 - R3 void rate in the pilot: 0 of 3 R3 reps were void (2 on Sonnet, 1 on Opus). A Bash call other than one in-repo
   `git mv` is the void rule, and none occurred.
 - The skill copy was emptied after the case pilot.
