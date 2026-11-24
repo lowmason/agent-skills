@@ -46,10 +46,11 @@
 ## Decisions
 
 - **D1** (owner, brief, 2026-11-24): ask the owner before any Codex seat, and delete no scratch folder without asking, as plan 107's D3 did. Applied in: Global Constraints (Codex).
+- **D2** (owner, plan review, 2026-11-24): "Approve as proposed": every default in Open for plan review (items 1–14). So Task 4 carries the step 1 fix RED first, the kit copies the case-mode files only, item 9's text and place, case L2, the $25 cap with its $21 projection stop, one retry per item, the bars and null rules, the register lines and the spec's retirement (item 16 filed first) are final. Applied in: Global Constraints, Tasks 1–5.
 
 ## Open for plan review
 
-Each item carries the default this plan uses. The owner's answers go to `## Decisions`.
+Resolved at plan review on 2026-11-24: the owner approved each default as proposed (D2). Each item carries the default this plan uses.
 
 1. **D-a: carry the step 1 fallback fix.** Default: yes, as Task 4. It edits the same file, and the backlog item names this plan. Alternative: leave it for its own plan.
 2. **D-a's test.** Default: RED first, with case F3, because the edit removes an option and so changes an instruction. Alternative: an owner waiver, because the edit brings step 1 into line with `micro-tests.md`, which passed plan 107's M1 at 5 of 5 on both models. Task 4 then drops Steps 1 and 4.
