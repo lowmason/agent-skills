@@ -6440,6 +6440,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       leaks context and must be isolated as `micro-tests.md` says. Run RED first or under an owner waiver. The
       `SKILL.md` body stays at or below 19,700 characters. Step 4's plan (item 9) also edits `SKILL.md`, so it
       can carry this edit.
+      → planned 2026-11-24: specs/plans/108-writing-skills-improvements.md
 - [ ] **Give `discovery.md` § 6 a number of runs per prompt (plan 107, final review).** `### 6. Test triggering`
       step 3 says to run each prompt in a fresh session with each description but gives no count, and 5 reps
       cannot separate a loss from noise (plan 107's narrow check). Size: quick-fix. Done when: step 3 states a
