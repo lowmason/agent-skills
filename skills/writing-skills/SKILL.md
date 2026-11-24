@@ -12,7 +12,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure subagents.frontmatter subagents.models subagents.isolation @2.1.326
+# cc-guide: skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure skills.iterating subagents.frontmatter subagents.models subagents.isolation @2.1.326
 ---
 
 # Writing Skills
@@ -135,8 +135,9 @@ When the description was changed to just "Use when executing implementation plan
 
 Before you write or tighten a description, read
 [references/discovery.md](references/discovery.md) for the rest of SDO: good
-and bad descriptions, keyword coverage, naming, token efficiency and
-cross-references to other skills.
+and bad descriptions, keyword coverage, naming, token efficiency,
+cross-references to other skills, and the trigger test to run before and after
+a description change.
 
 ## Flowchart Usage
 

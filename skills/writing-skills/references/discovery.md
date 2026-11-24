@@ -12,6 +12,7 @@ description. The description rule itself stays in SKILL.md § Skill Discovery Op
   - 3. Descriptive Naming
   - 4. Token Efficiency (Critical)
   - 5. Cross-Referencing Other Skills
+  - 6. Test triggering
 
 ## SKILL.md Structure
 
@@ -211,3 +212,19 @@ Use skill name only, with explicit requirement markers:
 - ❌ Bad: `@skills/planning/writing-plans/SKILL.md` (a file path, not a skill name)
 
 **Why bare names:** a bare skill name lets each runtime load the skill through its own skill mechanism.
+
+### 6. Test triggering
+
+A description that reads well has not yet shown that it loads. Test a description change on loads:
+
+1. Write three or more prompts that should load the skill, worded as users word them.
+2. Write three or more near-miss prompts: tasks that belong to a neighboring skill, or to none.
+3. Run each prompt in a fresh session with the old description, and again with the new one. Count
+   the sessions that load the skill.
+4. Report both counts for both descriptions: loads on the should-load prompts and loads on the near
+   misses. A fix raises the first count and does not raise the second.
+5. To check what the skill changes once it loads, run the should-load prompts with the skill on and
+   again with it off, and compare the work.
+
+This is the small check for one skill. For Claude Code, [claude-code.md](claude-code.md) says how to
+turn a skill off and how to imitate a runtime that shortens descriptions.
