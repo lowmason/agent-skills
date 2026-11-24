@@ -678,7 +678,11 @@ Every bound is far below the $50 cap. The Task 3 run did not gate each model; Ta
 
 1. *Blind scoring is not fully blind.* A sheet that names the new step ("trigger test") shows its arm, because the
    text exists only in the `new` arm. That was 5 of the 20 sheets in attempt 1, 5 of 20 in attempt 2 and 8 of 20 in
-   attempt 3. In attempt 1, 2 of the 20 sheets also named `discovery.md`. The graders also marked hint marks. Counts,
+   attempt 3. The term "near-miss" also exists only in the new step, so by the same rule it shows the arm. Counting
+   a sheet that names "trigger test" or "near-miss", 9, 8 and 10 of the 10 `new` sheets in attempts 1, 2 and 3
+   show their arm, and no `old` sheet does. This changes no verdict, because every `old` rep failed in all four
+   rounds, and the failing `new` reps carry the terms too. In attempt 1, 2 of the 20 sheets also named
+   `discovery.md`. The graders also marked hint marks. Counts,
    by arm, from the keys: the RED-only round marked 6 of the 10 `old` sheets. Attempt 1's mixed round marked 14 of 20
    (6 `old`, 8 `new`). Attempt 2's mixed round marked 10 of 20 (6 `old`, 4 `new`). Attempt 3's mixed round marked 12
    of 20 (6 `old`, 6 `new`). The verdicts do not turn on a hint: every `old` rep failed in all four rounds, and a
