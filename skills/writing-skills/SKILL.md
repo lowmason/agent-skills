@@ -1,11 +1,10 @@
 ---
 name: writing-skills
 description: >
-  Use when creating a new skill, editing or renaming an existing skill, or verifying a skill
-  before deployment — including writing SKILL.md frontmatter (name/description limits), fixing a
-  skill that fails to trigger or over-triggers, tightening a description, structuring references/
-  and scripts/, pressure-testing a discipline skill, or micro-testing wording changes against a
-  no-guidance baseline.
+  Use when creating, editing, renaming or testing a skill — fails to trigger, over-triggers,
+  tightening a description, pressure-testing, micro-testing wording against a no-guidance baseline.
+  Also when writing SKILL.md frontmatter (name/description limits), structuring references/ and
+  scripts/, bulletproofing a discipline skill, or verifying a skill before deployment.
 license: MIT
 compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
