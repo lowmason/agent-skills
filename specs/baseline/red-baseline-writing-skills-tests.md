@@ -305,7 +305,7 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 | Task 6, narrow check: P3 `old` `full` Sonnet, reps 5 and 6 (top-up) | 2 | $0.1575 | $14.5327 |
 | Task 6, narrow check: Sonnet `full` `new` (P3 5 reps, N1 to N3 3 reps each) | 14 | $1.1061 | $15.6388 |
 | Task 6, narrow check: Sonnet `cut150` `old` (with 2 replacements for voids) | 16 | $0.7507 | $16.3895 |
-| Task 6, narrow check: Sonnet `cut150` `new` (stopped by the third void) | 14 | $0.7058 | $17.0953 |
+| Task 6, narrow check: Sonnet `cut150` `new` (stopped by the third void, checked at the end of the round) | 14 | $0.7058 | $17.0953 |
 
 Running total after Task 2: $1.42 (about $1.4179, summed from unrounded costs). The projection below adds the
 scored runs. Running total after Task 3: $6.0647 (summed from unrounded costs).
@@ -888,10 +888,15 @@ and `init` for N3), and none of those counts for `writing-skills`.
 **Ruling.** On a failed bar the default was to revert, and the owner ruled on 2026-11-24 to revert the description.
 The revert is the commit in the table above. No more reps ran, and the running total stays $17.0953.
 
-**Voids.** 7 reps in the root were void, each with the reason "path audit: 1 hit(s)": a Bash call that the trigger
-runner's tool list (`Read`, `Glob`, `Grep`, `Skill`) does not name. Five of the 7 had loaded `writing-skills` (all five
-P3 voids: `old` `full` rep 1, `old` `cut150` rep 2, `new` `cut150` reps 1, 3 and 5). The other two (N2 `new` `cut150`
-rep 3 and N3 `old` `cut150` rep 1) loaded nothing. The stop was the third void in Sonnet `cut150` `new`: 4 voids there.
+**Voids.** 7 reps in the root were void, each with the reason "path audit: 1 hit(s)". Six were a Bash call that the
+trigger runner's tool list (`Read`, `Glob`, `Grep`, `Skill`) does not name. The seventh (P3 `new` `cut150` rep 5) made
+no Bash call: its `Glob` had the rep folder as its `path`, and a `**` search from there can reach `home/Library`, the
+first closed Glob limit. Five of the 7 had loaded `writing-skills` (all five P3 voids: `old` `full` rep 1, `old`
+`cut150` rep 2, `new` `cut150` reps 1, 3 and 5). The other two (N2 `new` `cut150` rep 3 and N3 `old` `cut150` rep 1)
+did not load `writing-skills`. The stop was the third void in Sonnet `cut150` `new`: 4 voids there. The driver checked
+the void count only at the end of each round, so the third void (P3 rep 5) came before the 9 reps of N1 to N3 that
+ran after it (about $0.39). The fourth void and the near-miss count of 0 of 8 valid reps in that cell come from those
+9 reps. The verdict does not change, because the `cut150` cells are not scored.
 One rep was also aborted: the first launch of the narrow check ran P3 `old` `full` rep 5 and its runner was killed,
 because the driver's loop did not guard the runner's standard input. The rep had finished (it loaded `writing-skills`, and cost
 $0.0876) but not summarized. Its files were moved to scratch (`aborted/`), it was never scored, its cost is in the
@@ -910,9 +915,9 @@ The groups' costs are in the Spend stop table. The running total at the end of T
 
 **Limits.**
 
-1. *The trigger-rep VOID rule drops reps that loaded.* A rep that calls Bash is void, and a rep that has just loaded
-   `writing-skills` is the one that goes on to run `git` commands. So the rule lowers the valid load counts, most in
-   the arm that loads more. Sonnet `cut150` `new` shows it: all 5 P3 reps loaded `writing-skills`, but 3 were void.
+1. *The trigger-rep VOID rule drops reps that loaded.* A rep that calls Bash, or that searches with a wide `Glob`
+   from the rep folder, is void. Five of the 7 voids were reps that had loaded `writing-skills` (four by a Bash
+   call, one by a wide `Glob`). So the rule lowers the valid load counts, most in the arm that loads more. Sonnet `cut150` `new` shows it: all 5 P3 reps loaded `writing-skills`, but 3 were void.
    The Sonnet `full` `new` result (3 of 5) had no voids, so that miss is real, but the `cut150` numbers are not fair.
 2. *Claude Code routing for the reorder is unproven either way.* The one clean Sonnet `full` pair shows a drop (5 to
    3 of 5), and Opus never ran. A pair of 5 reps cannot separate a real loss from noise.
