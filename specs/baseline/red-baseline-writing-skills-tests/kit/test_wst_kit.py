@@ -2232,13 +2232,13 @@ def test_r3_fixture_is_the_plans_repository():
     assert (repo / 'skills' / 'sniffing-csv-headers' / 'SKILL.md').is_file()
     assert 'csv-dialect-sniff' in (repo / 'commands' / 'ingest.md').read_text()
     assert 'csv-dialect-sniff' in (repo / 'AGENTS.md').read_text()
-    assert json.loads((repo / '.claude' / 'settings.json').read_text()) == {
-        'skillOverrides': {'csv-dialect-sniff': 'name-only'}}
+    # Task 2's pilot: Claude Code refuses an Edit of .claude/settings.json in a headless rep, so the fixture holds none.
+    assert not (repo / '.claude').exists()
     # The checker finds the old name in every file the plan lists, and the near collision is not the old name.
     holders = sorted(str(p.relative_to(repo)) for p in repo.rglob('*') if p.is_file()
                      and 'csv-dialect-sniff' in p.read_text())
-    assert holders == ['.claude/settings.json', 'AGENTS.md', 'commands/ingest.md',
-                       'skills/csv-dialect-sniff/SKILL.md', 'skills/ingest-raw-files/SKILL.md']
+    assert holders == ['AGENTS.md', 'commands/ingest.md', 'skills/csv-dialect-sniff/SKILL.md',
+                       'skills/ingest-raw-files/SKILL.md']
     assert 'csv-dialect-sniff' not in (repo / 'skills' / 'sniffing-csv-headers' / 'SKILL.md').read_text()
 
 

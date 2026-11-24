@@ -37,7 +37,7 @@ this repository. The record names each by plugin, skill and version only.
 | Plugin | Skill | Version |
 |---|---|---|
 | `plugin-dev` | `skill-development` | `0.1.2` (the plugin manifest). The skill's own frontmatter says `0.1.0`. |
-| `skill-creator` (the official plugin) | `skill-creator` | `65adb96f26de` (the cache folder name, which the plugin installer lists as the installed version on 2026-11-23). The manifest has no version field. |
+| `skill-creator` (the official plugin) | `skill-creator` | `7b7a29e0458e` (the cache folder name, which the plugin installer lists as the installed version after its update on 2026-11-23). The manifest has no version field. Task 1 named `65adb96f26de`, the version the installer listed earlier that day. That folder now has an orphan marker, so Task 2 used `7b7a29e0458e` (Deviation 10). |
 
 `run_trigger_reps.sh` copies the two skill folders from the local plugin cache at run time. It takes their
 source folders from the variables `WST_COMPETITOR_PLUGIN_DEV` and `WST_COMPETITOR_SKILL_CREATOR`, so no
@@ -134,9 +134,9 @@ plan's, word for word.
   frontmatter, and a neighbor `skills/polars-lazy-tuning/SKILL.md` with a sound description.
 - R3: `skills/csv-dialect-sniff/SKILL.md`, `skills/ingest-raw-files/SKILL.md`
   (`**REQUIRED SUB-SKILL:** Use csv-dialect-sniff`), `skills/sniffing-csv-headers/SKILL.md` (a near collision,
-  scored descriptively), `commands/ingest.md`, `AGENTS.md` and `.claude/settings.json`
-  (`"skillOverrides": {"csv-dialect-sniff": "name-only"}`). The runner makes the repository and commits it
-  once as the rep's BASE.
+  scored descriptively), `commands/ingest.md` and `AGENTS.md`. Task 1 also had a `.claude/settings.json` with a
+  `skillOverrides` entry for the old name. Task 2's pilot removed it (Deviation 11). The runner makes the
+  repository and commits it once as the rep's BASE.
 - Trigger: `skills/` with `table-diff`, `retry-budget`, `release-notes` and `fixture-loader`, one short skill
   each, and a `README.md`.
 
@@ -236,6 +236,87 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 | Step | Reps | Cost | Running total |
 |---|---|---|---|
 | Task 1 (no model call) | 0 | $0.00 | $0.00 |
+| Task 2 Step 1: probe, `claude-sonnet-5-5` | 1 | $0.0073 | $0.0073 |
+| Task 2 Step 1: probe, `claude-opus-5-5` | 1 | $0.0241 | $0.0314 |
+| Task 2 Step 2: trigger pilot, P1 `old` `full`, Sonnet | 1 | $0.0647 | $0.0961 |
+| Task 2 Step 2: trigger pilot, N1 `old` `full`, Sonnet | 1 | $0.0845 | $0.1806 |
+| Task 2 Step 2: trigger pilot, P1 `old` `cut150`, Sonnet | 1 | $0.0262 | $0.2068 |
+| Task 2 Step 2: trigger pilot, P1 `old` `full`, Opus | 1 | $0.1343 | $0.3412 |
+| Task 2 Step 2: listing probe, `full`, Sonnet | 1 | $0.0806 | $0.4217 |
+| Task 2 Step 2: listing probe, `cut150`, Sonnet | 1 | $0.0343 | $0.4561 |
+| Task 2 Step 2: 4 more P1 `old` `full` pilots, Sonnet | 4 | $0.2374 | $0.6936 |
+| Task 2 Step 2: 2 more P1 `old` `full` pilots, Opus | 2 | $0.2478 | $0.9414 |
+| Task 2 Step 3: case pilot M1, T2 and R3, Sonnet | 3 | $0.2332 | $1.1745 |
+| Task 2 Step 3: case pilot R3, Opus | 1 | $0.1746 | $1.3492 |
+| Task 2 Step 3: case pilot R3 again after the fixture change, Sonnet | 1 | $0.0687 | $1.4179 |
+
+Running total after Task 2: $1.42 (about $1.4179, summed from unrounded costs). The projection below adds the
+scored runs.
+
+## Task 2: probes, pilots and spend projection
+
+Nothing here is scored. Raw output stays outside the repository. The Claude Code version was `2.1.323`, as in
+Task 1. Task 2 changed no kit code. It removed one fixture file and changed the two test lines that pinned it
+(Deviation 11); the suite still runs 361 tests, all passing.
+
+**Probes (Step 1).** `probe_tools.sh` ran once on each model. Lines 1 to 6 and 8 read NO on both. Line 7 (the
+user's identity) read NO on Sonnet and YES on Opus. The Opus quote was the account's email address, which this
+record does not repeat. The watch item "Account identity reaches the isolated micro-test runs" tracks it. On line
+6, Opus said NO and added that the session guidance names one slash command, so it counts as NO.
+
+**Trigger pilot (Step 2).** The rep arm was `old` (skills from `HEAD`, where `skills/writing-skills` equals
+`bc01afc`). The competitors were plugin-dev's `skill-development` `0.1.2` and the official `skill-creator`
+`7b7a29e0458e`.
+
+- `triggers.py listing` shows `writing-skills`, `skill-development` and `skill-creator` in every rep. `audit.py`
+  shows no finding and no VOID in any rep. No trigger pilot rep cost more than $0.15 (the largest was $0.1343).
+- The init record's `skills` field is a list of strings. `triggers.listing` accepts that shape. This confirms
+  the second item that Task 1 left open.
+- `--setting-sources user` loads the rep HOME's skills and its `settings.json`. The fallback value
+  `user,project,local` was not needed. This confirms the first open item.
+- Listing probes (Sonnet, `old`): in `full`, the rep quoted each whole description (413, 309 and 334 characters
+  with the name). In `cut150`, it quoted about 150 characters of each, ending in an ellipsis. So both conditions
+  are real. The third open item (`skillListingBudgetFraction 0.05` keeps every description whole) holds for
+  these three skills. The probe cannot show it for all the other skills in the listing.
+- The `Skill` tool works in a trigger rep: the N1 rep loaded `plugin-authoring`.
+- Loads of `writing-skills`, as `triggers.py loads` counts them, in P1 `old` `full` pilot reps: Sonnet 0 of 5,
+  Opus 0 of 3. P1 `old` `cut150` on Sonnet: 0 of 1. N1 `old` `full` on Sonnet: 0 of 1. No pilot rep loaded the
+  skill. The first pilot expectation ("at least one P1 pilot rep loads `writing-skills`") was missed. The owner
+  ruled that the P1 wording stays and that the extra reps are unscored pilots. Task 6's floor (`old` `full`
+  should-load loads of at least 8 in 15 per model) is at risk. The controller decides what this means for
+  Task 6. The reps read `table-diff` and `fixture-loader`, then tried an `Edit` that the trigger runner does not
+  offer, and ended on `--max-turns 3` or with prose.
+
+**Case pilot (Step 3).** `place-copy HEAD` and `build_prompts.py HEAD pilot` built the pilot arm. One rep each of
+M1, T2 and R3 ran on Sonnet, and one R3 rep ran on Opus.
+
+- `audit.py` shows no finding and no VOID in any of them. M1 did not read `micro-tests.md` (the pilot arm has
+  none, as `HEAD` is the old text). T2 read `discovery.md`.
+- Both first R3 reps ran `git mv skills/csv-dialect-sniff skills/sniffing-csv-dialects` and the `Bash` audit
+  passed it. In both, the `Edit` of `.claude/settings.json` was refused (the stream's error: Claude Code
+  "requested permissions to write" to the file and "you haven't granted it yet"). Both ended with a final tree
+  where `r3_check` fails on that file only. The Task 2 rule for a refusal in both reps applied: remove the
+  reference from the fixture and commit that change before any scored rep (Deviation 11).
+- A new R3 rep on Sonnet, on the changed fixture, ran the same `git mv` and `r3_check` reported PASS.
+- R3 void rate in the pilot: 0 of 3 R3 reps were void (2 on Sonnet, 1 on Opus). A Bash call other than one in-repo
+  `git mv` is the void rule, and none occurred.
+- The skill copy was emptied after the case pilot.
+
+**Spend projection (Step 4).** Projected total = spend so far + 30 x the mean Sonnet case pilot cost + 30 x the
+Opus case pilot cost + 96 x the mean Sonnet trigger pilot cost + 96 x the mean Opus trigger pilot cost.
+
+| Input | Reps | Mean | Factor | Part |
+|---|---|---|---|---|
+| Spend so far (probes, pilots, listing probes) | 19 runs | | | $1.4179 |
+| Sonnet case pilot (M1, T2, R3 twice) | 4 | $0.0755 | 30 | $2.2642 |
+| Opus case pilot (R3) | 1 | $0.1746 | 30 | $5.2391 |
+| Sonnet trigger pilot (P1 x6 incl. `cut150`, N1 x1) | 7 | $0.0590 | 96 | $5.6641 |
+| Opus trigger pilot (P1 x3) | 3 | $0.1274 | 96 | $12.2258 |
+| **Projected total** | | | | **$26.81** |
+
+The projection is below the $42 stop. It is also below the plan's expected $30 to $35, because the pilot reps
+are cheap (each case pilot rep ended in 5 to 17 turns, and each trigger pilot rep in at most 4 turns). A scored
+rep can cost more, and the per-pair check in Spend stop still applies.
 
 ## Deviations from the plan's Task 1 text
 
@@ -264,3 +345,11 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
    `<prompt>/<arm>/<condition>/<model>` folder, so the old and new batches of a pair never met.
 9. The Bash audit does not test for a flag. `git mv -f a` reads as a move of `-f` to `a`, is clean, and moves
    nothing, because git prints its usage. The `audit.py` docstring now says so.
+10. Task 2 used `skill-creator` version `7b7a29e0458e`, not `65adb96f26de`. The plugin installer's list changed
+    between Task 1 and Task 2 (the plugin updated on 2026-11-23), and the folder that Task 1 named now carries an
+    orphan marker. The brief says to choose by the installed version.
+11. Task 2's case pilot removed the R3 fixture's `.claude/settings.json`. Both first R3 reps (Sonnet and Opus)
+    had their `Edit` of that file refused, so no rep could pass the R3 check that Task 1 defined. The file held
+    only the `skillOverrides` entry for the old name. The kit test that pinned it
+    (`test_r3_fixture_is_the_plans_repository`) changed first and failed, then passed with the file removed.
+    The plan's Task 1 fixture text names that file too. The plan is not changed here.
