@@ -219,6 +219,7 @@ A description that reads well has not yet shown that it loads. Test a descriptio
 
 1. Write three or more prompts that should load the skill, worded as users word them.
 2. Write three or more near-miss prompts: tasks that belong to a neighboring skill, or to none.
+   List every prompt in full. A plan that only says to write prompts has no prompts yet.
 3. Run each prompt in a fresh session with the old description, and again with the new one. Count
    the sessions that load the skill.
 4. Report both counts for both descriptions: loads on the should-load prompts and loads on the near
