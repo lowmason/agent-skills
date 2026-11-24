@@ -1,0 +1,153 @@
+{
+  "case": "T2",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "6d80dda4af9990140182a4b8c22b5868ac944373",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/T2/new/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 12,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 24,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 11487,
+    "total_cost_usd": 0.08400600000000001,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1500,
+        "cacheReadInputTokens": 57300,
+        "cacheCreationInputTokens": 15815,
+        "webSearchRequests": 0,
+        "costUSD": 0.08400600000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 173,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15815,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the description in `skills/parquet-schema-check/SKILL.md`. I haven't tested whether it makes agents load the skill.\n\n**Cause:** The description was `Helps with parquet files.` Before a skill loads, the description is all an agent sees of it. That one said nothing about when to use the skill, so agents had no reason to load it as they were about to write a file.\n\n**New description:**\n> Use when about to write or save a parquet file (to_parquet, write_parquet, pq.write_table, df.write.parquet) from a DataFrame or table that has a schema file in schemas/, or when a downstream job fails reading parquet with column name, column order or dtype mismatches.\n\nIt names the moment of the write, the common write calls, and the downstream failure. It doesn't describe the skill's steps, because the writing-skills guidance warns that agents then follow the description and skip the body. I left the body alone.\n\n**Not verified:**\n- **Trigger test:** The writing-skills process asks for a trigger test. That means at least three should-load and three near-miss prompts, each run in a fresh session with the old and new descriptions, comparing load counts. I can't launch fresh sessions with the tools I have here, so this is untested. If you run it, a near-miss prompt would be something like \"read a parquet file and plot a column\", which shouldn't load the skill.\n- **Library list:** The write calls named in the description are my guess at what your agents use. Swap in the libraries you actually use.\n\n**Missing `license` field:** The frontmatter has no `license`, which the writing-skills guidance lists as required. No other skill in the repo has one, so I didn't invent a value. Tell me which license you want and I'll add it.\n\n**Listing budget:** If the skill listing overflows in Claude Code, it drops whole descriptions, starting with the skills used least. A never-loaded skill is the first to go. If the new description still doesn't trigger, run `/context` or `/skill-doctor` to check that it's still in the listing.",
+  "tool_calls": [
+    {
+      "id": "toolu_01Cb2f87B9SkaCwVtwzsQjuW",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01GCRXq6cGKjqwWc46EsHcwW",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01M52e8fDpJ6rPYPjrnn2RMD",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01UQgMJytifa3w1GKZwEbBBX",
+      "name": "Grep",
+      "input": {
+        "pattern": "^license:",
+        "path": "/private/tmp/wst107/rep5/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XSJNp4Kd5r5Se47AMX3saC",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*parquet*",
+        "path": "/private/tmp/wst107/rep5/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01MHEFgvwarwAcPdH2Cqd19X",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write or save a parquet file (to_parquet, write_parquet, pq.write_table, df.write.parquet) from a DataFrame or table that has a schema file in schemas/, or when a downstream job fails reading parquet with column name, column order or dtype mismatches."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

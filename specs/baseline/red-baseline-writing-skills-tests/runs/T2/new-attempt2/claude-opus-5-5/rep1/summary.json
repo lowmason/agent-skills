@@ -1,0 +1,169 @@
+{
+  "case": "T2",
+  "rep": 1,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "cbe6e35ca99e5481a02107a4cd0364bfe7502d1b",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt2/T2/new/claude-opus-5-5/rep1.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 34,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 32,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 9,
+    "duration_ms": 33428,
+    "total_cost_usd": 0.20975499999999997,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 2809,
+        "cacheReadInputTokens": 75915,
+        "cacheCreationInputTokens": 17294,
+        "webSearchRequests": 0,
+        "costUSD": 0.20975499999999997,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 738,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 17294,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've rewritten the skill's description, but I couldn't test whether agents now load it. I can't start fresh sessions from here, so the trigger test hasn't been run.\n\n**Why it never loaded:** the whole description was `Helps with parquet files.` That's the only part of a skill an agent sees before deciding to load it. It doesn't say when the skill applies or mention writing a file, the libraries, or schema errors. So nothing in a task like \"save this frame as parquet\" matched it.\n\n**The change** (`skills/parquet-schema-check/SKILL.md:3`):\n\n> Use when about to write, save, export or append a DataFrame to a parquet file (pandas to_parquet, Polars write_parquet or sink_parquet, pyarrow.parquet.write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails with a schema mismatch, a missing or extra column, wrong column order or a wrong dtype\n\n- It lists only when the skill applies, not its steps, so agents still read the body. That matters most for the \"don't cast to make it match\" rule.\n- The main trigger, writing parquet, comes in the first ~160 characters in case a runtime shortens long descriptions.\n- It's about writing, so it shouldn't compete with `polars-lazy-tuning`, which covers slow parquet reads.\n- I left the body as it was.\n\n**Still to do:**\n1. **Run the trigger test.** I saved it in `specs/trigger-tests/parquet-schema-check.md`, outside the skill folder so it doesn't ship with the skill. It has 5 prompts that should load the skill and 4 close calls that shouldn't, including one meant for `polars-lazy-tuning`. Run each in a fresh session with the old description and again with the new one. The fix works if the first count goes up and the second doesn't. The results table is still marked \"not run\".\n2. **Missing `license` field.** The frontmatter has none, and the repo's frontmatter check (`build/check_frontmatter.py`) requires one. I didn't add it because I don't know which license the project uses. Tell me and I'll add it.\n3. **Nothing is committed yet.**",
+  "tool_calls": [
+    {
+      "id": "toolu_01HSQpkDYggMCBjvKSFJAoMR",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01A1cY3d5SPjLa9cHQHFNBH1",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Rzfby5EQA7HM8ox9Q9QQUu",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*baseline*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HSAHAx3cVbwVeZQfHfkWTM",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01PUeZUP2s6eAV3QWjCNZN8x",
+      "name": "Glob",
+      "input": {
+        "pattern": "{specs/**,schemas/**,skills/**/*,build/**}"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01S6mQniTSazuvCsWHo3RiMf",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/polars-lazy-tuning/SKILL.md",
+        "limit": 8
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NPRSXvoQziyxEnbANc4HNZ",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write, save, export or append a DataFrame to a parquet file (pandas to_parquet, Polars write_parquet or sink_parquet, pyarrow.parquet.write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails with a schema mismatch, a missing or extra column, wrong column order or a wrong dtype"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SPRfT4G1c8frMbXazG9E9o",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/trigger-tests/parquet-schema-check.md",
+        "content": "# Trigger test: parquet-schema-check description\n\nOld description: `Helps with parquet files.`\nNew description: see `skills/parquet-schema-check/SKILL.md`.\n\nRun each prompt in a fresh session, once with the old description and once with the new one.\nCount the sessions that load `parquet-schema-check`.\n\n## Should load\n\n1. \"Clean up the orders frame in etl/orders.py and save it out as parquet for the nightly job.\"\n2. \"Add a `discount_pct` column to the customers DataFrame and write it back to data/customers.parquet.\"\n3. \"Export today's events with polars write_parquet into the events dataset.\"\n4. \"The reporting job crashes reading sales.parquet: 'column type mismatch: expected int64, got double'. Fix the writer.\"\n5. \"Append this week's batch to the inventory parquet files with pyarrow.\"\n\n## Near misses (should not load)\n\n1. \"This Polars scan_parquet query over the logs takes 4 minutes, speed it up.\" (polars-lazy-tuning)\n2. \"Read data/customers.parquet and tell me how many rows have a null email.\"\n3. \"Convert this CSV export to JSON lines for the API team.\"\n4. \"Add a new column `region` to schemas/customers.json.\" (editing the schema, not writing data)\n\n## Results\n\n| Description | Should-load loads (of 5) | Near-miss loads (of 4) |\n|---|---|---|\n| Old | not run | not run |\n| New | not run | not run |\n\nA fix raises the first count and leaves the second unchanged.\nThen run the should-load prompts with the skill turned off (`skillOverrides`: `off`) and compare the work.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md",
+    "?? specs/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

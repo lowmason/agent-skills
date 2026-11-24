@@ -1,0 +1,154 @@
+{
+  "case": "T2",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "d3f2df820b41a26dd320f9db14946b2b211ac5a0",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/T2/new/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 17,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 37,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 16151,
+    "total_cost_usd": 0.0774875,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1622,
+        "cacheReadInputTokens": 53395,
+        "cacheCreationInputTokens": 13978,
+        "webSearchRequests": 0,
+        "costUSD": 0.0774875,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 216,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13978,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the description in `skills/parquet-schema-check/SKILL.md`. I haven't tested it, so I don't know yet whether agents now load the skill.\n\n**Cause:** The description was \"Helps with parquet files.\" It named no situation, and agents decide whether to load a skill from the description alone. Nothing in it connected to the moment of writing a frame that doesn't match the schema.\n\n**New description:**\n> Use when about to write or save a parquet file (to_parquet, write_parquet, pq.write_table, df.write.parquet) from a dataframe whose columns, column order or dtypes might not match the dataset's schema in schemas/, or when downstream jobs fail reading a parquet file with schema mismatch, wrong dtype or missing column errors.\n\nIt lists only triggers: the write calls, the possible mismatch, and the downstream read errors. It doesn't summarize the compare-then-stop procedure, because agents tend to follow a description that summarizes the steps instead of reading the body. I left the body unchanged.\n\n**Not done:**\n- **No trigger test.** I can't launch fresh sessions with the tools I have here. Please run the check from `references/discovery.md`: at least 3 prompts that should load the skill and 3 near-misses, such as reading a parquet file or writing CSV, each run with the old and new description. A fix should raise the loads on the first set and not on the second. I couldn't find the baseline prompts under `specs/baseline/` in this repo, so I couldn't reuse them.\n- **`license` is missing from the frontmatter.** The writing-skills checklist requires it. No other skill in this repo sets one, so I didn't pick one for you. Tell me which license and I'll add it.\n- **No `schemas/` directory exists in this repo.** The skill's step 1 points at one, so check the path is right where the skill will actually run.\n- **Not committed.**",
+  "tool_calls": [
+    {
+      "id": "toolu_017z5k1o9kL5CvjPWEmWDVBv",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SeLq9bqKER5gwkdFcEx8te",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016ew4QnamhrKGJ2MVjYpdX5",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/baseline/**",
+        "path": "/private/tmp/wst107/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01YbhoGFyp83cF2T5BLjuHXu",
+      "name": "Grep",
+      "input": {
+        "pattern": "^license:",
+        "path": "/private/tmp/wst107/rep3/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Xt14id6urxrEe5tStBzgCH",
+      "name": "Glob",
+      "input": {
+        "pattern": "schemas/**",
+        "path": "/private/tmp/wst107/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01FYtVvexUfjz7fqYwhQE9tJ",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write or save a parquet file (to_parquet, write_parquet, pq.write_table, df.write.parquet) from a dataframe whose columns, column order or dtypes might not match the dataset's schema in schemas/, or when downstream jobs fail reading a parquet file with schema mismatch, wrong dtype or missing column errors."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

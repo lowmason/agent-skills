@@ -1,0 +1,158 @@
+{
+  "case": "T2",
+  "rep": 4,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep4",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "54ed4b4f7d02dbd422d5c71c7de1b615f6315754",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/T2/new/claude-opus-5-5/rep4.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 38,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 32,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 8,
+    "duration_ms": 37038,
+    "total_cost_usd": 0.20093560000000002,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 2425,
+        "cacheReadInputTokens": 76778,
+        "cacheCreationInputTokens": 17130,
+        "webSearchRequests": 0,
+        "costUSD": 0.20093560000000002,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 753,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 17130,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've rewritten the description of `parquet-schema-check`. That was the whole cause: the skill body was fine, but agents decide whether to load a skill from its description, and the old one (\"Helps with parquet files.\") gave them nothing to match. I haven't tested whether the new one actually gets it loaded yet. I can't start fresh sessions with the tools I have this turn.\n\n**The change** (`skills/parquet-schema-check/SKILL.md:3`, about 330 characters):\n\n```yaml\ndescription: Use when about to write or overwrite a parquet file for a dataset with a schema in schemas/ (to_parquet, write_parquet, sink_parquet, pyarrow.parquet.write_table), when a frame headed for parquet has had columns added, renamed, dropped, reordered or retyped, or when a job reading a parquet file fails on a missing column, column order or dtype mismatch\n```\n\n- **Starts with \"Use when...\" and lists only triggers.** These are the moment just before a write, the function names agents actually call, and the column edits that tend to break a schema.\n- **It doesn't describe the steps.** The \"compare, report, don't cast\" steps stay in the body. If the description summarized them, agents could follow that summary and skip the rule against casting.\n- **It doesn't overlap `polars-lazy-tuning`.** That skill covers slow or memory-heavy parquet *reads*; this one covers *writes* and schema failures.\n\n**Still to do: the trigger test.** Run each prompt below in a fresh Claude Code session, once with the old description and once with the new one, and count how many sessions load the skill. The fix works if loads go up on the first set and don't go up on the second.\n\nShould load:\n1. \"Add a `region` column to the orders frame and save it back to `data/orders.parquet`.\"\n2. \"Rename `cust_id` to `customer_id` in the customers pipeline and rewrite the output.\"\n3. \"The nightly job fails reading `events.parquet`: says column `ts` is int64, expected timestamp. Fix it.\"\n\nNear misses (shouldn't load):\n4. \"This `scan_parquet` query on the events data is slow and eating memory \u2014 speed it up.\"\n5. \"Convert `report.csv` to Excel.\"\n6. \"How many rows are in `orders.parquet`?\"\n\nThe old description is in git (`54ed4b4`), so you can switch back for the \"old\" runs. To turn the skill off for a comparison, add a `skillOverrides` entry set to `off`.\n\nTwo other things:\n- **Skill listing budget:** if your listing has many skills, Claude Code may drop whole descriptions when the listing goes over its budget, starting with the least-used skills. That would stop this skill triggering whatever the wording. The Skills row of `/context` shows the listing's size after the budget, and `/skill-doctor` shows each skill's cost and how often it's used.\n- **No `license` field:** neither skill here has one. I left it out because this repo has no frontmatter lint that requires it. Tell me if you want it added.",
+  "tool_calls": [
+    {
+      "id": "toolu_01RYNZoouuN4fmCva3DwsNmo",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01BLd5yVTQBpiLzkS3Syqy6Z",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012TMtkbpoLEvArRjkhdRoKU",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*baseline*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HbpyPwEhr7EF8q8BMst2Xp",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017BeG9uUUMDyBTp5ECptpvw",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01FGY92KDyXMggCLTkDQ1TNF",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/polars-lazy-tuning/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01A3zCso4B9NxoY8wPMvTJeD",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write or overwrite a parquet file for a dataset with a schema in schemas/ (to_parquet, write_parquet, sink_parquet, pyarrow.parquet.write_table), when a frame headed for parquet has had columns added, renamed, dropped, reordered or retyped, or when a job reading a parquet file fails on a missing column, column order or dtype mismatch"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

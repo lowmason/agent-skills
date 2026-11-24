@@ -1,0 +1,144 @@
+{
+  "case": "T2",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "0e4df738876ecccfe176dbd491dff0739ba57ab8",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt2/T2/new/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 10,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 21,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 9775,
+    "total_cost_usd": 0.08112159999999999,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1264,
+        "cacheReadInputTokens": 57136,
+        "cacheCreationInputTokens": 15688,
+        "webSearchRequests": 0,
+        "costUSD": 0.08112159999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 126,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15688,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the `description` in `skills/parquet-schema-check/SKILL.md`, but I haven't tested it, so I don't know yet that agents will load the skill.\n\n**Cause:** the old description was \"Helps with parquet files.\" It said nothing about when to load the skill, so an agent about to write a parquet file had nothing in the listing to match against.\n\n**New description:**\n> Use when about to write or save a parquet file (to_parquet, write_parquet, sink_parquet, pq.write_table) for a dataset that has a schema file in schemas/, or when a downstream job fails reading parquet with missing columns, wrong column order or dtype mismatches.\n\nIt starts with \"Use when\" and lists the write calls and the downstream failures an agent would see. It doesn't describe the check itself, because the skill's guidance says a workflow summary in the description can lead agents to skip the body. I left the body alone.\n\n**Not done:**\n- **Trigger test:** I haven't run it, and the skill's guidance asks for it. That means 3+ should-load prompts and 3+ near-miss prompts, such as reading parquet or tuning a Polars scan, which belongs to `polars-lazy-tuning`. Each would run in a fresh session with the old and new description, comparing load counts. I haven't written those prompts or run any sessions.\n- **`license` field:** the frontmatter has no `license`, which the repo's lint requires. `polars-lazy-tuning` doesn't have one either, so I didn't guess a value. Tell me which one you use and I'll add it.\n- **Listing budget:** if the skill still doesn't load after this change, the listing may be dropping descriptions. `/skill-doctor` or `/context` would show that.",
+  "tool_calls": [
+    {
+      "id": "toolu_01BMPFQo6QFajYFqdQLaStXS",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01VsP9mfAjnREcbxcDhq1Kfo",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Pfn2R3a4h8neNYp4VUQ7bu",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Wobv88aFEaEQtD2VwZrNtj",
+      "name": "Grep",
+      "input": {
+        "pattern": "^(license|description):",
+        "path": "/private/tmp/wst107/rep3/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017DvodLVsvzKo5m7AuyU9eD",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write or save a parquet file (to_parquet, write_parquet, sink_parquet, pq.write_table) for a dataset that has a schema file in schemas/, or when a downstream job fails reading parquet with missing columns, wrong column order or dtype mismatches."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

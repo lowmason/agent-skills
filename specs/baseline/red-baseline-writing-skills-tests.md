@@ -64,7 +64,10 @@ prompt, arm, condition or model, must match it, and the runner refuses a batch w
 **The arms.** `old` is `SKILL.md`'s body and the skill folder at the commit before an item's text. `new` is
 the same at the commit of the item's text. Tasks 3 to 5 fill in the shas here. For item 1 (case M1) they are
 M1-OLD `ec641509e2719e88370bf1dec12156de4bbed1e7`, M1-NEW `fe00dc0407670040879f514fecc57961be28132b` (attempt 1)
-and M1-NEW2 `f87b1e76cf1f88bfc0888ca739b559f556327e3e` (attempt 2); see the Task 3 section. The `pilot` arm of Task 2 is
+and M1-NEW2 `f87b1e76cf1f88bfc0888ca739b559f556327e3e` (attempt 2); see the Task 3 section. For item 2
+(case T2) they are T2-OLD `02ebe3d067d29bf7a319336611d9387cc969780a`, T2-NEW `322ceabd8289581691c083dbd10e6f67076b39f0`
+(attempt 1), T2-NEW2 `261e039efcb9cb10811b47e839e3513e8841689f` (attempt 2) and T2-NEW3
+`bfe4da46806d5d88249278ade30fd980947f0cd5` (attempt 3); see the Task 4 section. The `pilot` arm of Task 2 is
 built from HEAD and is not scored. Task 6's arms are TR-OLD and TR-NEW (the trigger test).
 
 **The Glob limits, closed.** Plan 105's audit judged a Glob pattern by its literal part only. Its record named
@@ -257,9 +260,18 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 | Task 3 Step 5, attempt 1: M1 `new` at M1-NEW, Opus | 5 | $1.1486 | $4.4109 |
 | Task 3 Step 5, attempt 2: M1 `new` at M1-NEW2, Sonnet | 5 | $0.5067 | $4.9176 |
 | Task 3 Step 5, attempt 2: M1 `new` at M1-NEW2, Opus | 5 | $1.1471 | $6.0647 |
+| Task 4 Step 1: T2 `old`, Sonnet | 5 | $0.3504 | $6.4151 |
+| Task 4 Step 1: T2 `old`, Opus | 5 | $0.9095 | $7.3246 |
+| Task 4 Step 6, attempt 1: T2 `new` at T2-NEW, Sonnet | 5 | $0.3635 | $7.6881 |
+| Task 4 Step 6, attempt 1: T2 `new` at T2-NEW, Opus | 5 | $0.9572 | $8.6453 |
+| Task 4 Step 6, attempt 2: T2 `new` at T2-NEW2, Sonnet | 5 | $0.3757 | $9.0209 |
+| Task 4 Step 6, attempt 2: T2 `new` at T2-NEW2, Opus | 5 | $0.9670 | $9.9880 |
+| Task 4 Step 6, attempt 3: T2 `new` at T2-NEW3, Sonnet | 5 | $0.3795 | $10.3674 |
+| Task 4 Step 6, attempt 3: T2 `new` at T2-NEW3, Opus | 5 | $1.0712 | $11.4386 |
 
 Running total after Task 2: $1.42 (about $1.4179, summed from unrounded costs). The projection below adds the
 scored runs. Running total after Task 3: $6.0647 (summed from unrounded costs).
+Running total after Task 4: $11.4386 (summed from unrounded costs).
 
 ## Task 2: probes, pilots and spend projection
 
@@ -478,6 +490,206 @@ attempt 2 ($4.9176). Every bound is far below the $50 cap.
 3. *Three grading rounds, one agent each.* The graders were Opus agents with no key: the RED-only grading of the 10
    `old` sheets, attempt 1's mixed grading of 20 sheets, and attempt 2's mixed grading of 20 sheets. The `old`
    sheets were graded three times, each time freshly, with new ids.
+
+## Task 4: item 2, the trigger test (case T2)
+
+Raw output, sheets, keys and grades stay outside the repository, in the scratch folder. Two things are committed.
+The scrubbed rep folders are in `runs/T2/old/<model>/`, `runs/T2/new-attempt1/<model>/`,
+`runs/T2/new-attempt2/<model>/` and `runs/T2/new/<model>/` (attempt 3). Each holds `final.diff` and `summary.json`
+for each rep. The prompt folders sit next to `runs/`: `prompts-T2-old/`, `prompts-T2-new-attempt1/`,
+`prompts-T2-new-attempt2/` (scratch name `prompts-T2-new2`) and `prompts-T2-new/` (attempt 3, scratch name
+`prompts-T2-new3`). Each holds `M1.txt`, `R3.txt`, `T2.txt` and `MANIFEST.txt`, and only `T2.txt` was sent.
+`check_scrub.py` printed PASS and `privacy_sweep.py` found 0 hits in the runs folder and in the four prompt
+folders. The `stream` field of a `summary.json` in `new-attempt1/` and `new-attempt2/` names the parked scratch path
+`cases-attempt1/` or `cases-attempt2/`, not `cases/`, because attempt 3's streams now sit under `cases/`; the
+`<REAL-HOME>` placeholder stays. The Claude Code version was `2.1.323`.
+
+**The arms.**
+
+| Name | Commit | What it is |
+|---|---|---|
+| T2-OLD | `02ebe3d067d29bf7a319336611d9387cc969780a` | `skills/writing-skills/` at the head of Task 3. `SKILL.md` body 19,194 characters. No "Test triggering" step. |
+| T2-NEW | `322ceabd8289581691c083dbd10e6f67076b39f0` | Attempt 1. Adds `discovery.md` section 6 (Test triggering), the `claude-code.md` section "Testing triggering", the `skills.iterating` citation and the pointer in SDO. Body 19,258 characters. |
+| T2-NEW2 | `261e039efcb9cb10811b47e839e3513e8841689f` | Attempt 2. T2-NEW plus one sentence in step 2 of section 6 (below). Body still 19,258. |
+| T2-NEW3 | `bfe4da46806d5d88249278ade30fd980947f0cd5` | Attempt 3. T2-NEW2 plus a second sentence in step 2 of section 6 (below). Body still 19,258. |
+
+T2-OLD already holds `discovery.md`, so the `old` reps could read it too (they did, see the reads below).
+
+**RED (Step 1).** Five `old` reps on each model, graded alone by one Opus agent with no key. No rep was void.
+
+| Model | `old` PASS | RED |
+|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | shown |
+| `claude-opus-5-5` | 0 of 5 | shown |
+
+Every `old` rep failed part (a): it gave no prompt set (no three should-load prompts and no should-not prompt), or
+only one vague should-not task. Part (b) was moot. RED is shown on both models, so item 2 is not null (Open for plan
+review item 3). The RED grades carry the hint mark in 6 of the 10 notes.
+
+**GREEN, attempt 1 (Step 6, at T2-NEW).** The grader graded the 10 `old` and the 10 `new` sheets together, freshly.
+
+| Model | `old` PASS | `new` PASS | RED | GREEN |
+|---|---|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | 0 of 5 | shown | missed |
+| `claude-opus-5-5` | 0 of 5 | 3 of 5 | shown | missed |
+
+The graders' notes give the reason. In the 7 failing `new` reps, the answer used the new step's shape (a plan to
+write prompts and run them old and new), and failed part (a): it listed no concrete prompt set, or only one
+should-load prompt, with the near misses as categories. The 3 passing reps (Opus reps 2, 4 and 5) gave 3 or 4
+should-load prompts and 3 near-miss prompts and said to run each old and new. All 10 `new` reps read `discovery.md`.
+
+**The owner's ruling after attempt 1 (2026-11-23).** Add one sentence and run the `new` arm again, with the `old`
+reps kept. The owner approved this sentence, to go after step 2 of section 6 in `discovery.md` as a continuation of
+that step, and nothing else:
+
+> List every prompt in full. A plan that only says to write prompts has no prompts yet.
+
+This is T2-NEW2. Attempt 1's reps, sheets, key and grades stay in the scratch folder. Attempt 1's `new` reps are
+committed under `runs/T2/new-attempt1/`.
+
+**GREEN, attempt 2 (at T2-NEW2).** Five new `new` reps on each model, graded with the 10 `old` sheets, freshly.
+No rep was void.
+
+| Model | `old` PASS | `new` PASS | RED | GREEN |
+|---|---|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | 0 of 5 | shown | missed |
+| `claude-opus-5-5` | 0 of 5 | 5 of 5 | shown | met on Opus |
+
+On Sonnet, the notes say that in 4 of 5 reps the rep fixed the description, then repeated the step as work for the
+partner ("write 3+ prompts, run them old and new") without writing the prompts. The fifth (rep 1) gave one
+should-load prompt. All 5 Opus reps gave 3 to 5 should-load and 3 to 4 near-miss prompts.
+
+**The owner's ruling after attempt 2 (2026-11-24).** Add one more sentence and run the `new` arm again. The owner
+said this is the last retry. The owner approved this sentence, as a continuation line right after the first one, and
+nothing else:
+
+> Write them yourself, in your answer or in a file; do not leave them for the user.
+
+This is T2-NEW3. Attempt 2's reps are committed under `runs/T2/new-attempt2/`.
+
+**GREEN, attempt 3 (at T2-NEW3).** Five new `new` reps on each model, graded with the 10 `old` sheets, freshly. No
+rep was void.
+
+| Model | `old` PASS | `new` PASS | RED | GREEN |
+|---|---|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | 3 of 5 | shown | missed |
+| `claude-opus-5-5` | 0 of 5 | 5 of 5 | shown | met |
+
+GREEN on Sonnet needs `new` at least 4 of 5 and at least `old` + 2 (Open for plan review item 4). Sonnet passed 3 of
+5, so it missed the bar by one rep. In Sonnet reps 3 and 5 the rep described the old-versus-new test but wrote no
+prompts (rep 3 said so; rep 5 gave no should-load prompt and one near miss). On Opus, every rep wrote 4 to 5
+should-load and 4 to 5 near-miss prompts into a file and said to run each old and new.
+
+**The mixed grading did not change the RED verdict.** `old` was 0 of 5 on both models in the RED-only grading and in
+the mixed gradings of attempts 1, 2 and 3.
+
+**Verdict.** RED is shown on both models. GREEN is met on Opus (attempt 3: 5 of 5; also attempt 2) and missed on
+Sonnet (3 of 5 against a bar of 4, after 0 and 0 in attempts 1 and 2). The owner's limit was that the third attempt
+was the last, and the owner said a third miss ships as measured. So the text stays as T2-NEW3 and ships with a
+known gap: a Sonnet run still often describes the test and leaves the prompts for the partner. The plan-completion
+gate sees this gap.
+
+**Reads of `discovery.md`** (descriptive, from `audit.py`; no rep Read it partially or with an error). All 10 `old`
+reps read it, because the `old` copy already holds the file. All 10 `new` reps read it in attempt 1, all 10 in
+attempt 2 and all 10 in attempt 3. Each rep read it at tool call 2.
+
+**Every scored rep.** Costs are `total_cost_usd` of each rep. The running total starts at $6.0647 (after Task 3) and
+is summed from unrounded costs. A hint mark means the grader saw a clue about the arm or the model.
+
+*`old` reps (RED run).* The four grade columns are the four grading rounds.
+
+| Model | Rep | RED-only grade | Mixed, attempt 1 | Mixed, attempt 2 | Mixed, attempt 3 | Read `discovery.md` | Cost (USD) | Running total (USD) | Hint marks (4 rounds) | Grader note (RED-only round) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | FAIL | FAIL | FAIL | FAIL | yes | 0.0708 | 6.1355 | YYYY | Part (a) fails: no should-load or should-not prompts written; (b) moot without a prompt set. |
+| claude-sonnet-5-5 | 2 | FAIL | FAIL | FAIL | FAIL | yes | 0.0722 | 6.2077 | YYYY | Part (a) fails: no should-load or should-not prompts given; (b) moot without a prompt set. |
+| claude-sonnet-5-5 | 3 | FAIL | FAIL | FAIL | FAIL | yes | 0.0697 | 6.2775 | YYYY | Part (a) fails: no trigger prompt set, only the baseline scenario; (b) moot without a prompt set. |
+| claude-sonnet-5-5 | 4 | FAIL | FAIL | FAIL | FAIL | yes | 0.0665 | 6.3440 | nnnn | Part (a) fails: only suggests rephrased reps, gives no concrete prompts; (b) moot without a prompt set. |
+| claude-sonnet-5-5 | 5 | FAIL | FAIL | FAIL | FAIL | yes | 0.0712 | 6.4151 | YYYY | Part (a) fails: no prompt set given, only the baseline scenario; (b) moot without a prompt set. |
+| claude-opus-5-5 | 1 | FAIL | FAIL | FAIL | FAIL | yes | 0.1716 | 6.5867 | YYYY | Part (a) fails: no should-load or should-not prompts given; (b) moot without a prompt set. |
+| claude-opus-5-5 | 2 | FAIL | FAIL | FAIL | FAIL | yes | 0.1919 | 6.7786 | nnnn | Part (a) fails: no should-load or should-not prompts listed; (b) moot without a prompt set. |
+| claude-opus-5-5 | 3 | FAIL | FAIL | FAIL | FAIL | yes | 0.1751 | 6.9537 | YYYY | Part (a) fails: no three should-load prompts or a should-not prompt; (b) moot without a prompt set. |
+| claude-opus-5-5 | 4 | FAIL | FAIL | FAIL | FAIL | yes | 0.1895 | 7.1432 | nnnn | Part (a) fails: one vague should-not task (Polars tuning), no should-load prompts; (b) moot. |
+| claude-opus-5-5 | 5 | FAIL | FAIL | FAIL | FAIL | yes | 0.1814 | 7.3246 | nnnn | Part (a) fails: no three should-load prompts or a should-not prompt listed; (b) moot without a prompt set. |
+
+*Attempt 1, `new` reps (T2-NEW).*
+
+| Model | Rep | Grade | Read `discovery.md` | Cost (USD) | Running total (USD) | Hint mark | Grader note |
+|---|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | FAIL | yes | 0.0734 | 7.3980 | yes | (a) fails: no concrete prompts given, only describes the 3+ and 3+ test. |
+| claude-sonnet-5-5 | 2 | FAIL | yes | 0.0723 | 7.4703 | yes | (a) fails: only one concrete should-load prompt given, near misses as categories. |
+| claude-sonnet-5-5 | 3 | FAIL | yes | 0.0775 | 7.5478 | yes | (a) fails: no concrete should-load prompts, near misses only as categories. |
+| claude-sonnet-5-5 | 4 | FAIL | yes | 0.0698 | 7.6175 | yes | (a) fails: no concrete prompts given, only mentions should-load and near-miss test in general. |
+| claude-sonnet-5-5 | 5 | FAIL | yes | 0.0705 | 7.6881 | yes | (a) fails: no concrete prompts, only instructs writing 3+ should-load and near-miss prompts. |
+| claude-opus-5-5 | 1 | FAIL | yes | 0.1878 | 7.8759 | yes | (a) fails: only one concrete should-load prompt given (two near misses). |
+| claude-opus-5-5 | 2 | PASS | yes | 0.1949 | 8.0708 | no | Gives 4 should-load and 3 shouldnt-load prompts, says run each with old then new description and count loads. |
+| claude-opus-5-5 | 3 | FAIL | yes | 0.1801 | 8.2509 | yes | (a) fails: one example should-load prompt, near misses only as categories, tells user to write them. |
+| claude-opus-5-5 | 4 | PASS | yes | 0.2009 | 8.4519 | no | Gives 3 should-load and 3 near-miss prompts, says run each with old and new description and count loads. |
+| claude-opus-5-5 | 5 | PASS | yes | 0.1934 | 8.6453 | yes | Gives 4 should-load and 3 near-miss prompts, says run each with old and new description and count loads. |
+
+*Attempt 2, `new` reps (T2-NEW2).*
+
+| Model | Rep | Grade | Read `discovery.md` | Cost (USD) | Running total (USD) | Hint mark | Grader note |
+|---|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | FAIL | yes | 0.0812 | 8.7264 | no | Part (a) missing: only one should-load prompt given, three needed. |
+| claude-sonnet-5-5 | 2 | FAIL | yes | 0.0727 | 8.7991 | yes | Part (a) missing: says three prompts are needed but gives none. |
+| claude-sonnet-5-5 | 3 | FAIL | yes | 0.0811 | 8.8803 | no | Part (a) missing: describes 3+ prompts but writes none. |
+| claude-sonnet-5-5 | 4 | FAIL | yes | 0.0699 | 8.9502 | no | Part (a) missing: says write 3+ prompts but gives none. |
+| claude-sonnet-5-5 | 5 | FAIL | yes | 0.0707 | 9.0209 | yes | Part (a) missing: says write 3+ prompts but gives none. |
+| claude-opus-5-5 | 1 | PASS | yes | 0.2098 | 9.2307 | yes | Written file gives 5 should-load and 4 near-miss prompts; says run each with old and new description and compare counts. |
+| claude-opus-5-5 | 2 | PASS | yes | 0.1768 | 9.4075 | no | Gives 3 should-load and 3 near-miss prompts; run with old and new description and count loads. |
+| claude-opus-5-5 | 3 | PASS | yes | 0.1972 | 9.6048 | no | Gives 4 should-load and 3 near-miss prompts; run with old and new description and count loads. |
+| claude-opus-5-5 | 4 | PASS | yes | 0.1777 | 9.7825 | yes | Gives 4 should-load and 3 should-not prompts; run with old and new description and count loads. |
+| claude-opus-5-5 | 5 | PASS | yes | 0.2055 | 9.9880 | no | Gives 4 should-load and 3 should-not prompts; run with old then new description and count loads. |
+
+*Attempt 3, `new` reps (T2-NEW3).*
+
+| Model | Rep | Grade | Read `discovery.md` | Cost (USD) | Running total (USD) | Hint mark | Grader note |
+|---|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | PASS | yes | 0.0744 | 10.0624 | yes | Message gives 3 should-load and 3 should-not prompts; says count loads on each set for both descriptions. |
+| claude-sonnet-5-5 | 2 | PASS | yes | 0.0783 | 10.1406 | no | Message gives 4 should-load and 4 near-miss prompts; says run with old and new, count loads. |
+| claude-sonnet-5-5 | 3 | FAIL | yes | 0.0703 | 10.2109 | no | Describes the old-vs-new test but says it has not written any prompts; none given. |
+| claude-sonnet-5-5 | 4 | PASS | yes | 0.0725 | 10.2834 | no | Message gives 4 should-load and 4 near-miss prompts; says run with old and new, count loads. |
+| claude-sonnet-5-5 | 5 | FAIL | yes | 0.0840 | 10.3674 | no | Describes the old-vs-new test but gives no should-load prompts and only one near miss. |
+| claude-opus-5-5 | 1 | PASS | yes | 0.2216 | 10.5890 | yes | File gives 4 should-load and 4 near-miss prompts; says run each with old and again with new, compare. |
+| claude-opus-5-5 | 2 | PASS | yes | 0.2107 | 10.7997 | yes | File gives 5 should-load and 4 near-miss prompts; says run once with each description, compare counts. |
+| claude-opus-5-5 | 3 | PASS | yes | 0.2093 | 11.0091 | yes | File gives 5 should-load and 5 near-miss prompts; says run each with old and new description, compare counts. |
+| claude-opus-5-5 | 4 | PASS | yes | 0.2154 | 11.2244 | yes | File gives 5 should-load and 4 near-miss prompts; says run each with old and new description, count loads. |
+| claude-opus-5-5 | 5 | PASS | yes | 0.2142 | 11.4386 | yes | File gives 5 should-load and 5 near-miss prompts; says run with old and again with new, compare. |
+
+
+**Spend by batch.** The running total is $11.4386 at the end of Task 4, below the $50 cap. Each run script gated each
+model's batch: a pair check ran before the Sonnet batch and again before the Opus batch, with the true running total
+at that moment (the script summed the costs of the batch before it). The bound is that total plus 5 x $1.50.
+
+| Batch | Reps | Cost | Running total | Pair check bound |
+|---|---|---|---|---|
+| T2 `old`, Sonnet | 5 | $0.3504 | $6.4151 | $6.0647 + $7.50 = $13.56 |
+| T2 `old`, Opus | 5 | $0.9095 | $7.3246 | $6.4151 + $7.50 = $13.92 |
+| T2 `new` at T2-NEW (attempt 1), Sonnet | 5 | $0.3635 | $7.6881 | $7.3246 + $7.50 = $14.82 |
+| T2 `new` at T2-NEW (attempt 1), Opus | 5 | $0.9572 | $8.6453 | $7.6881 + $7.50 = $15.19 |
+| T2 `new` at T2-NEW2 (attempt 2), Sonnet | 5 | $0.3757 | $9.0209 | $8.6453 + $7.50 = $16.15 |
+| T2 `new` at T2-NEW2 (attempt 2), Opus | 5 | $0.9670 | $9.9880 | $9.0209 + $7.50 = $16.52 |
+| T2 `new` at T2-NEW3 (attempt 3), Sonnet | 5 | $0.3795 | $10.3674 | $9.9880 + $7.50 = $17.49 |
+| T2 `new` at T2-NEW3 (attempt 3), Opus | 5 | $1.0712 | $11.4386 | $10.3674 + $7.50 = $17.87 |
+
+Every bound is far below the $50 cap. The Task 3 run did not gate each model; Task 4 did.
+
+**Limits.**
+
+1. *Blind scoring is not fully blind.* A sheet that names the new step ("trigger test") shows its arm, because the
+   text exists only in the `new` arm. That was 5 of the 20 sheets in attempt 1, 5 of 20 in attempt 2 and 8 of 20 in
+   attempt 3. In attempt 1, 2 of the 20 sheets also named `discovery.md`. The graders also marked hint marks. Counts,
+   by arm, from the keys: the RED-only round marked 6 of the 10 `old` sheets. Attempt 1's mixed round marked 14 of 20
+   (6 `old`, 8 `new`). Attempt 2's mixed round marked 10 of 20 (6 `old`, 4 `new`). Attempt 3's mixed round marked 12
+   of 20 (6 `old`, 6 `new`). The verdicts do not turn on a hint: every `old` rep failed in all four rounds, and a
+   `new` rep passed when its answer held a visible prompt set.
+2. *Each added sentence repeats part (a) of the PASS rule.* Both sentences ask for a prompt set, after a miss on part
+   (a) that guided them. So attempts 2 and 3 are not independent of attempt 1: a reader should weigh each as a
+   result that the earlier miss shaped. The owner approved each exact sentence.
+3. *Four grading rounds, one agent each.* The graders were Opus agents with no key: the RED-only grading of the 10
+   `old` sheets, and the mixed gradings of 20 sheets for attempts 1, 2 and 3. The `old` sheets were graded four times,
+   each time freshly, with new ids.
+4. *Sonnet's attempt-3 result is below the bar by one rep* (3 of 5 against 4). The item ships with that gap.
 
 ## Deviations from the plan's Task 1 text
 

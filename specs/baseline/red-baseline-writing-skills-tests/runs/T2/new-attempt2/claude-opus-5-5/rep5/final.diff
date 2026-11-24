@@ -1,0 +1,12 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..d7d63a1 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when writing, appending to or overwriting a parquet file for a dataset that has a schema in schemas/, or when a job fails reading a parquet file over missing columns, wrong column order or mismatched dtypes. Applies to pandas to_parquet, Polars write_parquet and sink_parquet, and pyarrow.parquet.write_table.
+ ---
+ 
+ # Parquet Schema Check

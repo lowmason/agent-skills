@@ -1,0 +1,159 @@
+{
+  "case": "T2",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "19d9ed66b841e8e296b6e8d2913cdd42961b803f",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt2/T2/new/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 32,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 34,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 8,
+    "duration_ms": 32049,
+    "total_cost_usd": 0.20545960000000002,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 2532,
+        "cacheReadInputTokens": 77258,
+        "cacheCreationInputTokens": 17416,
+        "webSearchRequests": 0,
+        "costUSD": 0.20545960000000002,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 910,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 17416,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the description in `skills/parquet-schema-check/SKILL.md:3`. I haven't tested it yet: this turn I can only read and edit files, so I couldn't open fresh sessions to see whether the skill now loads.\n\n**Why agents skipped it:** the description said only \"Helps with parquet files.\" Before a skill loads, an agent sees just its name and description, and that line doesn't name the moment the skill is for: writing a parquet file.\n\n**New description:**\n> Use when writing, appending to or overwriting a parquet file for a dataset that has a schema in schemas/, or when a job fails reading a parquet file over missing columns, wrong column order or mismatched dtypes. Applies to pandas to_parquet, Polars write_parquet and sink_parquet, and pyarrow.parquet.write_table.\n\n- It describes only when to use the skill, not its steps. If the description summarizes the steps, agents tend to follow that summary and never read the body, so \"don't cast to make them match\" would get lost.\n- It names the actual write calls (`to_parquet`, `write_parquet`, `sink_parquet`, `write_table`) and the errors a reader hits. Agents match on those words when they're about to write or are debugging a failed read.\n- The main trigger is in the first 160 characters, in case a runtime shortens descriptions.\n- It's about 330 characters, under the 1024 limit.\n- It shouldn't overlap with `polars-lazy-tuning`, which covers slow or memory-heavy reads, not schema mismatches.\n\nI didn't change the body or add a `license` field. Your other skill doesn't have one either, and I found no lint here that requires it.\n\n**To check the fix:** run each prompt below in a fresh session with the old description, then with the new one, and count how many sessions load the skill. The fix works if the first group's count goes up and the second group's doesn't.\n\nShould load the skill:\n1. \"Clean up the orders dataframe and save it to `data/orders/2026-11.parquet`.\"\n2. \"Append today's events to the events parquet file with polars.\"\n3. \"The nightly report job crashes reading `customers.parquet` \u2014 says column `signup_ts` has type string, expected timestamp. Fix the export.\"\n4. \"Write the merged frame out with `pyarrow.parquet.write_table`.\"\n\nShouldn't load it:\n1. \"My `scan_parquet` query on the 40 GB events table runs out of memory.\" (belongs to `polars-lazy-tuning`)\n2. \"Convert this CSV to JSON lines.\"\n3. \"How many rows are in `orders.parquet`?\" (a read, no write)\n\nIf you want, I can write these up as a test file outside the skill directory so you can rerun them.",
+  "tool_calls": [
+    {
+      "id": "toolu_012AkgrkdWfvdGd2iPVHfVot",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01ThGtxiZttjFVMjzHhaPANU",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016EB3RNSM8bVTNuHrNAtqve",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*baseline*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01QHdkMF56S1imfVds38KbW3",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01RosB8h2tK4PaPcL9ENJ2ty",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*",
+        "path": "/private/tmp/wst107/rep5/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017H5kZdPi8VFTcV6FhTtfq8",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/polars-lazy-tuning/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012Sn9GkoAvAhmegJxY9pu48",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when writing, appending to or overwriting a parquet file for a dataset that has a schema in schemas/, or when a job fails reading a parquet file over missing columns, wrong column order or mismatched dtypes. Applies to pandas to_parquet, Polars write_parquet and sink_parquet, and pyarrow.parquet.write_table."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

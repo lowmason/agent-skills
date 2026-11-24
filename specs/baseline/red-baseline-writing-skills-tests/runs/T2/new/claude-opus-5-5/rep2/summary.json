@@ -1,0 +1,160 @@
+{
+  "case": "T2",
+  "rep": 2,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep2",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "1863fac100ec790e8f9678c0e83a856cec375213",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/T2/new/claude-opus-5-5/rep2.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 35,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 30,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 8,
+    "duration_ms": 35067,
+    "total_cost_usd": 0.210737,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 2802,
+        "cacheReadInputTokens": 57005,
+        "cacheCreationInputTokens": 17908,
+        "webSearchRequests": 0,
+        "costUSD": 0.210737,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 676,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 17908,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the skill's description, but I haven't tested whether it now loads. The new description needs a trigger test before we can call this fixed.\n\n**Why it never loaded.** The old description was `Helps with parquet files.` Agents use the description alone to decide whether to open a skill. That line names no situation, so nothing about \"I'm about to call `to_parquet`\" matches it.\n\n**The change** (`skills/parquet-schema-check/SKILL.md:3`):\n\n```\nUse when about to write, save, export or append a parquet file (to_parquet,\nwrite_parquet, sink_parquet, pyarrow.parquet.write_table), or when a job reading\na parquet file fails on a missing column, wrong column order or mismatched dtype\n```\n\n- **Write trigger first:** the moment the skill is needed is the write, so that comes first, along with the function names agents actually type.\n- **Failure symptoms second:** a downstream read failing on a missing column, wrong order or dtype mismatch is the other point where an agent should find this skill.\n- **No steps:** I left the skill's steps (\"compare to `schemas/`, don't cast\") out of the description on purpose. If they're in the description, agents tend to follow that summary and skip the body.\n- **Slow reads left out:** they stay with `polars-lazy-tuning`, so the two skills don't compete.\n\n**The test.** These runs need fresh Claude Code sessions, and I can't start those from here. I wrote the test in `specs/trigger-tests/parquet-schema-check.md`, outside the skill directory so it doesn't ship with the skill:\n- 5 prompts that should load the skill: saving, appending and exporting parquet, plus fixing the job that crashes with \"column not found\".\n- 4 near misses: a slow `scan_parquet` query, reading parquet only, saving to CSV, and a schema-to-docs task.\n- A results table to fill in for the old and new descriptions.\n\nThe fix counts as working if more of the should-load prompts load the skill and the near misses still don't. To check that it changes the work once loaded, run the should-load prompts with the skill on and off (`skillOverrides: off`).\n\n**Two other things:**\n- The frontmatter has no `license` field. I didn't add one because I don't know the project's license. Tell me which and I'll add it.\n- Nothing is committed yet. I can commit once the trigger counts look right.",
+  "tool_calls": [
+    {
+      "id": "toolu_01J9yWehU5gHtFLBBqjk1h5X",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01UAh5J7748L9EGiCL1whEwp",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01PfFWynJcj8qg24ATePWxY6",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017nWjNm6QtvCUTiQvoaCKxH",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/polars-lazy-tuning/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NW4XRC45PbtEGh4H7xnCuY",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HGgCV7U9R4GTjg8fcmGRSn",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write, save, export or append a parquet file (to_parquet, write_parquet, sink_parquet, pyarrow.parquet.write_table), or when a job reading a parquet file fails on a missing column, wrong column order or mismatched dtype"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01UAQh1g4JWvBvDQd8syponn",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/trigger-tests/parquet-schema-check.md",
+        "content": "# Trigger test: parquet-schema-check description\n\nOld description: `Helps with parquet files.`\nNew description: `Use when about to write, save, export or append a parquet file (to_parquet,\nwrite_parquet, sink_parquet, pyarrow.parquet.write_table), or when a job reading a parquet file\nfails on a missing column, wrong column order or mismatched dtype`\n\nRun each prompt in a fresh session, once with each description. Record whether\n`parquet-schema-check` loaded.\n\n## Should load\n\n1. \"Clean up the orders dataframe and save it as data/orders/2026-11.parquet.\"\n2. \"Add a `discount_pct` column to the customers frame and write it back out to parquet.\"\n3. \"Export today's events to parquet so the nightly job can pick them up.\"\n4. \"The nightly aggregation job crashes with `column 'region' not found` when it reads\n   sales.parquet. Fix the script that produces that file.\"\n5. \"Append this week's rows to the existing inventory parquet dataset.\"\n\n## Near misses (should not load)\n\n1. \"This `pl.scan_parquet` query over the events dataset takes 10 minutes. Speed it up.\"\n   (belongs to polars-lazy-tuning)\n2. \"Read sales.parquet and give me the top 10 regions by revenue.\"\n3. \"Save the orders frame to CSV for the finance team.\"\n4. \"Convert this JSON schema file to a markdown table for the docs.\"\n\n## Results\n\n| Description | Should-load loads (of 5) | Near-miss loads (of 4) |\n|---|---|---|\n| Old | | |\n| New | | |\n\nA fix raises the first count and leaves the second at or near zero.\nTo see the effect once loaded, run the should-load prompts with the skill on and with it off\n(`skillOverrides` entry `off`) and compare whether the frame is checked against `schemas/`\nbefore the write.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md",
+    "?? specs/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

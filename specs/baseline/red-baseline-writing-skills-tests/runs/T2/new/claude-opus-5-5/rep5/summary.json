@@ -1,0 +1,168 @@
+{
+  "case": "T2",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "038a00f4731b4585655825ac99c813569db25610",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/T2/new/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 43,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 34,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 9,
+    "duration_ms": 42032,
+    "total_cost_usd": 0.2141924,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 2940,
+        "cacheReadInputTokens": 76242,
+        "cacheCreationInputTokens": 17513,
+        "webSearchRequests": 0,
+        "costUSD": 0.2141924,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 745,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 17513,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've rewritten the skill's description, but I haven't tested whether agents now load it. I can't start sessions from here, so the trigger test is written up and waiting to be run.\n\n**Cause:** the old description was `Helps with parquet files.` That gives an agent nothing to match when it's about to write a file. It never mentions writing or the schemas in `schemas/`, and it doesn't say when the skill applies.\n\n**Change:** in `skills/parquet-schema-check/SKILL.md`, the description now reads:\n\n> Use when about to write, save or overwrite a parquet file for a dataset that has a schema in schemas/ (to_parquet, write_parquet, pq.write_table), or when a job reading parquet fails on a schema, column or dtype mismatch\n\n- It says when to use the skill, not how the check works. A description that summarizes the steps tends to get followed instead of the skill's body, which has the \"don't cast to make them match\" rule.\n- It names the write calls and the error words an agent actually sees.\n- It's limited to writing and to failures caused by a mismatch. That keeps it apart from `polars-lazy-tuning`, which is about slow or memory-heavy parquet reads.\n- At about 210 characters, it puts the main trigger (\"about to write\u2026 a parquet file\") in the first 70. That part survives if a runtime shortens descriptions.\n\n**Test to run:** `specs/trigger-test-parquet-schema-check.md` (outside the skill folder, so it won't ship with the skill) has:\n- 5 prompts that should load the skill;\n- 5 near-misses, two of them aimed at `polars-lazy-tuning`;\n- an empty results table.\n\nRun each prompt in a fresh session with the old description and again with the new one. The fix works if the should-load count goes up and the near-miss count doesn't. I can't run these sessions myself with the tools I have here. If you'd rather I run them, give me a session with Bash or subagents.\n\n**Separate issue:** neither skill here has a `license` field, which the writing-skills checklist lists as required. This repo has no frontmatter lint, so nothing would catch it. I left it alone because it's a separate change; tell me if you want it added to both.\n\nThe change isn't committed.",
+  "tool_calls": [
+    {
+      "id": "toolu_018R9wLfZy6CVFwQAoTAty8Q",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016ny1Ra9MoiaEnVmD1bviQ3",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01JyLPJLWreqyFyBcuZgJDdE",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*baseline*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01S1PsVUMS15Zx7F29gfeLRL",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/claude-code.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01BbfL4rUW22nytfwu6poKk6",
+      "name": "Glob",
+      "input": {
+        "pattern": "{skills/*/SKILL.md,schemas/**,build/**,specs/**}"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CjD4cmSQSMKzpksUUozArJ",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/polars-lazy-tuning/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NtYoRaRZqE18eEb1nMCw8a",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write, save or overwrite a parquet file for a dataset that has a schema in schemas/ (to_parquet, write_parquet, pq.write_table), or when a job reading parquet fails on a schema, column or dtype mismatch"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SbGFMm17h627xLspB5w5v5",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/trigger-test-parquet-schema-check.md",
+        "content": "# Trigger test: parquet-schema-check description\n\nOld description: `Helps with parquet files.`\nNew description: `Use when about to write, save or overwrite a parquet file for a dataset that has a schema in schemas/ (to_parquet, write_parquet, pq.write_table), or when a job reading parquet fails on a schema, column or dtype mismatch`\n\nRun each prompt in a fresh session, once with each description. Count sessions that load\n`parquet-schema-check`. A fix raises the should-load count and does not raise the near-miss count.\n\n## Should load\n\n1. \"I've cleaned up the orders DataFrame. Save it to data/orders/2026-11.parquet so the nightly job picks it up.\"\n2. \"Add a step at the end of etl/customers.py that writes the result out as parquet, replacing last week's file.\"\n3. \"The downstream reporting job crashed with `ArrowInvalid: Schema at index 0 was different` after my backfill. Fix the backfill and rewrite the file.\"\n4. \"Convert this CSV export to parquet and drop it into the events dataset.\"\n5. \"I renamed `user_id` to `customer_id` in the pipeline. Regenerate the parquet outputs.\"\n\n## Near misses (should not load)\n\n1. \"This Polars scan over the events parquet takes 4 minutes. Make it faster.\" (polars-lazy-tuning)\n2. \"Read data/orders/2026-11.parquet and tell me how many rows have a null discount.\"\n3. \"Should we store these logs as parquet or as JSON lines? Explain the trade-offs.\"\n4. \"collect() runs out of memory on the 200 GB parquet scan. What should I do?\" (polars-lazy-tuning)\n5. \"Write a CSV of the top 100 customers for the sales team.\"\n\n## Results\n\n| Description | Should-load (of 5) | Near-miss loads (of 5) |\n|---|---|---|\n| Old | _not yet run_ | _not yet run_ |\n| New | _not yet run_ | _not yet run_ |\n\nTo check the cut a runtime may apply, rerun the should-load prompts with `skillListingMaxDescChars`\nset to 160.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md",
+    "?? specs/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

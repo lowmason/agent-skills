@@ -1,0 +1,51 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..cb92f6e 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write, save or overwrite a parquet file for a dataset that has a schema in schemas/ (to_parquet, write_parquet, pq.write_table), or when a job reading parquet fails on a schema, column or dtype mismatch
+ ---
+ 
+ # Parquet Schema Check
+diff --git a/specs/trigger-test-parquet-schema-check.md b/specs/trigger-test-parquet-schema-check.md
+new file mode 100644
+index 0000000..9d8bbd5
+--- /dev/null
++++ b/specs/trigger-test-parquet-schema-check.md
+@@ -0,0 +1,33 @@
++# Trigger test: parquet-schema-check description
++
++Old description: `Helps with parquet files.`
++New description: `Use when about to write, save or overwrite a parquet file for a dataset that has a schema in schemas/ (to_parquet, write_parquet, pq.write_table), or when a job reading parquet fails on a schema, column or dtype mismatch`
++
++Run each prompt in a fresh session, once with each description. Count sessions that load
++`parquet-schema-check`. A fix raises the should-load count and does not raise the near-miss count.
++
++## Should load
++
++1. "I've cleaned up the orders DataFrame. Save it to data/orders/2026-11.parquet so the nightly job picks it up."
++2. "Add a step at the end of etl/customers.py that writes the result out as parquet, replacing last week's file."
++3. "The downstream reporting job crashed with `ArrowInvalid: Schema at index 0 was different` after my backfill. Fix the backfill and rewrite the file."
++4. "Convert this CSV export to parquet and drop it into the events dataset."
++5. "I renamed `user_id` to `customer_id` in the pipeline. Regenerate the parquet outputs."
++
++## Near misses (should not load)
++
++1. "This Polars scan over the events parquet takes 4 minutes. Make it faster." (polars-lazy-tuning)
++2. "Read data/orders/2026-11.parquet and tell me how many rows have a null discount."
++3. "Should we store these logs as parquet or as JSON lines? Explain the trade-offs."
++4. "collect() runs out of memory on the 200 GB parquet scan. What should I do?" (polars-lazy-tuning)
++5. "Write a CSV of the top 100 customers for the sales team."
++
++## Results
++
++| Description | Should-load (of 5) | Near-miss loads (of 5) |
++|---|---|---|
++| Old | _not yet run_ | _not yet run_ |
++| New | _not yet run_ | _not yet run_ |
++
++To check the cut a runtime may apply, rerun the should-load prompts with `skillListingMaxDescChars`
++set to 160.

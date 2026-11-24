@@ -1,0 +1,56 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..407db47 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write, save, export or append a parquet file (to_parquet, write_parquet, sink_parquet, pyarrow.parquet.write_table), or when a job reading a parquet file fails on a missing column, wrong column order or mismatched dtype
+ ---
+ 
+ # Parquet Schema Check
+diff --git a/specs/trigger-tests/parquet-schema-check.md b/specs/trigger-tests/parquet-schema-check.md
+new file mode 100644
+index 0000000..af637a7
+--- /dev/null
++++ b/specs/trigger-tests/parquet-schema-check.md
+@@ -0,0 +1,38 @@
++# Trigger test: parquet-schema-check description
++
++Old description: `Helps with parquet files.`
++New description: `Use when about to write, save, export or append a parquet file (to_parquet,
++write_parquet, sink_parquet, pyarrow.parquet.write_table), or when a job reading a parquet file
++fails on a missing column, wrong column order or mismatched dtype`
++
++Run each prompt in a fresh session, once with each description. Record whether
++`parquet-schema-check` loaded.
++
++## Should load
++
++1. "Clean up the orders dataframe and save it as data/orders/2026-11.parquet."
++2. "Add a `discount_pct` column to the customers frame and write it back out to parquet."
++3. "Export today's events to parquet so the nightly job can pick them up."
++4. "The nightly aggregation job crashes with `column 'region' not found` when it reads
++   sales.parquet. Fix the script that produces that file."
++5. "Append this week's rows to the existing inventory parquet dataset."
++
++## Near misses (should not load)
++
++1. "This `pl.scan_parquet` query over the events dataset takes 10 minutes. Speed it up."
++   (belongs to polars-lazy-tuning)
++2. "Read sales.parquet and give me the top 10 regions by revenue."
++3. "Save the orders frame to CSV for the finance team."
++4. "Convert this JSON schema file to a markdown table for the docs."
++
++## Results
++
++| Description | Should-load loads (of 5) | Near-miss loads (of 4) |
++|---|---|---|
++| Old | | |
++| New | | |
++
++A fix raises the first count and leaves the second at or near zero.
++To see the effect once loaded, run the should-load prompts with the skill on and with it off
++(`skillOverrides` entry `off`) and compare whether the frame is checked against `schemas/`
++before the write.
