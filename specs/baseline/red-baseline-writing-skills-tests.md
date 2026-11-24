@@ -965,3 +965,24 @@ trigger test. Item 2's open status (spec item 2) is unchanged.
     only the `skillOverrides` entry for the old name. The kit test that pinned it
     (`test_r3_fixture_is_the_plans_repository`) changed first and failed, then passed with the file removed.
     The plan's Task 1 fixture text names that file too. The plan is not changed here.
+12. Three sentences in the shipped text are not in the plan's exact text. One ends `micro-tests.md`'s "Run each
+    model" section (Task 3, attempt 2). Two follow step 2 of `discovery.md` section 6 (Task 4, attempts 2 and 3).
+    The owner approved each by ruling on 2026-11-23 and 2026-11-24.
+13. Item 2 shipped below its GREEN bar on Sonnet: 3 of 5 against a bar of 4. The owner's rule says a third miss
+    ships as measured (Task 4).
+14. Item 10 shipped no text. Its RED run was null, because the control passed R3 in 10 of 10 reps. The owner ruled
+    to drop it (Task 5).
+15. Item 3b: the registered 15-rep trigger test failed its floor at Sonnet `old` `full` (3 of 15) and was
+    uninformative. The owner ruled a narrow check in its place. The narrow check missed its bar on Sonnet `full`
+    P3 (3 of 5 against 5 of 5). The description was reverted on the owner's ruling, and Opus never ran (Task 6).
+16. The Codex cut was measured on a scratch HOME padded with 19 synthetic fillers, on the owner's ruling. A copy of
+    the personal skill folders alone listed 76 entries and cut at 220 (Task 6).
+17. The controller ran the Sonnet `old` `full` group first, as an early floor check. Sonnet `old` cells so ran
+    without their `new` cells, though the plan says a stop never leaves an old cell without its new cell. The
+    controller read that rule as covering budget stops (Task 6).
+18. After the Sonnet `full` P3 bar missed in the narrow check, the two Sonnet `cut150` groups still ran (30 reps,
+    $1.4565) before the controller asked the owner. The registered rule says only that the controller asks on a
+    failed bar. The verdict was already "not a pass" (Task 6).
+19. The final whole-branch review ran the code-reviewer seat only. The owner ruled on 2026-11-24 not to run the
+    Codex seat (plan decision D3: the scratch folders hold unscrubbed rep output). No second-model read of the
+    branch exists.

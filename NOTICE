@@ -1201,6 +1201,10 @@ Changes from upstream:
     (specs/baseline/red-baseline-writing-skills-tests.md). The rename
     procedure was dropped, because its control already passed. The
     reordered description was reverted, because its trigger check failed.
+    The committed prompts
+    (specs/baseline/red-baseline-writing-skills-tests/prompts-*/) embed the
+    skill's old and new text, upstream-derived parts included (MIT,
+    LICENSE-superpowers).
 
     brainstorming/
     dispatching-parallel-agents/
