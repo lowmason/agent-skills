@@ -1,0 +1,145 @@
+{
+  "case": "T2",
+  "rep": 2,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep2",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "88dec7d4c770c0beb5cf568fa61329f10c14c305",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/T2/old/claude-sonnet-5-5/rep2.jsonl",
+  "prompt_sha256": "ab5b91580188cc54faae8c78abeb079ab443eeddf85915d06bd46d3b845fd967",
+  "claude_exit": 0,
+  "wall_seconds": 12,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 19,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 11854,
+    "total_cost_usd": 0.0722432,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1382,
+        "cacheReadInputTokens": 52232,
+        "cacheCreationInputTokens": 13296,
+        "webSearchRequests": 0,
+        "costUSD": 0.0722432,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 249,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13296,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the description in `skills/parquet-schema-check/SKILL.md`, but I haven't re-run the scenario to check that agents now load the skill. I also skipped the micro-test against a no-guidance control that the skill's process calls for.\n\n**Cause.** The description was `Helps with parquet files.` Agents read only the description when deciding whether to load a skill. That one said nothing about writing a file, schemas, or a mismatch, so there was nothing to match on.\n\n**Change.** The description now reads:\n\n> Use when about to write a parquet file (to_parquet, write_parquet, pyarrow write_table, Spark parquet write) for a dataset that has a schema file in schemas/, or when a parquet write or a downstream read fails on column names, column order, or dtype mismatches.\n\nIt names the moment the skill applies, the write calls an agent would be about to make, and the symptoms. It says nothing about the steps in the skill, because a description that summarises the steps tempts agents to follow the summary and skip the body. I left the body alone, since the baseline showed the skill never loading rather than being misapplied.\n\n**Things to check:**\n- The frontmatter has no `license` field, which the writing-skills checklist requires. No other skill in the repo has one either, so I didn't guess a value. Tell me which license you want and I'll add it.\n- Please re-run the baseline scenario with the new description. If agents still skip the skill, the next step is a version of the description that matches the tool names and column-mismatch wording your agents actually use.\n- There was no `specs/baseline/` directory in the repo, so I couldn't compare against the saved baseline transcripts.\n\nI haven't committed anything.",
+  "tool_calls": [
+    {
+      "id": "toolu_012BYpQw3NmYL47FZwYRpSkB",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01DmhetmwMRP9UWuuKJCeABD",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01M5RuP1Zvq4bmaxtwSo4jgm",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/baseline/**",
+        "path": "/private/tmp/wst107/rep2/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01VPaTqFdVGcy4YdApXZokL5",
+      "name": "Grep",
+      "input": {
+        "pattern": "^license:",
+        "path": "/private/tmp/wst107/rep2/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01WiW4zxrHx4LWB17dPywL47",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write a parquet file (to_parquet, write_parquet, pyarrow write_table, Spark parquet write) for a dataset that has a schema file in schemas/, or when a parquet write or a downstream read fails on column names, column order, or dtype mismatches."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

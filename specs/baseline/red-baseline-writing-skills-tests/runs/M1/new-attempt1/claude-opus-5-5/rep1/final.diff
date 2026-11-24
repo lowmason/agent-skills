@@ -1,0 +1,135 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..30399e1
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,129 @@
++# Micro-test design: step 2 wording in `changelog-entry`
++
++Status: design only. Nothing has been run. Register this file (commit it) before the first rep.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make agents write entries that lead
++with the reader's outcome, without pushing lines past 100 characters, more reliably than the old
++step 2 and more reliably than no step 2 at all?
++
++## What is measured
++
++The old and new lines ask for different surface forms (a leading verb vs. a leading outcome), so
++"did the agent follow step 2" is not comparable across arms. All arms are scored on the failure the
++proposal targets instead:
++
++- **Primary — internal entry:** the line names an internal part (file, class, function, module,
++  ticket) instead of what changed for the reader ("Fix handler", "Change parser").
++- **Guard — the proposal's Risk:** the line is longer than 100 characters.
++
++Secondary, descriptive only (not part of the verdict): does the line start with Add, Fix, Remove or
++Change. This lets the old arm be compared with the 7/10 baseline.
++
++## Arms
++
++All arms get the full `SKILL.md` as system context; only step 2 differs.
++
++| Arm | Step 2 |
++|-----|--------|
++| A — control | Step 2 deleted; steps renumbered 1–3 |
++| B — old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| C — new | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++The old arm is rerun here rather than reusing the earlier 7/10, so all three arms share the same
++task, model and setup.
++
++**Stop rule on the control:** if arm A shows no internal entries (0 FAIL on the primary measure),
++there is nothing for step 2 to fix. Stop and report; do not judge B vs. C.
++
++## Task (user message, identical in every rep)
++
++Ask the rep to write `CHANGELOG.md` entries for four merged pull requests. Each PR is given as a
++title plus a short description written in internal terms, so the easy answer is an internal entry.
++None of them may involve CSV export or the cursor, so an echo of the new line's examples can't
++pass as an answer.
++
++| PR | Title as given | Internal terms (any in the line → primary FAIL) | User-visible effect (the line must name this) |
++|----|----------------|------------------------------------------------|-----------------------------------------------|
++| 1 | Fix null check in `InvoiceRenderer` | `InvoiceRenderer`, renderer, null check | Invoices with no billing address no longer fail to open |
++| 2 | Change `TokenRefresher` interval to 50 min | `TokenRefresher`, refresher, interval | Users are no longer signed out after an hour |
++| 3 | Add `bulk_archive` endpoint + button wiring | `bulk_archive`, endpoint, wiring | Archive many projects at once |
++| 4 | Remove legacy `SyncV1` client (JIRA-4821) | `SyncV1`, client, JIRA-4821 | Drop support for desktop app versions before 3.0 |
++
++The exact PR text goes in the kit (below). Reps never see this table.
++
++## Rules (registered before any reply is read)
++
++Score each line, then each rep.
++
++**Line PASS** — all three:
++1. Contains none of that PR's internal terms from the table (case-insensitive).
++2. Names that PR's user-visible effect (paraphrase allowed; the grader checks against the table).
++3. Is 100 characters or fewer, and covers one PR only.
++
++**Line FAIL** — any of the three is not met.
++
++**Rep PASS** — all four lines PASS. **Rep FAIL** — any line FAILs.
++
++**Rep VOID** — the rep could read any quarantined file; it refused or errored; it produced no
++changelog lines; or it did not produce exactly one line per PR. Replace a VOID rep with a new rep;
++report VOID counts.
++
++**Template echo:** a line that copies "Export reports as CSV" or "Stop losing the cursor on save"
++is a FAIL on criterion 2. Every line flagged by the automated term/length check is read by hand
++before its grade stands.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report the
++counts under both readings.
++
++## Decision rule (registered)
++
++Merge-ready if, on every model run:
++- arm A shows the failure (≥ 3/10 rep FAIL), and
++- arm C rep FAILs ≤ 2/10 and fewer than arm B, and
++- arm C's over-100-character lines are no more than arm B's.
++
++Anything else: do not merge; report the counts and the failing lines.
++
++Variance check: read arm C's 10 passing lines per PR side by side. If they take clearly different
++shapes (some lead with an outcome, some with a verb + part, some full sentences), the wording isn't
++binding yet even if the counts pass — report it.
++
++## Reps and models
++
++- 10 reps per arm per model (matches the baseline's denominator; above the 5-rep minimum).
++- Every model that will run this skill, same rep count on each. **Open: which models?**
++- One fresh-context sample per rep, no tools.
++
++## Isolation
++
++- Each rep runs in a new empty directory outside every repository, with no tools, and with
++  user-level settings, instruction files and memory turned off.
++- Pilot first: one probe rep asks what it can see (instruction files, memory, tools, other
++  sessions, the user's name). Any unplanned answer → fix the setup before scored reps.
++- Quarantine: this file, `specs/changelog-entry-wording.md`, the baseline records and the kit stay
++  out of every rep's reach.
++
++## Blind scoring
++
++- Strip each reply to its changelog lines and write it to a sheet named by a random ID. No arm,
++  path, order or count on the sheet.
++- The ID → arm key is kept apart from the sheets and opened only after every sheet is graded.
++
++## Kit (to build before running; outside the skill directory)
++
++`specs/baseline/red-baseline-changelog-entry-step2/kit/`:
++- `arm-a.md`, `arm-b.md`, `arm-c.md` — the three system contexts.
++- `task.md` — the user message with the four PRs.
++- `terms.json` — internal terms and user-visible effect per PR (the table above).
++- runner, isolation probe, scrub/shuffle script for blind sheets.
++
++Results go to `specs/baseline/red-baseline-changelog-entry-step2.md`, never into
++`skills/changelog-entry/`.
++
++## Spend
++
++- 3 arms × 10 reps × N models, plus 1 probe per model.
++- Cap: **open — partner to set.** Stop rule: stop when the running total plus the next batch's
++  worst case would pass the cap. Record each batch's cost.

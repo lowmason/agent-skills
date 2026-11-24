@@ -1,0 +1,145 @@
+{
+  "case": "T2",
+  "rep": 1,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "67516325ecc53d40f134c0abfd07e84d7796461f",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/T2/new/claude-sonnet-5-5/rep1.jsonl",
+  "prompt_sha256": "26cd187c313be5eb00b811a9d673d945be4e3b31115011ff9a6f8e437ffd37d6",
+  "claude_exit": 0,
+  "wall_seconds": 11,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 18,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 10005,
+    "total_cost_usd": 0.073411,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1381,
+        "cacheReadInputTokens": 52850,
+        "cacheCreationInputTokens": 13575,
+        "webSearchRequests": 0,
+        "costUSD": 0.073411,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 142,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13575,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the description in `skills/parquet-schema-check/SKILL.md`, but I haven't checked that agents now load the skill. My tools here can't launch fresh sessions.\n\n**Cause:** the description was just \"Helps with parquet files.\" It named no moment when an agent should load the skill. Agents pick skills from the description alone, so \"about to write a parquet file that breaks the schema\" never matched anything.\n\n**New description:** \"Use when about to write or save a parquet file (to_parquet, write_parquet, pq.write_table, df.write.parquet) from a dataframe whose columns, column order or dtypes might differ from the dataset's schema in schemas/, or when a downstream job fails reading a parquet file with schema mismatch, missing column or wrong dtype errors.\"\n\n- **Triggers only:** it describes when to use the skill and doesn't summarize the steps. The writing-skills guidance says a description that summarizes the workflow lets agents skip the body.\n- **Search terms:** it includes the write calls and error symptoms an agent would match on.\n- **Body untouched:** I left the skill body as it was.\n\n**Not done:**\n- **Trigger test:** I didn't run the load test from `references/discovery.md`. That means 3+ should-load prompts and 3+ near-miss prompts, each in fresh sessions with the old and new description, with load counts reported for both. The fix should raise loads on the first set and not on the second. Please run that, or tell me how you ran the earlier baseline and I'll reuse it.\n- **Baseline records:** I found no baseline files under `specs/baseline/` in the repo, so I couldn't compare against your earlier results.\n- **License field:** the frontmatter has no `license` field, which the writing-skills guidance requires. No skill in this repo has one, so I didn't add it. Tell me which license you want and I'll add it.\n- **Commit:** nothing is committed yet.",
+  "tool_calls": [
+    {
+      "id": "toolu_01Ap6feHMtAL4neJHWmVHpGy",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01KH6hMPBZhaXSsNtKbbhiqj",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01St4336FMYyC8e5r1GEVw5s",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/baseline/**",
+        "path": "/private/tmp/wst107/rep1/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Rka2LP2NtB19mcBdMuh15v",
+      "name": "Grep",
+      "input": {
+        "pattern": "^license:",
+        "path": "/private/tmp/wst107/rep1/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01GXUZ6T9bTmjaSjbTyqMArt",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write or save a parquet file (to_parquet, write_parquet, pq.write_table, df.write.parquet) from a dataframe whose columns, column order or dtypes might differ from the dataset's schema in schemas/, or when a downstream job fails reading a parquet file with schema mismatch, missing column or wrong dtype errors."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

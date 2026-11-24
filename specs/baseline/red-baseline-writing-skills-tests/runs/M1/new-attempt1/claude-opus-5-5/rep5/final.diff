@@ -1,0 +1,133 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..c1b3a84
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,127 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run. Register this file in git before the first rep.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make an agent put the reader's outcome
++at the front of a changelog line, instead of a verb followed by an internal part ("Fix handler")?
++And does it do that without breaking the 100-character limit in step 4 (the risk named in the
++proposal)?
++
++## Arms
++
++Each arm's system prompt is the full `skills/changelog-entry/SKILL.md`. Only step 2 differs.
++
++| Arm | Step 2 in the system prompt |
++|-----|-----------------------------|
++| C (no-guidance control) | Step 2 removed. Steps renumbered 1-3. |
++| O (old line) | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| N (new line) | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm O is re-run under this design instead of reusing the earlier 7/10 baseline. That baseline used a
++different setup and a different scoring rule, so it is not a like-for-like comparison. We cite it
++for context only.
++
++## Tasks
++
++Each user message gives the agent a merged PR and asks for one `CHANGELOG.md` line. Each PR is
++written in internal terms, so it tempts the agent to name the part instead of the outcome. None of
++the PRs touches CSV export or the cursor, so a reply cannot pass by copying the examples in arm N.
++
++- **T1 (Fix-shaped):** PR "Guard null `tz` in `ScheduleParser.resolve()`". Body: meetings created
++  from a calendar invite with no time zone showed up at 00:00 UTC. They now use the user's zone.
++  Closes #482.
++- **T2 (Add-shaped):** PR "Add `bulkArchive` endpoint + wire to `InboxToolbar`". Body: users can
++  select many threads and archive them in one step. Before, they had to archive one at a time.
++- **T3 (Change-shaped, length bait):** PR "Refactor `RetryPolicy`; backoff now capped at 30s; tidy
++  logging". Body: failed uploads retry sooner on flaky networks. They used to wait up to 5 minutes.
++  This PR also renames two internal loggers (not user-visible).
++
++The user message is the same in every arm: "This PR just merged. Write its CHANGELOG.md entry. Reply
++with the entry only."
++
++## Reps, models, cost
++
++- 10 reps per arm per task per model: 3 arms × 3 tasks × 10 = 90 reps per model. (10 also matches
++  the size of the baseline.)
++- Models: every model that will run this skill, with the same rep count on each. **Partner to
++  confirm the list** before the run.
++- Spend cap: **partner to set**. Stop rule: stop when the running total plus the next batch's worst
++  case would pass the cap. Record each batch's cost in the run log.
++- Order: run the arms interleaved by batch, not one arm after the other.
++
++## Isolation
++
++- Each rep is a single fresh-context call (or a single-shot subagent). It runs in a new empty
++  directory outside every repository, with no tools, and with user settings, instruction files
++  and memory turned off.
++- Pilot probe first: one unscored rep that asks what context it can see (instruction files,
++  memory, tools, other sessions, the user's name). If the answer shows anything we did not plan
++  for, fix the setup before any scored rep.
++- Quarantine: this file, the proposal, the kit and the baseline records must be out of every
++  rep's reach. A rep that reads one is VOID.
++- Kit (prompts, runner flags, scrub, blinding key) goes in `specs/changelog-entry-microtest/`. That
++  is outside the skill directory, so none of it ships with the skill.
++
++## Scoring rules (registered before any reply is read)
++
++Every reply is scored with the same rubric, whatever its arm. Scoring is per reply.
++
++**PASS** if all of these hold:
++1. It is exactly one line of ≤ 100 characters. Count the line after a leading `- ` bullet is
++   stripped.
++2. The first clause, up to the first comma, semicolon, colon or dash, names something the reader
++   can now do or no longer suffers (T1: meetings at the right time; T2: archive many threads at
++   once; T3: uploads retry sooner).
++3. It names no file, class, function, endpoint, ticket or PR number.
++4. It describes one change. For T3, the logger rename is left out.
++
++**FAIL**, with every code that applies recorded:
++- `F-internal`: the first clause names an internal part, or leads with a bare verb plus an
++  internal noun ("Fix parser", "Change RetryPolicy").
++- `F-length`: more than 100 characters, or more than one line. *This is the proposal's risk.*
++- `F-id`: a file, symbol, ticket or PR number appears anywhere.
++- `F-two`: two changes on one line.
++
++**VOID:** the rep refused, gave no entry, read a quarantined file, or the probe shows the setup
++leaked. VOID reps are re-run and counted separately.
++
++Recorded on every reply (for information, not part of the verdict): character count, and the first
++word, put in one of three groups: Add/Fix/Remove/Change, another verb, or not a verb. This shows
++whether arm N drops the leading verb, as the proposal fears.
++
++## Blind scoring
++
++- The scrub strips each reply down to its text and gives it a random ID. Sheets are shuffled across
++  arms and tasks. No file name, path, order or count can show the arm. The key is kept in the kit
++  and is not opened until every sheet is graded.
++- A script may pre-flag length, identifiers and leading words. A human reads every flagged reply
++  and every PASS before the grade is final. If the automated count and the human grade disagree,
++  the human grade stands and the disagreement is logged.
++- If a reply shows a reading these rules did not foresee, keep the registered verdict and report
++  the counts under both readings.
++
++## Decision rule (registered)
++
++Per model, after unblinding:
++
++1. **Control check:** if arm C fails on fewer than 3 of its 30 reps (`F-internal` or `F-id`), the
++   failure did not appear in this setup. Stop and report. Do not judge the wording on this run.
++2. **New line works** if all of these hold:
++   - Arm N passes on ≥ 24/30 reps, and on ≥ 7/10 within each task.
++   - Arm N's PASS count is at least 6 above arm O's.
++   - Arm N's `F-length` count is no higher than arm O's + 1.
++3. **Variance:** read arm N's replies for each task side by side. If they do not converge on one
++   shape (for example, some lead with an outcome, some with a verb plus a part, some are full
++   sentences), report the wording as not binding, even if step 2's counts pass.
++4. If step 2 fails only on `F-length`, report that as the proposal's risk coming true. Do not merge
++   as-is.
++
++The new line must meet this rule on every model to count as a pass. Report per-model counts in a
++table: arm × task × {PASS, F-internal, F-length, F-id, F-two, VOID}.
++
++## After the micro-test
++
++This micro-test checks only the wording. Before merging, re-run the original baseline scenario with
++arm N's skill and compare it to the 7/10 result. That is the GREEN step.

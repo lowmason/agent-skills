@@ -1,0 +1,49 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..96fe658 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write, save or export a DataFrame to a parquet file (to_parquet, write_parquet, pyarrow.parquet.write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails on missing columns, wrong column order or mismatched dtypes
+ ---
+ 
+ # Parquet Schema Check
+diff --git a/specs/trigger-test-parquet-schema-check.md b/specs/trigger-test-parquet-schema-check.md
+new file mode 100644
+index 0000000..1f1393a
+--- /dev/null
++++ b/specs/trigger-test-parquet-schema-check.md
+@@ -0,0 +1,31 @@
++# Trigger test: parquet-schema-check description
++
++Old description: `Helps with parquet files.`
++New description: `Use when about to write, save or export a DataFrame to a parquet file (to_parquet, write_parquet, pyarrow.parquet.write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails on missing columns, wrong column order or mismatched dtypes`
++
++Run each prompt in a fresh session, once with the old description and once with the new one.
++Record whether `parquet-schema-check` loaded. A fix raises the should-load count and does not
++raise the near-miss count.
++
++## Should load
++
++1. "Add a step at the end of `clean_orders.py` that saves the cleaned frame to `out/orders.parquet`."
++2. "Export the joined customers table to parquet so the nightly job can pick it up."
++3. "I renamed `amt` to `amount` in the pipeline — write the result back out with `df.write_parquet(...)`."
++4. "The downstream loader crashes with `ArrowInvalid: column 'event_ts' expected timestamp[us], got string` on the file we produced yesterday. Fix it."
++5. "Convert `events.csv` to parquet for the events dataset."
++
++## Near misses (should not load)
++
++1. "This `pl.scan_parquet` query over the 40 GB events dataset runs out of memory. Speed it up." (polars-lazy-tuning)
++2. "Read `out/orders.parquet` and show me the top 10 customers by revenue."
++3. "Should we partition the events parquet files by date or by region?"
++4. "Write the cleaned frame to `out/orders.csv`."
++5. "Add a new column `discount_pct` to `schemas/orders.json`."
++
++## Results
++
++| Description | Should-load loads (/5) | Near-miss loads (/5) |
++|---|---|---|
++| Old | _not yet run_ | _not yet run_ |
++| New | _not yet run_ | _not yet run_ |

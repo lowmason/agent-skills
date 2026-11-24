@@ -1,0 +1,151 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..8a0e858
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,145 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run. Commit this file before the first scored rep, so the
++rules below are on record before anyone reads a reply.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make an agent write entries that lead
++with the reader's outcome, without the risk the proposal names: entries over 100 characters?
++
++## Arms
++
++Each arm's system prompt is the full `skills/changelog-entry/SKILL.md`, frontmatter included. Only
++line 20 (step 2) changes between arms.
++
++| Arm | Step 2 |
++|---|---|
++| CONTROL | Step 2 deleted. Steps 3 and 4 become 2 and 3. No other change. |
++| OLD | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| NEW | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++The earlier baseline (old line, rule skipped in 7 of 10 runs) is not reused for scoring. It was not
++run under the setup or the rules below. OLD is run again so that all three arms share one setup.
++
++## Tasks
++
++Each user message is: `Write the CHANGELOG.md entry for this merged pull request. Reply with the
++entry only.` followed by one PR below. Each PR title names an internal part, which tempts a "Fix
++handler" style entry. The body holds the user-visible change, so an outcome-first entry is possible.
++
++- **T1.** Title: `Fix NPE in CsvExportHandler when report has no rows (#482)`.
++  Body: `Exporting an empty report crashed with an error dialog. ExportHandler now writes a
++  header-only CSV.`
++- **T2.** Title: `Change EditorBuffer.save() to keep selection state`.
++  Body: `After saving, the cursor jumped to the top of the file. Save now keeps the cursor and the
++  selection where they were.`
++- **T3.** Title: `Add retry/backoff to SyncClient`.
++  Body: `On flaky networks, sync failed with no message and changes stayed local. SyncClient now
++  retries 3 times and shows an error banner if all retries fail.`
++
++T1–T3 do not include the example phrases from the NEW line ("Export reports as CSV", "Stop losing
++the cursor on save"). T1 and T2 are close to them on purpose. A NEW reply that copies an example
++phrase word for word is tagged ECHO, so we can see whether NEW only works through its examples.
++
++## Models and reps
++
++- Models: **claude-opus-5-5** and **claude-sonnet-5-5**. Nobody has said which models run this
++  skill, so these two are my choice. Change them before the run if the skill runs elsewhere, for
++  example on Haiku.
++- 5 reps per arm × task × model: 3 arms × 3 tasks × 5 reps × 2 models = **90 scored reps**, plus 1
++  isolation probe per model.
++- Default sampling settings, the same for every arm.
++
++## Isolation
++
++- One fresh-context call per rep: a raw API call, or a single-shot subagent if there is no API
++  access. Each rep starts in a new empty directory outside every repository, with no tools, no
++  user-level settings, no instruction files and no memory.
++- Quarantine: no rep can reach `specs/`, this file, the proposal, the baseline records or the kit.
++  A rep that reads one is VOID.
++- Probe first: before the first scored rep, run one pilot rep per model. Ask what it can see:
++  instruction files, memory, tools, other sessions and the user's name. Any answer we did not plan
++  for is a leak. Fix it and run the probe again. Probe reps are not scored.
++
++## Registered rules
++
++Score each reply on the entry line it produced. Strip any surrounding quotes and any leading `- `
++or `* `. Count characters after stripping.
++
++**PASS** if all of these hold:
++1. The line's first clause says what a user can now do or no longer suffers. A leading Add, Fix,
++   Remove or Change is allowed if the words straight after it name that outcome, as in "Fix the
++   cursor jumping to the top on save".
++2. The line names no internal part: no class, function, file or module name (`CsvExportHandler`,
++   `EditorBuffer.save()`, `SyncClient`, `ExportHandler`) and no ticket number (`#482`).
++3. It is one line of 100 characters or fewer.
++4. It describes one change.
++
++**FAIL**, with every tag that applies:
++- `F-INTERNAL`: an internal part name or ticket number appears, or the outcome comes only after one.
++  Example: "Fix NPE in CsvExportHandler for empty reports".
++- `F-VAGUE`: no reader outcome at all. Example: "Fix export bug", "Change save behavior".
++- `F-LENGTH`: more than 100 characters, or more than one line. This is the proposal's named risk.
++- `F-MULTI`: two changes on one line.
++
++**VOID**: an API error, a refusal, an empty reply, no entry line, a rep that read a quarantined
++file, or a rep from a setup whose probe failed.
++
++**Recorded tags, not scored**: `LEADS-VERB` (the line starts with Add, Fix, Remove or Change),
++`ECHO` (copies a NEW example phrase word for word) and the character count.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report
++the counts under both readings.
++
++## Scoring
++
++1. Collect every reply into a sheet with a random ID. No file name, path, order or count on a sheet
++   shows its arm or model. Shuffle the sheets across arms, tasks and models. Keep the key in a
++   separate file, which is not opened until grading is done.
++2. Run an automated pre-flag pass on every sheet: character count, line count, a match on the
++   internal names and `#\d+`, and a match on the leading verb.
++3. Read every sheet by hand, including every flagged match. Quoted titles and echoed task text can
++   look like hits. The hand reading decides the verdict. The pre-flags only point the reader.
++4. Unblind only after every sheet has a grade.
++
++Limit of the blinding: a reply can hint at its arm (an OLD reply often leads with "Fix"). The
++grader must not guess the arm, and the rules above do not depend on it.
++
++## Decision rule
++
++Count per arm and model, out of 15 non-VOID reps. If VOIDs drop any cell below 13 scored reps, top
++it up with new reps before deciding.
++
++1. **Control gate.** If CONTROL passes 13 or more of 15 on both models, the failure does not show
++   without guidance, so there is nothing for step 2 to fix. Stop and report. Do not merge either
++   wording on the strength of this test.
++2. **NEW works** if, on **each** model:
++   - NEW passes 13 or more of 15, and
++   - NEW passes at least 4 more reps than OLD, and
++   - NEW has at most 1 `F-LENGTH`, and
++   - NEW does not pass only through ECHO: drop ECHO replies and it still passes 80% or more of the
++     rest.
++3. **Variance.** Report, per arm, how many distinct opening shapes the replies use for each task
++   (for example "Exporting empty reports…" or "Fix crash when…"). If NEW reps scatter across many
++   shapes, the wording is not binding. Tighten its form before adding words.
++4. Anything else is **NOT SHOWN**. Report the counts and which failure tags dominate. Do not reword
++   and rerun under these same registered rules without writing a new design.
++
++Passing this test checks the wording. It does not stand in for a full scenario run if the skill is
++later treated as a discipline skill.
++
++## Spend
++
++- Cap: **$5** for the whole test. Each rep is about 1k input tokens (the skill plus the task) and
++  under 100 output tokens, so 92 reps should cost well under the cap. The cap leaves room for
++  top-ups.
++- Run in batches of one arm × one model (15 reps). Stop rule: do not start a batch if the running
++  total plus that batch's worst case would pass the cap.
++- Record each batch's cost next to its results.
++
++## Records
++
++Raw replies, sheets, the key and results go under `specs/baseline/`. Use the project's layout, for
++example `specs/baseline/red-baseline-changelog-entry-step2/`. Never put them in
++`skills/changelog-entry/`, because everything there ships with the skill.

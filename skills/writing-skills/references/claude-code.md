@@ -60,6 +60,16 @@ description was dropped still runs by name, but it rarely triggers on its own.
   fixed character count, and `skillListingMaxDescChars` sets each entry's length cap.
 - A plugin's whole skill set joins the listing, so disabling an unused plugin frees room.
 
+## Testing triggering
+
+discovery.md's Test triggering step gives the procedure. In Claude Code:
+
+- Turn a personal or project skill off with a `skillOverrides` entry of `off`. `skillOverrides` does
+  not reach a plugin skill: use `claude plugin eval`, which repeats each run with no plugin loaded.
+- To see how a shortened entry routes, as on a runtime that cuts descriptions, lower
+  `skillListingMaxDescChars` for the test sessions.
+- `/skill-doctor` shows each skill's cost and how often it is used.
+
 ## The body after compaction
 
 An invoked SKILL.md body stays in the conversation for the rest of the session. After compaction,

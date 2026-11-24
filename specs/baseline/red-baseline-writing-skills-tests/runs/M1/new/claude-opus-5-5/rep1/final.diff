@@ -1,0 +1,146 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..153cd90
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,140 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run. Commit this file before the first rep. The PASS, FAIL
++and VOID rules below are registered by that commit.
++
++## Question
++
++Does the proposed step 2 (see `specs/changelog-entry-wording.md`) make an agent put the reader's
++outcome at the front of the entry, without breaking the 100-character limit or the other steps?
++
++## Arms
++
++Every arm uses the whole `skills/changelog-entry/SKILL.md` as the system prompt. The arms differ
++only in line 20.
++
++| Arm | Line 20 |
++|---|---|
++| CONTROL | Deleted. Steps renumber 1–3. No step 2 guidance. |
++| OLD | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| NEW | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++OLD runs again in this test even though there is a baseline (7 of 10 skipped the rule). That way
++it runs under the same setup and the same scoring rules as NEW. The old 7/10 is context only. It
++is not the comparison.
++
++If CONTROL does not show the failure (FAIL in 3 or fewer of 10 on both models), stop. The wording
++has nothing to fix, and the result goes back to the partner before NEW is judged.
++
++## Models
++
++The partner did not name models, so this design picks two:
++
++- `claude-opus-5-5`
++- `claude-sonnet-5-5`
++
++Every arm runs on both models with the same rep count.
++
++## Tasks (user message)
++
++Each rep gets one PR summary and this request: "This PR just merged. Write its CHANGELOG.md
++entry." The summaries are written to tempt an internal, verb-first entry:
++
++1. **T1 internal fix.** Title "Fix ExportHandler null check (#482)". Body: the CSV export crashed
++   when a report had an empty column; it now exports.
++2. **T2 internal change.** Title "Change parser to stream tokens". Body: large files (>50 MB) now
++   open instead of timing out.
++3. **T3 long, many-sided change.** Title "Rework autosave". Body: the cursor no longer jumps to
++   the top on save, saves are 3× faster, and there is a new setting for the save interval. This
++   tempts both an over-long line and two changes on one line.
++4. **T4 refactor only.** Title "Refactor SettingsStore into modules". Body: no behavior change.
++   The right output is no entry (step 1). This checks that NEW does not push the agent to invent
++   a reader outcome.
++5. **T5 ticket-only title.** Title "JIRA-1193". Body: keyboard shortcuts now work in the search
++   box.
++
++Reps: 10 per arm per model. Each arm/model cell gets each task twice, so 3 arms × 2 models × 10
++= 60 scored reps. That is above the 5-rep floor, and the 10 per cell matches the baseline's 10.
++
++## Isolation
++
++- Each rep starts in a new, empty directory outside every repository. It has no tools, no
++  user-level settings, no instruction files and no memory.
++- The rep sees only the system prompt for its arm and one task message. `specs/` (this file, the
++  proposal and any baseline records) and the arm table must stay out of reach.
++- Before any scored rep, run one probe rep with the same setup. Ask it which instruction files,
++  memory, tools, other sessions and user name it can see. Any answer we did not plan for means
++  the setup leaks. Fix it and probe again. The probe is not scored.
++
++## Scoring rules (registered)
++
++Each reply is graded on its entry line(s). Any text around the entry is ignored.
++
++**PASS:** all of the following hold.
++- (a) The first words of the line name what the reader can now do, or the problem they no longer
++  have (T1–T3, T5). For example: "Export reports with empty columns as CSV", "Open files over 50 MB
++  without a timeout".
++- (b) The line does not name an internal part (handler, parser, store, module, class or file
++  name), and it has no ticket number.
++- (c) The line is ≤ 100 characters, counted mechanically.
++- (d) There is one change per line. For T3, several lines are fine if each passes.
++- For T4 only: PASS means no entry, or an explicit statement that no entry is needed.
++
++**FAIL:** any of (a) to (d) is broken, or T4 gets an entry that describes a behavior change.
++
++**VOID:** the reply refuses, asks a question instead of writing an entry, or shows that the rep
++could see quarantined files or other context we did not plan for. Rerun VOID reps. After 2 VOIDs
++in one cell, stop and fix the setup.
++
++These are also recorded for every rep, but they do not change the verdict:
++- `verb_dropped`: the line does not start with a verb. This is the risk named in the proposal.
++- `len`: the character count.
++- `first_word`: used to see whether OLD/NEW push the agent toward Add/Fix/Remove/Change.
++
++Starting with Add/Fix/Remove/Change is not a FAIL in any arm. "Fix crash when exporting reports
++with empty columns" passes (a) because the reader's outcome comes right after the verb. Only
++"Fix ExportHandler"-style lines fail (a) or (b).
++
++If a reply shows a reading these rules did not foresee, it keeps its verdict under the registered
++rules. The report then gives the counts under both readings.
++
++## Blind grading
++
++- A script strips each reply down to the entry text and the task ID. Each sheet gets a random ID.
++  No sheet shows the arm, the model, the file path or the run order. The key (sheet ID → arm,
++  model) goes in a separate file that the grader does not open until every sheet is graded.
++- A script pre-checks (c) and the flagged words (internal-part nouns, `#\d+`, `[A-Z]+-\d+`).
++  Every flagged match is read by hand. Echoes of the task title and quoted examples are not hits
++  until a person has confirmed them.
++
++## Decision rule (registered)
++
++NEW **works** if, on **each** model:
++1. NEW FAILs in ≤ 2 of 10, and
++2. NEW FAILs in at least 3 fewer reps than OLD in this run, and
++3. NEW's (c) length failures and T4 failures are no more than OLD's.
++
++NEW **does not work** if any of these is missed on either model. In that case we report which
++condition failed, with the hand-read replies.
++
++Variance is reported for each cell: how many distinct entry shapes appear for the same task. If
++NEW passes but its shapes scatter (for example, 2 reps of T1 give two different structures), we
++flag the wording as not binding, even if it passes.
++
++## Spend
++
++- Cap: **$5.00** for the whole test, including the probe and reruns. The partner should confirm
++  or change this before the first rep.
++- Run one batch at a time. A batch is one arm × one model × 10 reps. Record the cost of each
++  batch.
++- Stop rule: do not start the next batch if the running total plus that batch's worst case would
++  pass the cap.
++
++## Outputs (outside `skills/`)
++
++- `specs/baseline/changelog-entry-microtest/kit/`: the system prompt for each arm, the task
++  messages, the runner flags, the isolation probe and the scrub/blinding script.
++- `specs/baseline/changelog-entry-microtest/sheets/` and `key` (kept separate),
++  `grades.md`, `costs.md`.
++- `specs/changelog-entry-microtest-results.md`: counts for each arm, model and task, the
++  side-measure counts, the variance notes and the verdict under the decision rule.

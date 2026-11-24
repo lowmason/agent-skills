@@ -1,0 +1,132 @@
+{
+  "case": "M1",
+  "rep": 1,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "f775ef3df337f3dde83a9d82862a43a80e800490",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-opus-5-5/rep1.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 61,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 32,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 60308,
+    "total_cost_usd": 0.22241020000000003,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5418,
+        "cacheReadInputTokens": 31411,
+        "cacheCreationInputTokens": 13468,
+        "webSearchRequests": 0,
+        "costUSD": 0.22241020000000003,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2060,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13468,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the test design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**What it compares:** three versions of the skill, each using the full current `SKILL.md`, with only step 2 different:\n- **A:** step 2 removed (the no-guidance control)\n- **B:** the old line\n- **C:** the proposed line\n\nEach version runs 5 times on each of 3 made-up pull requests, for 45 runs in total. Each run starts from a fresh context. Every pull request is written in code-level terms (\"Fix NPE in SaveHandler\", \"Change ContactImportParser\"), so the vague entry is the easy one to write. The third one has a result with several parts, to check the proposal's own risk that entries will run past 100 characters.\n\n**What it scores:**\n- **Main failure:** the entry starts with a piece of code (a class, file or ticket) instead of what the reader gains. A person reads every output, because this is a judgment call. Automatic flags only help point at likely failures.\n- **The risk:** entries longer than 100 characters.\n- **Shape:** more than one line, or two changes on one line.\n- **Copied examples:** outputs that reuse the proposed line's examples (\"Export reports as CSV\", \"Stop losing the cursor on save\").\n- **Consistency:** whether the runs of each version start their entries the same way.\n\n**The pass/fail rules are fixed before running:**\n- If the control (no step 2) fails 3 or fewer times out of 15, the problem doesn't occur without guidance, so the change fixes nothing. That result is not grounds to merge.\n- The proposed line passes if all of these hold:\n  - it fails 3 or fewer times out of 15, and at least 5 fewer than the old line;\n  - it has no more than one extra over-length entry compared with the old line;\n  - it has no extra shape failures;\n  - at least 12 of its 15 runs start their entries the same way.\n\n**One thing to know before you read the results:** the existing 7-of-10 baseline can't be compared with these numbers. It measured whether agents started with the verb the old rule required. This test measures whether they start with an internal code name. A line like \"Fix crash when saving an empty document\" fails the old rule's spirit in no way but would pass here. So the design runs the old line again, scored the same way and in the same batch. I also couldn't find the baseline's records in the repo. If you have them, I can check whether the old runs can be rescored instead of rerun.\n\nI suggested keeping the raw outputs in `specs/baseline/changelog-entry-microtest/`, outside the skill directory, since everything inside the skill directory ships with the skill.",
+  "tool_calls": [
+    {
+      "id": "toolu_01697TKc9bevmZ3uubjhp1Pe",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01WRZDLXVk2pPJMzYFXEkTVh",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Ejihev4rAxFmfHzdr1EFcc",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01BLZyKXRJ8L2Sd8ipGwYtBs",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: designed, not run.\nProposal under test: `specs/changelog-entry-wording.md`.\nSkill under test: `skills/changelog-entry/SKILL.md`, step 2 of The Technique.\n\n## Question\n\nDoes the proposed step 2 make agents put the reader's outcome at the front of the entry,\ninstead of a verb followed by an internal part (\"Fix handler\", \"Change parser\")?\nAnd does it do that without the risk the proposal names: lines longer than 100 characters?\n\n## Arms\n\nEvery arm uses the full current `SKILL.md` as the system prompt. Only step 2 differs.\n\n| Arm | Step 2 text |\n|---|---|\n| A: control | Step 2 removed. Steps renumbered 1\u20133. |\n| B: old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| C: new | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nArm B is run again here, even though a baseline exists. The existing baseline (7 of 10 runs\nskipped the rule) was scored against the old rule, which asks for a leading verb. This test\nscores a different failure: an internal part instead of a reader outcome. The 7/10 figure\ncannot be compared with the numbers below. Arm B has to be scored under the same rubric, on\nthe same tasks, in the same batch.\n\n## Sampling\n\n- One fresh-context sample per call: a raw API call, or a single-shot subagent if no API access.\n- Same model and same settings for all arms. Record the model ID and temperature.\n- 3 tasks \u00d7 5 reps \u00d7 3 arms = 45 samples (15 per arm).\n- Run the arms interleaved, not one after another, so that drift over time affects them all alike.\n\n## Tasks (user message)\n\nEach user message is: `This pull request was merged. Write its entry for CHANGELOG.md.`,\nfollowed by the PR title and body below. Each PR is written in internal terms so that the\nfailure is tempting. No PR uses CSV export or cursors, so that copies of the examples in the\nnew line can be seen.\n\n**T1. Internal fix, the outcome is in the body**\n> Title: Fix NPE in SaveHandler when buffer is empty\n> Body: SaveHandler.flush() dereferenced a null buffer. Users who saved an empty document got\n> an \"Unexpected error\" dialog and the editor closed. Added a null check and a test.\n\nTempts: `Fix NPE in SaveHandler`.\n\n**T2. Internal change, the outcome is in the body**\n> Title: Change ContactImportParser to honour quoted fields\n> Body: The parser split on every comma. Contacts with a comma in the company name\n> (\"Smith, Jones & Co\") were imported with their fields shifted into the wrong columns.\n> The parser now respects double quotes.\n\nTempts: `Change ContactImportParser`.\n\n**T3. Outcome with several parts (tests the length risk)**\n> Title: Add retry with backoff to WebhookDispatcher\n> Body: Webhook deliveries to slow endpoints were dropped after the first timeout. They are now\n> retried up to 5 times over 10 minutes with exponential backoff. The retry count can be set\n> per endpoint in Settings \u2192 Webhooks.\n\nTempts: `Add retry to WebhookDispatcher`, and a line longer than 100 characters that tries to\nsay every part.\n\n## Scoring\n\nScore every sample on all four checks. Store each raw output next to its scores.\n\n| Check | Failure when | How it is scored |\n|---|---|---|\n| F1: internal lead (target) | The opening clause names a code part (class, file, function, module, ticket) instead of what the reader can now do or no longer suffers. A leading Add/Fix/etc. is not a failure by itself: `Fix crash when saving an empty document` passes. | Pre-flag automatically: a CamelCase word, a file extension, `#123`, or `handler/parser/dispatcher` in the first 6 words. Then a person reads **every** sample. F1 is a judgment call, so the flags only help: a sample without a flag can still fail. |\n| F2: length (risk) | The entry is longer than 100 characters. Bullet marker and leading whitespace are not counted. | Automatic. |\n| F3: shape | More than one line, or two changes on one line. | Automatic flag, then the flagged samples are read. |\n| E: echo | The output copies an example from the new line (\"Export reports\", \"Stop losing the cursor\") or is otherwise shaped after the template rather than after the PR. | Automatic flag, then read. An echo counts as an F1 failure. |\n\nFor every arm, also note the **opening pattern** of each sample (for example\n`verb + outcome`, `outcome only`, `verb + internal part`). How many different patterns appear\nis the variance metric. When the wording binds, the reps in arm C share one pattern.\n\n## Decision rule (fixed before running)\n\n1. **Control first.** If arm A has F1 in 3 or fewer of 15 samples, the failure does not occur\n   without guidance. Stop. Report that the change fixes nothing, and do not merge on the\n   strength of this test.\n2. **New wording works** if all of these hold:\n   - Arm C has F1 (echoes included) in 3 or fewer of 15 samples, and at least 5 fewer than arm B.\n   - Arm C's F2 count is no more than arm B's F2 count plus 1. This is the proposal's risk.\n   - Arm C has no F3 failures beyond those arm B also has.\n   - Arm C shows one opening pattern in most samples (at least 12 of 15 share one).\n3. **Anything else**: do not merge. Report the counts and the raw outputs of the failing\n   samples. If F2 is the only failing check, the next candidate is a new line that also\n   states the length limit in step 2. That candidate goes through this same test.\n\nThe thresholds are coarse because n = 15 per arm. A result close to a threshold is a\nreason to add 5 reps per task, not to round in either direction.\n\n## Out of scope\n\n- Step 1 behavior (skipping refactors) and the other steps: they do not change.\n- A full application scenario with a real repository: that comes after this test, if arm C passes.\n\n## Artifacts\n\nKeep the raw outputs, the scores and the run notes outside `skills/`, for example in\n`specs/baseline/changelog-entry-microtest/`. Anything inside the skill directory ships\nwith the skill.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

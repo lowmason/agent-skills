@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 1,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "01834bcab9c9baef01e7d1f7c7b554487f56e252",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-opus-5-5/rep1.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 57,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 30,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 56190,
+    "total_cost_usd": 0.2220968,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5169,
+        "cacheReadInputTokens": 32504,
+        "cacheCreationInputTokens": 14024,
+        "webSearchRequests": 0,
+        "costUSD": 0.2220968,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1278,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14024,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. Nothing has been run.\n\n**How it works:**\n- **Three versions of the skill, compared head to head.** Each rep gets the full `SKILL.md` as its system prompt, with one of three versions of step 2: a control where step 2 is removed, the current line, or the proposed line.\n- **The current line gets retested.** The 7/10 baseline wasn't scored under these rules, so it's context only. The real comparison is the current line against the new one in the same run.\n- **The control comes first.** If the control doesn't fail in at least 4 of 10 runs, the test stops there and the results come back to you before the new line is judged.\n- **Five tasks, each built to provoke a bad entry:**\n  - two pull requests whose titles name an internal part (\"Fix ExportHandler\u2026\", \"Change parser\u2026\")\n  - one long change that bundles several things, to tempt an entry over 100 characters\n  - a refactor-only PR, where the right answer is no entry at all\n  - a PR whose title is only a ticket number\n- **Size:** 10 reps for each version on each model, 60 scored runs in total.\n- **Pass rule:** the line starts with what the reader can now do (or no longer suffers), names no internal part or ticket, is 100 characters or fewer, and has one change per line.\n- **Starting with Fix or Add still passes.** \"Fix crash when exporting\u2026\" is fine. Only entries like \"Fix handler\" fail.\n- **The proposal's risk is tracked separately.** It counts entries that drop the leading verb, plus length, but those don't change pass or fail.\n- **When the new line counts as working:** on each model, it fails in no more than 2 of 10 runs, fails in at least 3 fewer runs than the current line, and doesn't do worse on length or the refactor-only task.\n- **Clean runs:** before any scored run, one unscored check confirms the runs can't see anything we didn't plan, such as project files or memory. `specs/` stays out of their reach. Grading is blind, and every match the script flags gets read by hand.\n\n**Decisions for you, since I made the calls:**\n1. **Models:** you didn't name any, so I picked `claude-opus-5-5` and `claude-sonnet-5-5`. Change them if the skill runs on something else.\n2. **Spend cap:** I set $5.00, with a stop rule checked before each batch. That's a guess; please confirm or change it.\n3. **Commit the design before the first run.** That fixes the pass rules before anyone reads a reply. My tools in this turn can't commit.\n\nSeparately, `skills/changelog-entry/SKILL.md` has no `license` field in its frontmatter. It's not part of this change, but worth fixing at some point.",
+  "tool_calls": [
+    {
+      "id": "toolu_01AbBgVoBGAW6o9SmSEbDqGD",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013wMKUm54Uknmts1VTH98zL",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01UnMqb8sPsqHj1ZET4NEyXk",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01YJqdced69NcHPZcHfN2Duk",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01WFvWsm3Cesma3ZGb2vYmxk",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. Nothing has been run. Commit this file before the first rep. The PASS, FAIL\nand VOID rules below are registered by that commit.\n\n## Question\n\nDoes the proposed step 2 (see `specs/changelog-entry-wording.md`) make an agent put the reader's\noutcome at the front of the entry, without breaking the 100-character limit or the other steps?\n\n## Arms\n\nEvery arm uses the whole `skills/changelog-entry/SKILL.md` as the system prompt. The arms differ\nonly in line 20.\n\n| Arm | Line 20 |\n|---|---|\n| CONTROL | Deleted. Steps renumber 1\u20133. No step 2 guidance. |\n| OLD | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| NEW | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nOLD runs again in this test even though there is a baseline (7 of 10 skipped the rule). That way\nit runs under the same setup and the same scoring rules as NEW. The old 7/10 is context only. It\nis not the comparison.\n\nIf CONTROL does not show the failure (FAIL in 3 or fewer of 10 on both models), stop. The wording\nhas nothing to fix, and the result goes back to the partner before NEW is judged.\n\n## Models\n\nThe partner did not name models, so this design picks two:\n\n- `claude-opus-5-5`\n- `claude-sonnet-5-5`\n\nEvery arm runs on both models with the same rep count.\n\n## Tasks (user message)\n\nEach rep gets one PR summary and this request: \"This PR just merged. Write its CHANGELOG.md\nentry.\" The summaries are written to tempt an internal, verb-first entry:\n\n1. **T1 internal fix.** Title \"Fix ExportHandler null check (#482)\". Body: the CSV export crashed\n   when a report had an empty column; it now exports.\n2. **T2 internal change.** Title \"Change parser to stream tokens\". Body: large files (>50 MB) now\n   open instead of timing out.\n3. **T3 long, many-sided change.** Title \"Rework autosave\". Body: the cursor no longer jumps to\n   the top on save, saves are 3\u00d7 faster, and there is a new setting for the save interval. This\n   tempts both an over-long line and two changes on one line.\n4. **T4 refactor only.** Title \"Refactor SettingsStore into modules\". Body: no behavior change.\n   The right output is no entry (step 1). This checks that NEW does not push the agent to invent\n   a reader outcome.\n5. **T5 ticket-only title.** Title \"JIRA-1193\". Body: keyboard shortcuts now work in the search\n   box.\n\nReps: 10 per arm per model. Each arm/model cell gets each task twice, so 3 arms \u00d7 2 models \u00d7 10\n= 60 scored reps. That is above the 5-rep floor, and the 10 per cell matches the baseline's 10.\n\n## Isolation\n\n- Each rep starts in a new, empty directory outside every repository. It has no tools, no\n  user-level settings, no instruction files and no memory.\n- The rep sees only the system prompt for its arm and one task message. `specs/` (this file, the\n  proposal and any baseline records) and the arm table must stay out of reach.\n- Before any scored rep, run one probe rep with the same setup. Ask it which instruction files,\n  memory, tools, other sessions and user name it can see. Any answer we did not plan for means\n  the setup leaks. Fix it and probe again. The probe is not scored.\n\n## Scoring rules (registered)\n\nEach reply is graded on its entry line(s). Any text around the entry is ignored.\n\n**PASS:** all of the following hold.\n- (a) The first words of the line name what the reader can now do, or the problem they no longer\n  have (T1\u2013T3, T5). For example: \"Export reports with empty columns as CSV\", \"Open files over 50 MB\n  without a timeout\".\n- (b) The line does not name an internal part (handler, parser, store, module, class or file\n  name), and it has no ticket number.\n- (c) The line is \u2264 100 characters, counted mechanically.\n- (d) There is one change per line. For T3, several lines are fine if each passes.\n- For T4 only: PASS means no entry, or an explicit statement that no entry is needed.\n\n**FAIL:** any of (a) to (d) is broken, or T4 gets an entry that describes a behavior change.\n\n**VOID:** the reply refuses, asks a question instead of writing an entry, or shows that the rep\ncould see quarantined files or other context we did not plan for. Rerun VOID reps. After 2 VOIDs\nin one cell, stop and fix the setup.\n\nThese are also recorded for every rep, but they do not change the verdict:\n- `verb_dropped`: the line does not start with a verb. This is the risk named in the proposal.\n- `len`: the character count.\n- `first_word`: used to see whether OLD/NEW push the agent toward Add/Fix/Remove/Change.\n\nStarting with Add/Fix/Remove/Change is not a FAIL in any arm. \"Fix crash when exporting reports\nwith empty columns\" passes (a) because the reader's outcome comes right after the verb. Only\n\"Fix ExportHandler\"-style lines fail (a) or (b).\n\nIf a reply shows a reading these rules did not foresee, it keeps its verdict under the registered\nrules. The report then gives the counts under both readings.\n\n## Blind grading\n\n- A script strips each reply down to the entry text and the task ID. Each sheet gets a random ID.\n  No sheet shows the arm, the model, the file path or the run order. The key (sheet ID \u2192 arm,\n  model) goes in a separate file that the grader does not open until every sheet is graded.\n- A script pre-checks (c) and the flagged words (internal-part nouns, `#\\d+`, `[A-Z]+-\\d+`).\n  Every flagged match is read by hand. Echoes of the task title and quoted examples are not hits\n  until a person has confirmed them.\n\n## Decision rule (registered)\n\nNEW **works** if, on **each** model:\n1. NEW FAILs in \u2264 2 of 10, and\n2. NEW FAILs in at least 3 fewer reps than OLD in this run, and\n3. NEW's (c) length failures and T4 failures are no more than OLD's.\n\nNEW **does not work** if any of these is missed on either model. In that case we report which\ncondition failed, with the hand-read replies.\n\nVariance is reported for each cell: how many distinct entry shapes appear for the same task. If\nNEW passes but its shapes scatter (for example, 2 reps of T1 give two different structures), we\nflag the wording as not binding, even if it passes.\n\n## Spend\n\n- Cap: **$5.00** for the whole test, including the probe and reruns. The partner should confirm\n  or change this before the first rep.\n- Run one batch at a time. A batch is one arm \u00d7 one model \u00d7 10 reps. Record the cost of each\n  batch.\n- Stop rule: do not start the next batch if the running total plus that batch's worst case would\n  pass the cap.\n\n## Outputs (outside `skills/`)\n\n- `specs/baseline/changelog-entry-microtest/kit/`: the system prompt for each arm, the task\n  messages, the runner flags, the isolation probe and the scrub/blinding script.\n- `specs/baseline/changelog-entry-microtest/sheets/` and `key` (kept separate),\n  `grades.md`, `costs.md`.\n- `specs/changelog-entry-microtest-results.md`: counts for each arm, model and task, the\n  side-measure counts, the variance notes and the verdict under the decision rule.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

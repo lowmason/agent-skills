@@ -1,0 +1,95 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..8b7df1f
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,89 @@
++# Micro-test design: `changelog-entry` step 2 wording
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does the proposed step 2 make agents write entries that lead with the reader's outcome, without
++breaking the 100-character limit or the other steps?
++
++- Old (control): `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`
++- New (variant): `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".`
++
++The failure is a shaping failure (entries with the wrong shape, such as "Fix handler"). The new line is
++already a positive recipe, so this test checks that wording and does not add prohibitions.
++
++## Arms
++
++| Arm | System prompt | Purpose |
++|---|---|---|
++| A. Old line | Full current SKILL.md | Control. The baseline gave 7/10 skips. Rerun it so both arms use the same tasks, model and scorer. |
++| B. New line | Full SKILL.md with only line 20 changed | Variant |
++| C. No skill (optional) | Bare "write a changelog entry" instruction | Shows whether the skill helps at all. Skip if A already reproduces the failure. |
++
++Only line 20 may differ between A and B. Diff the two prompt files before running.
++
++## Samples
++
++- One fresh-context call per sample: a single-shot subagent or a raw API call, with no shared history.
++- At least 10 reps per arm per scenario, matching the baseline's 10. Five is the minimum.
++- Use the same model and settings in every arm.
++
++## Scenarios (user message)
++
++Each one is a merged-PR description that tempts the failure. **Reuse the baseline's scenarios if the
++baseline kit has them.** I did not find them under `specs/`, so please point me to them. If they
++are lost, write the ones below and rerun arm A.
++
++1. A bug fix inside an internal part. The diff touches `handler.py` and the ticket is `PROJ-482`.
++   The user-visible effect is that the cursor no longer jumps on save. This is the "Fix handler" trap.
++2. A parser change that adds support for a new input format.
++3. A change that removes a feature, such as a deprecated flag.
++4. A change with a user-visible effect that is hard to say in 100 characters. A long PR description
++   with many details tests the stated risk.
++5. A refactor plus one small visible change. This checks that step 1 still holds.
++
++## Scoring
++
++Score every output with these observable checks. Do not use judgment calls beyond the two marked "read".
++
++| Check | Pass condition |
++|---|---|
++| P1 Outcome first | The line states what the reader can do or no longer suffers. It does not name an internal part, file or ticket as its subject. (read) |
++| P2 Length | The entry is one line of 100 characters or fewer. Count it with a script. |
++| P3 No ticket or file | No ticket ID and no file name appears. Check with a regex. |
++| P4 One change | The line holds exactly one change. (read) |
++| P5 Step 1 | If the PR is a pure refactor, the agent writes no entry. |
++
++Also record, without scoring it as pass or fail: whether the line begins with Add, Fix, Remove or Change.
++This measures the stated risk (verb dropped) and is not itself a failure. P1 and P2 decide.
++
++"Skipped the rule" means that P1 fails. Use the same definition the baseline used. If the baseline
++used another one, align to it before running.
++
++Read every flagged output by hand. Quoted examples copied from the skill ("Export reports as CSV")
++can look like hits, so check that they are not echoes.
++
++## Decision, fixed before running
++
++- **Merge** if B fails P1 in at most 2 of 10 runs per scenario, B has no more P2 failures than A, and B
++  does not fail P3, P4 or P5 more than A does.
++- **Do not merge, revise** if B fixes P1 but raises P2 failures. That is the stated risk. Then try a
++  recipe that keeps the outcome first and adds the length limit in the same step. Retest it as a new arm.
++- **Do not merge** if B is no better than A on P1.
++- If the 10 outputs of B take many different shapes, the wording does not bind. Tighten the form
++  before adding words.
++- If A does not reproduce the failure (fewer than about 5 of 10 skips), stop. The baseline is not
++  stable and there is nothing to fix yet.
++
++## Record
++
++Save the prompts, raw outputs and score table in `specs/baseline/` next to the existing baseline
++record, not in `skills/changelog-entry/`. Keep the kit out of the skill directory because everything
++in it ships.
++
++## Limits
++
++- This checks the wording only. The skill is a technique skill, and the full pressure-scenario run
++  is a separate gate.
++- The 10-run sample is small. Treat a result near the threshold as unclear and run more.

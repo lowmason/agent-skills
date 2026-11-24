@@ -1,0 +1,54 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 482f294..4cb5691 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -2,5 +2,5 @@
+ 
+ This project loads raw files from vendors.
+ 
+-- Before parsing any CSV file, run the `csv-dialect-sniff` skill.
++- Before parsing any CSV file, run the `sniffing-csv-dialects` skill.
+ - Put loaded files in `staging/`, never in `data/`.
+diff --git a/commands/ingest.md b/commands/ingest.md
+index 524407b..0049767 100644
+--- a/commands/ingest.md
++++ b/commands/ingest.md
+@@ -3,5 +3,5 @@ description: Ingest a raw file into staging
+ argument-hint: <path-to-file>
+ ---
+ 
+-Ingest the file at $ARGUMENTS into staging. For a CSV file, apply the `csv-dialect-sniff` skill first, then
++Ingest the file at $ARGUMENTS into staging. For a CSV file, apply the `sniffing-csv-dialects` skill first, then
+ follow `ingest-raw-files`.
+diff --git a/skills/ingest-raw-files/SKILL.md b/skills/ingest-raw-files/SKILL.md
+index 94a4dde..1c5a548 100644
+--- a/skills/ingest-raw-files/SKILL.md
++++ b/skills/ingest-raw-files/SKILL.md
+@@ -11,7 +11,7 @@ Load each raw file into staging with its checksum and its format recorded.
+ 
+ ## The Technique
+ 
+-**REQUIRED SUB-SKILL:** Use csv-dialect-sniff for each CSV file before you parse it.
++**REQUIRED SUB-SKILL:** Use sniffing-csv-dialects for each CSV file before you parse it.
+ 
+ 1. Compute the checksum of the file.
+ 2. Detect the format. For a CSV file, use the sub-skill above.
+diff --git a/skills/csv-dialect-sniff/SKILL.md b/skills/sniffing-csv-dialects/SKILL.md
+similarity index 90%
+rename from skills/csv-dialect-sniff/SKILL.md
+rename to skills/sniffing-csv-dialects/SKILL.md
+index afeb351..8f144c1 100644
+--- a/skills/csv-dialect-sniff/SKILL.md
++++ b/skills/sniffing-csv-dialects/SKILL.md
+@@ -1,9 +1,9 @@
+ ---
+-name: csv-dialect-sniff
++name: sniffing-csv-dialects
+ description: Use when a CSV file arrives with an unknown delimiter, quote character or line ending, before parsing it
+ ---
+ 
+-# CSV Dialect Sniff
++# Sniffing CSV Dialects
+ 
+ ## Overview
+ 

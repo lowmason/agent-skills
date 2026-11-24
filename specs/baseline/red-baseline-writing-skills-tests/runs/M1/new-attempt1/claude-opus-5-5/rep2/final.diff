@@ -1,0 +1,150 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..f1a0df8
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,144 @@
++# Micro-test design: step 2 of `changelog-entry`
++
++Status: design only. Nothing has been run. Rules in "Scoring rules" are to be committed before
++the first reply is read.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make agents lead the entry with the
++reader's outcome instead of a verb plus an internal part ("Fix handler"), without pushing entries
++past 100 characters?
++
++## Failure type and form
++
++The baseline agent writes an entry, so it complies with the task, but the entry has the wrong
++shape: it leads with a change verb and names an internal part. That is a shaping failure. The
++proposed line is a positive recipe with two examples, which is the right form for it. The test
++checks whether that recipe binds, and whether its examples get echoed.
++
++## Arms
++
++All arms use the same system prompt: the full `skills/changelog-entry/SKILL.md`, with only step 2
++changed.
++
++| Arm | Step 2 |
++|---|---|
++| A: control | Step 2 deleted; steps renumbered 1–3 |
++| B: old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| C: new | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm B repeats the baseline under the same setup as A and C. The earlier 7/10 baseline result is
++not reused as the B count, because it ran under a different setup and its pass rule may not match
++the rules below.
++
++## Tasks (user message)
++
++Each task gives a merged PR whose title and diff name internal parts, and whose description
++mentions the user effect only in passing. The user message is: "This PR just merged. Write its
++`CHANGELOG.md` entry." followed by the PR text. Three tasks, so the result does not hinge on one
++PR:
++
++1. **T1 — bug fix.** Title: `Fix null check in SessionRefreshHandler (#4821)`. Diff touches
++   `auth/session_refresh.py`. Description: "Handler threw when token expiry was missing; users got
++   logged out when they switched tabs."
++2. **T2 — feature.** Title: `Add DateRangeParser to report query layer (#4907)`. Diff touches
++   `reports/query/date_range.py`, `reports/api.py`. Description: "Report API now accepts
++   `from`/`to`; the reports page has a date picker."
++3. **T3 — removal.** Title: `Remove LegacyXmlExporter (#4950)`. Diff deletes
++   `export/legacy_xml.py`. Description: "XML export was deprecated in 3.0; the export menu now
++   offers only CSV and JSON."
++
++None of the tasks is about CSV export as a new feature or about cursor loss, so a copy of
++arm C's examples is detectable. (T3 mentions CSV; an entry that merely says CSV remains is not an
++echo; an entry reading "Export reports as CSV" is.)
++
++Per-task internal-term list, used by the programmatic pre-score:
++- T1: `SessionRefreshHandler`, `handler`, `null check`, `session_refresh`, `4821`
++- T2: `DateRangeParser`, `parser`, `query layer`, `date_range`, `4907`
++- T3: `LegacyXmlExporter`, `exporter`, `legacy_xml`, `4950`
++
++## Reps and models
++
++- 5 reps per arm per task: 3 arms × 3 tasks × 5 = 45 reps per model.
++- Run every arm on each model that will run this skill, same rep count on each.
++  **Open: the partner names the models.**
++- One fresh-context, single-shot sample per rep, no tools.
++
++## Setup (per `references/micro-tests.md`)
++
++1. **Isolation.** Each rep starts in a new directory outside every repository, no tools, user
++   settings, instruction files and memory off.
++2. **Probe first.** One unscored pilot rep asks what it can see: instruction files, memory, tools,
++   other sessions, the user's name. Anything unplanned means the setup leaks; fix before any
++   scored rep.
++3. **Quarantine.** No rep can reach `specs/` (this file, the proposal, records) or the baseline
++   records.
++4. **Register rules.** Commit this file with the rules below before reading any reply.
++5. **Blind scoring.** Replies go onto sheets with random IDs; the arm/task key is held in a
++   separate file. No name, path, order or count on a sheet shows the arm. Unblind after every
++   sheet is graded.
++6. **Spend cap.** **Open: the partner sets the cap.** Stop rule: stop when the running total plus
++   the next batch's worst case would pass the cap. Record each batch's cost.
++
++## Scoring rules (register before reading)
++
++Scoring unit: the entry line in the reply. If the reply has prose around one entry line, score
++that line.
++
++**PASS** — all of:
++1. Exactly one entry line for the change.
++2. ≤ 100 characters (bullet marker and surrounding whitespace not counted).
++3. The first clause names something the reader can now do, or a problem the reader no longer has
++   (e.g. "Stay signed in when switching tabs", "Filter reports by date range").
++4. No term from the task's internal-term list, and no file, class, function or ticket name,
++   anywhere in the line.
++
++**FAIL** — any of:
++- The line leads with a verb and an internal part ("Fix SessionRefreshHandler…", "Add parser…").
++- Any internal term or ticket number anywhere in the line.
++- Over 100 characters.
++- Two or more entry lines for the one change, or two changes on one line.
++- The line copies an arm C example verbatim or near-verbatim (echo).
++
++**VOID** — the reply shows it read a quarantined file, refuses, gives no entry, or the run errored.
++A void rep is rerun once; a second void is reported as void.
++
++**Secondary counts (reported, not part of PASS/FAIL):**
++- Line length distribution per arm (the proposal's risk).
++- Entries with no leading verb at all (the proposal's other risk). The new wording removes the
++  Add/Fix/Remove/Change list on purpose, so a verbless line is not a fail by itself.
++  **Open: the partner confirms this before registration, or makes it a FAIL.**
++- Lines that start with Add/Fix/Remove/Change but still pass (shows whether arm C changes the
++  verb habit or only the object).
++
++Pre-score programmatically (length, internal-term match, echo match, line count), then read every
++reply by hand, including every flagged match: quoted examples and template echoes look like hits.
++If a reply shows a reading the rules did not foresee, keep the registered verdict and report counts
++under both readings.
++
++## Decision rule
++
++1. **Control gate.** If arm A fails in fewer than 3 of 15 reps on a model, the failure is not
++   present without guidance on that model; report it and do not judge the wording on that model.
++2. **Adopt** the new line if, on every model run, arm C:
++   - passes at least 13 of 15, and
++   - passes more often than both A and B, and
++   - has no more over-100 lines than B, and
++   - has no more than 1 echo.
++3. **Variance.** If arm C's passing lines take visibly different shapes across reps (outcome-first
++   in some, verb-plus-part in others, prose in others), the wording is not binding; tighten the
++   form before adding words, and rerun all arms.
++4. Otherwise do not merge; report the counts and the failing lines.
++
++## Report
++
++Per model: PASS/FAIL/VOID counts per arm per task, the secondary counts, every FAIL line verbatim
++with its arm (after unblinding), the batch costs, and the probe result.
++
++## Open items for the partner
++
++- Which models run this skill.
++- The spend cap.
++- Whether a verbless entry counts as FAIL.
++- Where the 7/10 baseline record lives; it is not under `specs/`. If its pass rule differs from
++  the one above, its count is not comparable with arm B here.

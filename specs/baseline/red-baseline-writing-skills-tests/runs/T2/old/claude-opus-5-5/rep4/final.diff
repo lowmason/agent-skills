@@ -1,0 +1,12 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..8458879 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write or overwrite a parquet file (to_parquet, write_parquet, pyarrow) for a dataset that has a schema in schemas/
+ ---
+ 
+ # Parquet Schema Check

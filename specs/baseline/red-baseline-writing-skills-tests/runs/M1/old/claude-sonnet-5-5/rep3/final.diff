@@ -1,0 +1,66 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..44a3cc7
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,60 @@
++# Micro-test: step 2 of `changelog-entry`
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does the proposed step 2 produce entries that lead with the reader's outcome, without breaking step 4 (one line, 100 characters or fewer)?
++
++## What the baseline gives us
++
++The old line already has a baseline: 7 of 10 runs skipped the rule. This design reuses that run as the old-line arm only if its system prompt and tasks match what is below. If they differ, or the baseline record is not in the repo, rerun the old line with the same tasks.
++
++The failure type is output shape: entries stop at a verb and name an internal part. The right form is therefore a recipe, which the proposal already is. Don't add a prohibition ("never write Fix handler") to the arm under test.
++
++## Arms
++
++| Arm | System prompt |
++|---|---|
++| A. Control | The skill with no step 2 at all (steps renumbered). It shows whether the failure exists without guidance. |
++| B. Old | The skill as it is today. |
++| C. New | The skill with only line 20 replaced by the proposed line. |
++
++Everything else in the skill stays byte-identical across arms. The system prompt is the full SKILL.md, not the line on its own.
++
++## Samples
++
++- One fresh-context, single-shot call per sample, with no shared history.
++- 10 reps per arm per task, to match the baseline size. 5 is the minimum.
++- Tasks: 4 merged-PR descriptions, each given as a title plus a short diff summary. Each one tempts the failure:
++  1. A bug fix in a function named `handleSave` whose user effect is that the cursor jumps.
++  2. A parser change that lets users import files they could not before.
++  3. A removal of a deprecated flag, where the PR text names only the flag.
++  4. A PR with a long, multi-clause user effect, to push the length past 100 characters.
++- That is 4 tasks x 3 arms x 10 reps = 120 calls. If cost is a concern, cut to 5 reps (60 calls).
++- The user message gives the PR and asks for the changelog line. It does not mention the length limit or the verbs.
++
++## Scoring
++
++Set these before running. Score by script, then read every flagged output by hand, because quoted examples and echoes of the skill's text create false hits.
++
++| Check | Pass condition |
++|---|---|
++| Outcome first | The line starts with what the reader can now do or no longer suffers. Judged by hand against the task's stated user effect. |
++| No internal name | The line has no function, file or ticket name, unless the task's user effect needs it. |
++| Length | 100 characters or fewer, one line. Scripted. |
++| Single change | One change on the line. Hand-read. |
++| Leading verb dropped | The first word is not a verb (the proposal's named risk). Record it, and note whether the line is still readable. |
++
++Primary metric: share of runs that pass outcome-first, no-internal-name and length together.
++
++## Decision rule
++
++- If arm A shows the failure, proceed. If it does not, stop: the guidance is not needed.
++- Merge arm C if its primary pass rate is clearly above arm B's, and its length failures are no more frequent than B's.
++- If C improves outcome-first but length failures rise, don't merge. Change the wording and rerun this test, with a recipe that states the length as part of the shape. Don't add a "but keep it short" clause to the line.
++- Check variance. If the 10 runs of one task in arm C give many different shapes, the wording is not binding, even if the pass rate looks fine.
++
++## Limits
++
++This tests wording on single lines. It does not replace running the real flow in a repo. The skill is a technique, so the final check is one application to a PR that was not used in the tasks above.

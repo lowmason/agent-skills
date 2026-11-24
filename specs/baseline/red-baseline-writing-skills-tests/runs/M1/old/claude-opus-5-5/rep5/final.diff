@@ -1,0 +1,96 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..a1ec05b
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,90 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run.
++Proposal under test: `specs/changelog-entry-wording.md`.
++
++## Question
++
++Does the proposed step 2 make agents write entries that lead with the reader's outcome,
++without pushing entries past 100 characters (the risk the proposal names)?
++
++## Arms
++
++All arms use the full `skills/changelog-entry/SKILL.md` as the system prompt. Only step 2 differs.
++
++| Arm | Step 2 text |
++|---|---|
++| A. Control (no guidance) | Step 2 deleted; steps renumbered 1–3. |
++| B. Old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| C. New | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm A is required. If A does not show the failure, there is nothing for step 2 to fix: stop and
++do not merge on the strength of this test.
++
++Arm B is re-run here, not taken from the earlier baseline (7 of 10 runs skipped the rule), so that
++all three arms see the same tasks and are scored by the same rubric. If B here differs a lot from
++7/10, note it; it means the tasks or the scoring differ from the baseline run.
++
++## Sampling
++
++- One fresh-context sample per call: a raw API call, or a single-shot subagent with no other context.
++- 10 reps per arm per task. This is above the minimum of 5 and gives the same denominator as the baseline.
++- Same model and settings for all arms. Run the arms interleaved, not one arm after another.
++
++## Tasks (user message)
++
++Each task gives a merged PR and asks: "Write the `CHANGELOG.md` entry for this pull request."
++The PR text uses internal names, so it tempts the failure "verb + internal part".
++
++1. **Internal-named fix.** Title: "Fix SaveHandler resetting caret offset". Body: "`SaveHandler.flush()`
++   called `editor.reset()`, which moved the caret to 0. Now it keeps the offset. Closes #4821."
++   Outcome a reader cares about: the cursor no longer jumps to the start on save.
++2. **Internal-named feature.** Title: "Add CsvSerializer to ReportExporter". Body: "New serializer
++   class; wired into the export menu. JIRA-332."
++   Outcome: reports can be exported as CSV. (Close to the proposal's own example, so it also
++   tests for verbatim echo.)
++3. **Outcome far from the code.** Title: "Change retry policy in SyncWorker from 3 to 8 with backoff".
++   Body: "Users on flaky networks saw 'Sync failed' banners; this rides out short drops."
++   Outcome: fewer "Sync failed" errors on weak connections. Needs more words than the others,
++   so it puts the most pressure on the 100-character limit.
++
++Total: 3 arms × 3 tasks × 10 reps = 90 calls.
++
++## Scoring
++
++Score each entry on these, in this order:
++
++1. **Outcome-first (primary).** Pass if the first clause names what the reader can now do or no
++   longer suffers. Fail if the entry leads with an internal part (class, function, file, ticket),
++   or names only a verb plus an internal part ("Fix SaveHandler", "Change retry policy").
++2. **Length.** Pass if one line of 100 characters or fewer. Count characters by script.
++3. **Verbatim echo (arm C).** Flag any entry that copies "Export reports as CSV" or
++   "Stop losing the cursor on save" word for word. An echo on task 2 can still be a correct entry,
++   but count it on its own so it does not inflate the pass rate.
++4. **Other rules held.** No ticket number, one change per line.
++
++A script may pre-flag candidates (length, ticket pattern, internal identifiers in CamelCase or
++with `()`), but a person reads every entry and decides criterion 1 by hand. Flags caused by echoes
++or by quoting the PR title are not counted as hits or as passes until they are read.
++
++Record each entry verbatim with arm, task and rep.
++
++## Reading the result
++
++Decide before running:
++
++- **New wording works:** arm C fails outcome-first in at most 2 of 10 reps on each task, and the
++  C failure counts are clearly below both A and B (the ranges do not overlap across tasks).
++- **Risk check:** arm C's length failures are not higher than arm B's on any task. A rise on
++  task 3 alone is the risk the proposal names and blocks the merge as worded.
++- **Variance:** in arm C, the 10 reps for a task should share one shape (outcome first, then
++  detail). If they come out in several different shapes, the wording is not binding; tighten
++  the form before adding words.
++- **Control check:** if arm A passes outcome-first in most reps, step 2 is not what fixes the
++  failure. Stop and report; do not merge.
++
++## Where results go
++
++Keep transcripts and scores outside the skill directory, for example
++`specs/baseline/red-baseline-changelog-entry-step2/`. Nothing from this test goes into
++`skills/changelog-entry/`.

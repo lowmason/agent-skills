@@ -1,0 +1,132 @@
+{
+  "case": "M1",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "27ccccf78b71850e69da8426824b64a49a114f1b",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 46,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 21,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 45269,
+    "total_cost_usd": 0.1703464,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3574,
+        "cacheReadInputTokens": 31212,
+        "cacheCreationInputTokens": 11575,
+        "webSearchRequests": 0,
+        "costUSD": 0.1703464,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 704,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 11575,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**The setup**\n- **Three versions:** each one gets the full `SKILL.md` as its system prompt, and only step 2 changes:\n  - **Control:** step 2 is removed.\n  - **Old:** the current line.\n  - **New:** the proposed line.\n- **The control matters:** if the agent already writes good entries without step 2, the wording isn't what fixes the problem, and we shouldn't merge because of this test.\n- **The old line is run again:** it uses the same tasks and scoring as the other two, so the comparison is fair. I'm not reusing the 7-of-10 baseline for it.\n- **Three tasks:** each is a merged PR written in internal terms (class names, ticket numbers), which invites a \"Fix SaveHandler\"-style entry.\n  - The first matches the proposal's cursor example.\n  - The second matches the CSV example, so it also checks whether the agent just copies the example.\n  - The third has a goal far removed from the code. It needs more words, so it puts the most pressure on the 100-character limit.\n- **Size:** 10 fresh-context samples per version per task, 90 calls in total.\n\n**Scoring**\n- **Main check:** does the entry start with what the reader can now do or no longer suffers? A person decides this for every entry. A script only flags candidates.\n- **Other checks:** length of 100 characters or fewer (counted by script), word-for-word copies of the examples (counted separately), no ticket number, and one change per line.\n\n**What counts as a pass (set before running)**\n- **Main check:** the new line fails it in at most 2 of 10 runs per task, and is clearly below both the control and the old line.\n- **Length:** the new line has no more length failures than the old line. More length failures, especially on the third task, is exactly the risk the proposal names, and that would block the merge as worded.\n- **Consistency:** the 10 runs for a task should come out in the same shape. Scattered shapes mean the wording isn't binding.\n\n**Things to check first**\n- **The old baseline:** its record isn't in `specs/`, and the summary doesn't say which rule \"skipped the rule\" means. If you can point me to it, I'll make sure the new run's scoring matches it.\n- **Missing `license` field:** the skill's frontmatter doesn't have one, which the authoring checklist requires. It's separate from this change, but worth fixing in the same PR.",
+  "tool_calls": [
+    {
+      "id": "toolu_01PSpAHZXkFYnUQyQZ4Q8hhH",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011YbpreJkTqBsKnauvL2jM6",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XVJbzAZHnKpM5N5TV6huwn",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01JFPez6k2bX6PxNHfjmbFca",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. Nothing has been run.\nProposal under test: `specs/changelog-entry-wording.md`.\n\n## Question\n\nDoes the proposed step 2 make agents write entries that lead with the reader's outcome,\nwithout pushing entries past 100 characters (the risk the proposal names)?\n\n## Arms\n\nAll arms use the full `skills/changelog-entry/SKILL.md` as the system prompt. Only step 2 differs.\n\n| Arm | Step 2 text |\n|---|---|\n| A. Control (no guidance) | Step 2 deleted; steps renumbered 1\u20133. |\n| B. Old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| C. New | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nArm A is required. If A does not show the failure, there is nothing for step 2 to fix: stop and\ndo not merge on the strength of this test.\n\nArm B is re-run here, not taken from the earlier baseline (7 of 10 runs skipped the rule), so that\nall three arms see the same tasks and are scored by the same rubric. If B here differs a lot from\n7/10, note it; it means the tasks or the scoring differ from the baseline run.\n\n## Sampling\n\n- One fresh-context sample per call: a raw API call, or a single-shot subagent with no other context.\n- 10 reps per arm per task. This is above the minimum of 5 and gives the same denominator as the baseline.\n- Same model and settings for all arms. Run the arms interleaved, not one arm after another.\n\n## Tasks (user message)\n\nEach task gives a merged PR and asks: \"Write the `CHANGELOG.md` entry for this pull request.\"\nThe PR text uses internal names, so it tempts the failure \"verb + internal part\".\n\n1. **Internal-named fix.** Title: \"Fix SaveHandler resetting caret offset\". Body: \"`SaveHandler.flush()`\n   called `editor.reset()`, which moved the caret to 0. Now it keeps the offset. Closes #4821.\"\n   Outcome a reader cares about: the cursor no longer jumps to the start on save.\n2. **Internal-named feature.** Title: \"Add CsvSerializer to ReportExporter\". Body: \"New serializer\n   class; wired into the export menu. JIRA-332.\"\n   Outcome: reports can be exported as CSV. (Close to the proposal's own example, so it also\n   tests for verbatim echo.)\n3. **Outcome far from the code.** Title: \"Change retry policy in SyncWorker from 3 to 8 with backoff\".\n   Body: \"Users on flaky networks saw 'Sync failed' banners; this rides out short drops.\"\n   Outcome: fewer \"Sync failed\" errors on weak connections. Needs more words than the others,\n   so it puts the most pressure on the 100-character limit.\n\nTotal: 3 arms \u00d7 3 tasks \u00d7 10 reps = 90 calls.\n\n## Scoring\n\nScore each entry on these, in this order:\n\n1. **Outcome-first (primary).** Pass if the first clause names what the reader can now do or no\n   longer suffers. Fail if the entry leads with an internal part (class, function, file, ticket),\n   or names only a verb plus an internal part (\"Fix SaveHandler\", \"Change retry policy\").\n2. **Length.** Pass if one line of 100 characters or fewer. Count characters by script.\n3. **Verbatim echo (arm C).** Flag any entry that copies \"Export reports as CSV\" or\n   \"Stop losing the cursor on save\" word for word. An echo on task 2 can still be a correct entry,\n   but count it on its own so it does not inflate the pass rate.\n4. **Other rules held.** No ticket number, one change per line.\n\nA script may pre-flag candidates (length, ticket pattern, internal identifiers in CamelCase or\nwith `()`), but a person reads every entry and decides criterion 1 by hand. Flags caused by echoes\nor by quoting the PR title are not counted as hits or as passes until they are read.\n\nRecord each entry verbatim with arm, task and rep.\n\n## Reading the result\n\nDecide before running:\n\n- **New wording works:** arm C fails outcome-first in at most 2 of 10 reps on each task, and the\n  C failure counts are clearly below both A and B (the ranges do not overlap across tasks).\n- **Risk check:** arm C's length failures are not higher than arm B's on any task. A rise on\n  task 3 alone is the risk the proposal names and blocks the merge as worded.\n- **Variance:** in arm C, the 10 reps for a task should share one shape (outcome first, then\n  detail). If they come out in several different shapes, the wording is not binding; tighten\n  the form before adding words.\n- **Control check:** if arm A passes outcome-first in most reps, step 2 is not what fixes the\n  failure. Stop and report; do not merge.\n\n## Where results go\n\nKeep transcripts and scores outside the skill directory, for example\n`specs/baseline/red-baseline-changelog-entry-step2/`. Nothing from this test goes into\n`skills/changelog-entry/`.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

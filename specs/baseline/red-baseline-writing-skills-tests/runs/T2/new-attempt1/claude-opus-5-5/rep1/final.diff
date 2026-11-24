@@ -1,0 +1,12 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..9d97885 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write or save a DataFrame to a parquet file (to_parquet, write_parquet, pyarrow write_table), or when a job reading parquet fails on a missing column, wrong dtype, column order or schema mismatch
+ ---
+ 
+ # Parquet Schema Check

@@ -1,0 +1,34 @@
+N1 new cut150 claude-sonnet-5-5: 0 of 3 (void 0)
+N1 new full claude-sonnet-5-5: 0 of 3 (void 0)
+N1 old cut150 claude-sonnet-5-5: 0 of 3 (void 0)
+N1 old full claude-sonnet-5-5: 0 of 3 (void 0)
+N2 new cut150 claude-sonnet-5-5: 0 of 2 (void 1)
+N2 new full claude-sonnet-5-5: 0 of 3 (void 0)
+N2 old cut150 claude-sonnet-5-5: 0 of 3 (void 0)
+N2 old full claude-sonnet-5-5: 0 of 3 (void 0)
+N3 new cut150 claude-sonnet-5-5: 0 of 3 (void 0)
+N3 new full claude-sonnet-5-5: 0 of 3 (void 0)
+N3 old cut150 claude-sonnet-5-5: 0 of 3 (void 1)
+N3 old full claude-sonnet-5-5: 0 of 3 (void 0)
+P1 old full claude-sonnet-5-5: 0 of 3 (void 0)
+P2 old full claude-sonnet-5-5: 0 of 3 (void 0)
+P3 new cut150 claude-sonnet-5-5: 2 of 2 (void 3)
+P3 new full claude-sonnet-5-5: 3 of 5 (void 0)
+P3 old cut150 claude-sonnet-5-5: 5 of 5 (void 1)
+P3 old full claude-sonnet-5-5: 5 of 5 (void 1)
+P4 old full claude-sonnet-5-5: 0 of 3 (void 0)
+P5 old full claude-sonnet-5-5: 0 of 3 (void 0)
+void: N2 new cut150 claude-sonnet-5-5 rep3: path audit: 1 hit(s)
+void: N3 old cut150 claude-sonnet-5-5 rep1: path audit: 1 hit(s)
+void: P3 new cut150 claude-sonnet-5-5 rep1: path audit: 1 hit(s)
+void: P3 new cut150 claude-sonnet-5-5 rep3: path audit: 1 hit(s)
+void: P3 new cut150 claude-sonnet-5-5 rep5: path audit: 1 hit(s)
+void: P3 old cut150 claude-sonnet-5-5 rep2: path audit: 1 hit(s)
+void: P3 old full claude-sonnet-5-5 rep1: path audit: 1 hit(s)
+floor claude-sonnet-5-5: old should-load loads in full 5 of 15, BELOW the floor of 8
+bar should-load claude-sonnet-5-5 full: old 5, new 3, ok
+bar near-miss claude-sonnet-5-5 full: old 0, new 0, ok
+bar should-load claude-sonnet-5-5 cut150: old 5, new 2, MISSED
+bar near-miss claude-sonnet-5-5 cut150: old 0, new 0, ok
+prediction claude-sonnet-5-5 (cut150, P1-P3): old 5, new 2, does not hold
+verdict: incomplete

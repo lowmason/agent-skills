@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 2,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep2",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "c74ed557893d009a8092e9ff86e95a2f9344a9d1",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/M1/new/claude-opus-5-5/rep2.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 63,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 30,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 62262,
+    "total_cost_usd": 0.22961139999999997,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 5317,
+        "cacheReadInputTokens": 47277,
+        "cacheCreationInputTokens": 14223,
+        "webSearchRequests": 0,
+        "costUSD": 0.22961139999999997,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1318,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14223,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. I haven't run anything or committed anything.\n\n**How the test is set up:**\n- **Three arms, same system prompt.** Every arm gets the full SKILL.md, and only step 2 changes:\n  - Control: step 2 deleted. The skill requires a no-guidance control.\n  - Old: the current line, run again under the same setup.\n  - New: the proposed line.\n\n  I didn't reuse your 7/10 baseline as the old arm's count. It ran under a different setup, and its pass rule may not match this one.\n- **Three tasks.** Each is a merged PR whose title and diff name internal parts: a session handler fix, a date-range parser, and a removed XML exporter. That's the pull toward \"Fix handler\". None of them is about CSV export or the cursor, so if a run copies the new line's examples, we can tell.\n- **Scoring rules are written down so you can commit them before we read any replies:**\n  - Pass: one line, 100 characters or fewer, opens with something the reader can now do or no longer suffers, and has no internal names or ticket numbers.\n  - Fail: leads with a verb plus an internal part, any internal term or ticket number, over 100 characters, two lines for one change, or a copy of the examples.\n  - Void: the run read a hidden file, refused, gave no entry, or errored.\n  - Line length and verbless entries are counted separately. Those are the two risks the proposal names.\n- **Decision rule:**\n  1. If the control fails in fewer than 3 of 15 runs on a model, there's nothing to fix on that model.\n  2. Otherwise, merge only if the new line passes at least 13 of 15. It also has to beat both other arms, produce no more over-100 entries than the old line, and echo the examples at most once.\n  3. If the new arm's entries come out in different shapes from run to run, the wording isn't binding, and we tighten it rather than merge.\n- **Run hygiene** follows `references/micro-tests.md`: one isolation test run first, no run can reach `specs/`, grading from sheets that hide the arm, and a spend cap with a stop rule. That's 5 runs per arm per task, so 45 per model.\n\n**What I need from you before it can run:**\n1. Which models will use this skill. Every arm runs on each of them.\n2. The spend cap.\n3. Whether an entry with no leading verb counts as a fail. The proposal names it as a risk, but the new line drops the Add/Fix/Remove/Change list on purpose. For now I've made it a separate count, not a fail.\n4. Where the 7/10 baseline record lives. It isn't under `specs/`, and I want to check that its pass rule matches this one.\n\nOnce you've answered those and the rules are committed, I can set up the runs.",
+  "tool_calls": [
+    {
+      "id": "toolu_01KrCdw42PDRHNAPf7LHgFyQ",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01YW7Yjmr7Pq5ewJA9ioDyMp",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01293RqwDgojqS7ZL3JCVG3q",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01MSDuRsHwf3vVJhtjp6fuSj",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HiitKCpEZ9b5KpLWrw4epB",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 of `changelog-entry`\n\nStatus: design only. Nothing has been run. Rules in \"Scoring rules\" are to be committed before\nthe first reply is read.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make agents lead the entry with the\nreader's outcome instead of a verb plus an internal part (\"Fix handler\"), without pushing entries\npast 100 characters?\n\n## Failure type and form\n\nThe baseline agent writes an entry, so it complies with the task, but the entry has the wrong\nshape: it leads with a change verb and names an internal part. That is a shaping failure. The\nproposed line is a positive recipe with two examples, which is the right form for it. The test\nchecks whether that recipe binds, and whether its examples get echoed.\n\n## Arms\n\nAll arms use the same system prompt: the full `skills/changelog-entry/SKILL.md`, with only step 2\nchanged.\n\n| Arm | Step 2 |\n|---|---|\n| A: control | Step 2 deleted; steps renumbered 1\u20133 |\n| B: old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| C: new | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nArm B repeats the baseline under the same setup as A and C. The earlier 7/10 baseline result is\nnot reused as the B count, because it ran under a different setup and its pass rule may not match\nthe rules below.\n\n## Tasks (user message)\n\nEach task gives a merged PR whose title and diff name internal parts, and whose description\nmentions the user effect only in passing. The user message is: \"This PR just merged. Write its\n`CHANGELOG.md` entry.\" followed by the PR text. Three tasks, so the result does not hinge on one\nPR:\n\n1. **T1 \u2014 bug fix.** Title: `Fix null check in SessionRefreshHandler (#4821)`. Diff touches\n   `auth/session_refresh.py`. Description: \"Handler threw when token expiry was missing; users got\n   logged out when they switched tabs.\"\n2. **T2 \u2014 feature.** Title: `Add DateRangeParser to report query layer (#4907)`. Diff touches\n   `reports/query/date_range.py`, `reports/api.py`. Description: \"Report API now accepts\n   `from`/`to`; the reports page has a date picker.\"\n3. **T3 \u2014 removal.** Title: `Remove LegacyXmlExporter (#4950)`. Diff deletes\n   `export/legacy_xml.py`. Description: \"XML export was deprecated in 3.0; the export menu now\n   offers only CSV and JSON.\"\n\nNone of the tasks is about CSV export as a new feature or about cursor loss, so a copy of\narm C's examples is detectable. (T3 mentions CSV; an entry that merely says CSV remains is not an\necho; an entry reading \"Export reports as CSV\" is.)\n\nPer-task internal-term list, used by the programmatic pre-score:\n- T1: `SessionRefreshHandler`, `handler`, `null check`, `session_refresh`, `4821`\n- T2: `DateRangeParser`, `parser`, `query layer`, `date_range`, `4907`\n- T3: `LegacyXmlExporter`, `exporter`, `legacy_xml`, `4950`\n\n## Reps and models\n\n- 5 reps per arm per task: 3 arms \u00d7 3 tasks \u00d7 5 = 45 reps per model.\n- Run every arm on each model that will run this skill, same rep count on each.\n  **Open: the partner names the models.**\n- One fresh-context, single-shot sample per rep, no tools.\n\n## Setup (per `references/micro-tests.md`)\n\n1. **Isolation.** Each rep starts in a new directory outside every repository, no tools, user\n   settings, instruction files and memory off.\n2. **Probe first.** One unscored pilot rep asks what it can see: instruction files, memory, tools,\n   other sessions, the user's name. Anything unplanned means the setup leaks; fix before any\n   scored rep.\n3. **Quarantine.** No rep can reach `specs/` (this file, the proposal, records) or the baseline\n   records.\n4. **Register rules.** Commit this file with the rules below before reading any reply.\n5. **Blind scoring.** Replies go onto sheets with random IDs; the arm/task key is held in a\n   separate file. No name, path, order or count on a sheet shows the arm. Unblind after every\n   sheet is graded.\n6. **Spend cap.** **Open: the partner sets the cap.** Stop rule: stop when the running total plus\n   the next batch's worst case would pass the cap. Record each batch's cost.\n\n## Scoring rules (register before reading)\n\nScoring unit: the entry line in the reply. If the reply has prose around one entry line, score\nthat line.\n\n**PASS** \u2014 all of:\n1. Exactly one entry line for the change.\n2. \u2264 100 characters (bullet marker and surrounding whitespace not counted).\n3. The first clause names something the reader can now do, or a problem the reader no longer has\n   (e.g. \"Stay signed in when switching tabs\", \"Filter reports by date range\").\n4. No term from the task's internal-term list, and no file, class, function or ticket name,\n   anywhere in the line.\n\n**FAIL** \u2014 any of:\n- The line leads with a verb and an internal part (\"Fix SessionRefreshHandler\u2026\", \"Add parser\u2026\").\n- Any internal term or ticket number anywhere in the line.\n- Over 100 characters.\n- Two or more entry lines for the one change, or two changes on one line.\n- The line copies an arm C example verbatim or near-verbatim (echo).\n\n**VOID** \u2014 the reply shows it read a quarantined file, refuses, gives no entry, or the run errored.\nA void rep is rerun once; a second void is reported as void.\n\n**Secondary counts (reported, not part of PASS/FAIL):**\n- Line length distribution per arm (the proposal's risk).\n- Entries with no leading verb at all (the proposal's other risk). The new wording removes the\n  Add/Fix/Remove/Change list on purpose, so a verbless line is not a fail by itself.\n  **Open: the partner confirms this before registration, or makes it a FAIL.**\n- Lines that start with Add/Fix/Remove/Change but still pass (shows whether arm C changes the\n  verb habit or only the object).\n\nPre-score programmatically (length, internal-term match, echo match, line count), then read every\nreply by hand, including every flagged match: quoted examples and template echoes look like hits.\nIf a reply shows a reading the rules did not foresee, keep the registered verdict and report counts\nunder both readings.\n\n## Decision rule\n\n1. **Control gate.** If arm A fails in fewer than 3 of 15 reps on a model, the failure is not\n   present without guidance on that model; report it and do not judge the wording on that model.\n2. **Adopt** the new line if, on every model run, arm C:\n   - passes at least 13 of 15, and\n   - passes more often than both A and B, and\n   - has no more over-100 lines than B, and\n   - has no more than 1 echo.\n3. **Variance.** If arm C's passing lines take visibly different shapes across reps (outcome-first\n   in some, verb-plus-part in others, prose in others), the wording is not binding; tighten the\n   form before adding words, and rerun all arms.\n4. Otherwise do not merge; report the counts and the failing lines.\n\n## Report\n\nPer model: PASS/FAIL/VOID counts per arm per task, the secondary counts, every FAIL line verbatim\nwith its arm (after unblinding), the batch costs, and the probe result.\n\n## Open items for the partner\n\n- Which models run this skill.\n- The spend cap.\n- Whether a verbless entry counts as FAIL.\n- Where the 7/10 baseline record lives; it is not under `specs/`. If its pass rule differs from\n  the one above, its count is not comparable with arm B here.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

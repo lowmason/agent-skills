@@ -1,0 +1,50 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..8dd443e 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write, save, export or append a DataFrame to a parquet file (pandas to_parquet, Polars write_parquet or sink_parquet, pyarrow.parquet.write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails with a schema mismatch, a missing or extra column, wrong column order or a wrong dtype
+ ---
+ 
+ # Parquet Schema Check
+diff --git a/specs/trigger-tests/parquet-schema-check.md b/specs/trigger-tests/parquet-schema-check.md
+new file mode 100644
+index 0000000..d26509f
+--- /dev/null
++++ b/specs/trigger-tests/parquet-schema-check.md
+@@ -0,0 +1,32 @@
++# Trigger test: parquet-schema-check description
++
++Old description: `Helps with parquet files.`
++New description: see `skills/parquet-schema-check/SKILL.md`.
++
++Run each prompt in a fresh session, once with the old description and once with the new one.
++Count the sessions that load `parquet-schema-check`.
++
++## Should load
++
++1. "Clean up the orders frame in etl/orders.py and save it out as parquet for the nightly job."
++2. "Add a `discount_pct` column to the customers DataFrame and write it back to data/customers.parquet."
++3. "Export today's events with polars write_parquet into the events dataset."
++4. "The reporting job crashes reading sales.parquet: 'column type mismatch: expected int64, got double'. Fix the writer."
++5. "Append this week's batch to the inventory parquet files with pyarrow."
++
++## Near misses (should not load)
++
++1. "This Polars scan_parquet query over the logs takes 4 minutes, speed it up." (polars-lazy-tuning)
++2. "Read data/customers.parquet and tell me how many rows have a null email."
++3. "Convert this CSV export to JSON lines for the API team."
++4. "Add a new column `region` to schemas/customers.json." (editing the schema, not writing data)
++
++## Results
++
++| Description | Should-load loads (of 5) | Near-miss loads (of 4) |
++|---|---|---|
++| Old | not run | not run |
++| New | not run | not run |
++
++A fix raises the first count and leaves the second unchanged.
++Then run the should-load prompts with the skill turned off (`skillOverrides`: `off`) and compare the work.

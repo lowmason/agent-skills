@@ -1,0 +1,145 @@
+{
+  "case": "T2",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "125700aeef371673ecd83e39b93a56806f4e7793",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/T2/old/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "ab5b91580188cc54faae8c78abeb079ab443eeddf85915d06bd46d3b845fd967",
+  "claude_exit": 0,
+  "wall_seconds": 11,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 33,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 10062,
+    "total_cost_usd": 0.0711575,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1261,
+        "cacheReadInputTokens": 52395,
+        "cacheCreationInputTokens": 13323,
+        "webSearchRequests": 0,
+        "costUSD": 0.0711575,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 107,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13323,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I rewrote the description in `skills/parquet-schema-check/SKILL.md`. I haven't re-run the scenario, so I don't know yet whether agents now load the skill.\n\n**Cause:** the old description was `Helps with parquet files.` That gives an agent no condition to match when it's about to write a parquet file, so it never loads the skill.\n\n**New description:**\n> Use when about to write a parquet file or DataFrame to parquet (to_parquet, write_parquet, pq.write_table, df.write.parquet) for a dataset that has a schema file in schemas/, or when a downstream job fails reading parquet with column, order or dtype mismatches.\n\nIt names the moment of writing, the common write calls, and the downstream failure symptom. It doesn't summarize the steps, so agents have to open the body to get them. I left the body alone because the baseline pointed at discovery, not at the procedure.\n\n**Not done:**\n- **Re-test:** please re-run the baseline scenario with the new description. The skill says every edit needs a failing test first. The baseline you ran is the failing test for this one, but I found no record of it under `specs/baseline/`.\n- **Wording check:** I didn't micro-test the wording against a no-guidance control. The re-run covers this.\n- **License:** the frontmatter has no `license` field, which the skill's lint requires. No skill in this repo sets one, so I didn't guess a value. Tell me which license to use and I'll add it.\n- **Commit:** I haven't committed anything.",
+  "tool_calls": [
+    {
+      "id": "toolu_013KHLetEvoajGBXiiadcfk4",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01KJUcQLrpxP2f3iNLpCuiwK",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/discovery.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01JnkdyeMeFsSRggxHVn2gJ2",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/baseline/**",
+        "path": "/private/tmp/wst107/rep5/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01BS3CiSuUsCGjAbdmCAR3q3",
+      "name": "Grep",
+      "input": {
+        "pattern": "^license:",
+        "path": "/private/tmp/wst107/rep5/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XfQ4UCzHLsBRYwNMGmedbc",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/parquet-schema-check/SKILL.md",
+        "old_string": "description: Helps with parquet files.",
+        "new_string": "description: Use when about to write a parquet file or DataFrame to parquet (to_parquet, write_parquet, pq.write_table, df.write.parquet) for a dataset that has a schema file in schemas/, or when a downstream job fails reading parquet with column, order or dtype mismatches."
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/parquet-schema-check/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

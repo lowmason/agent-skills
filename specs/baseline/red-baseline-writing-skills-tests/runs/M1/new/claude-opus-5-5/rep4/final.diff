@@ -1,0 +1,126 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..f68f578
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,120 @@
++# Micro-test design: step 2 wording in `changelog-entry`
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make the agent write entries that
++open with the reader's outcome, without pushing entries past 100 characters?
++
++The old line's baseline: the agent skipped the rule in 7 of 10 runs. That count came from a
++different setup, so this test re-runs the old line as an arm rather than reusing 7/10.
++
++## Arms
++
++Each arm's system prompt is the full `skills/changelog-entry/SKILL.md`, frontmatter included.
++Only step 2 differs.
++
++| Arm | Step 2 |
++|---|---|
++| A: no guidance | Step 2 deleted, later steps renumbered 2–3 |
++| B: old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| C: new | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm A is the required no-guidance control. If A doesn't produce internal-part entries, there is
++no failure for any wording to fix. In that case stop and report; don't merge on this test.
++
++## Tasks (user message)
++
++Each user message is one merged-PR summary written in internal terms, which tempts a "Fix handler"
++entry. The message asks: "Write the CHANGELOG.md entry for this merged PR. Reply with the entry
++only."
++
++1. `PR #482: Fix NPE in ExportHandler when report has zero rows. Adds null guard in ReportSerializer.`
++2. `PR #517: Change parser to stream input instead of buffering; large imports no longer OOM.`
++3. `PR #530: Add CsvWriter and wire it into ReportExportService behind the export menu.`
++4. `PR #544: Fix EditorView cursor reset in onSave() — selection state was rebuilt from scratch.`
++5. `PR #561: Change SessionStore TTL from 15m to 8h and refresh token on activity; users were logged out mid-form, and admins can now set the TTL per workspace.`
++
++Task 5 has two user-visible changes and a long outcome. It probes the proposal's stated risk:
++an entry that drops the verb and runs past 100 characters.
++
++## Models and reps
++
++- Models: **claude-opus-5-5** and **claude-sonnet-5-5**. Nobody named the models that will run
++  this skill, so I picked these two. Change them before the run if other models run the skill.
++- Reps: each task twice per arm per model, so 10 reps per arm per model.
++- Total: 3 arms × 2 models × 10 = 60 single-shot calls.
++
++## Isolation
++
++- Each rep is a fresh single-shot call (raw API, or a subagent with no tools) started in a new
++  empty directory outside every repository. User settings, instruction files and memory are off.
++- Before any scored rep, run one probe rep. Ask it which instruction files, memory, tools and
++  other sessions it can see, and whether it knows the user's name. Any context we didn't plan for
++  means the setup leaks: fix it and probe again.
++- Quarantine: no rep can reach `specs/`, this design, the proposal or any baseline record. A rep
++  that quotes or cites one of them is VOID.
++
++## Scoring rules (commit before reading any reply)
++
++Each reply is graded on the first changelog line it contains.
++
++- **PASS** needs all of:
++  1. The reply is exactly one entry line. No preamble, no second entry.
++  2. The line is 100 characters or fewer, counted by script, excluding any leading `- `.
++  3. The first clause, up to the first comma, dash or "when"/"so", states something a user can
++     now do or no longer suffers. Test: someone with no codebase access can say what changed for
++     them from that clause alone.
++  4. The line names no internal part: no class, file, function, module or config-key name, and
++     no ticket or PR number.
++- **FAIL** is any reply that produced an entry but missed a PASS item. Record which items it
++  missed (1–4), so length failures (the proposal's risk) are counted apart from internal-part
++  failures (the original problem).
++- **VOID**: the rep refused, asked a question instead of writing an entry, wrote no entry, or
++  shows a leak (see Isolation). Replace each VOID rep with a new one, and report VOID counts.
++
++If a reply shows a reading these rules didn't foresee, keep the registered verdict and report
++the counts under both readings.
++
++## Blind grading
++
++- A script removes the arm, model, task order and file names. It shuffles all 60 replies onto
++  sheets labelled with random IDs and keeps the key in a separate file.
++- Item 2 (length) is scored by script. Items 1, 3 and 4 are scored by hand. Every reply is read,
++  including those a script flagged.
++- Known blinding leak: arm B replies will often open with Add/Fix/Remove/Change, so a grader can
++  guess the arm. To limit this, a second grader who hasn't seen this design scores items 3 and 4
++  on its own. Disagreements are listed, not averaged away.
++- Unblind only after every sheet has its grade.
++
++## Decision rule (pre-registered)
++
++Merge the new line only if all of these hold **on each model separately**:
++
++1. Arm A shows the failure: at most 6 of 10 PASS. If A passes 7 or more, there is nothing to fix.
++2. Arm C passes at least 8 of 10.
++3. Arm C has at least 3 more PASSes than arm B.
++4. Arm C's length failures (item 2) are no more than arm B's plus 1.
++5. Arm C's replies converge on one shape: outcome first, one line. Spread across several
++   interpretations means the wording isn't binding, even if the count clears 8.
++
++If C clears the count but fails item 4 or 5, don't merge. Tighten the wording first, for example
++by folding the 100-character limit into step 2, and then re-run the test.
++
++This micro-test checks the wording only. `changelog-entry` is a technique skill, so a pass here
++is the gate before one application scenario with the full skill on a real PR. It doesn't replace
++that scenario.
++
++## Spend
++
++- Cap: $5 total across all models. Adjust before the run if needed.
++- Stop rule: before each batch (one arm × one model × 10 reps), stop if the running total plus
++  that batch's worst case would go over the cap.
++- Record each batch's cost in the results file as the run goes.
++
++## Records
++
++Results go to `specs/baseline/red-baseline-changelog-entry-step2.md`. The prompts, scrub script,
++grading sheets and key go to `specs/baseline/red-baseline-changelog-entry-step2/kit/`. All of it
++stays outside `skills/changelog-entry/`.

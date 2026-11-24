@@ -1,0 +1,46 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..564ec72 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write, save or export a parquet file (to_parquet, write_parquet, pyarrow write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails on a schema mismatch, missing column or wrong dtype
+ ---
+ 
+ # Parquet Schema Check
+diff --git a/specs/trigger-tests/parquet-schema-check.md b/specs/trigger-tests/parquet-schema-check.md
+new file mode 100644
+index 0000000..b9dd19f
+--- /dev/null
++++ b/specs/trigger-tests/parquet-schema-check.md
+@@ -0,0 +1,28 @@
++# Trigger test: parquet-schema-check description
++
++Old description: `Helps with parquet files.`
++New description: `Use when about to write, save or export a parquet file (to_parquet, write_parquet, pyarrow write_table) for a dataset with a schema in schemas/, or when a job reading parquet fails on a schema mismatch, missing column or wrong dtype`
++
++Run each prompt in a fresh session, once with the old description and once with the new one.
++Count the sessions that load `parquet-schema-check`.
++
++## Should load
++
++1. "Add a step at the end of `etl/orders.py` that saves the cleaned dataframe to `out/orders.parquet`."
++2. "I renamed `cust_id` to `customer_id` in the pipeline. Re-export the customers table as parquet."
++3. "Write this pyarrow table to `data/events/2026-11.parquet` so the nightly job picks it up."
++4. "The nightly report job crashes reading `sales.parquet` with `column 'amount' expected int64, got double`. Fix it."
++
++## Near misses (should not load)
++
++1. "This `pl.scan_parquet(...).group_by(...)` query takes 10 minutes. Make it faster." (polars-lazy-tuning)
++2. "Read `out/orders.parquet` and show me the top 10 customers by revenue."
++3. "Convert this CSV loader to use `pd.read_csv` with `dtype_backend='pyarrow'`."
++4. "Add a JSON schema for the `/orders` API response."
++
++## Results
++
++| Description | Should-load loads (of 4) | Near-miss loads (of 4) |
++|---|---|---|
++| Old | not yet run | not yet run |
++| New | not yet run | not yet run |

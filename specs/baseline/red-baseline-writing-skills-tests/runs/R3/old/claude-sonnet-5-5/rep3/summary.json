@@ -1,0 +1,188 @@
+{
+  "case": "R3",
+  "rep": 3,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "721d38c1a260f6dd1ec5f8e2682c29659c16e098",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/R3/old/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "4a0f71e5bcf4f4b579988d533a8a954ac993d0c16b81c550db1a0d038a7eb45c",
+  "claude_exit": 0,
+  "wall_seconds": 9,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 20,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 9,
+    "duration_ms": 8902,
+    "total_cost_usd": 0.0578258,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1333,
+        "cacheReadInputTokens": 50718,
+        "cacheCreationInputTokens": 9852,
+        "webSearchRequests": 0,
+        "costUSD": 0.0578258,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 0,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 9852,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I renamed `csv-dialect-sniff` to `sniffing-csv-dialects`. A final search found no remaining references to the old name.\n\n- **Directory:** I moved it with `git mv`, so `skills/csv-dialect-sniff/` is now `skills/sniffing-csv-dialects/`.\n- **Frontmatter:** `name:` in `skills/sniffing-csv-dialects/SKILL.md` now matches the directory.\n- **References:** I updated the three places that used the old name: `AGENTS.md:5`, `skills/ingest-raw-files/SKILL.md:14` and `commands/ingest.md:6`.\n\nI haven't committed anything. I also didn't re-run the baseline or any other tests, since the skill's content didn't change, only its name and the places that point to it.\n\nThe new name uses the gerund form, and the skill's `description` wasn't touched. If you'd like it reworded to fit the new name, tell me and I'll do that as a separate change.",
+  "tool_calls": [
+    {
+      "id": "toolu_01XXGPfNC6zRgcJcJNSkYntd",
+      "name": "Grep",
+      "input": {
+        "pattern": "csv-dialect-sniff",
+        "path": "/private/tmp/wst107/rep3/repo",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_0137JU7LMQL7MeBMEzNjALWq",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*csv-dialect*",
+        "path": "/private/tmp/wst107/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01GWCNVR47MFbuzTM9UjgBFv",
+      "name": "Bash",
+      "input": {
+        "command": "git mv skills/csv-dialect-sniff skills/sniffing-csv-dialects"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013eGk7qkWE1Wu6UTSrDs8BV",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep3/repo/AGENTS.md",
+        "old_string": "`csv-dialect-sniff`",
+        "new_string": "`sniffing-csv-dialects`"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011VUnSfiAmnNtefQN3JKNty",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/ingest-raw-files/SKILL.md",
+        "old_string": "Use csv-dialect-sniff for",
+        "new_string": "Use sniffing-csv-dialects for"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01MkHkYRNCJqbV2jU9GPH4C3",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep3/repo/commands/ingest.md",
+        "old_string": "`csv-dialect-sniff`",
+        "new_string": "`sniffing-csv-dialects`"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01B7SbrL8nx1Wh3qpKPSnJuH",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/sniffing-csv-dialects/SKILL.md",
+        "old_string": "name: csv-dialect-sniff",
+        "new_string": "name: sniffing-csv-dialects"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01KVBzYX6yxPPQmm4J4kaSKg",
+      "name": "Grep",
+      "input": {
+        "pattern": "csv-dialect-sniff",
+        "path": "/private/tmp/wst107/rep3/repo",
+        "output_mode": "count"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M AGENTS.md",
+    " M commands/ingest.md",
+    " M skills/ingest-raw-files/SKILL.md",
+    "RM skills/csv-dialect-sniff/SKILL.md -> skills/sniffing-csv-dialects/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": [],
+  "r3_check": {
+    "verdict": "PASS",
+    "problems": []
+  }
+}

@@ -1,0 +1,72 @@
+prompt	arm	condition	model	rep	status	loads_writing_skills	skill_calls	result_subtype	cost_usd
+N1	new	cut150	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0328
+N1	new	cut150	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0314
+N1	new	cut150	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0315
+N1	new	full	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0622
+N1	new	full	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0649
+N1	new	full	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0622
+N1	old	cut150	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0312
+N1	old	cut150	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0286
+N1	old	cut150	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0317
+N1	old	full	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0664
+N1	old	full	claude-sonnet-5-5	rep2	valid	no	plugin-authoring	error_max_turns	0.0849
+N1	old	full	claude-sonnet-5-5	rep3	valid	no	skill-development	error_max_turns	0.0975
+N2	new	cut150	claude-sonnet-5-5	rep1	valid	no	writing-plans	error_max_turns	0.0562
+N2	new	cut150	claude-sonnet-5-5	rep2	valid	no	writing-plans	success	0.0657
+N2	new	cut150	claude-sonnet-5-5	rep3	void: path audit: 1 hit(s)	no	writing-plans	error_max_turns	0.0597
+N2	new	full	claude-sonnet-5-5	rep1	valid	no	writing-plans	success	0.0964
+N2	new	full	claude-sonnet-5-5	rep2	valid	no	writing-plans	success	0.1101
+N2	new	full	claude-sonnet-5-5	rep3	valid	no	writing-plans	success	0.1086
+N2	old	cut150	claude-sonnet-5-5	rep1	valid	no	writing-plans	error_max_turns	0.0563
+N2	old	cut150	claude-sonnet-5-5	rep2	valid	no	writing-plans	success	0.0653
+N2	old	cut150	claude-sonnet-5-5	rep3	valid	no	writing-plans	success	0.0640
+N2	old	full	claude-sonnet-5-5	rep1	valid	no	none	success	0.0736
+N2	old	full	claude-sonnet-5-5	rep2	valid	no	none	success	0.0737
+N2	old	full	claude-sonnet-5-5	rep3	valid	no	writing-plans	success	0.1101
+N3	new	cut150	claude-sonnet-5-5	rep1	valid	no	init	error_max_turns	0.0335
+N3	new	cut150	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0368
+N3	new	cut150	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0386
+N3	new	full	claude-sonnet-5-5	rep1	valid	no	init	error_max_turns	0.0662
+N3	new	full	claude-sonnet-5-5	rep2	valid	no	init	error_max_turns	0.0662
+N3	new	full	claude-sonnet-5-5	rep3	valid	no	init	error_max_turns	0.0633
+N3	old	cut150	claude-sonnet-5-5	rep1	void: path audit: 1 hit(s)	no	none	error_max_turns	0.0380
+N3	old	cut150	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0368
+N3	old	cut150	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0375
+N3	old	cut150	claude-sonnet-5-5	rep4	valid	no	none	error_max_turns	0.0377
+N3	old	full	claude-sonnet-5-5	rep1	valid	no	init	error_max_turns	0.0633
+N3	old	full	claude-sonnet-5-5	rep2	valid	no	init	error_max_turns	0.0637
+N3	old	full	claude-sonnet-5-5	rep3	valid	no	init	error_max_turns	0.0633
+P1	old	full	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0642
+P1	old	full	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0593
+P1	old	full	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0608
+P2	old	full	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0604
+P2	old	full	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0587
+P2	old	full	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0607
+P3	new	cut150	claude-sonnet-5-5	rep1	void: path audit: 1 hit(s)	yes	writing-skills	success	0.0672
+P3	new	cut150	claude-sonnet-5-5	rep2	valid	yes	writing-skills	success	0.0661
+P3	new	cut150	claude-sonnet-5-5	rep3	void: path audit: 1 hit(s)	yes	writing-skills	success	0.0679
+P3	new	cut150	claude-sonnet-5-5	rep4	valid	yes	writing-skills	success	0.0640
+P3	new	cut150	claude-sonnet-5-5	rep5	void: path audit: 1 hit(s)	yes	writing-skills	error_max_turns	0.0544
+P3	new	full	claude-sonnet-5-5	rep1	valid	yes	writing-skills	error_max_turns	0.0949
+P3	new	full	claude-sonnet-5-5	rep2	valid	no	none	error_max_turns	0.0613
+P3	new	full	claude-sonnet-5-5	rep3	valid	yes	writing-skills	error_max_turns	0.0962
+P3	new	full	claude-sonnet-5-5	rep4	valid	yes	writing-skills	error_max_turns	0.0912
+P3	new	full	claude-sonnet-5-5	rep5	valid	no	none	error_max_turns	0.0625
+P3	old	cut150	claude-sonnet-5-5	rep1	valid	yes	writing-skills	error_max_turns	0.0604
+P3	old	cut150	claude-sonnet-5-5	rep2	void: path audit: 1 hit(s)	yes	writing-skills	error_max_turns	0.0292
+P3	old	cut150	claude-sonnet-5-5	rep3	valid	yes	writing-skills	error_max_turns	0.0596
+P3	old	cut150	claude-sonnet-5-5	rep4	valid	yes	writing-skills	error_max_turns	0.0598
+P3	old	cut150	claude-sonnet-5-5	rep5	valid	yes	writing-skills	error_max_turns	0.0602
+P3	old	cut150	claude-sonnet-5-5	rep6	valid	yes	writing-skills	error_max_turns	0.0544
+P3	old	full	claude-sonnet-5-5	rep1	void: path audit: 1 hit(s)	yes	writing-skills	error_max_turns	0.0865
+P3	old	full	claude-sonnet-5-5	rep2	valid	yes	writing-skills	error_max_turns	0.0893
+P3	old	full	claude-sonnet-5-5	rep3	valid	yes	writing-skills	error_max_turns	0.0920
+P3	old	full	claude-sonnet-5-5	rep4	valid	yes	writing-skills	success	0.1005
+P3	old	full	claude-sonnet-5-5	rep5	valid	yes	writing-skills	error_max_turns	0.0635
+P3	old	full	claude-sonnet-5-5	rep6	valid	yes	writing-skills	error_max_turns	0.0941
+P4	old	full	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0648
+P4	old	full	claude-sonnet-5-5	rep2	valid	no	none	success	0.0665
+P4	old	full	claude-sonnet-5-5	rep3	valid	no	none	error_max_turns	0.0654
+P5	old	full	claude-sonnet-5-5	rep1	valid	no	none	error_max_turns	0.0559
+P5	old	full	claude-sonnet-5-5	rep2	valid	no	none	success	0.0587
+P5	old	full	claude-sonnet-5-5	rep3	valid	no	update-config	error_max_turns	0.0552

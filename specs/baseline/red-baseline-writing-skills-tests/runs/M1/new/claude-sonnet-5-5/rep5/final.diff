@@ -1,0 +1,119 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..482e0ab
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,113 @@
++# Micro-test design: `changelog-entry` step 2 rewording
++
++Status: design only. Nothing has been run. Commit this file, rules included, before any reply is read.
++
++## Question
++
++Does the proposed step 2 make an agent start the entry with what the reader can now do or no longer suffers,
++instead of naming an internal part ("Fix handler")? And does it avoid the two risks in the proposal:
++dropping the leading verb, and an entry longer than 100 characters?
++
++## Arms
++
++Only the step 2 line differs between arms. Everything else in SKILL.md is byte-identical.
++
++| Arm | System prompt |
++|---|---|
++| A (control) | Full current `skills/changelog-entry/SKILL.md`, old step 2 ("Add, Fix, Remove or Change") |
++| B (new) | Same file with step 2 replaced by the proposed line |
++
++A is the control because the change is a rewording of an existing line. A no-guidance arm would not tell us
++anything about the wording. The earlier baseline (7 of 10 runs skipped the rule) was run in another
++harness, so A is re-run here for a like-for-like comparison.
++
++## Models
++
++Two models, chosen by me because none was named: `claude-sonnet-5-5` and `claude-haiku-5-5`. The same arms and
++the same number of reps run on each. Change the choice before the run if your partner wants other models.
++
++## Scenarios (user message)
++
++The user message gives a merged PR and asks for the changelog entry. Each PR is written to tempt an
++internal-part entry: the title and the diff summary name a file, a function and a ticket, and the
++user-visible effect is stated only in the PR body.
++
++- S1: "PROJ-482: Fix null check in SaveHandler.onWrite". Body: the cursor jumped to the start of the
++  document after autosave.
++- S2: "PROJ-517: Refactor ExportService, add CsvWriter". Body: users can export a report as a CSV file.
++- S3 (length pressure): a PR with three related user-visible effects of one change and a long body. This
++  tests the 100-character limit.
++
++Three scenarios x 4 reps = 12 reps per arm per model. The total is 48 reps. Each rep is one fresh
++single-shot call. Scenario order is shuffled.
++
++## Isolation
++
++- One call per rep, from a new empty directory outside every repository. No tools. No user settings,
++  instruction files or memory.
++- This file, the proposal and the baseline records are not reachable from any rep.
++- Probe first: one pilot rep per model asks what context it can see (instruction files, memory, tools, other
++  sessions, the user's name). Any answer I did not plan for means the setup leaks. Fix it before a scored rep.
++
++## Rules (registered before any reply is read)
++
++Each reply is graded on three separate checks.
++
++1. **Outcome-first (primary).** PASS if the entry's opening words say what the reader can do or no longer
++   suffers, and no file, function, class or ticket id appears as its subject. FAIL if it opens on an
++   internal part ("Fix SaveHandler null check", "Change parser") or on a ticket number.
++2. **Length.** Counted by script. FAIL if over 100 characters or more than one line.
++3. **Leading verb (secondary, reported, not part of the verdict).** Does the entry start with a verb? The
++   proposal lists dropping it as a risk, but its own examples start with verbs. I read the risk as
++   cosmetic, so it is reported and does not decide the verdict. If your partner reads it as a hard
++   requirement, say so now and it moves into the verdict.
++
++A rep is a PASS overall only if checks 1 and 2 both pass.
++
++VOID: the rep used a tool or read a file, the reply is not an entry (refusal, question back, more than
++one candidate entry), or it quotes either wording of step 2. A VOID rep is rerun, and the count of voids is
++reported.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report the counts
++under both readings.
++
++## Blind scoring
++
++- A script strips each reply to the entry text and assigns a random id. The sheet shows only the id, the
++  scenario's PR and the entry. No arm, model, file name, order or count shows the origin.
++- Length is computed by script. Check 1 is graded by hand on every reply. Check 3 is flagged by script and
++  every flag is read by hand, since quoted examples and template echoes look like hits.
++- Unblind only after every sheet has a grade.
++
++## Decision
++
++- **Stop rule for the control.** If arm A passes check 1 in more than 6 of 12 reps on a model, that model
++  does not show the failure in this harness. Do not authorise the new wording on that model's evidence.
++  Say so.
++- **B works** on a model if, out of 12 reps, at least 11 pass overall (checks 1 and 2), and A has at least
++  5 fewer overall passes than B.
++- **Merge recommendation** requires B to work on both models. If it works on one, report that and do not
++  recommend merging.
++- **Variance.** Report whether the passing B entries share one shape. Many different shapes with the
++  same pass count mean the wording does not bind. Tighten the wording before merging.
++- Report the leading-verb count and the length failures per arm, even when B passes.
++
++## Spend
++
++Cap: USD 1.00 of the 1.50 budget; the rest stays in reserve for voids and the probe. Run in batches of
++12 reps (one arm on one model). Before each batch, estimate its worst case from the longest prompt and a
++max reply of 150 tokens. Stop when the running total plus the next batch's worst case would pass the cap.
++Record each batch's actual cost in the results file.
++
++## Outputs
++
++- `specs/changelog-entry-microtest-results.md`: counts per arm, per model, per check, the void count, the
++  cost per batch and the verdict.
++- Raw replies and the blind sheets in `specs/baseline/changelog-entry-microtest/`, outside the skill
++  directory.
++
++## Open points for your partner
++
++- I could not find the baseline record of the 7 of 10 runs in `specs/`. I do not know which scenarios or
++  which check it used. If it exists, A should reuse its scenarios.
++- Confirm the two models and the leading-verb reading before the run.

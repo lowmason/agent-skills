@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 4,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep4",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "9d2bb8144120116e53a84bdf2e2f01b026c7db67",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/M1/new/claude-opus-5-5/rep4.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 71,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 32,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 70765,
+    "total_cost_usd": 0.2410942,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5853,
+        "cacheReadInputTokens": 32451,
+        "cacheCreationInputTokens": 14690,
+        "webSearchRequests": 0,
+        "costUSD": 0.2410942,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1570,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14690,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the micro-test design to `specs/changelog-entry-microtest.md`. Nothing has been run.\n\n**The 7/10 baseline can't be compared directly.** That baseline counted runs where the agent skipped the *old* rule, which was to start with Add, Fix, Remove or Change. The proposed line asks for something else: start with what the reader can now do or no longer suffers. So the design scores every version against one shared set of rules. It also runs the old line again as one of the arms, so all the numbers come from the same setup.\n\n**How it works:**\n- **Three versions of the skill, 10 runs each:**\n  - no step 2 (the control)\n  - the current line\n  - the proposed line\n  \n  The rest of `SKILL.md` stays word-for-word the same. If the control rarely produces vague, internal-sounding entries (fewer than 3 of 10), we stop, because step 2 has nothing to fix.\n- **Five tasks, each a made-up pull request:**\n  - two titled around internal code names\n  - one with several symptoms, to tempt a line over 100 characters (the risk the proposal names)\n  - one removal, to tempt dropping the verb\n  - one refactor that changes nothing for users, where the right answer is \"no entry\"\n  \n  None of them involve CSV or the cursor, so copying the proposed line's examples can't pass.\n- **Pass/fail rules are fixed before any reply is read.** A pass means:\n  - one line of 100 characters or fewer\n  - it opens with something the reader can see happen\n  - no code names, file names, paths or ticket numbers\n  \n  Each failure is tagged with the rule it broke, so too-long lines get their own count. Copying the examples counts as a failure.\n- **Scoring:** a script checks line count, length and code-name-shaped words. Then every reply is graded by hand on sheets that don't show which version produced it.\n- **Merge rule:** merge only if the proposed line passes at least 8 of 10 and beats the current line. It must also produce at most one too-long line, give no entry for the refactor task, and not copy the examples. If its passing lines take different shapes from run to run, the wording isn't working yet, even if it scores 8.\n\n**Decisions for you:**\n1. **Models:** which models will run this skill? Every version needs to be tested on each one. If you don't say, I'll use the model the baseline ran on.\n2. **Spend cap:** the runs are short and cheap, but the design needs a cap and a rule for when to stop.\n3. **Kit location:** I put the test files under `specs/microtest/changelog-entry-step2/`, outside the skill folder so they don't ship with it. Move them if you keep these somewhere else. I didn't find the earlier baseline's files under `specs/`, so I couldn't follow how they were stored.\n\nSeparately, the skill's frontmatter has no `license` field, which the writing-skills checklist requires. Your change doesn't affect that, but it's worth adding while you're editing the file.",
+  "tool_calls": [
+    {
+      "id": "toolu_014JwxjuxrJzEWyw5p44UrnH",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_0193nKgHi1EJj2ZKQVsuVrnm",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01JoZG1V5aMWjdPeusLSCzRv",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Ag2xkRkvWFnxteS99hjTqT",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01VjrP1koX1UaE15ajgybQo1",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 of `changelog-entry`\n\nStatus: design only. No rep has run yet.\n\n## What this test decides\n\nShould the proposed step 2 (`specs/changelog-entry-wording.md`) replace the current one?\n\n- Current: \"2. Start the line with the verb that names the change: Add, Fix, Remove or Change.\"\n- Proposed: \"2. Start the line with what a reader can now do or no longer suffers: \"Export reports\n  as CSV\", \"Stop losing the cursor on save\".\"\n\nThe test has two jobs:\n\n1. Check that the proposed line removes the failure: an entry that opens with a verb and then names\n   an internal part (\"Fix handler\", \"Change parser\").\n2. Check the risk in the proposal: the agent drops the verb and writes a line longer than 100\n   characters.\n\n## Note on the baseline\n\nThe baseline on the current line found the rule skipped in 7 of 10 runs. The proposed line is a\ndifferent rule, so \"skipped the rule\" doesn't carry over as a measure. This test scores every arm\nagainst the same registered rules (below) and runs the current line again as an arm. That way\nall the numbers we compare come from one setup and one scoring method. We keep the 7/10 as\nbackground and don't compare against it directly.\n\n## Arms\n\nEach arm's system prompt is the full `SKILL.md`, with only step 2 changed. The rest of the file\nstays byte-identical.\n\n| Arm | Step 2 in the system prompt |\n|---|---|\n| A: control | Step 2 removed. Steps renumbered 1\u20133. |\n| B: current | The current line, verbatim. |\n| C: proposed | The proposed line, verbatim. |\n\nStop rule for the control: if arm A shows the failure in fewer than 3 of 10 reps (an entry that\nleads with or names an internal part), there is nothing for step 2 to fix. We stop and report that\nbefore we judge arm C.\n\n## Tasks (user messages)\n\nThere are five tasks. Each one is a merged PR's title and description, followed by \"Write the\nCHANGELOG.md entry for this pull request.\" Each task runs twice per arm, which gives 10 reps per arm.\n\nThe tasks have to tempt the failure. The PR text is phrased around internal parts, and the user\neffect is stated only in the body. No task may involve CSV export or cursor position, because those\nwould let a rep copy the examples in the proposed line and still pass.\n\n| # | Tempts | PR text in brief |\n|---|---|---|\n| T1 | internal name | \"Fix null check in `InvoiceRenderer`\". Body: invoices with no line items no longer show a blank page. |\n| T2 | internal name | \"Change `RetryPolicy` backoff to exponential\". Body: uploads on flaky networks now finish instead of failing after 3 tries. |\n| T3 | long outcome / >100 chars | \"Rework `SyncQueue` ordering\". Body: three related symptoms (duplicate comments, edits reverting, out-of-order replies), all fixed together. |\n| T4 | dropping the verb on a removal | \"Remove legacy `v1` auth endpoint\". Body: users of old mobile builds must update to sign in. |\n| T5 | step 1 still holds | \"Refactor `ReportBuilder` into smaller modules\". Body: no behavior change. The correct reply is no entry. |\n\nT5 checks that the new step 2 doesn't override step 1. The full PR texts live in the kit (below),\nnot in this file.\n\n## Registered rules\n\nCommit this section before any reply is read. If a reply shows a reading these rules don't\nforesee, its registered verdict stands, and we report the counts under both readings.\n\nEach reply gets one verdict.\n\n**PASS** (T1\u2013T4). All of these hold:\n- P1. Exactly one entry line, describing one change.\n- P2. 100 characters or fewer, counting the leading `- ` bullet if one is present.\n- P3. The first clause states something a reader can now do, or no longer suffers, and it is\n  observable without reading the code. \"Fix blank invoice page when an invoice has no items\" passes\n  P3 because the clause after \"Fix\" is the reader's outcome.\n- P4. No class, function, file, module, endpoint path or ticket number anywhere in the line.\n\n**PASS** (T5). No entry, or an explicit statement that no entry is needed.\n\n**FAIL.** Any P-rule is broken, or T5 produces an entry. Each FAIL is tagged with every rule it\nbreaks: P1, P2, P3, P4 or T5. That way the proposal's risk (P2) is counted on its own.\n\n**FAIL, tagged ECHO.** The line copies or near-copies an example from the proposed step 2 instead\nof describing the PR.\n\n**VOID.** Any of these:\n- The reply is a refusal or empty.\n- The rep saw context outside the plan, such as a file from `specs/`, an instruction file, memory\n  or tools.\n- The isolation probe for that batch failed.\n\nVOID reps are re-run with fresh reps, up to 3 per arm. More voids than that stop the run.\n\n## Scoring\n\n1. **Mechanical pass (scripted).** Count lines and characters (P1, P2). Flag identifier-shaped\n   tokens such as CamelCase, `snake_case`, backticks, file extensions, `/` paths and `#123` (P4).\n   Record the first word.\n2. **Judgment pass (blind, by hand).** Read every reply, P3 included, and read every mechanical flag\n   too: a quoted counter-example or an echoed PR title can look like a hit. Grading sheets carry\n   only a random ID, the task text and the reply. Nothing in a sheet's name, path, order or count\n   may show its arm. Sheets are shuffled across arms. Unblind only after every sheet has a grade.\n\n## Decision rule (registered with the rules)\n\nMerge the proposed line only if all of these hold:\n\n- Arm C passes at least 8 of 10.\n- Arm C passes more reps than arm B, and its P3 and P4 failures don't overlap B's range across\n  tasks.\n- Arm C has at most 1 of 10 tagged P2. This is the proposal's own risk.\n- Arm C has no T5 failures and no ECHO.\n\nAlso look at variance. If arm C's passing lines take different shapes across reps (some lead with a\nverb, some with a noun phrase, some with a full sentence), the wording isn't binding yet, even if\nthe count clears 8. In that case, tighten the form before adding words. Don't add a nuance clause\nsuch as \"unless\u2026\".\n\nIf the result is a P2 failure on T3 and nothing else, the fix belongs in step 4 (length). It doesn't\nmean the new step 2 is wrong. We report it that way and don't patch step 2.\n\n## Isolation\n\n- Run each rep as a single-shot raw API call with no tools, or as a single-shot subagent if API\n  access isn't available. Start every rep in a fresh empty directory outside any repository. User\n  settings, instruction files and memory are off.\n- Before the first scored rep, run one probe rep that asks what context it can see: instruction\n  files, memory, tools, other sessions and the user's name. Fix any unplanned answer before\n  scoring.\n- No rep can reach `specs/`, the kit, this file or earlier records.\n\n## Models\n\nEvery arm runs on each model that will use this skill, with the same number of reps on each model.\n**To fill in:** which models. If we don't hear otherwise, we use the model the baseline ran on.\n\n## Spend\n\nEach rep is a short call: the system prompt is under 1k tokens and the reply is one line. The\ncost is 3 arms \u00d7 10 reps \u00d7 N models, plus the probe and up to 9 void re-runs.\n**To fill in:** spend cap. Stop when the running total plus the next batch's worst case would pass\nthe cap. Record each batch's cost.\n\n## Where things go\n\nEverything goes outside `skills/changelog-entry/`, because anything inside it ships with the skill.\n\n- Kit: `specs/microtest/changelog-entry-step2/kit/` holds the three system prompts, the five PR\n  texts, the runner flags, the probe and the scoring script.\n- Raw replies and blind sheets: `specs/microtest/changelog-entry-step2/runs/`.\n- Results: `specs/microtest/changelog-entry-step2/results.md`. It gives counts per arm, per task and\n  per failure tag, plus the cost.\n\n## Order of work\n\n1. Partner fills in models and the spend cap.\n2. Build the kit and commit it together with this file's registered rules and decision rule.\n3. Run the probe and fix any leaks.\n4. Run arm A first and apply the control stop rule.\n5. Run arms B and C.\n6. Score: mechanical pass, then blind judgment, then unblind.\n7. Write up the results. The partner decides on the merge.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

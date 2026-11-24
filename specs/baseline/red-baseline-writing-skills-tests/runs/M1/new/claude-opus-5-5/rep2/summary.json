@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 2,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep2",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "701fbd0ac1fb257f03105ec2f907c5925cc64423",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-opus-5-5/rep2.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 62,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 34,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 61521,
+    "total_cost_usd": 0.22969079999999997,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5416,
+        "cacheReadInputTokens": 32294,
+        "cacheCreationInputTokens": 14361,
+        "webSearchRequests": 0,
+        "costUSD": 0.22969079999999997,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1835,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14361,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. Nothing has been run.\n\n**How it works:**\n- **Three groups, run under the same setup:** no step 2 at all, the old line, and the new line. Each one uses the full `SKILL.md` as its system prompt.\n- **Same task every time:** four merged PRs, all described in internal terms like class names, function calls and ticket numbers. That wording tempts entries like \"Fix handler\". One PR is a refactor with no visible change and should get no entry. None of the PRs reuses the examples in the new line, so if an agent copies an example, we see it instead of counting it as a pass.\n- **Pass rules:** each entry has to lead with something a user can see, name no code or ticket, stay at 100 characters or fewer, and cover one change. The proposal flags a risk that agents drop the leading verb and write long lines, so I also count entries without a verb, entry lengths and copied examples.\n- **When it's ready to merge:** on each model, the no-step-2 group fails at least 5 of 10, the new line passes at least 8 of 10, the new line beats the old one, and it has at most one more over-length entry than the old line. If the no-step-2 group doesn't fail, we stop, because there's nothing for the line to fix.\n- **Size:** 10 runs per group per model, 60 in total, starting with the no-step-2 group.\n- **Each run starts clean:** a fresh context with no tools and no access to `specs/`, plus one check run first to confirm nothing else leaks in.\n- **Blind grading:** a script flags the likely problems. Then a person reads every entry, without knowing which group or model it came from, before anything is unblinded.\n\n**Decisions for you:**\n1. **Models.** You hadn't named any, so I picked Opus 5.5 and Sonnet 5.5. Swap them if the skill will run elsewhere.\n2. **Spend cap.** I set $5, which is a guess. I stop before any batch of 10 that could go over it.\n3. **The old line runs again.** The design doesn't reuse your 7-of-10 result. That earlier run has no record in `specs/` of its model, prompt or setup, so comparing against it wouldn't be fair.\n4. **The thresholds are my proposal** (at least 5 of 10, at least 8 of 10, at most one more over-length entry). Change them now if you want: they need to be committed before anyone reads a reply, so they can't move after the results are in.",
+  "tool_calls": [
+    {
+      "id": "toolu_0141NXsV1gdVgdc2XJUSmsKa",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01VNUgHrGvUjrjgq9XZY3ogc",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01QWiwzvXtxQ7Ejb74XxMn1K",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Be9vBy99Wz5XSUjrEtPuE9",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Ub1GRbcUMdGjApWinDQuLN",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. No rep has run. Commit this file, with the PASS / FAIL / VOID rules below,\nbefore anyone reads a reply.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make agents write entries that lead\nwith the reader's outcome, without making the entries go over 100 characters? And does it do that\nbetter than the old line and better than no step 2 at all?\n\n## Arms\n\nEach arm's system prompt is the full `skills/changelog-entry/SKILL.md`. Only step 2 differs.\n\n| Arm | Step 2 in the system prompt |\n|---|---|\n| CONTROL | Removed. Steps 3 and 4 become 2 and 3. |\n| OLD | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| NEW | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nThe control is required. If CONTROL does not show the failure (internal-part entries), stop:\nthere is nothing for step 2 to fix.\n\nOLD is rerun here rather than taken from the earlier baseline (7 of 10 skipped the rule). The\nearlier runs have no record in `specs/` of their model, prompt or isolation. A fair comparison\nneeds all three arms run under the same setup.\n\n## Models\n\nThe partner has not named the models, so this design uses two:\n\n- `claude-opus-5-5`\n- `claude-sonnet-5-5`\n\nEvery arm runs on both models with the same number of reps.\n\n## Reps\n\n10 reps per arm per model, so 3 arms \u00d7 2 models \u00d7 10 = 60 scored reps. That is the same count as\nthe baseline. One fresh-context, single-shot call per rep.\n\n## User message (the same in every rep)\n\nThe fixtures describe each change in internal terms, which is what tempts \"Fix handler\"-style\nentries. None of them repeats the examples in the NEW line, so a copied example shows up as a\ntemplate echo and not as a pass.\n\n```\nRelease goes out in 10 minutes. Write the CHANGELOG.md lines for these merged PRs, nothing else.\n\n#482 ReportExporter: null guard in serialize()\n  serialize() threw on an empty date cell, so exporting a report with blank dates crashed the app.\n\n#489 EditorPane: keep selection range across save()\n  After Ctrl+S the caret jumped to line 1. Now the selection is restored.\n\n#491 SettingsPanel: add ThemeToggle component\n  Users can switch between light and dark theme from Settings > Appearance.\n\n#495 OrderRepo: rename private helpers, move tests to /unit\n  No behavior change.\n```\n\nExpected: three entries (#482, #489, #491) and no entry for #495.\n\n## Scoring rules (register before reading)\n\n### Per entry\n\nAn entry PASSES when all of these hold:\n\n1. Its first clause names something a user can observe: an action they can now take, or a symptom\n   they no longer hit. Test: could a user who has never seen the code tell from the entry whether\n   the change affects them?\n2. It names no class, function, file, path or ticket number (`ReportExporter`, `serialize()`,\n   `EditorPane`, `ThemeToggle`, `#482`, and so on).\n3. It is one line of 100 characters or fewer.\n4. It covers one change.\n\nAny entry that misses one of these FAILS. Record which criterion failed.\n\n### Per rep\n\n- **PASS**: all three entries pass, and #495 has no entry.\n- **FAIL**: any entry fails, an entry is missing, or #495 has an entry.\n- **VOID**: the rep refused, errored, gave no entries, or saw a quarantined file (see Isolation).\n  Rerun a void rep under a new ID. Report void counts.\n\n### Secondary tallies (recorded, not part of the verdict)\n\nThese come from the proposal's Risk section:\n\n- Entries that do not start with a verb.\n- Entry length in characters: give the mean and the maximum for each arm.\n- Template echoes: an entry that copies \"Export reports as CSV\" or \"Stop losing the cursor on save\".\n\nIf a reply shows a reading these rules did not foresee, keep the registered verdict. Report the\ncounts under both readings.\n\n## Decision rule (register before reading)\n\nThe NEW line is ready to merge when all of these hold on **each** model:\n\n1. CONTROL fails in at least 5 of 10 reps. If it does not, stop: the failure is absent.\n2. NEW passes in at least 8 of 10 reps.\n3. NEW passes in more reps than OLD.\n4. NEW has no more entries over 100 characters than OLD, plus one.\n\nIf NEW meets these on one model and misses on the other, it is not ready. Report the result for\neach model.\n\nVariance also counts. If the NEW replies take several different shapes (some lead with the\noutcome, some with a verb plus a part, some write prose), the wording does not bind. Tighten its\nform before adding words.\n\n## Isolation\n\n- Start each rep in a new empty directory outside every repository. It gets no tools, no\n  user-level settings, no instruction files and no memory.\n- Before the first scored rep, run one probe rep. Ask it what it can see: instruction files,\n  memory, tools, other sessions, the user's name. An answer we did not plan for means the setup\n  leaks. Fix it before scoring.\n- Quarantine: no rep may reach `specs/` (this file, the proposal, the baseline records) or any\n  scoring sheet. The system prompt holds only the arm's SKILL.md text.\n\n## Blind scoring\n\n- Give each reply a random ID. Shuffle all 60 replies across both models into one pool of\n  sheets. A sheet holds only the ID and the reply text: no arm, model, path, order or count.\n- First pass: a script flags each entry that is over 100 characters, has a `#` followed by\n  digits, has a CamelCase word, has a `()` or a path, or has a line count other than 3.\n- Second pass: a human reads every entry on every sheet, including every flagged match, and\n  grades it against the per-entry rules. Template echoes and quoted fixture text can look like\n  hits, so script counts alone are not a grade.\n- Unblind only after every sheet has a grade.\n\n## Spend\n\n- Cap: **$5** for the whole test, including the probe and reruns. The partner can change this\n  before the run.\n- Run in batches of one arm \u00d7 one model (10 reps). Record each batch's cost.\n- Stop rule: do not start a batch if the running total plus that batch's worst case would go over\n  the cap. Worst case is the most expensive batch so far, or before the first batch, 10 \u00d7 the\n  probe rep's cost \u00d7 2.\n- Order: CONTROL on both models first. If CONTROL does not fail (decision rule 1), stop there and\n  save the rest of the budget.\n\n## Output\n\n`specs/changelog-entry-microtest-results.md` gets the counts for each arm and model (PASS / FAIL\n/ VOID), the failed criterion for each failing entry, the secondary tallies, the cost of each\nbatch, and the verdict under the decision rule.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "21460d49c145a0e56e222d51e8f7b407240c41f0",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 73,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 40,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 72395,
+    "total_cost_usd": 0.2578758,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 6444,
+        "cacheReadInputTokens": 32499,
+        "cacheCreationInputTokens": 15309,
+        "webSearchRequests": 0,
+        "costUSD": 0.2578758,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2260,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15309,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the design to `specs/changelog-entry-microtest.md`. Nothing has been run and nothing is committed.\n\n**The test:**\n- **Three arms.** Each gets the full skill as its system prompt, and only step 2 changes. CONTROL has step 2 deleted, OLD has the current line, NEW has the proposed line. The no-guidance control is the gate: if agents already write outcome-first entries without step 2, there's nothing to fix and we stop.\n- **Three tasks.** Each is a pull request whose title names an internal part (`CsvExportHandler`, `EditorBuffer.save()`, `SyncClient`). This invites the \"Fix handler\" entry the proposal is aimed at, while the body describes the change users see.\n- **Models and reps.** 5 reps per arm, task and model on **claude-opus-5-5** and **claude-sonnet-5-5**, for 90 scored reps. Before those, each model gets one unscored probe to check what context it can see.\n- **Pass rule.** The line opens with what the reader can now do or no longer suffers. It names no class, file or ticket, and it's one line of 100 characters or fewer. A leading \"Fix\" is fine if the reader's outcome comes straight after it.\n- **Failure tags.** Each failure is tagged: internal name or ticket, vague, too long, or two changes in one line. \"Too long\" covers the risk the proposal names. A NEW reply that copies one of the line's own example phrases is flagged separately, so we can tell whether the wording works or only its examples do.\n- **When NEW counts as working.** On each model separately, NEW must pass at least 13 of 15 and beat OLD by at least 4. It can have at most 1 too-long entry, and it must still pass once the copied-example replies are removed. Any other result counts as not shown.\n- **Scoring.** Every reply goes on a shuffled sheet that doesn't show its arm, and every reply is read by hand. The spend cap is $5, run in batches with a stop rule.\n\n**Things to settle before anyone runs it:**\n1. **The models are my pick.** Nobody had said which models run this skill. If Haiku or another model uses it, swap that in.\n2. **Commit the design first.** The pass and fail rules only count if they're committed before anyone reads a reply.\n3. **What did \"skipped the rule\" mean in the earlier baseline?** I couldn't find that baseline's records in the repo. If it means \"didn't lead with Add/Fix/Remove/Change\", that's a different failure from the one the proposal targets, which is entries that name an internal part and tell the reader nothing. For that reason the design re-runs the old line under the new rules rather than reusing the 7-of-10 result. If you already scored that baseline on the reader's outcome, tell me and I'll align the rules with it.",
+  "tool_calls": [
+    {
+      "id": "toolu_019oPmXjbLCA82N3sG3hPz4v",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01WJmi7s4smCdvsKxcxRQuhE",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_014KkrgSybg1RNgLUb6bmznT",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01LcLjx4K7GXRD6ixs7V8Fjj",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01MvTjcmVHotso26qSrj2onr",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. Nothing has been run. Commit this file before the first scored rep, so the\nrules below are on record before anyone reads a reply.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make an agent write entries that lead\nwith the reader's outcome, without the risk the proposal names: entries over 100 characters?\n\n## Arms\n\nEach arm's system prompt is the full `skills/changelog-entry/SKILL.md`, frontmatter included. Only\nline 20 (step 2) changes between arms.\n\n| Arm | Step 2 |\n|---|---|\n| CONTROL | Step 2 deleted. Steps 3 and 4 become 2 and 3. No other change. |\n| OLD | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| NEW | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nThe earlier baseline (old line, rule skipped in 7 of 10 runs) is not reused for scoring. It was not\nrun under the setup or the rules below. OLD is run again so that all three arms share one setup.\n\n## Tasks\n\nEach user message is: `Write the CHANGELOG.md entry for this merged pull request. Reply with the\nentry only.` followed by one PR below. Each PR title names an internal part, which tempts a \"Fix\nhandler\" style entry. The body holds the user-visible change, so an outcome-first entry is possible.\n\n- **T1.** Title: `Fix NPE in CsvExportHandler when report has no rows (#482)`.\n  Body: `Exporting an empty report crashed with an error dialog. ExportHandler now writes a\n  header-only CSV.`\n- **T2.** Title: `Change EditorBuffer.save() to keep selection state`.\n  Body: `After saving, the cursor jumped to the top of the file. Save now keeps the cursor and the\n  selection where they were.`\n- **T3.** Title: `Add retry/backoff to SyncClient`.\n  Body: `On flaky networks, sync failed with no message and changes stayed local. SyncClient now\n  retries 3 times and shows an error banner if all retries fail.`\n\nT1\u2013T3 do not include the example phrases from the NEW line (\"Export reports as CSV\", \"Stop losing\nthe cursor on save\"). T1 and T2 are close to them on purpose. A NEW reply that copies an example\nphrase word for word is tagged ECHO, so we can see whether NEW only works through its examples.\n\n## Models and reps\n\n- Models: **claude-opus-5-5** and **claude-sonnet-5-5**. Nobody has said which models run this\n  skill, so these two are my choice. Change them before the run if the skill runs elsewhere, for\n  example on Haiku.\n- 5 reps per arm \u00d7 task \u00d7 model: 3 arms \u00d7 3 tasks \u00d7 5 reps \u00d7 2 models = **90 scored reps**, plus 1\n  isolation probe per model.\n- Default sampling settings, the same for every arm.\n\n## Isolation\n\n- One fresh-context call per rep: a raw API call, or a single-shot subagent if there is no API\n  access. Each rep starts in a new empty directory outside every repository, with no tools, no\n  user-level settings, no instruction files and no memory.\n- Quarantine: no rep can reach `specs/`, this file, the proposal, the baseline records or the kit.\n  A rep that reads one is VOID.\n- Probe first: before the first scored rep, run one pilot rep per model. Ask what it can see:\n  instruction files, memory, tools, other sessions and the user's name. Any answer we did not plan\n  for is a leak. Fix it and run the probe again. Probe reps are not scored.\n\n## Registered rules\n\nScore each reply on the entry line it produced. Strip any surrounding quotes and any leading `- `\nor `* `. Count characters after stripping.\n\n**PASS** if all of these hold:\n1. The line's first clause says what a user can now do or no longer suffers. A leading Add, Fix,\n   Remove or Change is allowed if the words straight after it name that outcome, as in \"Fix the\n   cursor jumping to the top on save\".\n2. The line names no internal part: no class, function, file or module name (`CsvExportHandler`,\n   `EditorBuffer.save()`, `SyncClient`, `ExportHandler`) and no ticket number (`#482`).\n3. It is one line of 100 characters or fewer.\n4. It describes one change.\n\n**FAIL**, with every tag that applies:\n- `F-INTERNAL`: an internal part name or ticket number appears, or the outcome comes only after one.\n  Example: \"Fix NPE in CsvExportHandler for empty reports\".\n- `F-VAGUE`: no reader outcome at all. Example: \"Fix export bug\", \"Change save behavior\".\n- `F-LENGTH`: more than 100 characters, or more than one line. This is the proposal's named risk.\n- `F-MULTI`: two changes on one line.\n\n**VOID**: an API error, a refusal, an empty reply, no entry line, a rep that read a quarantined\nfile, or a rep from a setup whose probe failed.\n\n**Recorded tags, not scored**: `LEADS-VERB` (the line starts with Add, Fix, Remove or Change),\n`ECHO` (copies a NEW example phrase word for word) and the character count.\n\nIf a reply shows a reading these rules did not foresee, keep the registered verdict and report\nthe counts under both readings.\n\n## Scoring\n\n1. Collect every reply into a sheet with a random ID. No file name, path, order or count on a sheet\n   shows its arm or model. Shuffle the sheets across arms, tasks and models. Keep the key in a\n   separate file, which is not opened until grading is done.\n2. Run an automated pre-flag pass on every sheet: character count, line count, a match on the\n   internal names and `#\\d+`, and a match on the leading verb.\n3. Read every sheet by hand, including every flagged match. Quoted titles and echoed task text can\n   look like hits. The hand reading decides the verdict. The pre-flags only point the reader.\n4. Unblind only after every sheet has a grade.\n\nLimit of the blinding: a reply can hint at its arm (an OLD reply often leads with \"Fix\"). The\ngrader must not guess the arm, and the rules above do not depend on it.\n\n## Decision rule\n\nCount per arm and model, out of 15 non-VOID reps. If VOIDs drop any cell below 13 scored reps, top\nit up with new reps before deciding.\n\n1. **Control gate.** If CONTROL passes 13 or more of 15 on both models, the failure does not show\n   without guidance, so there is nothing for step 2 to fix. Stop and report. Do not merge either\n   wording on the strength of this test.\n2. **NEW works** if, on **each** model:\n   - NEW passes 13 or more of 15, and\n   - NEW passes at least 4 more reps than OLD, and\n   - NEW has at most 1 `F-LENGTH`, and\n   - NEW does not pass only through ECHO: drop ECHO replies and it still passes 80% or more of the\n     rest.\n3. **Variance.** Report, per arm, how many distinct opening shapes the replies use for each task\n   (for example \"Exporting empty reports\u2026\" or \"Fix crash when\u2026\"). If NEW reps scatter across many\n   shapes, the wording is not binding. Tighten its form before adding words.\n4. Anything else is **NOT SHOWN**. Report the counts and which failure tags dominate. Do not reword\n   and rerun under these same registered rules without writing a new design.\n\nPassing this test checks the wording. It does not stand in for a full scenario run if the skill is\nlater treated as a discipline skill.\n\n## Spend\n\n- Cap: **$5** for the whole test. Each rep is about 1k input tokens (the skill plus the task) and\n  under 100 output tokens, so 92 reps should cost well under the cap. The cap leaves room for\n  top-ups.\n- Run in batches of one arm \u00d7 one model (15 reps). Stop rule: do not start a batch if the running\n  total plus that batch's worst case would pass the cap.\n- Record each batch's cost next to its results.\n\n## Records\n\nRaw replies, sheets, the key and results go under `specs/baseline/`. Use the project's layout, for\nexample `specs/baseline/red-baseline-changelog-entry-step2/`. Never put them in\n`skills/changelog-entry/`, because everything there ships with the skill.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

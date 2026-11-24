@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "5da7edb074534d99ea4a744724f609d69be0357b",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-opus-5-5/rep3.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 62,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 30,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 61973,
+    "total_cost_usd": 0.2183952,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 4911,
+        "cacheReadInputTokens": 46996,
+        "cacheCreationInputTokens": 13843,
+        "webSearchRequests": 0,
+        "costUSD": 0.2183952,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1321,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13843,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. Nothing has been run and nothing is committed.\n\n**The test in brief:**\n- **Three versions of the skill.** Each gets the full `SKILL.md`, and only step 2 changes:\n  - a control with step 2 removed\n  - the old line\n  - the proposed line\n- **Two pull requests to write entries for.** Both are full of internal names and ticket numbers, which pulls the agent toward \"Fix handler\". The second is a broad change, so it also tests the risk the proposal names: lines over 100 characters.\n- **Size.** 10 runs per version on each of claude-opus-5-5 and claude-sonnet-5-5, so 60 scored runs. You hadn't named the models, so I picked these two. Each run is isolated and has no tools. Before any scored run, one check per model confirms the agent sees nothing it shouldn't, like our notes or other instructions.\n- **Scoring.** Pass, fail and void rules are written down in advance and recorded by failure type: internal names, too long, or more than one change. Replies are graded without knowing which version produced them, and a person reads every judgment call.\n- **When the new line \"works\".** On each model:\n  - the control shows the failure (3 or more of 10)\n  - the new line fails at most 2 of 10\n  - it has fewer internal-name failures than both the control and the old line\n  - it has no more over-length lines than the old line\n- **Cost cap.** USD 10, checked before each batch of 10 runs.\n\n**Three things for you to decide before anything runs:**\n\n1. **What \"skipped the rule\" meant in the earlier 7-of-10 result.** The record isn't in `specs/`, so I couldn't check it. If it meant \"didn't start with Add/Fix/Remove/Change\", that's a different failure from the one the proposal targets, which is entries that name an internal part. The new test scores the proposal's goal on all three versions and runs the old line again. So treat the 7 of 10 as the reason to test, not as a number to compare against.\n2. **The pass/fail rules and the decision rule have to be committed before anyone reads a reply.** Should I commit the design now as it stands, or will you review it first?\n3. **The models and the cap.** Change them in the file if the skill will run on other models (for example, add claude-haiku-5-5) or if USD 10 is wrong.",
+  "tool_calls": [
+    {
+      "id": "toolu_019KGPnopTahCD7j7DB7djau",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01KtVrKNF1ci7zm9E9qyzEGe",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01WPXuiTUEstZHdWSMfMZsMT",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011KFtf4nUJZ3UJjU8ngjy7x",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011pQaF8TjHyHDJQZ1ibTyo1",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 of `changelog-entry`\n\nStatus: design only. Nothing has been run. The PASS, FAIL and VOID rules below must be committed\nbefore anyone reads a reply.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make agents put the reader's outcome\nat the front of the entry, without pushing the line over 100 characters?\n\n## Arms\n\nEach arm gets the same system prompt: the full text of `skills/changelog-entry/SKILL.md`. Only step 2\ndiffers.\n\n| Arm | Step 2 in the system prompt |\n|---|---|\n| C (control) | Step 2 removed. Steps 3 and 4 become 2 and 3. Nothing else changes. |\n| O (old) | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| N (new) | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nArm O re-runs the old line under this setup. The earlier baseline (7 of 10 runs failed) is not in\n`specs/`, so we can't confirm it used the same tasks, isolation or rules. Treat it as the reason for\nthe test, not as a data point to compare against.\n\nIf arm C does not show the failure (2 or fewer FAILs out of 10 on a model), there is nothing for the\nnew line to fix on that model. Report that and stop. Do not judge arm N on that model.\n\n## Tasks (user message)\n\nEach user message is one merged pull request, written the way PR text usually reads: internal\nnames, a ticket number and a terse title. That pulls the agent toward \"Fix handler\" entries. The\nuser message always ends with: `Write the CHANGELOG.md entry for this pull request. Reply with the\nentry line only.`\n\n- **T1, a narrow fix:**\n  `PR #482 \"Fix null check in ExportHandler\". Closes JIRA-1193. ExportHandler.build() threw when a\n  report had no rows, so the Export button did nothing for empty reports. Adds a guard and a test.`\n- **T2, a broad fix (tests the length risk):**\n  `PR #517 \"Change autosave in EditorBuffer\". Closes JIRA-1240. EditorBuffer.flush() reset the\n  selection and scroll offset on every autosave, so the cursor jumped to the top of the file and\n  any selected text was deselected while users typed. Now saves the caret, selection and scroll\n  position and restores them after the flush. Also renames flushSync to flushNow.`\n\nNeither task repeats the examples in the new line. An entry copied from an example could not fit\neither task.\n\n## Reps and models\n\n- Models: **claude-opus-5-5** and **claude-sonnet-5-5**. The partner has not said which models will\n  run the skill, so I chose these two. Add claude-haiku-5-5 as a third model if the skill will run\n  on it.\n- Per model, per arm: 10 reps, 5 on T1 and 5 on T2.\n- Total: 3 arms \u00d7 2 models \u00d7 10 = 60 scored reps, plus 1 isolation probe per model.\n\n## Isolation\n\n- Each rep is one raw API call (or a single-shot subagent if there is no API access). Use a new\n  working directory outside every repository, give it no tools, and turn off user settings,\n  instruction files and memory.\n- The rep sees only the system prompt and the user message above. No rep may read `specs/`, this\n  design, the proposal, the kit or any earlier record. A rep that does is VOID.\n- **Probe first:** before any scored rep, run one probe per model with the same setup. Ask it to\n  list every instruction file, memory, tool, other session and user detail it can see. If it\n  reports anything we did not plan for, fix the setup before going on.\n\n## Scoring rules (register before reading)\n\nScore only the first line of the reply that is not empty. Strip a leading `- ` or `* `.\n\n**PASS** only if all of these hold:\n1. **Outcome first:** the first five words name what a user can now do or no longer runs into.\n   A leading verb is fine (\"Fix the Export button for empty reports\"), but the thing after it must\n   be something the user sees, not a code part.\n2. No ticket number, PR number, file name, class name or function name anywhere in the line\n   (`#482`, `JIRA-1193`, `ExportHandler`, `flush()`, `flushSync`).\n3. 100 characters or fewer, counted by script.\n4. One change. For T2 the flushSync rename is internal, so an entry that mentions it fails rule 2.\n\n**FAIL** is any reply that is not PASS and not VOID. Record every rule that failed, so we can report:\n- `F-internal`: rule 1 or rule 2 failed (the failure the proposal targets).\n- `F-length`: rule 3 failed (the risk the proposal names).\n- `F-multi`: rule 4 failed.\n\n**VOID**: the rep read a quarantined file, the probe for its model showed a leak that was not fixed,\nthe reply has no entry line, or the API call errored. Re-run each VOID rep once. Report VOIDs\nseparately.\n\nIf a reply shows a reading the rules did not foresee, keep the registered verdict and report the\ncounts under both readings.\n\n## Blind scoring\n\n- A script writes each reply to a sheet named with a random ID. Shuffle the sheets across arms,\n  models and tasks. The sheet holds only the task ID (T1/T2) and the reply text.\n- The arm and model key goes in a separate file that the grader does not open until every sheet has\n  a grade.\n- Character counts come from the script, not the grader.\n- A person reads every FAIL and every PASS on rule 1 by hand. Rule 1 is a judgment call, and an\n  automated match will mistake an echoed example or a quoted rule for a hit.\n\n## Decision rule (register before reading)\n\nThe new line **works** only if, on **each** model:\n- C shows the failure: 3 or more `F-internal` out of 10, and\n- N has at most 2 FAILs of any kind out of 10, and\n- N has fewer `F-internal` than both C and O, and\n- N has no more `F-length` than O.\n\n**Variance check:** read the 10 N replies on each model side by side. If they follow different\nshapes (some lead with a verb, some with a noun phrase, some with \"You can now...\"), say so in the\nreport even if the counts pass. Mixed shapes mean the wording doesn't bind yet.\n\nIf N passes on one model and fails on the other, the line does not work. Report both models.\n\n## Spend\n\n- Cap: USD 10 for the whole test, including probes and re-runs. The partner can change this before\n  the first rep.\n- Run in batches of one arm \u00d7 one model \u00d7 10 reps. Before each batch, estimate its worst-case cost.\n  Stop if the running total plus that estimate would go over the cap.\n- Record each batch's actual cost in the results file.\n\n## Where things go\n\n- Kit (prompts, task texts, scripts, key file): `specs/baseline/microtest-changelog-entry/`.\n- Results and verdict: `specs/baseline/microtest-changelog-entry.md`.\n- Nothing from this test goes under `skills/changelog-entry/`, because everything in that folder\n  ships with the skill.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

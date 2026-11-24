@@ -1,0 +1,114 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..201e46e
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,108 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: designed, not run.
++Proposal under test: `specs/changelog-entry-wording.md`.
++Skill under test: `skills/changelog-entry/SKILL.md`, step 2 of The Technique.
++
++## Question
++
++Does the proposed step 2 make agents put the reader's outcome at the front of the entry,
++instead of a verb followed by an internal part ("Fix handler", "Change parser")?
++And does it do that without the risk the proposal names: lines longer than 100 characters?
++
++## Arms
++
++Every arm uses the full current `SKILL.md` as the system prompt. Only step 2 differs.
++
++| Arm | Step 2 text |
++|---|---|
++| A: control | Step 2 removed. Steps renumbered 1–3. |
++| B: old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| C: new | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm B is run again here, even though a baseline exists. The existing baseline (7 of 10 runs
++skipped the rule) was scored against the old rule, which asks for a leading verb. This test
++scores a different failure: an internal part instead of a reader outcome. The 7/10 figure
++cannot be compared with the numbers below. Arm B has to be scored under the same rubric, on
++the same tasks, in the same batch.
++
++## Sampling
++
++- One fresh-context sample per call: a raw API call, or a single-shot subagent if no API access.
++- Same model and same settings for all arms. Record the model ID and temperature.
++- 3 tasks × 5 reps × 3 arms = 45 samples (15 per arm).
++- Run the arms interleaved, not one after another, so that drift over time affects them all alike.
++
++## Tasks (user message)
++
++Each user message is: `This pull request was merged. Write its entry for CHANGELOG.md.`,
++followed by the PR title and body below. Each PR is written in internal terms so that the
++failure is tempting. No PR uses CSV export or cursors, so that copies of the examples in the
++new line can be seen.
++
++**T1. Internal fix, the outcome is in the body**
++> Title: Fix NPE in SaveHandler when buffer is empty
++> Body: SaveHandler.flush() dereferenced a null buffer. Users who saved an empty document got
++> an "Unexpected error" dialog and the editor closed. Added a null check and a test.
++
++Tempts: `Fix NPE in SaveHandler`.
++
++**T2. Internal change, the outcome is in the body**
++> Title: Change ContactImportParser to honour quoted fields
++> Body: The parser split on every comma. Contacts with a comma in the company name
++> ("Smith, Jones & Co") were imported with their fields shifted into the wrong columns.
++> The parser now respects double quotes.
++
++Tempts: `Change ContactImportParser`.
++
++**T3. Outcome with several parts (tests the length risk)**
++> Title: Add retry with backoff to WebhookDispatcher
++> Body: Webhook deliveries to slow endpoints were dropped after the first timeout. They are now
++> retried up to 5 times over 10 minutes with exponential backoff. The retry count can be set
++> per endpoint in Settings → Webhooks.
++
++Tempts: `Add retry to WebhookDispatcher`, and a line longer than 100 characters that tries to
++say every part.
++
++## Scoring
++
++Score every sample on all four checks. Store each raw output next to its scores.
++
++| Check | Failure when | How it is scored |
++|---|---|---|
++| F1: internal lead (target) | The opening clause names a code part (class, file, function, module, ticket) instead of what the reader can now do or no longer suffers. A leading Add/Fix/etc. is not a failure by itself: `Fix crash when saving an empty document` passes. | Pre-flag automatically: a CamelCase word, a file extension, `#123`, or `handler/parser/dispatcher` in the first 6 words. Then a person reads **every** sample. F1 is a judgment call, so the flags only help: a sample without a flag can still fail. |
++| F2: length (risk) | The entry is longer than 100 characters. Bullet marker and leading whitespace are not counted. | Automatic. |
++| F3: shape | More than one line, or two changes on one line. | Automatic flag, then the flagged samples are read. |
++| E: echo | The output copies an example from the new line ("Export reports", "Stop losing the cursor") or is otherwise shaped after the template rather than after the PR. | Automatic flag, then read. An echo counts as an F1 failure. |
++
++For every arm, also note the **opening pattern** of each sample (for example
++`verb + outcome`, `outcome only`, `verb + internal part`). How many different patterns appear
++is the variance metric. When the wording binds, the reps in arm C share one pattern.
++
++## Decision rule (fixed before running)
++
++1. **Control first.** If arm A has F1 in 3 or fewer of 15 samples, the failure does not occur
++   without guidance. Stop. Report that the change fixes nothing, and do not merge on the
++   strength of this test.
++2. **New wording works** if all of these hold:
++   - Arm C has F1 (echoes included) in 3 or fewer of 15 samples, and at least 5 fewer than arm B.
++   - Arm C's F2 count is no more than arm B's F2 count plus 1. This is the proposal's risk.
++   - Arm C has no F3 failures beyond those arm B also has.
++   - Arm C shows one opening pattern in most samples (at least 12 of 15 share one).
++3. **Anything else**: do not merge. Report the counts and the raw outputs of the failing
++   samples. If F2 is the only failing check, the next candidate is a new line that also
++   states the length limit in step 2. That candidate goes through this same test.
++
++The thresholds are coarse because n = 15 per arm. A result close to a threshold is a
++reason to add 5 reps per task, not to round in either direction.
++
++## Out of scope
++
++- Step 1 behavior (skipping refactors) and the other steps: they do not change.
++- A full application scenario with a real repository: that comes after this test, if arm C passes.
++
++## Artifacts
++
++Keep the raw outputs, the scores and the run notes outside `skills/`, for example in
++`specs/baseline/changelog-entry-microtest/`. Anything inside the skill directory ships
++with the skill.

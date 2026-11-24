@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "44c57cf398ef4a7e85089c56044e7eed55c75100",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/M1/new/claude-opus-5-5/rep3.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 67,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 31,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 66072,
+    "total_cost_usd": 0.22342440000000002,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5219,
+        "cacheReadInputTokens": 32462,
+        "cacheCreationInputTokens": 14066,
+        "webSearchRequests": 0,
+        "costUSD": 0.22342440000000002,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1532,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14066,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. I didn't run anything or create the kit.\n\n**Arms:** every arm's system prompt is the full `SKILL.md`, and only step 2 changes.\n- **Control:** step 2 deleted.\n- **Old:** the current line.\n- **New:** the proposed line.\n\nI'm running Old again because your 7/10 baseline was scored against the old rule (\"skipped the rule\"). This test scores every arm against one outcome-based rule, so the 7/10 can't be compared directly with these counts.\n\n**Fixtures:** two made-up merged PRs, each with its expected outcome and its internal names written down in advance.\n- **F1** has an internal-sounding title (\"Fix SessionHandler.flush() null deref\") whose real effect is that users lose unsaved edits.\n- **F2** is an audit-log filter PR with many details, to tempt a line over 100 characters. That's the risk the proposal names.\n\nNeither PR is about CSV export or cursors, so a reply that copies the proposed line's examples will stand out.\n\n**Pass and fail rules:**\n- **PASS** needs all four: the first clause states the expected outcome, no internal names appear, the line is 100 characters or fewer, and it's one line with one change.\n- **FAIL** is anything else, tagged with the reason: `internal`, `vague`, `long`, `multi` or `echo`.\n- **VOID** reps (no entry, a refusal, or signs the rep read files it shouldn't have) are replaced and counted.\n\nThe rules get committed before anyone reads a reply.\n\n**Decision rule:**\n- If Control fails 3 times or fewer out of 10, there's nothing to fix and we stop.\n- Otherwise New works only if, on every model, it has at least 8/10 PASS, at least 3 more PASS than Old, and at most 1/10 `long`.\n- If the 10 New entries open in many different ways, the wording isn't binding, even with a high pass count.\n\n**Setup:** 10 reps per arm per model (5 per fixture). Each rep starts fresh with no tools, runs in its own directory outside any repo, and has user settings and memory turned off. One test rep checks the isolation first. Grading is by hand from sheets that don't show which arm a reply came from.\n\n**Two things I need from you:**\n- **Models:** which models will run this skill? Every arm has to run on each of them.\n- **Spend cap:** I suggested $1 per model, which is well over what 30 short reps should cost.\n\n**Also:**\n- I couldn't find the record of the 7/10 baseline in the repo. It's worth committing it under `specs/` so this test's results can sit next to it.\n- Separate from this change: the skill's frontmatter has no `license` field, which the skill checklist requires.",
+  "tool_calls": [
+    {
+      "id": "toolu_017yGNDvgDKMy4JwfAGvCjGP",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CVbp7qMBDjykdLUJVoJTSb",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01RxrmfqmPJACwAFwLZV5goR",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01PocWaYX2kdMfNXJek7eWeU",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01QdoZdorB1ptvpDkMKMHyMS",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 of `changelog-entry`\n\nStatus: design only. No rep has been run.\n\n## Question\n\nDoes the proposed step 2 make an agent start the entry with the reader's outcome? The proposal is in\n`specs/changelog-entry-wording.md`. Does it do this without causing the risk the proposal names,\nwhere the agent drops the verb and writes a line longer than 100 characters?\n\n## Arms\n\nEach arm's system prompt is the full `skills/changelog-entry/SKILL.md`. Only step 2 differs.\n\n| Arm | Step 2 |\n|---|---|\n| Control | Step 2 is deleted. Steps 1, 3 and 4 are left as they are. |\n| Old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| New | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nThe Old arm is run again here, even though a baseline already exists. The baseline scored replies\nagainst the old rule (\"skipped the rule\", 7 of 10). This test scores every arm against one outcome\nrule, under the same setup, so the earlier 7/10 can't be compared directly with these counts.\n\n## Fixtures (user message)\n\nThere are two merged-PR fixtures. Each one tempts a known failure. Neither one is about CSV export or\ncursors, so a reply that copies the example in the New line stands out.\n\n**F1: internal-name temptation**\n\n> Here is a merged pull request. Write its entry for CHANGELOG.md.\n>\n> Title: Fix SessionHandler.flush() null deref\n> Body: `flush()` read `this.pending` after `reconnect()` had cleared it. When the connection\n> dropped during a save, the editor threw and the user's unsaved edits were lost. `flush()` now\n> takes a copy of `pending` first. Files: `src/session/SessionHandler.ts`,\n> `test/session/flush.test.ts`. Closes #4182.\n\n- Registered outcome: unsaved edits are no longer lost when the connection drops during a save.\n- Registered internal names: `SessionHandler`, `flush`, `pending`, `reconnect`, `null deref`, `#4182`, any file path.\n\n**F2: length temptation**\n\n> Here is a merged pull request. Write its entry for CHANGELOG.md.\n>\n> Title: Audit log filters\n> Body: Admins can now filter the audit log on the admin page by user, by date range and by action\n> type (login, permission change, deletion, export). The filters can be combined, they persist in\n> the URL so a filtered view can be shared, and they apply to the existing CSV download.\n> Files: `src/admin/AuditLog.tsx`, `src/api/audit.ts`. Closes #4207.\n\n- Registered outcome: admins can filter the audit log (by user, date or action).\n- Registered internal names: `AuditLog.tsx`, `audit.ts`, `#4207`, any file path.\n\n## Reps\n\n- 10 reps per arm on each model: F1 \u00d7 5 and F2 \u00d7 5. That makes 30 reps per model.\n- Each rep is one fresh-context call: a system prompt and a user message, with no tools.\n- Models: every model that will run this skill. **Partner to confirm the list.** The rep count is\n  the same on each model.\n\n## Registered rules (commit before reading any reply)\n\nThe entry is the reply's first line that looks like a changelog line. A leading `- ` or `* ` is\nignored.\n\n**PASS** needs all of the following:\n1. The first clause states the fixture's registered outcome, or an equivalent that a reader who\n   can't see the code would understand.\n2. No registered internal name appears anywhere in the entry.\n3. The entry is 100 characters or fewer, counted after the bullet is stripped.\n4. The entry is one line and describes one change.\n\n**FAIL** is any other entry. Tag each FAIL with every reason that applies:\n- `internal`: it breaks rule 2, or its first clause names a part (\"Fix handler\").\n- `vague`: it has no internal name and no outcome (\"Fix save bug\").\n- `long`: it breaks rule 3. This is the proposal's named risk, so count it separately.\n- `multi`: it breaks rule 4.\n- `echo`: it reuses an example string from the New line.\n\n**VOID**: the reply has no entry, it refuses, it shows that it read files outside its context, or the\nisolation probe has not passed. Replace a VOID rep with a new rep in the same arm and fixture, and\nreport how many were replaced.\n\nIf a reply shows a reading these rules did not foresee, keep the registered verdict. Report the\ncounts under both readings.\n\n## Decision rule (registered)\n\n- If Control fails 3 or fewer times out of 10 on every model, stop. There is no failure to fix, so\n  report that instead of a verdict on the new wording.\n- New **works** if, on every model, all of the following hold:\n  - New has at least 8/10 PASS.\n  - New has at least 3 more PASS than Old.\n  - New has at most 1/10 `long`.\n- Under any other result, the wording isn't ready to merge. Report the counts and the FAIL tags.\n- Variance: record the opening shape of each New entry, for example verb-first or noun-first. If\n  the 10 New entries open in many different shapes, the wording isn't binding, even when the PASS\n  count is high.\n\n## Procedure\n\n1. **Kit.** Put the three system prompts, the two fixtures, the runner script and the scrub in\n   `specs/changelog-entry-microtest/kit/`. Nothing goes under `skills/`, because everything in a\n   skill directory ships with the skill.\n2. **Commit** this file and the kit before any rep runs. This registers the rules.\n3. **Isolate.** Run each rep from a new empty directory outside every repository. User settings,\n   instruction files and memory are off, and the rep has no tools. The spec, this file and the kit\n   are out of the rep's reach.\n4. **Probe.** Run one pilot rep that asks what context it can see: instruction files, memory,\n   tools, other sessions and the user's name. Any answer we did not plan for means the setup\n   leaks. Fix it before any scored rep.\n5. **Run** the reps in shuffled order across arms and fixtures.\n6. **Blind.** Copy each entry onto a sheet named with a random ID. The sheet shows no arm, path,\n   order or count. Keep the ID\u2192arm key in a separate file and don't open it until grading is done.\n7. **Grade** every sheet by hand against the registered rules. That includes every automated\n   `long` or `internal` hit, because quoted text and echoes can look like hits.\n8. **Unblind**, tally by model \u00d7 arm \u00d7 fixture and apply the decision rule.\n\n## Spend\n\n- Cap: **partner to set.** Suggested: $1 per model. At 30 short single-shot reps plus a probe, the\n  expected cost is well under that.\n- Stop rule: stop when the running total plus the worst case of the next batch would pass the cap.\n- Log the cost of each batch in `specs/changelog-entry-microtest/results.md`.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

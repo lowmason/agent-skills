@@ -1,0 +1,141 @@
+{
+  "case": "M1",
+  "rep": 2,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep2",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "331acddec1cc7b1df0bf01ba632c7ba3b4d464eb",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-sonnet-5-5/rep2.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 32,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 27,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 31496,
+    "total_cost_usd": 0.092499,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3808,
+        "cacheReadInputTokens": 32150,
+        "cacheCreationInputTokens": 12798,
+        "webSearchRequests": 0,
+        "costUSD": 0.092499,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 778,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12798,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n- **Arms:** OLD is the full current `SKILL.md`. NEW is the same file with only step 2 replaced. I re-run OLD in the same batch instead of reusing your baseline, because I can't confirm the baseline used the same model, scenario and scoring.\n- **Models:** `claude-haiku-5-5` and `claude-sonnet-5-5`, which I chose because you didn't name any. Each gets 10 reps per arm, 40 reps in all.\n- **Scenarios:** There are two, each run 5 times per arm per model.\n  - S1 tempts \"Fix handler (#482)\", an internal part name plus a ticket number.\n  - S2 is a bug with a long cause that tempts an entry over 100 characters. That is the risk your proposal names.\n- **Rules:** The PASS, FAIL and VOID rules are written down to be committed before anyone reads a reply.\n  - A script checks that the entry is one line of 100 characters or fewer.\n  - A blind read checks that it states a reader outcome and names no file, function or ticket.\n  - A dropped leading verb is not a failure by itself. I count it as a side number.\n- **Scoring and isolation:** Grading uses sheets with the arm hidden. Each rep is isolated, and one probe rep runs first to check for context leaks.\n- **Merge rule:** Merge only if NEW passes at least 8 of 10 on each model and beats OLD. A higher length-failure rate than OLD holds the merge. The merge itself is your call.\n- **Spend:** The cap is $0.50 of the $1.50 left. I haven't estimated the per-rep cost yet. The probe rep gives that figure, and it goes into the file before the batches start.\n\nThe repo has no baseline records, only the proposal, so I don't know which rule the 7 skipped runs broke. Please tell me, and I'll check that the PASS checks match it. Say so too if the skill runs on other models.",
+  "tool_calls": [
+    {
+      "id": "toolu_01VyHuNAtYQkBRcUyhoXzXf6",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CyzZCbxnAqxYG1txLnCTvV",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Agipf2TAxEyQKQCdbSnXju",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013DTbeMaa4isKazJggqJoZQ",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**",
+        "path": "/private/tmp/wst107/rep2/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XqWxzjdbegm9gsXjAgzwVL",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test: `changelog-entry` step 2 wording\n\nStatus: design only. Nothing has been run.\n\n## Question\n\nDoes the proposed step 2 make agents write entries that lead with the reader's outcome, without\nbreaking the one-line, 100-character rule in step 4?\n\n- Old: `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`\n- New: `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".`\n\nFailure type: output has the wrong shape (verb stub plus an internal part name). The new line is a\nrecipe, which is the right form for that. The proposal names its own risk: the agent drops the\nleading verb and writes a sentence over 100 characters. The test must measure that risk as well as\nthe benefit.\n\n## Arms\n\n| Arm | System prompt |\n|---|---|\n| OLD | The full current `SKILL.md`, unchanged |\n| NEW | The full current `SKILL.md` with only step 2 replaced |\n\n- The prompt is the whole skill, not step 2 alone, because the guidance lives in that context.\n- The existing baseline (7 of 10 skipped the rule on the old line) is not reused as the OLD arm.\n  Its model, scenario and scoring may differ, so OLD is re-run in the same batch.\n- Open item for the partner: I don't have the baseline records in the repo (`specs/` holds only the\n  proposal). Say which rule the 7 runs skipped, and I will confirm the rules below match it.\n\n## Models\n\nTwo models, 10 reps per arm per model, so 40 reps in all:\n\n1. `claude-haiku-5-5`. The cheapest model, and most likely to take shortcuts.\n2. `claude-sonnet-5-5`. The model this session runs on.\n\nI chose these two because you did not name models. Tell me if the skill runs on others.\n\n## Scenarios\n\nEach rep gets one user message: a merged-PR summary and the request \"Write the changelog entry.\"\nUse 2 scenarios, each run 5 times per arm per model, so every cell has 10 reps. Each tempts a known\nfailure:\n\n- S1, internal-leaning: the diff touches `csv_handler.py`, and the PR title is \"Fix handler (#482)\".\n  It tempts \"Fix handler\" and a ticket number.\n- S2, long-leaning: a bug fix with a long and precise cause and effect (cursor lost on save in\n  split view after autosave). It tempts a sentence over 100 characters.\n\nThe scenario text is identical across arms. It is quarantined from reps (see Isolation).\n\n## Isolation\n\nFollow `references/micro-tests.md`:\n\n- One fresh rep per call, run from a new empty directory outside every repo, with no tools,\n  user settings, instruction files or memory.\n- Run one probe rep first. Ask what context it sees (instruction files, memory, tools, other\n  sessions, user name). Any unplanned answer means fix the setup before scored reps.\n- Keep this file, the proposal and the scenario files out of any rep's reach. A rep that reads one\n  is VOID.\n\n## Rules (register and commit before reading any reply)\n\nA reply is the text it returns. The entry is the line it proposes.\n\nMechanical checks, done by a script:\n\n- LEN: the entry is one line of 100 characters or fewer.\n- LINES: the reply holds exactly one entry line, with no second change on it.\n\nRead-by-hand checks, done blind:\n\n- OUTCOME: the line says what a reader can now do or no longer suffers.\n- NO-INTERNAL: no file, function, module or ticket name stands in for the behavior.\n\nVerdict for a rep:\n\n- PASS: LEN, LINES, OUTCOME and NO-INTERNAL all hold.\n- FAIL: any one of them does not hold.\n- VOID: the rep read a quarantined file, the probe showed a leak, or the reply is empty or an API error.\n\nA dropped leading verb is not a failure by itself. \"Export reports as CSV\" has one. \"CSV export\nworks again\" has none and can still pass. It counts only through the four checks. Report the number\nof entries with no leading verb separately as a side count.\n\nIf a reply shows a reading these rules did not foresee, keep the registered verdict and report the\ncounts under both readings.\n\n## Scoring\n\n- Strip the arm, model, order and file names. Give each reply an opaque ID. Grade from those\n  sheets. Unblind only after every sheet has a grade.\n- Do the mechanical checks by script, then read every reply by hand. Read every flagged match;\n  do not trust counts alone.\n- Report per model and per arm: PASS, FAIL and VOID counts, the failing check for each FAIL, and\n  the side count of entries with no leading verb.\n\n## Decision\n\nDecide before reading: merge when, on each model, NEW has at least 8 of 10 PASS on both scenarios\ncombined (at least 8 of 10 per model) and has more PASS than OLD. NEW with a length failure rate\nabove OLD's holds the merge, whatever its OUTCOME gains. If NEW's reps land in five different\nshapes, the wording does not bind. Tighten the form before adding words. The merge itself is yours.\n\n## Spend\n\n- Cap: $0.50 for the whole test. Of the budget, $1.50 remains.\n- Each rep is a short prompt and a one-line reply. Estimate the cost per rep from the probe rep\n  and write it here before the batch.\n- Run in 4 batches (one per model and arm pair). Stop when the running total plus the next\n  batch's worst case would pass the cap. Record each batch's cost as it finishes.\n\n## Not covered\n\n- Skill-level pressure scenarios. This test checks wording only.\n- Models other than the two named above.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

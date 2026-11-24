@@ -12,7 +12,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure subagents.frontmatter subagents.models subagents.isolation @2.1.326
+# cc-guide: skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure skills.iterating subagents.frontmatter subagents.models subagents.isolation @2.1.326
 ---
 
 # Writing Skills
@@ -135,8 +135,9 @@ When the description was changed to just "Use when executing implementation plan
 
 Before you write or tighten a description, read
 [references/discovery.md](references/discovery.md) for the rest of SDO: good
-and bad descriptions, keyword coverage, naming, token efficiency and
-cross-references to other skills.
+and bad descriptions, keyword coverage, naming, token efficiency,
+cross-references to other skills, and the trigger test to run before and after
+a description change.
 
 ## Flowchart Usage
 
@@ -332,7 +333,7 @@ Agent found new rationalization? Add explicit counter. Re-test until bulletproof
 
 Full pressure-scenario runs are the final gate, but they are slow and expensive per iteration. Verify the wording itself first with micro-tests:
 
-1. **One fresh-context sample per call** — a raw API call, or a single-shot subagent if you don't have API access. System prompt = the realistic context the guidance will live in (the full skill or prompt template, not the guidance in isolation); user message = a task that tempts the failure.
+1. **One fresh-context sample per call** — a raw API call, or a single-shot subagent if you don't have API access. System prompt = the realistic context the guidance will live in (the full skill or prompt template, not the guidance in isolation); user message = a task that tempts the failure. Before the first rep, read [references/micro-tests.md](references/micro-tests.md): isolation, rules set first, blind scoring, models, spend.
 2. **Always include a no-guidance control.** If the control doesn't exhibit the failure, there is nothing to fix — stop, don't author the guidance.
 3. **5+ reps per variant.** Single samples lie.
 4. **Manually read every flagged match.** Score programmatically if you like, but template echoes and quoted counter-examples masquerade as hits; automated counts alone overstate both failure and success.

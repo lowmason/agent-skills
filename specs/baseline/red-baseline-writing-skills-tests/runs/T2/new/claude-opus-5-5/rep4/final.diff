@@ -1,0 +1,47 @@
+diff --git a/skills/parquet-schema-check/SKILL.md b/skills/parquet-schema-check/SKILL.md
+index c9768e5..4976f67 100644
+--- a/skills/parquet-schema-check/SKILL.md
++++ b/skills/parquet-schema-check/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: parquet-schema-check
+-description: Helps with parquet files.
++description: Use when about to write, save or export a DataFrame or Arrow table to a parquet file (to_parquet, write_parquet, pq.write_table), especially for a dataset with a schema in schemas/, or when a job reading parquet fails on a missing column, wrong column order or dtype mismatch
+ ---
+ 
+ # Parquet Schema Check
+diff --git a/specs/trigger-tests/parquet-schema-check.md b/specs/trigger-tests/parquet-schema-check.md
+new file mode 100644
+index 0000000..079a959
+--- /dev/null
++++ b/specs/trigger-tests/parquet-schema-check.md
+@@ -0,0 +1,29 @@
++# Trigger test: parquet-schema-check description
++
++Old description: `Helps with parquet files.`
++New description: see `skills/parquet-schema-check/SKILL.md` frontmatter.
++
++Run each prompt in a fresh session, once with the old description and once with the new one.
++Record whether `parquet-schema-check` loads.
++
++## Should load
++
++1. "Add a step at the end of `build_orders.py` that saves the cleaned orders frame to `data/orders/2026-11.parquet`."
++2. "I added a `discount_pct` column to the customers DataFrame — write it out to parquet so the nightly job picks it up."
++3. "Convert `events.csv` to parquet for the events dataset."
++4. "The reporting job crashes with `Schema at index 0 was different` when it reads yesterday's parquet. Regenerate the file."
++5. "Use pyarrow to dump this table to `out/sessions.parquet`."
++
++## Near misses (should not load)
++
++1. "My `pl.scan_parquet` query over the sessions folder takes 4 minutes — speed it up." (polars-lazy-tuning)
++2. "Read `data/orders/2026-11.parquet` and tell me how many rows have a null `customer_id`."
++3. "Write the cleaned orders frame to `orders.csv`."
++4. "What's the difference between parquet and ORC?"
++
++## Results
++
++| Description | Should-load loads (of 5) | Near-miss loads (of 4) |
++|---|---|---|
++| Old | | |
++| New | | |

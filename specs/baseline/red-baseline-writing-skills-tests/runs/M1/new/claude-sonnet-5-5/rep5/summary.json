@@ -1,0 +1,141 @@
+{
+  "case": "M1",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "267e15be662ca662f4e19d273be936179f03d37c",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 41,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 29,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 39962,
+    "total_cost_usd": 0.1083509,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 4967,
+        "cacheReadInputTokens": 32329,
+        "cacheCreationInputTokens": 13859,
+        "webSearchRequests": 0,
+        "costUSD": 0.1083509,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1485,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13859,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. Nothing has been run.\n\n**Design**\n- **Arms:** A is the current SKILL.md and B is the same file with only step 2 swapped for the proposed line. A is the control because this is a rewording. It is re-run in the same harness, since the earlier 7-of-10 baseline came from a different setup.\n- **Models:** I picked `claude-sonnet-5-5` and `claude-haiku-5-5` because none was named. Tell me if you want others.\n- **Reps:** There are 3 scenarios \u00d7 4 reps = 12 reps per arm per model, 48 in total. Each is one fresh single-shot call with no tools, from a clean directory outside the repo. A probe rep per model comes first to check for context leaks. The scenarios are:\n  - **S1:** a PR titled \"Fix null check in SaveHandler\" whose body says the cursor jumped after autosave.\n  - **S2:** an ExportService refactor whose body says users can export a report as CSV.\n  - **S3:** a PR with several effects and a long body, to pressure the 100-character limit.\n- **Rules, to commit before reading any reply:**\n  - **Check 1:** does the entry open on the reader's outcome rather than an internal part or a ticket id?\n  - **Check 2:** is it one line of 100 characters or fewer? A script counts this.\n  - **Pass:** a rep passes only if it passes both.\n  - **Leading verb:** I report it but it does not decide the verdict.\n  - **Void:** any rep that used tools, quoted the wording or gave something that isn't an entry.\n- **Scoring:** replies are scored blind from sheets that hide arm and model, and every flagged match is read by hand.\n- **Decision:**\n  - **Stop rule:** if A doesn't show the failure on a model (more than 6 of 12 pass check 1), I stop and say so for that model.\n  - **B works on a model:** at least 11 of 12 overall passes, and A has at least 5 fewer passes than B.\n  - **Merge:** I'd recommend it only if B works on both models.\n  - **Variance:** I also check whether B's entries converge on one shape.\n- **Spend:** the cap is $1.00 of the $1.50 budget, run in batches of 12 with a stop rule on running total plus the next batch's worst case.\n\n**Please confirm before I run anything**\n1. The proposal lists \"drops the leading verb\" as a risk, but its own examples (\"Export reports as CSV\") start with verbs. I treated it as report-only. If you want it to be a hard fail, say so and I'll move it into the verdict.\n2. I couldn't find the baseline record of the 7-of-10 runs in `specs/`, so I don't know which scenarios or check it used. If it exists, point me to it and I'll reuse its scenarios for A.\n3. The two models.",
+  "tool_calls": [
+    {
+      "id": "toolu_01Kqnjb6Hjv6LgBfTJmRBptP",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Cr5771etG14Go5xr1L9RA3",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01ExuRxxWqoH5eNUwecr91ya",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CTvYgUoEUd7cP1dXFc8AeK",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*",
+        "path": "/private/tmp/wst107/rep5/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01JEvaDvhbtL1sPtmYvSF4PB",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: `changelog-entry` step 2 rewording\n\nStatus: design only. Nothing has been run. Commit this file, rules included, before any reply is read.\n\n## Question\n\nDoes the proposed step 2 make an agent start the entry with what the reader can now do or no longer suffers,\ninstead of naming an internal part (\"Fix handler\")? And does it avoid the two risks in the proposal:\ndropping the leading verb, and an entry longer than 100 characters?\n\n## Arms\n\nOnly the step 2 line differs between arms. Everything else in SKILL.md is byte-identical.\n\n| Arm | System prompt |\n|---|---|\n| A (control) | Full current `skills/changelog-entry/SKILL.md`, old step 2 (\"Add, Fix, Remove or Change\") |\n| B (new) | Same file with step 2 replaced by the proposed line |\n\nA is the control because the change is a rewording of an existing line. A no-guidance arm would not tell us\nanything about the wording. The earlier baseline (7 of 10 runs skipped the rule) was run in another\nharness, so A is re-run here for a like-for-like comparison.\n\n## Models\n\nTwo models, chosen by me because none was named: `claude-sonnet-5-5` and `claude-haiku-5-5`. The same arms and\nthe same number of reps run on each. Change the choice before the run if your partner wants other models.\n\n## Scenarios (user message)\n\nThe user message gives a merged PR and asks for the changelog entry. Each PR is written to tempt an\ninternal-part entry: the title and the diff summary name a file, a function and a ticket, and the\nuser-visible effect is stated only in the PR body.\n\n- S1: \"PROJ-482: Fix null check in SaveHandler.onWrite\". Body: the cursor jumped to the start of the\n  document after autosave.\n- S2: \"PROJ-517: Refactor ExportService, add CsvWriter\". Body: users can export a report as a CSV file.\n- S3 (length pressure): a PR with three related user-visible effects of one change and a long body. This\n  tests the 100-character limit.\n\nThree scenarios x 4 reps = 12 reps per arm per model. The total is 48 reps. Each rep is one fresh\nsingle-shot call. Scenario order is shuffled.\n\n## Isolation\n\n- One call per rep, from a new empty directory outside every repository. No tools. No user settings,\n  instruction files or memory.\n- This file, the proposal and the baseline records are not reachable from any rep.\n- Probe first: one pilot rep per model asks what context it can see (instruction files, memory, tools, other\n  sessions, the user's name). Any answer I did not plan for means the setup leaks. Fix it before a scored rep.\n\n## Rules (registered before any reply is read)\n\nEach reply is graded on three separate checks.\n\n1. **Outcome-first (primary).** PASS if the entry's opening words say what the reader can do or no longer\n   suffers, and no file, function, class or ticket id appears as its subject. FAIL if it opens on an\n   internal part (\"Fix SaveHandler null check\", \"Change parser\") or on a ticket number.\n2. **Length.** Counted by script. FAIL if over 100 characters or more than one line.\n3. **Leading verb (secondary, reported, not part of the verdict).** Does the entry start with a verb? The\n   proposal lists dropping it as a risk, but its own examples start with verbs. I read the risk as\n   cosmetic, so it is reported and does not decide the verdict. If your partner reads it as a hard\n   requirement, say so now and it moves into the verdict.\n\nA rep is a PASS overall only if checks 1 and 2 both pass.\n\nVOID: the rep used a tool or read a file, the reply is not an entry (refusal, question back, more than\none candidate entry), or it quotes either wording of step 2. A VOID rep is rerun, and the count of voids is\nreported.\n\nIf a reply shows a reading these rules did not foresee, keep the registered verdict and report the counts\nunder both readings.\n\n## Blind scoring\n\n- A script strips each reply to the entry text and assigns a random id. The sheet shows only the id, the\n  scenario's PR and the entry. No arm, model, file name, order or count shows the origin.\n- Length is computed by script. Check 1 is graded by hand on every reply. Check 3 is flagged by script and\n  every flag is read by hand, since quoted examples and template echoes look like hits.\n- Unblind only after every sheet has a grade.\n\n## Decision\n\n- **Stop rule for the control.** If arm A passes check 1 in more than 6 of 12 reps on a model, that model\n  does not show the failure in this harness. Do not authorise the new wording on that model's evidence.\n  Say so.\n- **B works** on a model if, out of 12 reps, at least 11 pass overall (checks 1 and 2), and A has at least\n  5 fewer overall passes than B.\n- **Merge recommendation** requires B to work on both models. If it works on one, report that and do not\n  recommend merging.\n- **Variance.** Report whether the passing B entries share one shape. Many different shapes with the\n  same pass count mean the wording does not bind. Tighten the wording before merging.\n- Report the leading-verb count and the length failures per arm, even when B passes.\n\n## Spend\n\nCap: USD 1.00 of the 1.50 budget; the rest stays in reserve for voids and the probe. Run in batches of\n12 reps (one arm on one model). Before each batch, estimate its worst case from the longest prompt and a\nmax reply of 150 tokens. Stop when the running total plus the next batch's worst case would pass the cap.\nRecord each batch's actual cost in the results file.\n\n## Outputs\n\n- `specs/changelog-entry-microtest-results.md`: counts per arm, per model, per check, the void count, the\n  cost per batch and the verdict.\n- Raw replies and the blind sheets in `specs/baseline/changelog-entry-microtest/`, outside the skill\n  directory.\n\n## Open points for your partner\n\n- I could not find the baseline record of the 7 of 10 runs in `specs/`. I do not know which scenarios or\n  which check it used. If it exists, A should reuse its scenarios.\n- Confirm the two models and the leading-verb reading before the run.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}
