@@ -45,6 +45,7 @@ arm a reply came from. Unblind only after every sheet has its grade.
 
 Run every arm on each model that will run the guidance, with the same number of reps on each. A
 wording that binds one model can fail on another.
+Name at least two models in the design itself. If the user has not said which, choose two and say so; do not leave the choice open.
 
 ## Cap the spend
 
