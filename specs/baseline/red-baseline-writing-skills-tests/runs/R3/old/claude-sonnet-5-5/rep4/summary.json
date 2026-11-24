@@ -1,0 +1,196 @@
+{
+  "case": "R3",
+  "rep": 4,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep4",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "341ab2f99ee4885ab9fe8c1362b7daeaadc24e22",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/R3/old/claude-sonnet-5-5/rep4.jsonl",
+  "prompt_sha256": "4a0f71e5bcf4f4b579988d533a8a954ac993d0c16b81c550db1a0d038a7eb45c",
+  "claude_exit": 0,
+  "wall_seconds": 9,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep4/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 23,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 10,
+    "duration_ms": 8607,
+    "total_cost_usd": 0.0581881,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 1329,
+        "cacheReadInputTokens": 49941,
+        "cacheCreationInputTokens": 9972,
+        "webSearchRequests": 0,
+        "costUSD": 0.0581881,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 0,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 9972,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I renamed `csv-dialect-sniff` to `sniffing-csv-dialects`. A final grep for `dialect-sniff` finds no remaining matches. I haven't committed anything.\n\n- **Directory:** I ran `git mv skills/csv-dialect-sniff skills/sniffing-csv-dialects`.\n- **Frontmatter:** the `name:` in `skills/sniffing-csv-dialects/SKILL.md` now matches the directory.\n- **References:** I updated the old name in `AGENTS.md`, `skills/ingest-raw-files/SKILL.md` and `commands/ingest.md`.\n\nI didn't run a new baseline or pressure test for this. The change is a name swap with no wording changes, but the skill's description and \"Use when\u2026\" triggers are untouched. If the old name appeared in them, the grep would have caught it.",
+  "tool_calls": [
+    {
+      "id": "toolu_01AmKKemCWdKPCcLTtG9fy3W",
+      "name": "Glob",
+      "input": {
+        "pattern": "**/*csv-dialect-sniff*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01EECzfGEWjm7s9sry7fvQQ3",
+      "name": "Grep",
+      "input": {
+        "pattern": "csv-dialect-sniff",
+        "output_mode": "content"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01RwUWn1k9wTLs54XRMQPBPY",
+      "name": "Bash",
+      "input": {
+        "command": "git mv skills/csv-dialect-sniff skills/sniffing-csv-dialects"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_019M4HcQwv7C8NBjQcEHWGhQ",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/csv-dialect-sniff/SKILL.md",
+        "old_string": "name: csv-dialect-sniff",
+        "new_string": "name: sniffing-csv-dialects"
+      },
+      "is_error": true
+    },
+    {
+      "id": "toolu_01NehQKJFbNL48FBfSgWEGan",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/sniffing-csv-dialects/SKILL.md",
+        "old_string": "name: csv-dialect-sniff",
+        "new_string": "name: sniffing-csv-dialects"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01FSD9EhJHh7kxd82KViaFQS",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep4/repo/AGENTS.md",
+        "old_string": "`csv-dialect-sniff`",
+        "new_string": "`sniffing-csv-dialects`"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01VTAt8KWHPgE7mFHt2B6Wok",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/ingest-raw-files/SKILL.md",
+        "old_string": "Use csv-dialect-sniff for",
+        "new_string": "Use sniffing-csv-dialects for"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01EwDqKtGh6nuphzwmbzZXpc",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst107/rep4/repo/commands/ingest.md",
+        "old_string": "`csv-dialect-sniff`",
+        "new_string": "`sniffing-csv-dialects`"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CSyZg3mVWhb5Ed3NjHPQZ9",
+      "name": "Grep",
+      "input": {
+        "pattern": "dialect-sniff",
+        "output_mode": "content"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M AGENTS.md",
+    " M commands/ingest.md",
+    " M skills/ingest-raw-files/SKILL.md",
+    "RM skills/csv-dialect-sniff/SKILL.md -> skills/sniffing-csv-dialects/SKILL.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": [],
+  "r3_check": {
+    "verdict": "PASS",
+    "problems": []
+  }
+}

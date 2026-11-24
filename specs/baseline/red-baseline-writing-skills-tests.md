@@ -67,8 +67,9 @@ M1-OLD `ec641509e2719e88370bf1dec12156de4bbed1e7`, M1-NEW `fe00dc0407670040879f5
 and M1-NEW2 `f87b1e76cf1f88bfc0888ca739b559f556327e3e` (attempt 2); see the Task 3 section. For item 2
 (case T2) they are T2-OLD `02ebe3d067d29bf7a319336611d9387cc969780a`, T2-NEW `322ceabd8289581691c083dbd10e6f67076b39f0`
 (attempt 1), T2-NEW2 `261e039efcb9cb10811b47e839e3513e8841689f` (attempt 2) and T2-NEW3
-`bfe4da46806d5d88249278ade30fd980947f0cd5` (attempt 3); see the Task 4 section. The `pilot` arm of Task 2 is
-built from HEAD and is not scored. Task 6's arms are TR-OLD and TR-NEW (the trigger test).
+`bfe4da46806d5d88249278ade30fd980947f0cd5` (attempt 3); see the Task 4 section. For item 10 (case R3) there is
+R3-OLD `068115951015ed8204f6f25fe89c7c6dd14d4a60` only, because the control was null and no `new` arm exists; see the
+Task 5 section. The `pilot` arm of Task 2 is built from HEAD and is not scored. Task 6's arms are TR-OLD and TR-NEW (the trigger test).
 
 **The Glob limits, closed.** Plan 105's audit judged a Glob pattern by its literal part only. Its record named
 three open reaches. Plan 107 closes each one, with a test and a mutant:
@@ -268,10 +269,13 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 | Task 4 Step 6, attempt 2: T2 `new` at T2-NEW2, Opus | 5 | $0.9670 | $9.9880 |
 | Task 4 Step 6, attempt 3: T2 `new` at T2-NEW3, Sonnet | 5 | $0.3795 | $10.3674 |
 | Task 4 Step 6, attempt 3: T2 `new` at T2-NEW3, Opus | 5 | $1.0712 | $11.4386 |
+| Task 5 Step 1: R3 `old`, Sonnet | 5 | $0.3025 | $11.7411 |
+| Task 5 Step 1: R3 `old`, Opus | 5 | $0.7508 | $12.4919 |
 
 Running total after Task 2: $1.42 (about $1.4179, summed from unrounded costs). The projection below adds the
 scored runs. Running total after Task 3: $6.0647 (summed from unrounded costs).
 Running total after Task 4: $11.4386 (summed from unrounded costs).
+Running total after Task 5: $12.4919 (summed from unrounded costs).
 
 ## Task 2: probes, pilots and spend projection
 
@@ -694,6 +698,84 @@ Every bound is far below the $50 cap. The Task 3 run did not gate each model; Ta
    `old` sheets, and the mixed gradings of 20 sheets for attempts 1, 2 and 3. The `old` sheets were graded four times,
    each time freshly, with new ids.
 4. *Sonnet's attempt-3 result is below the bar by one rep* (3 of 5 against 4). The item ships with that gap.
+
+## Task 5: item 10, the rename procedure (case R3)
+
+Raw output stays outside the repository, in the scratch folder. Two things are committed. The scrubbed rep folders
+are in `runs/R3/old/<model>/`. Each holds `final.diff` and `summary.json` for each rep. The prompt folder
+`prompts-R3-old/` sits next to `runs/`. It holds `M1.txt`, `R3.txt`, `T2.txt` and `MANIFEST.txt`, and only `R3.txt`
+was sent. `check_scrub.py` printed PASS and `privacy_sweep.py` found 0 hits in the runs folder, in the prompt folder
+and in this record. Every committed `summary.json` parses as JSON, and its `stream` field names a scratch path that
+exists. R3 has no sheets and no grader, because `audit.r3_check` scores it from the parked final tree. The key is the
+output of `sheets.py unblind` run with an empty grades file. The Claude Code version was `2.1.323`.
+
+**The arm.**
+
+| Name | Commit | What it is |
+|---|---|---|
+| R3-OLD | `068115951015ed8204f6f25fe89c7c6dd14d4a60` | `skills/writing-skills/` at the head of Task 4. `SKILL.md` body 19,258 characters. `discovery.md` section 3 has no rename list. |
+
+There is no R3-NEW. The control was null (below), and the owner ruled to drop item 10's text.
+
+**RED (Step 1).** Five `old` reps on each model. No rep was void: `audit.py` shows `VOID: none` in all 10, a path
+audit with 0 hits, and a clean Bash audit (each Bash call was one in-repo `git mv`).
+
+| Model | `old` PASS (`r3_check`) | RED |
+|---|---|---|
+| `claude-sonnet-5-5` | 5 of 5 | not shown |
+| `claude-opus-5-5` | 5 of 5 | not shown |
+
+`sheets.py unblind` printed `R3: RED null, GREEN n/a`. RED needs the control to pass at most 2 of 5 on at least one
+model. It passed 5 of 5 on both, which is 3 or more of 5 on both models. So item 10 is null by Open for plan review
+item 3.
+
+**Verdict and ruling.** RED is null. Under Open for plan review item 3, the executor stopped before it wrote any
+text, and asked the owner. The owner ruled on 2026-11-24 to drop item 10's text: no rename list goes into
+`discovery.md`, no GREEN is run, no `new` arm exists, and R3 is recorded as null. Nothing in `skills/` changed in
+Task 5. The `SKILL.md` body stays at 19,258 characters.
+
+**Per-rep results.** All 10 `r3_check` results are PASS. No rep read `discovery.md` (0 of 10, Sonnet 0 of 5 and
+Opus 0 of 5). The flag column is descriptive: it says whether the final message names the near collision
+`sniffing-csv-headers` (Sonnet 0 of 5, Opus 2 of 5).
+
+| Model | Rep | `r3_check` | Read `discovery.md` | Flagged `sniffing-csv-headers` | Cost (USD) | Running total (USD) |
+|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | PASS | no | no | 0.0583 | 11.4970 |
+| claude-sonnet-5-5 | 2 | PASS | no | no | 0.0598 | 11.5567 |
+| claude-sonnet-5-5 | 3 | PASS | no | no | 0.0578 | 11.6146 |
+| claude-sonnet-5-5 | 4 | PASS | no | no | 0.0582 | 11.6727 |
+| claude-sonnet-5-5 | 5 | PASS | no | no | 0.0684 | 11.7411 |
+| claude-opus-5-5 | 1 | PASS | no | yes | 0.1597 | 11.9008 |
+| claude-opus-5-5 | 2 | PASS | no | yes | 0.1667 | 12.0675 |
+| claude-opus-5-5 | 3 | PASS | no | no | 0.1315 | 12.1990 |
+| claude-opus-5-5 | 4 | PASS | no | no | 0.1472 | 12.3462 |
+| claude-opus-5-5 | 5 | PASS | no | no | 0.1457 | 12.4919 |
+
+**Spend by batch.** The running total is $12.4919 at the end of Task 5, below the $50 cap. `plan107/run-r3.sh` ran a
+pair check before the Sonnet batch and again before the Opus batch, with the true running total at that moment (the
+script summed the costs of the batch before it). The bound is that total plus 5 x $1.50. No GREEN batch ran, so no
+GREEN pair check ran.
+
+| Batch | Reps | Cost | Running total | Pair check bound |
+|---|---|---|---|---|
+| R3 `old`, Sonnet | 5 | $0.3025 | $11.7411 | $11.4386 + $7.50 = $18.9386 |
+| R3 `old`, Opus | 5 | $0.7508 | $12.4919 | $11.7411 + $7.50 = $19.2411 |
+
+Both bounds are far below the $50 cap.
+
+**Limits.**
+
+1. *The fixture is easier than the plan's.* The R3 fixture lost its `.claude/settings.json` holder after the Task 2
+   pilot, because both first pilot reps had their `Edit` of that file refused (Deviation 11). With that file gone, the
+   old name is held in fewer places, so a rename is easier to finish. The pilot passed one `old` rep and predicted
+   this null.
+2. *The reps did not use the old text's rename guidance.* No rep read `discovery.md`. The rename passed on the
+   models' own search for the old name, not on anything the skill text said. So the null does not tell us that the
+   old text's guidance works. It tells us that the reps did not need it here.
+3. *A null on this fixture is not proof that renames never fail.* It says that this fixture does not show a failure
+   of the old text. Item 10 stays open in the spec. The plan-completion gate should list it as a known gap.
+4. *The `sniffing-csv-headers` flag is descriptive only.* It does not score a rep. The count (Sonnet 0 of 5, Opus 2
+   of 5) comes from `audit.py`, which tests whether the final message names that skill.
 
 ## Deviations from the plan's Task 1 text
 
