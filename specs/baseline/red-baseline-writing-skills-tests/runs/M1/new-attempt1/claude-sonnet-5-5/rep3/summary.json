@@ -7,7 +7,7 @@
   "rep_dir": "/private/tmp/wst107/rep3",
   "skill_root": "/private/tmp/wst107-skill",
   "base": "f39f2cd46bf9d36978a3f32961b9765aa3aaa299",
-  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-sonnet-5-5/rep3.jsonl",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases-attempt1/M1/new/claude-sonnet-5-5/rep3.jsonl",
   "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
   "claude_exit": 0,
   "wall_seconds": 37,

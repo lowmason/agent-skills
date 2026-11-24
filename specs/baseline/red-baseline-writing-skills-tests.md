@@ -332,10 +332,14 @@ rep can cost more, and the per-pair check in Spend stop still applies.
 
 ## Task 3: item 1, the micro-test method (case M1)
 
-Raw output, sheets, keys and grades stay outside the repository, in the scratch folder. Only the scrubbed rep
-folders are committed, in `runs/M1/old/<model>/`, `runs/M1/new-attempt1/<model>/` and `runs/M1/new/<model>/`
-(attempt 2). Each holds `final.diff` and `summary.json` for each rep. `check_scrub.py` printed PASS and
-`privacy_sweep.py` found 0 hits in 60 files of the runs folder. The Claude Code version was `2.1.323`.
+Raw output, sheets, keys and grades stay outside the repository, in the scratch folder. Two things are committed.
+The scrubbed rep folders are in `runs/M1/old/<model>/`, `runs/M1/new-attempt1/<model>/` and `runs/M1/new/<model>/`
+(attempt 2). Each holds `final.diff` and `summary.json` for each rep. The prompt folders sit next to `runs/`:
+`prompts-M1-old/`, `prompts-M1-new-attempt1/` and `prompts-M1-new/` (attempt 2, built at M1-NEW2). Each holds
+`M1.txt`, `R3.txt`, `T2.txt` and `MANIFEST.txt`, and only `M1.txt` was sent. `check_scrub.py` printed PASS and
+`privacy_sweep.py` found 0 hits in the runs folder and in the three prompt folders. The `stream` field of an
+attempt-1 `summary.json` names the parked scratch path `cases-attempt1/`, not `cases/`, because attempt 2's streams
+now sit under `cases/`. The Claude Code version was `2.1.323`.
 
 **The arms.**
 
@@ -442,8 +446,12 @@ is summed from unrounded costs.
 | claude-opus-5-5 | 4 | PASS | yes | 0.2191 | 5.8068 | (a) empty dir outside repos, settings/instructions/memory off; (b) rules committed first; (c) Opus and Sonnet named. |
 | claude-opus-5-5 | 5 | PASS | yes | 0.2579 | 6.0647 | (a) empty dir outside repos, no settings/instructions/memory; (b) rules committed first; (c) Opus and Sonnet named. |
 
-**Spend by batch.** The running total is $6.0647 at the end of Task 3, below the $50 cap. The pair check passed
-before each pair (the running total plus 5 x $1.50 was at most $11.91).
+**Spend by batch.** The running total is $6.0647 at the end of Task 3, below the $50 cap. Each attempt's run
+script looped over both models with no gate between them. So one pair check ran for each attempt, before its Sonnet
+batch, with the true running total: $1.4179 + 5 x $1.50 = $8.92 for `old`, $2.7473 + 5 x $1.50 = $10.25 for attempt 1
+and $4.4109 + 5 x $1.50 = $11.91 for attempt 2. No check ran before an Opus batch. Its bound was computed afterwards,
+from the running total before that batch: $9.31 for `old` ($1.8099), $10.76 for attempt 1 ($3.2623) and $12.42 for
+attempt 2 ($4.9176). Every bound is far below the $50 cap.
 
 | Batch | Reps | Cost | Running total |
 |---|---|---|---|
