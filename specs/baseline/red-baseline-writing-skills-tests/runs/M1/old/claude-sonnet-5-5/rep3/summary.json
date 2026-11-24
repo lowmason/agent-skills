@@ -1,0 +1,133 @@
+{
+  "case": "M1",
+  "rep": 3,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "921fe41dd89c79bc141ab3220e1657c7d341fb12",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 22,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 20,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 22243,
+    "total_cost_usd": 0.0709927,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 2517,
+        "cacheReadInputTokens": 31067,
+        "cacheCreationInputTokens": 10676,
+        "webSearchRequests": 0,
+        "costUSD": 0.0709927,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 263,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 10676,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. Nothing has been run.\n\n**Design**\n- **Arms:** There are three. A is a no-guidance control with step 2 removed. B is the old line. C is the proposed line. Only line 20 of SKILL.md differs between B and C, and each call gets the full skill as its system prompt.\n- **Samples:** Each sample is a fresh single-shot call, with 10 reps per arm per task, to match the baseline. There are 4 tasks, which makes 120 calls. At the 5-rep minimum that drops to 60.\n- **Tasks:** The 4 merged-PR descriptions each tempt the failure. They include a bug fix in `handleSave`, a parser change, a removal that names only a flag, and one with a long user effect that pushes past 100 characters. That last one tests the risk the proposal names.\n- **Scoring:** The checks are outcome-first, no internal name, length of 100 characters or fewer, and a single change per line. I also record whether the leading verb was dropped. A script scores the runs, and I read every flagged output by hand.\n- **Decision rule:** I set it before running. If arm A doesn't show the failure, we stop. Merge C only if it clearly beats B and its length failures aren't worse. If length gets worse, rewrite the line and rerun instead of adding a \"keep it short\" clause. I also check variance across the 10 runs.\n\n**Things to check**\n- The baseline's 7 of 10 skips are not recorded anywhere in `specs/`, so I can't confirm what that run's prompt and tasks were. The design reuses it as arm B only if they match. If they don't, we rerun B, which is already counted in the 120 calls.\n- I chose the 4 tasks myself. Swap them if you have PRs that better match your real failures.\n- The decision threshold for \"clearly above\" is left to you, because I don't know your tolerance.\n\nShould I draft the 4 task prompts and the scoring script next?",
+  "tool_calls": [
+    {
+      "id": "toolu_01TyXVrKhcZu4hdwkH5n5PSh",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NhU91DHvQJRBWMns3RwHFg",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01MFMUzDpBP87BY4K3BdNEvb",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*",
+        "path": "/private/tmp/wst107/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01GaK5pieyYwV5qj2s4Xh9a8",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test: step 2 of `changelog-entry`\n\nStatus: design only. Nothing has been run.\n\n## Question\n\nDoes the proposed step 2 produce entries that lead with the reader's outcome, without breaking step 4 (one line, 100 characters or fewer)?\n\n## What the baseline gives us\n\nThe old line already has a baseline: 7 of 10 runs skipped the rule. This design reuses that run as the old-line arm only if its system prompt and tasks match what is below. If they differ, or the baseline record is not in the repo, rerun the old line with the same tasks.\n\nThe failure type is output shape: entries stop at a verb and name an internal part. The right form is therefore a recipe, which the proposal already is. Don't add a prohibition (\"never write Fix handler\") to the arm under test.\n\n## Arms\n\n| Arm | System prompt |\n|---|---|\n| A. Control | The skill with no step 2 at all (steps renumbered). It shows whether the failure exists without guidance. |\n| B. Old | The skill as it is today. |\n| C. New | The skill with only line 20 replaced by the proposed line. |\n\nEverything else in the skill stays byte-identical across arms. The system prompt is the full SKILL.md, not the line on its own.\n\n## Samples\n\n- One fresh-context, single-shot call per sample, with no shared history.\n- 10 reps per arm per task, to match the baseline size. 5 is the minimum.\n- Tasks: 4 merged-PR descriptions, each given as a title plus a short diff summary. Each one tempts the failure:\n  1. A bug fix in a function named `handleSave` whose user effect is that the cursor jumps.\n  2. A parser change that lets users import files they could not before.\n  3. A removal of a deprecated flag, where the PR text names only the flag.\n  4. A PR with a long, multi-clause user effect, to push the length past 100 characters.\n- That is 4 tasks x 3 arms x 10 reps = 120 calls. If cost is a concern, cut to 5 reps (60 calls).\n- The user message gives the PR and asks for the changelog line. It does not mention the length limit or the verbs.\n\n## Scoring\n\nSet these before running. Score by script, then read every flagged output by hand, because quoted examples and echoes of the skill's text create false hits.\n\n| Check | Pass condition |\n|---|---|\n| Outcome first | The line starts with what the reader can now do or no longer suffers. Judged by hand against the task's stated user effect. |\n| No internal name | The line has no function, file or ticket name, unless the task's user effect needs it. |\n| Length | 100 characters or fewer, one line. Scripted. |\n| Single change | One change on the line. Hand-read. |\n| Leading verb dropped | The first word is not a verb (the proposal's named risk). Record it, and note whether the line is still readable. |\n\nPrimary metric: share of runs that pass outcome-first, no-internal-name and length together.\n\n## Decision rule\n\n- If arm A shows the failure, proceed. If it does not, stop: the guidance is not needed.\n- Merge arm C if its primary pass rate is clearly above arm B's, and its length failures are no more frequent than B's.\n- If C improves outcome-first but length failures rise, don't merge. Change the wording and rerun this test, with a recipe that states the length as part of the shape. Don't add a \"but keep it short\" clause to the line.\n- Check variance. If the 10 runs of one task in arm C give many different shapes, the wording is not binding, even if the pass rate looks fine.\n\n## Limits\n\nThis tests wording on single lines. It does not replace running the real flow in a repo. The skill is a technique, so the final check is one application to a PR that was not used in the tasks above.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

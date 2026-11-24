@@ -1,0 +1,168 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..525f8e1
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,162 @@
++# Micro-test design: step 2 of `changelog-entry`
++
++Status: design only. No rep has run yet.
++
++## What this test decides
++
++Should the proposed step 2 (`specs/changelog-entry-wording.md`) replace the current one?
++
++- Current: "2. Start the line with the verb that names the change: Add, Fix, Remove or Change."
++- Proposed: "2. Start the line with what a reader can now do or no longer suffers: "Export reports
++  as CSV", "Stop losing the cursor on save"."
++
++The test has two jobs:
++
++1. Check that the proposed line removes the failure: an entry that opens with a verb and then names
++   an internal part ("Fix handler", "Change parser").
++2. Check the risk in the proposal: the agent drops the verb and writes a line longer than 100
++   characters.
++
++## Note on the baseline
++
++The baseline on the current line found the rule skipped in 7 of 10 runs. The proposed line is a
++different rule, so "skipped the rule" doesn't carry over as a measure. This test scores every arm
++against the same registered rules (below) and runs the current line again as an arm. That way
++all the numbers we compare come from one setup and one scoring method. We keep the 7/10 as
++background and don't compare against it directly.
++
++## Arms
++
++Each arm's system prompt is the full `SKILL.md`, with only step 2 changed. The rest of the file
++stays byte-identical.
++
++| Arm | Step 2 in the system prompt |
++|---|---|
++| A: control | Step 2 removed. Steps renumbered 1–3. |
++| B: current | The current line, verbatim. |
++| C: proposed | The proposed line, verbatim. |
++
++Stop rule for the control: if arm A shows the failure in fewer than 3 of 10 reps (an entry that
++leads with or names an internal part), there is nothing for step 2 to fix. We stop and report that
++before we judge arm C.
++
++## Tasks (user messages)
++
++There are five tasks. Each one is a merged PR's title and description, followed by "Write the
++CHANGELOG.md entry for this pull request." Each task runs twice per arm, which gives 10 reps per arm.
++
++The tasks have to tempt the failure. The PR text is phrased around internal parts, and the user
++effect is stated only in the body. No task may involve CSV export or cursor position, because those
++would let a rep copy the examples in the proposed line and still pass.
++
++| # | Tempts | PR text in brief |
++|---|---|---|
++| T1 | internal name | "Fix null check in `InvoiceRenderer`". Body: invoices with no line items no longer show a blank page. |
++| T2 | internal name | "Change `RetryPolicy` backoff to exponential". Body: uploads on flaky networks now finish instead of failing after 3 tries. |
++| T3 | long outcome / >100 chars | "Rework `SyncQueue` ordering". Body: three related symptoms (duplicate comments, edits reverting, out-of-order replies), all fixed together. |
++| T4 | dropping the verb on a removal | "Remove legacy `v1` auth endpoint". Body: users of old mobile builds must update to sign in. |
++| T5 | step 1 still holds | "Refactor `ReportBuilder` into smaller modules". Body: no behavior change. The correct reply is no entry. |
++
++T5 checks that the new step 2 doesn't override step 1. The full PR texts live in the kit (below),
++not in this file.
++
++## Registered rules
++
++Commit this section before any reply is read. If a reply shows a reading these rules don't
++foresee, its registered verdict stands, and we report the counts under both readings.
++
++Each reply gets one verdict.
++
++**PASS** (T1–T4). All of these hold:
++- P1. Exactly one entry line, describing one change.
++- P2. 100 characters or fewer, counting the leading `- ` bullet if one is present.
++- P3. The first clause states something a reader can now do, or no longer suffers, and it is
++  observable without reading the code. "Fix blank invoice page when an invoice has no items" passes
++  P3 because the clause after "Fix" is the reader's outcome.
++- P4. No class, function, file, module, endpoint path or ticket number anywhere in the line.
++
++**PASS** (T5). No entry, or an explicit statement that no entry is needed.
++
++**FAIL.** Any P-rule is broken, or T5 produces an entry. Each FAIL is tagged with every rule it
++breaks: P1, P2, P3, P4 or T5. That way the proposal's risk (P2) is counted on its own.
++
++**FAIL, tagged ECHO.** The line copies or near-copies an example from the proposed step 2 instead
++of describing the PR.
++
++**VOID.** Any of these:
++- The reply is a refusal or empty.
++- The rep saw context outside the plan, such as a file from `specs/`, an instruction file, memory
++  or tools.
++- The isolation probe for that batch failed.
++
++VOID reps are re-run with fresh reps, up to 3 per arm. More voids than that stop the run.
++
++## Scoring
++
++1. **Mechanical pass (scripted).** Count lines and characters (P1, P2). Flag identifier-shaped
++   tokens such as CamelCase, `snake_case`, backticks, file extensions, `/` paths and `#123` (P4).
++   Record the first word.
++2. **Judgment pass (blind, by hand).** Read every reply, P3 included, and read every mechanical flag
++   too: a quoted counter-example or an echoed PR title can look like a hit. Grading sheets carry
++   only a random ID, the task text and the reply. Nothing in a sheet's name, path, order or count
++   may show its arm. Sheets are shuffled across arms. Unblind only after every sheet has a grade.
++
++## Decision rule (registered with the rules)
++
++Merge the proposed line only if all of these hold:
++
++- Arm C passes at least 8 of 10.
++- Arm C passes more reps than arm B, and its P3 and P4 failures don't overlap B's range across
++  tasks.
++- Arm C has at most 1 of 10 tagged P2. This is the proposal's own risk.
++- Arm C has no T5 failures and no ECHO.
++
++Also look at variance. If arm C's passing lines take different shapes across reps (some lead with a
++verb, some with a noun phrase, some with a full sentence), the wording isn't binding yet, even if
++the count clears 8. In that case, tighten the form before adding words. Don't add a nuance clause
++such as "unless…".
++
++If the result is a P2 failure on T3 and nothing else, the fix belongs in step 4 (length). It doesn't
++mean the new step 2 is wrong. We report it that way and don't patch step 2.
++
++## Isolation
++
++- Run each rep as a single-shot raw API call with no tools, or as a single-shot subagent if API
++  access isn't available. Start every rep in a fresh empty directory outside any repository. User
++  settings, instruction files and memory are off.
++- Before the first scored rep, run one probe rep that asks what context it can see: instruction
++  files, memory, tools, other sessions and the user's name. Fix any unplanned answer before
++  scoring.
++- No rep can reach `specs/`, the kit, this file or earlier records.
++
++## Models
++
++Every arm runs on each model that will use this skill, with the same number of reps on each model.
++**To fill in:** which models. If we don't hear otherwise, we use the model the baseline ran on.
++
++## Spend
++
++Each rep is a short call: the system prompt is under 1k tokens and the reply is one line. The
++cost is 3 arms × 10 reps × N models, plus the probe and up to 9 void re-runs.
++**To fill in:** spend cap. Stop when the running total plus the next batch's worst case would pass
++the cap. Record each batch's cost.
++
++## Where things go
++
++Everything goes outside `skills/changelog-entry/`, because anything inside it ships with the skill.
++
++- Kit: `specs/microtest/changelog-entry-step2/kit/` holds the three system prompts, the five PR
++  texts, the runner flags, the probe and the scoring script.
++- Raw replies and blind sheets: `specs/microtest/changelog-entry-step2/runs/`.
++- Results: `specs/microtest/changelog-entry-step2/results.md`. It gives counts per arm, per task and
++  per failure tag, plus the cost.
++
++## Order of work
++
++1. Partner fills in models and the spend cap.
++2. Build the kit and commit it together with this file's registered rules and decision rule.
++3. Run the probe and fix any leaks.
++4. Run arm A first and apply the control stop rule.
++5. Run arms B and C.
++6. Score: mechanical pass, then blind judgment, then unblind.
++7. Write up the results. The partner decides on the merge.

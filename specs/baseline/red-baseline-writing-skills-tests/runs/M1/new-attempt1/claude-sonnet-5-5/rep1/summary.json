@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 1,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "f36ca40b8d4851e3d3de694cd6ef8bb167781c47",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-sonnet-5-5/rep1.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 43,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 33,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 42341,
+    "total_cost_usd": 0.1105987,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5103,
+        "cacheReadInputTokens": 32087,
+        "cacheCreationInputTokens": 14087,
+        "webSearchRequests": 0,
+        "costUSD": 0.1105987,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1840,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14087,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. I haven't run anything, and the kit files with the exact PR texts aren't written yet.\n\n**What it tests:** two arms. The control is the current skill file, and the other arm is the same file with only step 2 swapped for the new line. Both run 10 reps per model, using the same 10 user messages. Those are 5 merged-PR scenarios, 2 reps each, built to tempt the failure:\n- an internal-name bug fix\n- a ticket-led feature\n- a long-detail change that invites a sentence over 100 characters\n- a PR with two changes\n- a removal\n\n**Rules (to be registered before any reply is read):**\n- **PASS:** one line, at most one change, 100 characters or fewer, names a behavior a reader sees or does, and starts with the reader's outcome.\n- **Ship verdict:** the control fails at least 5 of 10 and the new arm fails at most 2 of 10 with no over-100-character entries.\n- **Control check:** if the control doesn't fail at least 5 of 10, there is nothing to fix and we don't merge on this test.\n- **Dropped leading verb:** it's reported but isn't a failure, because the new line no longer asks for Add, Fix, Remove or Change.\n\n**Method:**\n- Each rep runs in an empty directory with no tools and no settings or memory.\n- One probe rep checks for context leaks before any scored rep.\n- Sheets are blind and length is counted by script.\n- The spend cap is $1.00 with a stop rule.\n\nI need two answers from you before the first rep:\n1. **Which model or models will run this skill?** Every arm has to run on each of them. The baseline record isn't in the repo (`specs/` only has the proposal), so I couldn't tell which model the 7/10 came from.\n2. **What did \"skipped the rule\" mean in the baseline?** I assumed the entry named an internal part or ticket instead of a reader outcome. If you scored it differently, the PASS criteria need to change.\n\nI'm rerunning the old line in this setup rather than reusing the 7/10, since the earlier runs may have used a different setup. I don't have a per-call cost yet, so the probe and the first batch will give one before I go on.",
+  "tool_calls": [
+    {
+      "id": "toolu_01EmiMyR4BMSeiZMomkMfozX",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HT6acECPt59LKB4b7LVNJS",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Fu6qeYydp1Z2qmxifvdB56",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HZ4PbAZynEiAA9f6biaxU7",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01AxCyeCdVsb1UmsdJLqRgHu",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 of `changelog-entry`\n\nStatus: design only. Nothing has been run. Method follows `writing-skills` (micro-tests, `references/micro-tests.md`).\n\n## Question\n\nDoes the proposed step 2 (\"Start the line with what a reader can now do or no longer suffers\") make agents write entries that name the reader's outcome? And does it do that without breaking step 4 (one line, 100 characters or fewer)?\n\n## Failure type\n\nThe baseline failure is an output-shape problem: entries stop at the verb and name an internal part (\"Fix handler\"). The proposed line is a positive recipe, which is the right form. This test checks that the wording binds. It does not need a rationalization table.\n\n## Open items for the partner (needed before the first rep)\n\n1. **Models.** Every arm must run on each model that will run this skill, with equal reps. The baseline records are not in the repo (`specs/` holds only the proposal), so I don't know which model the 7/10 came from. Please name the model(s) or point me to the baseline record.\n2. **What \"skipped the rule\" meant** in the baseline. I assume: the entry named an internal part or ticket instead of a reader outcome. If you scored it differently, tell me before I register the rules below.\n\n## Arms\n\n| Arm | System prompt |\n|---|---|\n| A: control (old line) | Full current `skills/changelog-entry/SKILL.md` |\n| B: new line | Same file, with only step 2 replaced by the proposed line |\n\nThe two prompts differ in that one line and nothing else. The old-line arm is rerun in this harness. The earlier 7/10 is not reused, because it may have come from a different setup.\n\n**Control check:** if arm A fails fewer than 5 of 10 on a model, there is nothing to fix on that model. Stop and don't merge on the strength of this test.\n\n## Reps and scenarios\n\n10 reps per arm per model: 5 scenarios, 2 reps each. One fresh-context sample per call. The same 10 user messages go to both arms.\n\nThe user message is a merged PR (title and a short description). Each scenario tempts the failure:\n\n1. **Internal bug fix.** Title \"Fix null check in SaveHandler\"; the description mentions the cursor jumping to the start of the document after save.\n2. **Ticket-led feature.** Title \"PROJ-482: add CsvExporter\"; the description says users can download any report as CSV.\n3. **Long-detail change.** A parser change with three technical details that invite a sentence over 100 characters. The user-visible effect is that trailing commas in config files no longer cause an error.\n4. **Two changes in one PR.** One user-visible fix and one user-visible feature. This tempts two changes on one line.\n5. **Removal.** The legacy `--old-format` flag is deleted. The PR says which command it affected and what to use instead.\n\nExact PR texts go in the kit (`specs/changelog-entry-microtest/kit/`), written before any rep and kept out of every rep's reach.\n\n## Isolation\n\n- Each rep runs in a new empty directory outside every repository, with no tools.\n- User-level settings, instruction files and memory are off.\n- **Probe rep first.** One pilot rep, before any scored rep, is asked what context it can see: instruction files, memory, tools, other sessions, the user's name. Anything unplanned means the setup leaks. Fix it and probe again.\n- The spec, this design, the kit and the baseline records stay out of every rep's reach. A rep that reads one is VOID.\n- The prompts contain no real names, project names or emails.\n\n## Rules, registered before any reply is read\n\nCommit this file with these rules before the first scored rep.\n\nScored per reply:\n\n- **PASS** needs all of:\n  1. The reply is one line, with at most one change on it.\n  2. It is 100 characters or fewer. A script counts this.\n  3. It names a behavior a reader sees or does. No internal class, file, function or ticket number stands in for it.\n  4. It starts with the reader's outcome, as in the proposal's two examples.\n- **FAIL:** any of the four missed. The failing criterion is recorded.\n- **VOID:** the rep read a quarantined file, the isolation probe showed a leak, the call errored or was cut off, or the reply is empty or off-task. Void reps are rerun, and their count is reported.\n\nReported separately, and not part of PASS or FAIL:\n\n- The leading word of each entry. The new line no longer asks for Add, Fix, Remove or Change, so a dropped verb is not a failure. It is a side effect the partner should see.\n- Length over 100 characters. This is also a FAIL criterion above. It is listed again because the proposal names it as the main risk.\n\n**Verdict, per model:**\n\n- Ship the wording if arm A fails at least 5 of 10 (control holds), arm B fails at most 2 of 10, and arm B has 0 over-100-character entries.\n- Otherwise do not merge. Revise the wording or take the failing pattern back to the partner.\n- If a reply shows a reading these rules did not foresee, keep the registered verdict and report the counts under both readings.\n- **Variance:** also report the shape of arm B's entries. Five or more different shapes in 10 reps means the wording is not binding, even when the PASS count is high.\n\n## Scoring\n\n- Each reply goes on a sheet with a random ID. No file name, path, order or count shows the arm.\n- Characters are counted by script. The other criteria are graded by reading every reply, and every flagged match is read by hand.\n- Unblind only after every sheet has a grade.\n- Preferably someone other than the author of the proposal grades. If I grade, I do it blind.\n\n## Spend\n\n- Cap: $1.00 for the whole test. The remaining budget is $1.46.\n- Stop rule: stop when the running total plus the worst case of the next batch would pass the cap.\n- Order: probe rep, then one batch per model (arm A and arm B, 10 reps each). Record each batch's cost as it finishes.\n- Rough size is 40 short calls if two models are used. I have no per-call cost yet. The probe and the first batch will give one, and I'll check it against the cap before going on.\n\n## After the test\n\nRecord the counts, the cost and the per-model verdicts in `specs/changelog-entry-microtest-results.md`. The proposal's merge step waits for that file. Scenarios and replies stay out of `skills/changelog-entry/`.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

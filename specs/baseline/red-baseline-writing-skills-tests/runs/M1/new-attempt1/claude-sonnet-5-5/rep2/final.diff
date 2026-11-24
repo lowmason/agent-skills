@@ -1,0 +1,105 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..259b884
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,99 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run. Commit this file, including the rules below, before any rep is read.
++
++## Question
++
++Does the proposed step 2 make an agent write entries that start with a reader outcome, instead of a verb plus an internal part ("Fix handler")? Does it do that without new failures (no leading verb, over 100 characters)?
++
++## Arms
++
++The system prompt is the full `skills/changelog-entry/SKILL.md`. Only line 2 of The Technique differs between arms B and C.
++
++| Arm | System prompt | Purpose |
++|-----|---------------|---------|
++| A | No skill. Only "You write changelog entries." | No-guidance control. If A rarely fails, stop: there is nothing to fix. |
++| B | SKILL.md with the old step 2 | Current wording. Re-run on the same scenarios as C so the two compare directly. |
++| C | SKILL.md with the proposed step 2 | Wording under test. |
++
++The existing 7-of-10 baseline is not in the repo (`specs/` holds only the proposal). I can't tell which scenarios or pass rule it used. B is therefore re-run here, not reused.
++
++## Failure type
++
++The baseline failure is an output-shape problem: the entry has the wrong form. It is not a case of an agent knowing a rule and breaking it under pressure. The proposed line is already a positive recipe, which is the right form. So the test is a wording comparison (B vs C) and needs no pressure framing.
++
++## Scenarios
++
++The user message gives a merged-PR title, description and diff summary, and asks for the CHANGELOG line. Every rep gets one scenario. Run the same four in every arm.
++
++1. Internal-sounding fix. The diff touches `cursorHandler.ts`, and the description says "fix null check in handler". The user-visible effect is that the cursor was lost on save. This is the "Fix handler" trap.
++2. Parser change. The diff touches `csvParser.ts`, and the user-visible effect is that exports now work as CSV. This is the "Change parser" trap.
++3. Long outcome. A change with many user-visible details, which tempts a sentence over 100 characters.
++4. Ticket-heavy. The PR title is "PROJ-4412", and the description is internal. The entry has to name the behavior.
++
++Do not include a refactor-only scenario. Step 1 is not under test.
++
++## Reps and models
++
++- 8 reps per arm per scenario pair: each scenario twice, so 8 reps per arm per model.
++- Run every arm on every model that will run the skill. Proposed: claude-opus-5-5, claude-sonnet-5-5, claude-haiku-5-5. **Partner to confirm the list.**
++- One fresh-context sample per call. Arm and scenario order is shuffled.
++- Total: 3 arms x 3 models x 8 = 72 reps.
++
++## Isolation
++
++- Each rep runs in a new empty directory outside every repository, with no tools.
++- User-level settings, instruction files and memory are off.
++- Scenario files, this spec, the proposal and earlier records are out of reach. A rep that reads one is VOID.
++- Pilot first: one probe rep asks what context it can see (instruction files, memory, tools, other sessions, the user's name). Any unplanned answer means the setup leaks. Fix it before any scored rep.
++
++## Registered rules
++
++Mechanical checks, run by script, then every flagged entry read by hand:
++
++- **LEN**: the entry is a single line of 100 characters or fewer.
++- **NOVERB**: the first word is not a verb. A verb here means imperative or base form, as in "Export" or "Stop", or a verb from the old list (Add, Fix, Remove, Change). This is the risk the proposal names.
++
++Judged by a blind reader:
++
++- **OUTCOME**: the entry says what the reader can now do or no longer suffers. A bare verb plus an internal part ("Fix handler", "Change parser") fails. A ticket number or file name in place of a behavior fails.
++
++Rep verdicts:
++
++- **PASS**: OUTCOME, LEN, and a single entry only.
++- **FAIL**: any of OUTCOME, LEN or single-entry fails.
++- **VOID**: the reply has no entry, a refusal, a rep that read quarantined files, or an isolation leak.
++- NOVERB is reported on its own, not folded into PASS. The proposed wording does not require a leading verb, so a non-verb start is a risk to watch, not a failure.
++
++If a reply shows a failure these rules did not foresee, keep the registered verdict. Report the counts under both readings.
++
++## Blind scoring
++
++- Replies go on sheets with random IDs. The sheet shows the scenario and the entry only.
++- No file name, path, order or count shows the arm or the model.
++- Unblind only after every sheet has a grade.
++
++## Decision rule
++
++Per model, with 8 reps per arm:
++
++- **C works** if C has at most 1 FAIL out of 8 and B has at least 4 FAIL out of 8 (B's earlier baseline failure rate was 7 of 10).
++- **C works with a risk** if the above holds but NOVERB is higher in C than in B. Show the partner the entries.
++- **C does not work** if C has 2 or more FAILs out of 8, or if C fails no less often than B.
++- Different outcomes on different models are reported per model. They are not averaged.
++- Variance is a metric. Report how many distinct shapes the 8 C entries take. Many shapes means the wording does not bind, so tighten the form before adding words.
++
++If A (no skill) passes at 6 of 8 or more on a model, the failure is not there to fix. Stop and tell the partner.
++
++## Spend
++
++- Cap: $1.00 of the $1.50 remaining, which leaves room for a rerun of one arm.
++- Stop rule: stop when the running total plus the next batch's worst case would pass the cap.
++- Pilot cost is measured on the probe rep and 3 scored reps, then extrapolated to the full 72. If the extrapolation passes the cap, drop haiku or cut to 6 reps per arm, and tell the partner before running.
++- Record each batch's cost in the results file.
++
++## Open for the partner
++
++1. Which models run this skill?
++2. What did the 7-of-10 baseline count as "skipped"? If it counted something other than OUTCOME, LEN and single-entry, the registered rules above should change before any rep is read.
++3. Is a non-verb start acceptable? The proposal calls it a risk. This design reports it but does not fail on it.

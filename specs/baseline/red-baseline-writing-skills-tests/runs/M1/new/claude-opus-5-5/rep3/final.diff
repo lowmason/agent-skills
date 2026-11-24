@@ -1,0 +1,135 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..0e8f2b7
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,129 @@
++# Micro-test design: step 2 of `changelog-entry`
++
++Status: design only. Nothing has been run. The PASS, FAIL and VOID rules below must be committed
++before anyone reads a reply.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make agents put the reader's outcome
++at the front of the entry, without pushing the line over 100 characters?
++
++## Arms
++
++Each arm gets the same system prompt: the full text of `skills/changelog-entry/SKILL.md`. Only step 2
++differs.
++
++| Arm | Step 2 in the system prompt |
++|---|---|
++| C (control) | Step 2 removed. Steps 3 and 4 become 2 and 3. Nothing else changes. |
++| O (old) | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| N (new) | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm O re-runs the old line under this setup. The earlier baseline (7 of 10 runs failed) is not in
++`specs/`, so we can't confirm it used the same tasks, isolation or rules. Treat it as the reason for
++the test, not as a data point to compare against.
++
++If arm C does not show the failure (2 or fewer FAILs out of 10 on a model), there is nothing for the
++new line to fix on that model. Report that and stop. Do not judge arm N on that model.
++
++## Tasks (user message)
++
++Each user message is one merged pull request, written the way PR text usually reads: internal
++names, a ticket number and a terse title. That pulls the agent toward "Fix handler" entries. The
++user message always ends with: `Write the CHANGELOG.md entry for this pull request. Reply with the
++entry line only.`
++
++- **T1, a narrow fix:**
++  `PR #482 "Fix null check in ExportHandler". Closes JIRA-1193. ExportHandler.build() threw when a
++  report had no rows, so the Export button did nothing for empty reports. Adds a guard and a test.`
++- **T2, a broad fix (tests the length risk):**
++  `PR #517 "Change autosave in EditorBuffer". Closes JIRA-1240. EditorBuffer.flush() reset the
++  selection and scroll offset on every autosave, so the cursor jumped to the top of the file and
++  any selected text was deselected while users typed. Now saves the caret, selection and scroll
++  position and restores them after the flush. Also renames flushSync to flushNow.`
++
++Neither task repeats the examples in the new line. An entry copied from an example could not fit
++either task.
++
++## Reps and models
++
++- Models: **claude-opus-5-5** and **claude-sonnet-5-5**. The partner has not said which models will
++  run the skill, so I chose these two. Add claude-haiku-5-5 as a third model if the skill will run
++  on it.
++- Per model, per arm: 10 reps, 5 on T1 and 5 on T2.
++- Total: 3 arms × 2 models × 10 = 60 scored reps, plus 1 isolation probe per model.
++
++## Isolation
++
++- Each rep is one raw API call (or a single-shot subagent if there is no API access). Use a new
++  working directory outside every repository, give it no tools, and turn off user settings,
++  instruction files and memory.
++- The rep sees only the system prompt and the user message above. No rep may read `specs/`, this
++  design, the proposal, the kit or any earlier record. A rep that does is VOID.
++- **Probe first:** before any scored rep, run one probe per model with the same setup. Ask it to
++  list every instruction file, memory, tool, other session and user detail it can see. If it
++  reports anything we did not plan for, fix the setup before going on.
++
++## Scoring rules (register before reading)
++
++Score only the first line of the reply that is not empty. Strip a leading `- ` or `* `.
++
++**PASS** only if all of these hold:
++1. **Outcome first:** the first five words name what a user can now do or no longer runs into.
++   A leading verb is fine ("Fix the Export button for empty reports"), but the thing after it must
++   be something the user sees, not a code part.
++2. No ticket number, PR number, file name, class name or function name anywhere in the line
++   (`#482`, `JIRA-1193`, `ExportHandler`, `flush()`, `flushSync`).
++3. 100 characters or fewer, counted by script.
++4. One change. For T2 the flushSync rename is internal, so an entry that mentions it fails rule 2.
++
++**FAIL** is any reply that is not PASS and not VOID. Record every rule that failed, so we can report:
++- `F-internal`: rule 1 or rule 2 failed (the failure the proposal targets).
++- `F-length`: rule 3 failed (the risk the proposal names).
++- `F-multi`: rule 4 failed.
++
++**VOID**: the rep read a quarantined file, the probe for its model showed a leak that was not fixed,
++the reply has no entry line, or the API call errored. Re-run each VOID rep once. Report VOIDs
++separately.
++
++If a reply shows a reading the rules did not foresee, keep the registered verdict and report the
++counts under both readings.
++
++## Blind scoring
++
++- A script writes each reply to a sheet named with a random ID. Shuffle the sheets across arms,
++  models and tasks. The sheet holds only the task ID (T1/T2) and the reply text.
++- The arm and model key goes in a separate file that the grader does not open until every sheet has
++  a grade.
++- Character counts come from the script, not the grader.
++- A person reads every FAIL and every PASS on rule 1 by hand. Rule 1 is a judgment call, and an
++  automated match will mistake an echoed example or a quoted rule for a hit.
++
++## Decision rule (register before reading)
++
++The new line **works** only if, on **each** model:
++- C shows the failure: 3 or more `F-internal` out of 10, and
++- N has at most 2 FAILs of any kind out of 10, and
++- N has fewer `F-internal` than both C and O, and
++- N has no more `F-length` than O.
++
++**Variance check:** read the 10 N replies on each model side by side. If they follow different
++shapes (some lead with a verb, some with a noun phrase, some with "You can now..."), say so in the
++report even if the counts pass. Mixed shapes mean the wording doesn't bind yet.
++
++If N passes on one model and fails on the other, the line does not work. Report both models.
++
++## Spend
++
++- Cap: USD 10 for the whole test, including probes and re-runs. The partner can change this before
++  the first rep.
++- Run in batches of one arm × one model × 10 reps. Before each batch, estimate its worst-case cost.
++  Stop if the running total plus that estimate would go over the cap.
++- Record each batch's actual cost in the results file.
++
++## Where things go
++
++- Kit (prompts, task texts, scripts, key file): `specs/baseline/microtest-changelog-entry/`.
++- Results and verdict: `specs/baseline/microtest-changelog-entry.md`.
++- Nothing from this test goes under `skills/changelog-entry/`, because everything in that folder
++  ships with the skill.

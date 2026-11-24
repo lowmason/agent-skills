@@ -1,0 +1,159 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..494173f
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,153 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. No rep has run. Commit this file, with the PASS / FAIL / VOID rules below,
++before anyone reads a reply.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make agents write entries that lead
++with the reader's outcome, without making the entries go over 100 characters? And does it do that
++better than the old line and better than no step 2 at all?
++
++## Arms
++
++Each arm's system prompt is the full `skills/changelog-entry/SKILL.md`. Only step 2 differs.
++
++| Arm | Step 2 in the system prompt |
++|---|---|
++| CONTROL | Removed. Steps 3 and 4 become 2 and 3. |
++| OLD | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| NEW | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++The control is required. If CONTROL does not show the failure (internal-part entries), stop:
++there is nothing for step 2 to fix.
++
++OLD is rerun here rather than taken from the earlier baseline (7 of 10 skipped the rule). The
++earlier runs have no record in `specs/` of their model, prompt or isolation. A fair comparison
++needs all three arms run under the same setup.
++
++## Models
++
++The partner has not named the models, so this design uses two:
++
++- `claude-opus-5-5`
++- `claude-sonnet-5-5`
++
++Every arm runs on both models with the same number of reps.
++
++## Reps
++
++10 reps per arm per model, so 3 arms × 2 models × 10 = 60 scored reps. That is the same count as
++the baseline. One fresh-context, single-shot call per rep.
++
++## User message (the same in every rep)
++
++The fixtures describe each change in internal terms, which is what tempts "Fix handler"-style
++entries. None of them repeats the examples in the NEW line, so a copied example shows up as a
++template echo and not as a pass.
++
++```
++Release goes out in 10 minutes. Write the CHANGELOG.md lines for these merged PRs, nothing else.
++
++#482 ReportExporter: null guard in serialize()
++  serialize() threw on an empty date cell, so exporting a report with blank dates crashed the app.
++
++#489 EditorPane: keep selection range across save()
++  After Ctrl+S the caret jumped to line 1. Now the selection is restored.
++
++#491 SettingsPanel: add ThemeToggle component
++  Users can switch between light and dark theme from Settings > Appearance.
++
++#495 OrderRepo: rename private helpers, move tests to /unit
++  No behavior change.
++```
++
++Expected: three entries (#482, #489, #491) and no entry for #495.
++
++## Scoring rules (register before reading)
++
++### Per entry
++
++An entry PASSES when all of these hold:
++
++1. Its first clause names something a user can observe: an action they can now take, or a symptom
++   they no longer hit. Test: could a user who has never seen the code tell from the entry whether
++   the change affects them?
++2. It names no class, function, file, path or ticket number (`ReportExporter`, `serialize()`,
++   `EditorPane`, `ThemeToggle`, `#482`, and so on).
++3. It is one line of 100 characters or fewer.
++4. It covers one change.
++
++Any entry that misses one of these FAILS. Record which criterion failed.
++
++### Per rep
++
++- **PASS**: all three entries pass, and #495 has no entry.
++- **FAIL**: any entry fails, an entry is missing, or #495 has an entry.
++- **VOID**: the rep refused, errored, gave no entries, or saw a quarantined file (see Isolation).
++  Rerun a void rep under a new ID. Report void counts.
++
++### Secondary tallies (recorded, not part of the verdict)
++
++These come from the proposal's Risk section:
++
++- Entries that do not start with a verb.
++- Entry length in characters: give the mean and the maximum for each arm.
++- Template echoes: an entry that copies "Export reports as CSV" or "Stop losing the cursor on save".
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict. Report the
++counts under both readings.
++
++## Decision rule (register before reading)
++
++The NEW line is ready to merge when all of these hold on **each** model:
++
++1. CONTROL fails in at least 5 of 10 reps. If it does not, stop: the failure is absent.
++2. NEW passes in at least 8 of 10 reps.
++3. NEW passes in more reps than OLD.
++4. NEW has no more entries over 100 characters than OLD, plus one.
++
++If NEW meets these on one model and misses on the other, it is not ready. Report the result for
++each model.
++
++Variance also counts. If the NEW replies take several different shapes (some lead with the
++outcome, some with a verb plus a part, some write prose), the wording does not bind. Tighten its
++form before adding words.
++
++## Isolation
++
++- Start each rep in a new empty directory outside every repository. It gets no tools, no
++  user-level settings, no instruction files and no memory.
++- Before the first scored rep, run one probe rep. Ask it what it can see: instruction files,
++  memory, tools, other sessions, the user's name. An answer we did not plan for means the setup
++  leaks. Fix it before scoring.
++- Quarantine: no rep may reach `specs/` (this file, the proposal, the baseline records) or any
++  scoring sheet. The system prompt holds only the arm's SKILL.md text.
++
++## Blind scoring
++
++- Give each reply a random ID. Shuffle all 60 replies across both models into one pool of
++  sheets. A sheet holds only the ID and the reply text: no arm, model, path, order or count.
++- First pass: a script flags each entry that is over 100 characters, has a `#` followed by
++  digits, has a CamelCase word, has a `()` or a path, or has a line count other than 3.
++- Second pass: a human reads every entry on every sheet, including every flagged match, and
++  grades it against the per-entry rules. Template echoes and quoted fixture text can look like
++  hits, so script counts alone are not a grade.
++- Unblind only after every sheet has a grade.
++
++## Spend
++
++- Cap: **$5** for the whole test, including the probe and reruns. The partner can change this
++  before the run.
++- Run in batches of one arm × one model (10 reps). Record each batch's cost.
++- Stop rule: do not start a batch if the running total plus that batch's worst case would go over
++  the cap. Worst case is the most expensive batch so far, or before the first batch, 10 × the
++  probe rep's cost × 2.
++- Order: CONTROL on both models first. If CONTROL does not fail (decision rule 1), stop there and
++  save the rest of the budget.
++
++## Output
++
++`specs/changelog-entry-microtest-results.md` gets the counts for each arm and model (PASS / FAIL
++/ VOID), the failed criterion for each failing entry, the secondary tallies, the cost of each
++batch, and the verdict under the decision rule.

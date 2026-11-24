@@ -1,0 +1,124 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..d8f2502
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,118 @@
++# Micro-test design: `changelog-entry` step 2 rewording
++
++Status: design only. Nothing has been run. Rules below are to be committed before any reply is read.
++
++## Question
++
++Does the proposed step 2 make agents lead each entry with the reader's outcome, without
++the two risks named in the proposal (the leading verb dropped, a line over 100 characters)?
++
++- Old: `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`
++- New: `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".`
++
++## Failure type and form
++
++The baseline failure is a shaping failure: the agent complies in form ("Fix handler") but the
++entry says nothing to a reader. The new line is a positive recipe, which fits that failure. This
++test checks the wording only. It does not replace a pressure scenario.
++
++## Arms
++
++| Arm | System prompt | Purpose |
++|---|---|---|
++| C: no guidance | Full SKILL.md with step 2 deleted (steps renumbered) | Control. If it does not produce vague or internal entries, stop: there is nothing to fix. |
++| O: old line | Full SKILL.md as committed | Re-baseline in this harness. The earlier 7 of 10 came from a different setup, so it cannot be compared directly. |
++| N: new line | Full SKILL.md with the one line replaced | The arm under test. |
++
++Everything else in SKILL.md stays byte-identical across arms. The system prompt is the whole
++skill, not the line alone.
++
++## Scenarios (user message)
++
++Each gives a merged PR (title, short description, diff summary) and asks for the `CHANGELOG.md` line.
++Each tempts an internal-part entry.
++
++1. Null check added in `parseConfig` in `parser.ts`. The user-visible effect is that startup no longer crashes on an empty config. Ticket PROJ-412 in the title.
++2. A handler renamed and its retry logic changed. The user-visible effect is that failed uploads now retry 3 times.
++3. A new `--format csv` flag on `report export`. The PR title is "Add CsvWriter class".
++4. Cursor reset bug in the save path. The PR title is "Fix SaveHandler".
++5. Guard: a refactor-only PR with no user-visible change. The correct output is no entry (step 1). This checks that the new wording does not push the agent into inventing an outcome.
++6. Guard: a PR with two user-visible changes. The correct output is two lines, not one line with two changes.
++
++Reps: 5 per scenario per arm, one fresh single-shot sample each, with no tools. That is 6 x 3 x 5 = 90
++samples per model. The 5+ reps per variant requirement is met per scenario. Results are also pooled
++over scenarios 1-4.
++
++## Rules (register before reading any reply)
++
++Mechanical, computed by script on the extracted line:
++- LEN: each entry line has 100 characters or fewer, counted without the `- ` bullet. Over 100 is a FAIL.
++- ONE: one entry line per change. Extra lines, or two changes joined on one line, are a FAIL.
++- REF: a ticket id or a file or class name in the line is a FAIL.
++
++Judged by a human, blind, on the line only:
++- OUTCOME: the line says what a reader can now do or no longer suffers. A line that names only an
++  internal part ("Fix handler", "Change parser") is a FAIL.
++- A leading verb is not required. The new line's own examples open with "Export" and "Stop". An
++  opening that is not a verb is a PASS if OUTCOME holds. Count these separately as NOVERB,
++  because the proposal names dropped verbs as a risk and the partner may want the number.
++
++Guards:
++- Scenario 5 PASS = no entry, or an explicit statement that none is needed. Any entry is a FAIL.
++- Scenario 6 PASS = two lines, each passing the rules above.
++
++PASS for a rep = every rule that applies holds.
++VOID = the reply is empty, refuses, asks a question instead of answering, or shows that the rep saw
++anything outside the planned context (see isolation). VOID reps are re-run and the count reported.
++
++Decision rule for N:
++- Ship if scenarios 1-4 pooled give N at least 17 of 20 PASS, and N is no worse than O on every
++  scenario, and N passes both guards in at least 4 of 5 reps each.
++- Do not ship if N has more LEN or ONE FAILs than O. That is the named risk, and it overrides the pooled rate.
++- Anything between is "noisy": the five reps of a scenario give different shapes. Tighten the form before adding words.
++
++The 17 of 20 threshold is a judgment call. The partner should confirm or change it before the run.
++
++## Scoring
++
++- A script extracts the entry lines and computes LEN, ONE and REF.
++- Replies go onto sheets with a random id, with no arm, scenario order, file name or count visible. The
++  sheet shows the line and the scenario's change description, so that OUTCOME can be judged.
++- The human grader (the partner, or an agent that did not write the wording) grades every sheet before
++  the key is opened.
++- Every flagged match is read by hand. Echoes of the skill's own examples ("Export reports as CSV",
++  "Stop losing the cursor on save") are noted. If N copies them for an unrelated change, that is
++  an overfit FAIL on OUTCOME.
++- If a reply shows a reading the rules did not foresee, the registered verdict stands. Report counts
++  under both readings.
++
++## Isolation
++
++- Each rep runs in a new empty directory outside every repository, with no tools, and with
++  user-level settings, instruction files and memory off.
++- Before any arm, run one probe rep that asks what context it can see (instruction files, memory,
++  tools, other sessions, the user's name). Fix any unplanned answer first.
++- Keep this file, the proposal, and all scenario and baseline records out of each rep's reach. A rep
++  that reads one is void.
++- The scenarios and the skill text must not contain the user's name, email or project name.
++
++## Models
++
++Run all three arms on every model that will run this skill, with the same reps on each. The
++partner needs to say which. This file does not assume a list. Per-model results are reported
++separately and never pooled.
++
++## Spend
++
++Cap: $1.00 of the $1.50 budget, leaving $0.50 in reserve for re-runs of void reps.
++Stop rule: stop when the running total plus the next batch's worst-case cost would pass the cap.
++Run order: the probe, then one batch per arm for one scenario, to measure the real per-sample cost. Record each batch's cost here.
++If the per-sample cost times 90 samples times the model count would exceed the cap, cut in this order: scenarios 5 and 6 to 3 reps each, then to a single model, and report that the cut was made. Do not go below 5 reps on scenarios 1-4 for arms O and N.
++
++## Open items for the partner
++
++1. Which models run the skill?
++2. The earlier baseline record (7 of 10) is not in `specs/`. What rule did "skipped" mean there, and
++   which scenario was used? If it matches scenarios 1-4, it can seed the scenarios. Otherwise arm O replaces it.
++3. Confirm the 17 of 20 threshold and who grades.
++4. Is arm C worth its cost, given that the baseline already shows failure? The skill says to keep it. Dropping it saves a third of the spend.

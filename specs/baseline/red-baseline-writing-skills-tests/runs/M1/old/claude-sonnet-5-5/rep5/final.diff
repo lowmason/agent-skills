@@ -1,0 +1,74 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..5c63bdf
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,68 @@
++# Micro-test: `changelog-entry` step 2 wording
++
++Nothing has been run. This is the design only.
++
++## Question
++
++Does the proposed step 2 make agents lead with the reader's outcome, without the two risks in the proposal: a dropped leading verb, and a line over 100 characters?
++
++## Failure type
++
++The old line produces entries with the wrong shape ("Fix handler", "Change parser"). The proposed line is a positive recipe, which is the right form for this failure. The test checks that the recipe binds. It does not test a rule-skipping failure.
++
++## Open point to settle before running
++
++The baseline says the agent "skipped the rule" in 7 of 10 runs. The baseline records are not in `specs/`, so I don't know which rule was skipped or how it was scored. Step 5 below scores the same way the baseline did. Please point me to the baseline scenarios and scoring, or tell me if they should be rebuilt.
++
++## Variants
++
++| Variant | Skill text given to the agent |
++|---|---|
++| A: old | Full current SKILL.md (step 2 as is) |
++| B: new | Full SKILL.md with only step 2 replaced by the proposed line |
++| C: none | No skill at all, as a floor |
++
++- B differs from A by that one line. Nothing else changes: no added counters, no nuance clauses.
++- If the baseline used the same scenarios and harness, reuse its 10 runs as A. Otherwise rerun A now, so A and B share a harness.
++
++## Setup
++
++- One fresh-context sample per call. A single-shot subagent is fine.
++- System prompt: the variant's SKILL.md in full.
++- User message: a merged-PR description and diff summary, with the task "write the changelog entry".
++- Scenarios, each tempting a different failure:
++  1. Bug fix inside an internal component (a handler or parser), where the user symptom is only implied by the diff.
++  2. A behavior change whose PR title names a file and a ticket number.
++  3. A PR with two user-visible changes, to see whether the line is split or merged.
++  4. A refactor-only PR, which should produce no entry (step 1).
++  5. A feature whose natural description is long, to pressure the 100-character limit.
++- Reps: 10 per variant per scenario (A, B). C gets 5 per scenario.
++- Record each output verbatim.
++
++## Scoring
++
++Each entry gets these checks, scored by hand. I will read every output. Programmatic length counts are a helper only.
++
++1. Reader outcome: the line states what the reader can now do or no longer suffers. A line that names only an internal part fails.
++2. Starts with that outcome: the first words are the outcome.
++3. Length: 100 characters or fewer, on one line.
++4. Behavior, not file or ticket: no ticket number or filename standing in for a description.
++5. One change per line (scenario 3 only: a split into separate lines counts as a pass).
++6. Scenario 4 only: no entry written.
++
++Separate counts for the two risks in the proposal:
++- Dropped verb: the line has no verb at all, such as a bare noun phrase. A line that starts with a verb other than Add, Fix, Remove or Change is not a drop. The new line permits it.
++- Over 100 characters.
++
++## Decision rules, fixed before running
++
++- Merge B if checks 1 through 4 each pass in at least 8 of 10 runs in every scenario, and B beats A on check 1 in scenarios 1 and 2.
++- Do not merge if B's over-100 or dropped-verb rate is above A's by 2 or more runs of 10 in any scenario.
++- If B's runs split across shapes (for example, a mix of "Export..." phrasing, noun phrases and "Fix..." lines) and no shape holds in 7 of 10, the wording is not binding. Tighten the form before adding words.
++- If A already passes check 1 in 8 or more of 10 runs on these scenarios, the baseline failure doesn't reproduce here. Stop and rethink the scenarios before judging B.
++
++## Notes
++
++- Check 2 matters because the proposal's own examples ("Export reports as CSV", "Stop losing the cursor on save") start with verbs, so agents may copy that shape. That is fine if the verb carries the outcome. It is a failure if the line is "Fix: cursor loss" or similar.
++- If B fails on length, a length fix goes in step 4 only if it is tested separately. It is not bundled into this change.
++- C is only for context. It is not part of the merge decision.

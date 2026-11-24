@@ -1,0 +1,95 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..028b3ed
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,89 @@
++# Micro-test design: `changelog-entry` step 2 rewording
++
++Status: design only. Nothing has been run. Commit this file, with the rules below, before any rep is read.
++
++## Question
++
++Does the proposed step 2 make an agent write entries that lead with the reader's outcome, while
++still producing one line of 100 characters or fewer?
++
++- Old line: `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`
++- New line: `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".`
++
++Failure type: the agent complies but the output has the wrong shape (an entry like "Fix handler").
++The new line is a recipe, which is the right form for that. The test checks that it binds. It also
++checks the proposal's own risk: a dropped verb and a line over 100 characters.
++
++## Arms
++
++| Arm | System prompt |
++|---|---|
++| A: old | The full current `SKILL.md`, unchanged |
++| B: new | The full `SKILL.md` with only step 2 replaced by the new line |
++
++Both arms use the whole skill, because the guidance will live in that context. Step 2 is the only
++difference. The 7/10 baseline is for the old line, but its scenario and scoring are not in the repo
++(`specs/` holds only the proposal). So arm A is rerun here on the same scenarios as arm B, and the
++two arms are compared on equal terms.
++
++Optional arm C, no skill at all: add it only if arm A passes at 8 of 10 or more. Then the old line
++is not the problem, and there is nothing to fix.
++
++## Scenarios
++
++Each user message gives a merged PR and asks for the `CHANGELOG.md` line. Each is built so that the
++natural entry names an internal part. Three scenarios, all different in the code area:
++
++1. The PR title and diff summary name a handler and a null check. The user-visible effect, a cursor lost on save, is only in the PR body.
++2. The PR is titled with a ticket number and a file name. The effect is in one sentence deep in the description.
++3. The PR changes a parser and the reader's gain is "import files with a BOM". It also touches a refactor, which tempts a second change onto the line.
++
++Write the three PR texts into the kit, outside the skill directory. Use none of the example phrases
++from step 2 ("Export reports as CSV", "Stop losing the cursor on save"), so that an echo of the
++example cannot pass.
++
++## Reps
++
++- 5 reps per scenario per arm, which is 15 per arm per model. Each rep is one fresh single-shot call.
++- Models: every model that will run this skill. **Partner to confirm the list.** Same count on each.
++- Isolation, probe rep, quarantine and blind sheets: follow `references/micro-tests.md`. Run the
++  probe rep first and fix any leak before a scored rep. Each rep gets no tools and a new empty
++  directory. Keep the scenario files and this spec out of every rep's reach.
++- Spend cap: **$0.60 total**, a placeholder. The remaining budget is about $1.46, and I have not
++  priced a rep. Price the probe rep, then project the worst case of the full run. Stop when the
++  running total plus the next batch's worst case would pass the cap. Log each batch's cost here.
++
++## Rules (registered before any reply is read)
++
++One reply is one entry. Take the first `CHANGELOG.md` line in the reply.
++
++- **VOID**: the rep shows context it should not have (the spec, the kit, the user's name), the call errored, or the reply has no entry.
++- **FAIL**, if any of these holds:
++  - It is longer than 100 characters, or it is more than one line.
++  - It holds two changes.
++  - It names only a file, ticket, class or internal part, with no reader-visible behavior ("Fix handler", "Change parser", "Fix PROJ-123").
++  - It copies an example phrase from step 2.
++- **PASS**: one line of 100 characters or fewer, one change, and the behavior is something a reader of the product can see or do.
++
++The leading word is not scored. "Export ..." and "Fix ..." both pass. The proposal's concern about a
++dropped verb is the risk of a vague entry, and the outcome rule already catches that. A dropped verb
++with a clear outcome passes.
++
++Length is counted by a script. Outcome and two-change judgments are made by hand, from sheets that
++hide the arm. Sheets carry a shuffled ID only. Unblind after every sheet has a grade. If a reply
++shows a reading these rules did not foresee, keep the registered verdict and report the counts under
++both readings.
++
++**Decision rule**, per model:
++- Ship B if B has at least 13 of 15 PASS, and B beats A by at least 4 PASS.
++- Do not ship if B has more length FAILs than A. This is the proposal's stated risk.
++- Anything between those is not decided. Tighten the wording and rerun. Do not merge on a near miss.
++- Read variance too. If the B replies take many different shapes across the reps, the wording does not bind, even if the PASS count is high.
++
++Read every FAIL and every length-borderline reply by hand, to catch a template echo or a quoted counter-example.
++
++## Open items for the partner
++
++1. What did "skipped the rule" mean in the 7/10 baseline: no leading verb, a vague entry, or a length breach? I used all three above. If the baseline used one reading, the rules here should match it.
++2. Which models run this skill?
++3. Approve the spend cap, or give a number.

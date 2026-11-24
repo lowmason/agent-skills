@@ -1,0 +1,72 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..71fe35f
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,66 @@
++# Micro-test design: new step 2 wording for `changelog-entry`
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does the proposed step 2 produce entries that lead with the reader's outcome, without the two regressions the proposal names (no leading verb, over 100 characters)? Does it do so better than the old line?
++
++## Variants
++
++| Arm | System prompt |
++|---|---|
++| A. Control (old line) | Full current `skills/changelog-entry/SKILL.md` |
++| B. Candidate (new line) | Same file with only step 2 replaced by the proposed line |
++| C. No guidance | No skill text. Only a one-line role ("You write entries for CHANGELOG.md.") |
++
++Arm C tells us whether the failure exists without the skill. If C already writes good entries, there is nothing to fix and we stop. Arm A is the baseline already run (7 of 10 skipped the rule). I re-run it here anyway, so A and B share the same tasks, model and scoring. Don't compare B to the old runs.
++
++The system prompt is the whole skill file, not step 2 alone, because that is the context the line lives in.
++
++## Samples
++
++- One fresh context per sample: a single-shot call or subagent, no shared history.
++- 3 tasks × 5 reps × 3 arms = 45 samples. 5 reps per cell is the floor.
++- Same model for every arm.
++
++## Tasks
++
++The user message gives a merged PR (title, short diff summary, ticket id) and asks for the CHANGELOG.md line. Each task tempts a different failure:
++
++1. Internal-looking PR. Title "Fix handler null check in ExportController (PROJ-412)". The real effect is that CSV export no longer crashes on empty reports. This tempts "Fix handler".
++2. Mixed PR. A bug fix and a small new option. This tempts two changes on one line, and a long sentence trying to cover both.
++3. Removal PR. A deprecated flag is removed. This is the case where a verb-first entry is most natural, so it shows whether the new line damages a case the old one handled.
++
++Before running, I need the task text the baseline used. If those prompts are on disk, reuse them for task 1 at least. I could not find them in `specs/`.
++
++## Scoring
++
++Read every output by hand. Programmatic checks only pre-sort. Each output gets these labels:
++
++1. Outcome first: the line starts with what the reader can now do or no longer suffers. A line like "Fix handler" fails.
++2. Names a behavior, not a file, class or ticket number (step 3).
++3. 100 characters or fewer (programmatic, exact count).
++4. Exactly one line, one change (Common Mistakes).
++5. Leading verb dropped. A line starting with a noun phrase like "CSV export of empty reports" is flagged as a regression, whatever its quality.
++
++Pass means labels 1–4 hold. Label 5 is tracked separately, because the proposal calls it a risk. It is not a requirement.
++
++Manually check anything that matched by accident: a quoted example copied from the skill ("Export reports as CSV") counts as an echo, not as success. Count echoes separately.
++
++## Decision rule (set before running)
++
++- Ship B if its pass rate is clearly above A's (the old baseline failed 7 of 10, so I expect A near 30%), and B's over-100-characters and dropped-verb counts are not higher than A's by more than one sample per task.
++- If the reps in B give different shapes (some verb-first, some noun phrases, some sentences), the wording does not bind. Tighten the form first. Don't add words.
++- If B fixes the vague entries but pushes lines over 100 characters, a fix would be a separate conditional on an observable predicate. Don't add an "unless" clause to step 2.
++- If C passes about as often as A and B, the skill is not the cause. Stop and report.
++
++## Limits
++
++- 15 samples per arm can separate 30% from 90%. It cannot show small differences. Say so if the result is close.
++- This checks the wording. It is not a pressure scenario, and it does not replace one if you want the skill checked under time or sunk-cost pressure.
++- Echo of the two quoted examples is likely. Task 3 and the scoring above are there to catch it.
++
++## Output
++
++Write results to `specs/changelog-entry-microtest-results.md`: a table per arm and task with counts per label, plus every failing output verbatim.

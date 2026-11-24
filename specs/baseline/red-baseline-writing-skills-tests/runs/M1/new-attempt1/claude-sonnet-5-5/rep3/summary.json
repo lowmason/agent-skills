@@ -1,0 +1,141 @@
+{
+  "case": "M1",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "f39f2cd46bf9d36978a3f32961b9765aa3aaa299",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 37,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 24,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 36049,
+    "total_cost_usd": 0.1022237,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 4511,
+        "cacheReadInputTokens": 32297,
+        "cacheCreationInputTokens": 13468,
+        "webSearchRequests": 0,
+        "costUSD": 0.1022237,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 703,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13468,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**What it tests:** whether the new step 2 gets agents to lead with the reader's outcome. It also checks the two risks in the proposal: the leading verb dropped, and lines over 100 characters.\n\n**Design:**\n- **Arms:** there are three. C removes step 2 and is the no-guidance control. O is the old line, re-run in this harness because your 7 of 10 came from a different setup. N is the new line. Each arm uses the full SKILL.md with only that line changed.\n- **Scenarios:** there are six. Four PRs tempt an internal-part entry like \"Fix handler\". The other two are guards: a refactor-only PR, which should get no entry, and a two-change PR, which should get two lines.\n- **Reps:** 5 per scenario per arm, so 90 samples per model.\n- **Scoring:**\n  - A script checks length (100 characters or fewer), one change per line, and no ticket or file names.\n  - A blind human grader judges whether each line states a reader outcome.\n  - A line that opens without a verb passes if it states an outcome. The new line's own example \"Export reports as CSV\" opens that way. These lines are counted separately so you can see how often it happens.\n  - The pass rules go in before any reply is read.\n- **Ship rule:** N passes at least 17 of 20 on scenarios 1-4 and is no worse than O on any scenario. It also passes both guards in at least 4 of 5 reps. More length or two-changes failures than O blocks shipping regardless of the pass rate.\n- **Isolation:** each rep runs in an empty directory with no tools and no settings or memory. A probe rep runs first.\n- **Spend:** the cap is $1.00 of the $1.50, with a stop rule. The first batch measures the real per-sample cost, and the doc lists what to cut if 90 samples per model won't fit.\n\n**Questions for you:**\n1. Which models run this skill? The test has to run every arm on each of them, and I didn't want to guess.\n2. The earlier 7 of 10 baseline isn't in `specs/`. What did \"skipped the rule\" mean there, and which PR did it use? If it matches scenarios 1-4, I can reuse it. If not, arm O replaces it.\n3. Is 17 of 20 the right threshold, and who grades? That number is my judgment call.\n4. Do you want arm C? Your baseline already shows the failure, so dropping C saves a third of the spend. The skill says to keep a no-guidance control, so I kept it.",
+  "tool_calls": [
+    {
+      "id": "toolu_01Juv788viDpttC2ARW7FfAc",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01WkE4rJkn5cAyw38U6SpARE",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01NEScpMY6SuHSYD8Awqne65",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01PUqAYRtYR65X9GukXPas4z",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**",
+        "path": "/private/tmp/wst107/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SB4JkuujE21Kg2rMy9x7dB",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: `changelog-entry` step 2 rewording\n\nStatus: design only. Nothing has been run. Rules below are to be committed before any reply is read.\n\n## Question\n\nDoes the proposed step 2 make agents lead each entry with the reader's outcome, without\nthe two risks named in the proposal (the leading verb dropped, a line over 100 characters)?\n\n- Old: `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`\n- New: `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".`\n\n## Failure type and form\n\nThe baseline failure is a shaping failure: the agent complies in form (\"Fix handler\") but the\nentry says nothing to a reader. The new line is a positive recipe, which fits that failure. This\ntest checks the wording only. It does not replace a pressure scenario.\n\n## Arms\n\n| Arm | System prompt | Purpose |\n|---|---|---|\n| C: no guidance | Full SKILL.md with step 2 deleted (steps renumbered) | Control. If it does not produce vague or internal entries, stop: there is nothing to fix. |\n| O: old line | Full SKILL.md as committed | Re-baseline in this harness. The earlier 7 of 10 came from a different setup, so it cannot be compared directly. |\n| N: new line | Full SKILL.md with the one line replaced | The arm under test. |\n\nEverything else in SKILL.md stays byte-identical across arms. The system prompt is the whole\nskill, not the line alone.\n\n## Scenarios (user message)\n\nEach gives a merged PR (title, short description, diff summary) and asks for the `CHANGELOG.md` line.\nEach tempts an internal-part entry.\n\n1. Null check added in `parseConfig` in `parser.ts`. The user-visible effect is that startup no longer crashes on an empty config. Ticket PROJ-412 in the title.\n2. A handler renamed and its retry logic changed. The user-visible effect is that failed uploads now retry 3 times.\n3. A new `--format csv` flag on `report export`. The PR title is \"Add CsvWriter class\".\n4. Cursor reset bug in the save path. The PR title is \"Fix SaveHandler\".\n5. Guard: a refactor-only PR with no user-visible change. The correct output is no entry (step 1). This checks that the new wording does not push the agent into inventing an outcome.\n6. Guard: a PR with two user-visible changes. The correct output is two lines, not one line with two changes.\n\nReps: 5 per scenario per arm, one fresh single-shot sample each, with no tools. That is 6 x 3 x 5 = 90\nsamples per model. The 5+ reps per variant requirement is met per scenario. Results are also pooled\nover scenarios 1-4.\n\n## Rules (register before reading any reply)\n\nMechanical, computed by script on the extracted line:\n- LEN: each entry line has 100 characters or fewer, counted without the `- ` bullet. Over 100 is a FAIL.\n- ONE: one entry line per change. Extra lines, or two changes joined on one line, are a FAIL.\n- REF: a ticket id or a file or class name in the line is a FAIL.\n\nJudged by a human, blind, on the line only:\n- OUTCOME: the line says what a reader can now do or no longer suffers. A line that names only an\n  internal part (\"Fix handler\", \"Change parser\") is a FAIL.\n- A leading verb is not required. The new line's own examples open with \"Export\" and \"Stop\". An\n  opening that is not a verb is a PASS if OUTCOME holds. Count these separately as NOVERB,\n  because the proposal names dropped verbs as a risk and the partner may want the number.\n\nGuards:\n- Scenario 5 PASS = no entry, or an explicit statement that none is needed. Any entry is a FAIL.\n- Scenario 6 PASS = two lines, each passing the rules above.\n\nPASS for a rep = every rule that applies holds.\nVOID = the reply is empty, refuses, asks a question instead of answering, or shows that the rep saw\nanything outside the planned context (see isolation). VOID reps are re-run and the count reported.\n\nDecision rule for N:\n- Ship if scenarios 1-4 pooled give N at least 17 of 20 PASS, and N is no worse than O on every\n  scenario, and N passes both guards in at least 4 of 5 reps each.\n- Do not ship if N has more LEN or ONE FAILs than O. That is the named risk, and it overrides the pooled rate.\n- Anything between is \"noisy\": the five reps of a scenario give different shapes. Tighten the form before adding words.\n\nThe 17 of 20 threshold is a judgment call. The partner should confirm or change it before the run.\n\n## Scoring\n\n- A script extracts the entry lines and computes LEN, ONE and REF.\n- Replies go onto sheets with a random id, with no arm, scenario order, file name or count visible. The\n  sheet shows the line and the scenario's change description, so that OUTCOME can be judged.\n- The human grader (the partner, or an agent that did not write the wording) grades every sheet before\n  the key is opened.\n- Every flagged match is read by hand. Echoes of the skill's own examples (\"Export reports as CSV\",\n  \"Stop losing the cursor on save\") are noted. If N copies them for an unrelated change, that is\n  an overfit FAIL on OUTCOME.\n- If a reply shows a reading the rules did not foresee, the registered verdict stands. Report counts\n  under both readings.\n\n## Isolation\n\n- Each rep runs in a new empty directory outside every repository, with no tools, and with\n  user-level settings, instruction files and memory off.\n- Before any arm, run one probe rep that asks what context it can see (instruction files, memory,\n  tools, other sessions, the user's name). Fix any unplanned answer first.\n- Keep this file, the proposal, and all scenario and baseline records out of each rep's reach. A rep\n  that reads one is void.\n- The scenarios and the skill text must not contain the user's name, email or project name.\n\n## Models\n\nRun all three arms on every model that will run this skill, with the same reps on each. The\npartner needs to say which. This file does not assume a list. Per-model results are reported\nseparately and never pooled.\n\n## Spend\n\nCap: $1.00 of the $1.50 budget, leaving $0.50 in reserve for re-runs of void reps.\nStop rule: stop when the running total plus the next batch's worst-case cost would pass the cap.\nRun order: the probe, then one batch per arm for one scenario, to measure the real per-sample cost. Record each batch's cost here.\nIf the per-sample cost times 90 samples times the model count would exceed the cap, cut in this order: scenarios 5 and 6 to 3 reps each, then to a single model, and report that the cut was made. Do not go below 5 reps on scenarios 1-4 for arms O and N.\n\n## Open items for the partner\n\n1. Which models run the skill?\n2. The earlier baseline record (7 of 10) is not in `specs/`. What rule did \"skipped\" mean there, and\n   which scenario was used? If it matches scenarios 1-4, it can seed the scenarios. Otherwise arm O replaces it.\n3. Confirm the 17 of 20 threshold and who grades.\n4. Is arm C worth its cost, given that the baseline already shows failure? The skill says to keep it. Dropping it saves a third of the spend.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

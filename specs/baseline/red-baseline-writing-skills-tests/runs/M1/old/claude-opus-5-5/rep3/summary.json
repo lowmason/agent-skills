@@ -1,0 +1,132 @@
+{
+  "case": "M1",
+  "rep": 3,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep3",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "3a830e05b18f54759847dd28bcbfcdc8d350b3a2",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-opus-5-5/rep3.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 47,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 23,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 46431,
+    "total_cost_usd": 0.1814746,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3950,
+        "cacheReadInputTokens": 31213,
+        "cacheCreationInputTokens": 12026,
+        "webSearchRequests": 0,
+        "costUSD": 0.1814746,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 914,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12026,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**The test:** it compares three versions of `SKILL.md` that differ only in step 2:\n- **A:** no step 2 at all, as a control.\n- **B:** the old line.\n- **C:** the proposed line.\n\nEach sample is a single fresh call with that version as the system prompt. There are 10 runs per version for each of 4 tasks, so 120 samples. Each task is a pull request description written in internal terms, to tempt entries like \"Fix handler\":\n- **T1:** a bug fix described by its null-check code.\n- **T2:** a parser change.\n- **T3:** an endpoint removal. This checks that the new line doesn't turn a removal into a vague \"benefit\".\n- **T4:** a feature with lots of detail. This tests the risk your proposal names: entries over 100 characters.\n\n**Scoring:**\n- The main check is whether the entry opens with the reader's outcome. A person reads every sample to judge that.\n- A script checks the 100-character limit and flags ticket numbers and file names. A person confirms each flag.\n- The removal task has one extra check: the entry must still say that something was removed.\n\n**Rules for the result, fixed before running:**\n- If the control doesn't fail often enough (under 3 in 10), the tasks need reworking before we judge the wording.\n- Merge only if all of these hold:\n  - C fails the main check at most 1 time in 10 on each task.\n  - C doesn't go over 100 characters more often than B.\n  - C doesn't hide the removal on T3.\n- If C's entries take different shapes across runs, the wording needs tightening before we add more words to it.\n\n**Two things to settle before running:**\n1. **What did the 7/10 baseline count as \"skipped the rule\"?** I defined the failure as \"the first clause names an internal part, or just a change verb with no user-visible behavior\". If the baseline counted something else, like a missing leading verb, the main check has to match it or the numbers can't be compared.\n2. **Version B gets run again, so all three versions see the same tasks.** I'm assuming the earlier 10 baseline runs used other prompts. If they used these same tasks, the rerun can be skipped.",
+  "tool_calls": [
+    {
+      "id": "toolu_01RAom319fQzq4YBUc76SJRU",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_014c4RqWd4dWdkcSRtkDm998",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_014haMubvh3NBYxs6xVTJSnb",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XxAhNEtPmhw6qFD6mCaVDa",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep3/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. Nothing has been run yet.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make agents put the reader's\noutcome at the front of the entry? And does it avoid the risk the proposal names: entries that\nlose their shape and go over 100 characters?\n\n## Arms\n\nEvery arm uses the full `skills/changelog-entry/SKILL.md` as its system prompt. Only line 20\n(step 2) changes:\n\n| Arm | Step 2 |\n|---|---|\n| **A: control** | Line removed, with steps renumbered 1\u20133. Nothing else changes. |\n| **B: old** | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| **C: new** | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nArm B is the existing baseline (7 of 10 runs failed). Run it again with the tasks below so\nthat all three arms see the same inputs. The earlier 10 runs used other prompts and cannot be\ncompared directly.\n\n## Running it\n\n- One fresh-context sample per call: a raw API call, or a single-shot subagent with no other context.\n- System prompt: the arm's full SKILL.md. User message: one task from the next section.\n- **10 reps per arm per task**, so 3 arms \u00d7 4 tasks \u00d7 10 = 120 samples. Ten reps lets the\n  results line up with the 10-run baseline. The skill asks for at least 5.\n- Use the same model and settings for every arm. Run the arms in mixed order, not one arm\n  after another.\n- Save every raw output in `specs/baseline/microtest-changelog-entry/<arm>/<task>-<rep>.txt`.\n  Keep them outside `skills/`.\n\n## Tasks (user messages)\n\nEach task gives a merged-PR description and ends with: \"Write the CHANGELOG.md entry for this\nPR.\" The descriptions are written in internal terms so that \"Fix handler\"-style entries are\ntempting. None of them is about CSV export or the cursor, so an echo of arm C's examples will\nstand out.\n\n1. **T1, internal bug fix:** \"Fix null deref in `SaveHandler.commit()` when `doc.title` is\n   unset. Adds a guard and a unit test. Closes #4412.\" (Reader outcome: saving an untitled\n   document no longer crashes.)\n2. **T2, parser change:** \"Change `DateParser` to accept ISO-8601 week dates (`2026-W47-1`).\n   Refactors the tokenizer into its own module.\" (Reader outcome: week-format dates now work in\n   the date fields.)\n3. **T3, removal:** \"Remove the legacy `/v1/sync` endpoint and `SyncClientV1`. All callers\n   migrated in #4380.\" (Reader outcome: `/v1/sync` no longer exists, which breaks anyone still\n   calling it.) This tests whether arm C turns a removal into a vague \"benefit\".\n4. **T4, long feature:** \"Add bulk tagging: select multiple items in the library view, apply or\n   remove tags from a toolbar menu, with undo support and keyboard shortcut Ctrl+Shift+T.\"\n   (Lots of detail, which tempts entries over 100 characters. This is the proposal's risk.)\n\n## Scoring (per sample)\n\n| Check | How | Fail when |\n|---|---|---|\n| **S1 Outcome first** (primary) | Manual: read the first clause | The first clause names an internal part (class, module, endpoint name used as a code identifier, \"handler\", \"parser\", \"tokenizer\") or only a change verb without the user-visible behavior. |\n| **S2 Length** | Script: character count of the entry line | Over 100 characters. |\n| **S3 One line, one change** | Manual | More than one line, or two changes joined together. |\n| **S4 No ticket/file** | Script flags `#\\d+` and code identifiers, then a person confirms each one | A ticket number or file/class name stands in for the behavior. |\n| **S5 Removal honesty** (T3 only) | Manual | The entry hides that something was removed, for example \"Simplify syncing\". |\n\nRead **every** sample by hand, not only the ones the script flags. Cases to watch for: an echo\nof arm C's example phrases, and quoted counter-examples that look like hits.\n\nUse the same S1 definition for arm B and arm C. **Before running, confirm that S1 is the\nfailure the 7/10 baseline counted as \"skipped the rule\".** If the baseline counted something\nelse, such as a missing leading verb, fix S1 to match it first.\n\n## Decision rules (fixed before running)\n\n1. **Control gate:** if arm A fails S1 in fewer than 3/10 reps per task on average, the problem\n   does not reproduce with these tasks. Stop and rework the tasks. Do not judge the wording on\n   these tasks.\n2. **Merge** if all of these hold:\n   - Arm C fails S1 in at most 1 of 10 reps on each task, and clearly fewer times than arms A and B overall.\n   - Arm C fails S2 no more often than arm B, and never more than 1 of 10 reps on T4.\n   - Arm C has no S5 failures on T3.\n3. **Variance:** if arm C's passing entries take visibly different shapes across reps (some\n   outcome-first, some verb-first, some full sentences), the wording isn't binding. Tighten the\n   form before adding words.\n4. **Don't merge** if arm C reaches S1 but breaks S2 or S5. The fix is a separate wording\n   change. Do not add a nuance clause (\"\u2026unless\u2026\") to step 2. Make the next variant its own\n   test arm.\n\n## What a result does not tell us\n\nThese micro-tests check the wording only. They do not replace a full scenario run with a real\nPR diff and repo context.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

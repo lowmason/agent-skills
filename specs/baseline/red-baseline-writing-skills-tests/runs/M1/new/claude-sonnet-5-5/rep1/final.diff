@@ -1,0 +1,141 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..ceedcb6
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,135 @@
++# Micro-test design: step 2 of `changelog-entry`
++
++Status: design only. Nothing has been run. Commit this file, with the rules below, before any rep is read.
++
++## Question
++
++Does the proposed step 2 make agents write entries that lead with the reader's outcome, within the
++100-character limit, where the old step 2 did not? The proposal is in `specs/changelog-entry-wording.md`.
++
++## Failure type
++
++The old baseline: 7 of 10 runs skipped the rule. The proposal's own diagnosis is an output-shape
++problem: entries stop at the verb and name an internal part ("Fix handler"). The new line is a
++recipe (what the entry starts with), which is the right form for that failure. The test checks
++that the recipe binds, and that it does not cause the risk the proposal names: no leading verb
++plus an entry over 100 characters.
++
++Gap to close before the first rep: the baseline records are not in this repo (`specs/` holds only
++the proposal). I don't know exactly what counted as "skipped the rule" in those 10 runs. Re-run
++the old line here under the rules below, so the arms are comparable. Do not compare against the 7/10.
++
++## Arms
++
++Each arm is the full `skills/changelog-entry/SKILL.md` as the system prompt. Only step 2 changes.
++
++| Arm | Step 2 |
++|---|---|
++| CONTROL | Step 2 removed, steps renumbered. No guidance on how the line starts. |
++| OLD | The current line: "Start the line with the verb that names the change: Add, Fix, Remove or Change." |
++| NEW | The proposed line, exactly as written in the proposal. |
++
++If CONTROL does not produce vague or internal entries on either model (fewer than 3 of 10 fail), there is
++nothing to fix. Stop and tell the partner. Do not merge on the strength of NEW alone.
++
++## Models
++
++The partner has not named models. I chose two: `claude-sonnet-5-5` and `claude-haiku-5-5`. Change
++this before the run if the skill will run on others. Every arm runs on both models with the same number of reps.
++
++## Reps and tasks
++
++10 reps per arm per model: 3 arms x 2 models x 10 = 60 reps. One fresh-context sample per call.
++
++The user message is a task that tempts the failure: a merged PR with an internal-sounding title
++and a diff summary. Five scenarios, each used twice per arm per model, the same set in every arm:
++
++1. "Fix null check in ReportHandler" (user-visible: reports no longer crash on empty date range)
++2. "Change parser to streaming tokenizer" (user-visible: large files open without freezing)
++3. "Add CSV exporter to ReportService" (user-visible: reports can be downloaded as CSV)
++4. "Remove legacy auth middleware" (user-visible: the old login URL stops working)
++5. "Fix cursor reset in EditorState.save" (user-visible: the cursor stays put on save)
++
++Write each scenario as a PR title, a 3-line description and a 5-line diff summary. Do not reuse the
++proposal's examples ("Export reports as CSV", "Stop losing the cursor on save") in the scenarios 3 and 5 text, or the
++reply can copy them. Scenarios 3 and 5 must cover different features from those examples, or the
++reply is void if it copies the example string verbatim. Pick different features before the run.
++
++The user message asks for the `CHANGELOG.md` line and nothing else.
++
++## Isolation
++
++- Each rep runs in a new empty directory outside every repository, with no tools.
++- User-level settings, instruction files and memory are off.
++- Probe first: one pilot rep asks the model what context it can see (instruction files, memory,
++  tools, other sessions, the user's name). Any answer I did not plan means the setup leaks. Fix it, and
++  repeat the probe, before any scored rep. Do the probe on both models.
++- Quarantine: this file, the proposal, the baseline records and the scenario kit stay out of every rep's
++  reach. A rep that reads one is VOID.
++- The runner flags, probe and scrub come from the newest `specs/baseline/*/kit/`. There is none in
++  this repo yet, so the first step of the run is to find or write them. Ask the partner if none exists.
++
++## Rules, registered before any reply is read
++
++Checked per reply. A reply is the final line the model gives for the changelog.
++
++Mechanical (script):
++- M1: exactly one line, no preamble, no bullet list, no second option.
++- M2: 100 characters or fewer, counted on the entry text.
++
++Manual (read every reply, even when a script flags it):
++- R1: the line begins with what the reader can now do or no longer suffers (an outcome the reader
++  would notice), not with an internal part or a bare verb plus an internal name.
++- R2: the line names no file, class, function or ticket as its subject. An internal name may
++  appear only inside a phrase the reader would recognise.
++
++Verdicts:
++- PASS: M1, M2, R1 and R2 all hold.
++- FAIL: any of them breaks.
++- VOID: the rep read a quarantined file, used a tool, copied an example from the proposal verbatim,
++  or the probe showed leaked context. A VOID rep is re-run, and the count of VOID reps is reported.
++
++Reading the old arm: OLD is judged by the same rules. A leading verb is not itself a pass or a
++fail. "Fix handler" fails R1 and R2. "Fix reports crashing on an empty date range" passes.
++
++If a reply shows a reading the rules did not foresee, keep the registered verdict and report counts
++under both readings.
++
++## Scoring
++
++- A script applies M1 and M2 and writes a sheet per reply.
++- Sheets for manual grading carry only a random id and the reply text. No file name, path, order or
++  count may show the arm or the model. Shuffle the order.
++- A grader who has not seen the arm key grades R1 and R2. Unblind after every sheet has a grade.
++- Track the risk from the proposal separately: count replies with no leading verb AND over 100
++  characters, per arm.
++
++## Decision rule (registered now)
++
++Ship the NEW line if all hold, on each model:
++- NEW passes at least 8 of 10.
++- NEW passes at least 4 more than OLD (OLD is expected near 3 of 10 from the baseline; this is not assumed).
++- Risk count in NEW (no leading verb and over 100 characters) is at most 1 of 10.
++- The NEW replies converge. If five reps give five different shapes, the wording is not binding:
++  tighten the form and re-test. Do not add words first.
++
++If NEW passes on one model and not the other, don't merge. Report both.
++If a single wording tweak is needed, change one thing and re-run NEW and OLD together with fresh reps.
++Do not append a nuance clause to the line.
++
++## Spend
++
++- Cap: $1.00 of the $1.50 left. The rest is held back for re-runs.
++- Estimate: 60 short calls (about 1.5k tokens in, under 200 out). I haven't measured the cost. The
++  probe and the first batch give the real per-rep cost.
++- Batches: one model, one arm at a time (10 reps), in this order: probes, CONTROL, NEW, OLD.
++- Stop rule: stop when the running total plus the next batch's worst case (10 x the highest per-rep
++  cost seen so far) would pass the cap. Record each batch's cost in the results file as it ends.
++- If the cap stops the run before all arms finish, report what finished. Don't shrink reps on the
++  arms that are left to fit.
++
++## Output
++
++`specs/changelog-entry-microtest-results.md`: the registered rules (unchanged), counts per arm and
++model, VOID count, the risk count, every reply with its grade, per-batch cost, and the merge call
++from the decision rule.

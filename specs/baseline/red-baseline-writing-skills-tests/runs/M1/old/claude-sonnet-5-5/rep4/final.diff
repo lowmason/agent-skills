@@ -1,0 +1,92 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..1a08247
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,86 @@
++# Micro-test design: `changelog-entry` step 2 wording
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does the proposed step 2 produce entries that name what the reader can now do or no longer suffers,
++without losing the 100-character, one-line limit? And does it do better than the old step 2?
++
++Old: `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`
++New: `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".`
++
++## Failure type
++
++The baseline (old line skipped in 7 of 10 runs) and the proposal's stated problem ("Fix handler",
++"Change parser") are both about the shape of the output, not about breaking a rule under pressure.
++The new line is already a recipe (it states what the entry starts with), so the test checks the
++recipe's wording. It does not need a pressure scenario or a rationalization table.
++
++## Arms
++
++| Arm | System prompt | Purpose |
++|---|---|---|
++| C: control | The skill with step 2 deleted (steps renumbered). | Shows whether the failure exists without any step 2 guidance. If the control already writes good entries, stop: there is nothing to fix. |
++| O: old | The full skill as it is now. | Re-baseline on the same tasks and scoring as the new arm. |
++| N: new | The full skill with the proposed step 2. | The thing under test. |
++
++Arm O is re-run, not reused. The old 10-run baseline was scored on different tasks, and I don't
++have its prompts or scoring in `specs/`. If they exist elsewhere, tell me and I'll check that arm O
++can reuse them.
++
++The system prompt is the whole SKILL.md, because the wording will live there. Do not test the line in isolation.
++
++## Tasks (user message)
++
++Each task gives a merged PR (title, short description, a few changed files) and asks for the
++`CHANGELOG.md` entry. Each is built to tempt an internal-part entry:
++
++1. Bug fix with an internal title: "TKT-412: null check in saveHandler.ts". The user-visible effect is that the cursor no longer jumps on save.
++2. New capability buried in a refactor-sounding title: "Parser: add csv serializer". The user-visible effect is that reports can be exported as CSV.
++3. Removal or behavior change: "Drop legacy v1 auth route". The user-visible effect is that old API tokens stop working. This one is tempting because the honest entry is long.
++
++Add a fourth if budget allows: a change with two user-visible effects, to see whether the new line pushes the agent to write two changes on one line or to run past 100 characters.
++
++## Sampling
++
++- One fresh-context call per sample: a raw API call, or a single-shot subagent.
++- 5 reps per arm per task. That is 3 arms × 3 tasks × 5 = 45 samples (60 with the fourth task).
++- Save every raw output verbatim in `specs/baseline/changelog-entry-microtest/<arm>-<task>-<rep>.md`, outside the skill directory.
++
++## Scoring
++
++Score each output on these checks. Each is a yes/no that can be observed in the text.
++
++1. Single line, 100 characters or fewer (count it).
++2. Describes a behavior. It names no file, ticket number, or internal identifier (`saveHandler`, `TKT-412`).
++3. Reader-facing. A reader of the product, not the code, could say what changed for them. Judge by hand against each task's stated user-visible effect.
++4. Leads with the outcome. The first words are the reader's action or relief, not an internal noun.
++5. Verb dropped. Does it start with a bare noun or a long clause instead of a verb? This is the risk the proposal names. Record it separately and do not fold it into the pass/fail.
++
++An output passes if checks 1–4 are all yes.
++
++Scripts may count characters and flag file or ticket patterns. Read every flagged output and
++a sample of the unflagged ones by hand. Quoted examples from the skill ("Export reports as CSV")
++can look like hits when the agent copies them, so check for echoes too. Count an echo as a
++separate tally, not as a pass.
++
++## Decision rule (set before running)
++
++- If arm C already passes at least 8 of 10 tasks-reps per task, the line isn't needed. Stop.
++- Merge if arm N's pass rate is clearly above arm O's on every task, and arm N has no more
++  than 1 over-length output in 15 and no more than 1 in 15 verb-dropped outputs that fail check 3.
++- If arm N's outputs differ widely in shape across reps, the wording isn't binding. Tighten the form
++  before adding words, and do not append "unless" clauses.
++- If arm N fixes the internal-name problem but over-length rises, change the line to state the
++  limit in the same step (e.g. a recipe with the 100-character limit). Then re-run arm N only.
++
++## Cost
++
++I haven't priced the 45 calls. Each call is a short prompt and a one-line output, so I expect the
++cost to be well under the $1.50 budget, but check this with a 3-call dry run before the full run.
++
++## Open points for the partner
++
++- The baseline's definition of "skipped the rule". I assumed it means the entry didn't start with one of the four verbs.
++- Whether a dropped leading verb should fail an entry that is otherwise reader-facing and short. The proposal lists it as a risk, so I tally it separately and the decision rule treats it as a failure only if the entry is no longer reader-facing.

@@ -1,0 +1,99 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..b8db28a
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,93 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run yet.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make agents put the reader's
++outcome at the front of the entry? And does it avoid the risk the proposal names: entries that
++lose their shape and go over 100 characters?
++
++## Arms
++
++Every arm uses the full `skills/changelog-entry/SKILL.md` as its system prompt. Only line 20
++(step 2) changes:
++
++| Arm | Step 2 |
++|---|---|
++| **A: control** | Line removed, with steps renumbered 1–3. Nothing else changes. |
++| **B: old** | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| **C: new** | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++Arm B is the existing baseline (7 of 10 runs failed). Run it again with the tasks below so
++that all three arms see the same inputs. The earlier 10 runs used other prompts and cannot be
++compared directly.
++
++## Running it
++
++- One fresh-context sample per call: a raw API call, or a single-shot subagent with no other context.
++- System prompt: the arm's full SKILL.md. User message: one task from the next section.
++- **10 reps per arm per task**, so 3 arms × 4 tasks × 10 = 120 samples. Ten reps lets the
++  results line up with the 10-run baseline. The skill asks for at least 5.
++- Use the same model and settings for every arm. Run the arms in mixed order, not one arm
++  after another.
++- Save every raw output in `specs/baseline/microtest-changelog-entry/<arm>/<task>-<rep>.txt`.
++  Keep them outside `skills/`.
++
++## Tasks (user messages)
++
++Each task gives a merged-PR description and ends with: "Write the CHANGELOG.md entry for this
++PR." The descriptions are written in internal terms so that "Fix handler"-style entries are
++tempting. None of them is about CSV export or the cursor, so an echo of arm C's examples will
++stand out.
++
++1. **T1, internal bug fix:** "Fix null deref in `SaveHandler.commit()` when `doc.title` is
++   unset. Adds a guard and a unit test. Closes #4412." (Reader outcome: saving an untitled
++   document no longer crashes.)
++2. **T2, parser change:** "Change `DateParser` to accept ISO-8601 week dates (`2026-W47-1`).
++   Refactors the tokenizer into its own module." (Reader outcome: week-format dates now work in
++   the date fields.)
++3. **T3, removal:** "Remove the legacy `/v1/sync` endpoint and `SyncClientV1`. All callers
++   migrated in #4380." (Reader outcome: `/v1/sync` no longer exists, which breaks anyone still
++   calling it.) This tests whether arm C turns a removal into a vague "benefit".
++4. **T4, long feature:** "Add bulk tagging: select multiple items in the library view, apply or
++   remove tags from a toolbar menu, with undo support and keyboard shortcut Ctrl+Shift+T."
++   (Lots of detail, which tempts entries over 100 characters. This is the proposal's risk.)
++
++## Scoring (per sample)
++
++| Check | How | Fail when |
++|---|---|---|
++| **S1 Outcome first** (primary) | Manual: read the first clause | The first clause names an internal part (class, module, endpoint name used as a code identifier, "handler", "parser", "tokenizer") or only a change verb without the user-visible behavior. |
++| **S2 Length** | Script: character count of the entry line | Over 100 characters. |
++| **S3 One line, one change** | Manual | More than one line, or two changes joined together. |
++| **S4 No ticket/file** | Script flags `#\d+` and code identifiers, then a person confirms each one | A ticket number or file/class name stands in for the behavior. |
++| **S5 Removal honesty** (T3 only) | Manual | The entry hides that something was removed, for example "Simplify syncing". |
++
++Read **every** sample by hand, not only the ones the script flags. Cases to watch for: an echo
++of arm C's example phrases, and quoted counter-examples that look like hits.
++
++Use the same S1 definition for arm B and arm C. **Before running, confirm that S1 is the
++failure the 7/10 baseline counted as "skipped the rule".** If the baseline counted something
++else, such as a missing leading verb, fix S1 to match it first.
++
++## Decision rules (fixed before running)
++
++1. **Control gate:** if arm A fails S1 in fewer than 3/10 reps per task on average, the problem
++   does not reproduce with these tasks. Stop and rework the tasks. Do not judge the wording on
++   these tasks.
++2. **Merge** if all of these hold:
++   - Arm C fails S1 in at most 1 of 10 reps on each task, and clearly fewer times than arms A and B overall.
++   - Arm C fails S2 no more often than arm B, and never more than 1 of 10 reps on T4.
++   - Arm C has no S5 failures on T3.
++3. **Variance:** if arm C's passing entries take visibly different shapes across reps (some
++   outcome-first, some verb-first, some full sentences), the wording isn't binding. Tighten the
++   form before adding words.
++4. **Don't merge** if arm C reaches S1 but breaks S2 or S5. The fix is a separate wording
++   change. Do not add a nuance clause ("…unless…") to step 2. Make the next variant its own
++   test arm.
++
++## What a result does not tell us
++
++These micro-tests check the wording only. They do not replace a full scenario run with a real
++PR diff and repo context.

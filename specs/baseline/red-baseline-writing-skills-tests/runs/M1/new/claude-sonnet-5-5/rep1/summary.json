@@ -1,0 +1,141 @@
+{
+  "case": "M1",
+  "rep": 1,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "af25a61a1bb90b9a9131f429152c389422bbe921",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-sonnet-5-5/rep1.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 41,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 26,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 39800,
+    "total_cost_usd": 0.1087861,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 4992,
+        "cacheReadInputTokens": 32181,
+        "cacheCreationInputTokens": 13909,
+        "webSearchRequests": 0,
+        "costUSD": 0.1087861,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1100,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13909,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**What the test compares**\n- It has three arms, each the full `SKILL.md` with only step 2 changed:\n  - **CONTROL:** step 2 removed.\n  - **OLD:** the current line.\n  - **NEW:** the proposed line, word for word.\n- I included CONTROL because the skill requires a no-guidance control. If CONTROL fails fewer than 3 of 10 reps, there's nothing to fix and we stop.\n- Each arm gets 10 reps per model. The five scenarios are internal-sounding PR titles like \"Fix null check in ReportHandler\", and each is used twice per arm.\n\n**How a rep is judged**\n- **Mechanical checks:** the reply is exactly one line and 100 characters or fewer.\n- **Manual checks:** the line starts with an outcome the reader would notice, and its subject isn't a file, class or ticket.\n- **Grading:** it's blind. Graders see shuffled sheets with no arm label.\n- **Risk count:** I also count replies with no leading verb and over 100 characters, since that's the risk your proposal names.\n- **Registration:** the rules, including the merge rule, are written down before any reply is read.\n\n**Merge rule:** NEW has to pass at least 8 of 10 on each model and beat OLD by at least 4. It also needs at most 1 risk case in 10 and replies that converge on the same shape. If it passes on one model and not the other, we don't merge.\n\n**Things for you to decide**\n1. **Models:** you didn't name any, so I picked `claude-sonnet-5-5` and `claude-haiku-5-5`. Tell me if the skill will run on others.\n2. **Old baseline:** the 7/10 records aren't in this repo, so I don't know what counted as \"skipped the rule\". The design re-runs OLD under the same rules and doesn't compare against that 7/10.\n3. **Runner kit:** there is no `specs/baseline/*/kit/` here, so the runner flags, isolation probe and scrub still need to be found or written. Do you have one elsewhere?\n4. **Spend:** the cap is $1.00 of the $1.50 left, for 60 reps. I haven't measured per-rep cost. The pilot probes and the first batch will give the real figure, and the stop rule uses it.\n\nThe design also lists the scenario wording and the isolation steps. It says to pick scenario features that differ from the proposal's two examples, so a reply can't copy them.",
+  "tool_calls": [
+    {
+      "id": "toolu_01B5SDNoMSbBCCiBbpoLp8yu",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Gw7iR4BaZZBNfhtiufKbHP",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011VFubkjUkmYtu2xfSWNM9L",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017xmKZZc3tQ39p8zTBhNMQF",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*",
+        "path": "/private/tmp/wst107/rep1/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01UyRrpAS9SADZREL4KrxDFd",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 of `changelog-entry`\n\nStatus: design only. Nothing has been run. Commit this file, with the rules below, before any rep is read.\n\n## Question\n\nDoes the proposed step 2 make agents write entries that lead with the reader's outcome, within the\n100-character limit, where the old step 2 did not? The proposal is in `specs/changelog-entry-wording.md`.\n\n## Failure type\n\nThe old baseline: 7 of 10 runs skipped the rule. The proposal's own diagnosis is an output-shape\nproblem: entries stop at the verb and name an internal part (\"Fix handler\"). The new line is a\nrecipe (what the entry starts with), which is the right form for that failure. The test checks\nthat the recipe binds, and that it does not cause the risk the proposal names: no leading verb\nplus an entry over 100 characters.\n\nGap to close before the first rep: the baseline records are not in this repo (`specs/` holds only\nthe proposal). I don't know exactly what counted as \"skipped the rule\" in those 10 runs. Re-run\nthe old line here under the rules below, so the arms are comparable. Do not compare against the 7/10.\n\n## Arms\n\nEach arm is the full `skills/changelog-entry/SKILL.md` as the system prompt. Only step 2 changes.\n\n| Arm | Step 2 |\n|---|---|\n| CONTROL | Step 2 removed, steps renumbered. No guidance on how the line starts. |\n| OLD | The current line: \"Start the line with the verb that names the change: Add, Fix, Remove or Change.\" |\n| NEW | The proposed line, exactly as written in the proposal. |\n\nIf CONTROL does not produce vague or internal entries on either model (fewer than 3 of 10 fail), there is\nnothing to fix. Stop and tell the partner. Do not merge on the strength of NEW alone.\n\n## Models\n\nThe partner has not named models. I chose two: `claude-sonnet-5-5` and `claude-haiku-5-5`. Change\nthis before the run if the skill will run on others. Every arm runs on both models with the same number of reps.\n\n## Reps and tasks\n\n10 reps per arm per model: 3 arms x 2 models x 10 = 60 reps. One fresh-context sample per call.\n\nThe user message is a task that tempts the failure: a merged PR with an internal-sounding title\nand a diff summary. Five scenarios, each used twice per arm per model, the same set in every arm:\n\n1. \"Fix null check in ReportHandler\" (user-visible: reports no longer crash on empty date range)\n2. \"Change parser to streaming tokenizer\" (user-visible: large files open without freezing)\n3. \"Add CSV exporter to ReportService\" (user-visible: reports can be downloaded as CSV)\n4. \"Remove legacy auth middleware\" (user-visible: the old login URL stops working)\n5. \"Fix cursor reset in EditorState.save\" (user-visible: the cursor stays put on save)\n\nWrite each scenario as a PR title, a 3-line description and a 5-line diff summary. Do not reuse the\nproposal's examples (\"Export reports as CSV\", \"Stop losing the cursor on save\") in the scenarios 3 and 5 text, or the\nreply can copy them. Scenarios 3 and 5 must cover different features from those examples, or the\nreply is void if it copies the example string verbatim. Pick different features before the run.\n\nThe user message asks for the `CHANGELOG.md` line and nothing else.\n\n## Isolation\n\n- Each rep runs in a new empty directory outside every repository, with no tools.\n- User-level settings, instruction files and memory are off.\n- Probe first: one pilot rep asks the model what context it can see (instruction files, memory,\n  tools, other sessions, the user's name). Any answer I did not plan means the setup leaks. Fix it, and\n  repeat the probe, before any scored rep. Do the probe on both models.\n- Quarantine: this file, the proposal, the baseline records and the scenario kit stay out of every rep's\n  reach. A rep that reads one is VOID.\n- The runner flags, probe and scrub come from the newest `specs/baseline/*/kit/`. There is none in\n  this repo yet, so the first step of the run is to find or write them. Ask the partner if none exists.\n\n## Rules, registered before any reply is read\n\nChecked per reply. A reply is the final line the model gives for the changelog.\n\nMechanical (script):\n- M1: exactly one line, no preamble, no bullet list, no second option.\n- M2: 100 characters or fewer, counted on the entry text.\n\nManual (read every reply, even when a script flags it):\n- R1: the line begins with what the reader can now do or no longer suffers (an outcome the reader\n  would notice), not with an internal part or a bare verb plus an internal name.\n- R2: the line names no file, class, function or ticket as its subject. An internal name may\n  appear only inside a phrase the reader would recognise.\n\nVerdicts:\n- PASS: M1, M2, R1 and R2 all hold.\n- FAIL: any of them breaks.\n- VOID: the rep read a quarantined file, used a tool, copied an example from the proposal verbatim,\n  or the probe showed leaked context. A VOID rep is re-run, and the count of VOID reps is reported.\n\nReading the old arm: OLD is judged by the same rules. A leading verb is not itself a pass or a\nfail. \"Fix handler\" fails R1 and R2. \"Fix reports crashing on an empty date range\" passes.\n\nIf a reply shows a reading the rules did not foresee, keep the registered verdict and report counts\nunder both readings.\n\n## Scoring\n\n- A script applies M1 and M2 and writes a sheet per reply.\n- Sheets for manual grading carry only a random id and the reply text. No file name, path, order or\n  count may show the arm or the model. Shuffle the order.\n- A grader who has not seen the arm key grades R1 and R2. Unblind after every sheet has a grade.\n- Track the risk from the proposal separately: count replies with no leading verb AND over 100\n  characters, per arm.\n\n## Decision rule (registered now)\n\nShip the NEW line if all hold, on each model:\n- NEW passes at least 8 of 10.\n- NEW passes at least 4 more than OLD (OLD is expected near 3 of 10 from the baseline; this is not assumed).\n- Risk count in NEW (no leading verb and over 100 characters) is at most 1 of 10.\n- The NEW replies converge. If five reps give five different shapes, the wording is not binding:\n  tighten the form and re-test. Do not add words first.\n\nIf NEW passes on one model and not the other, don't merge. Report both.\nIf a single wording tweak is needed, change one thing and re-run NEW and OLD together with fresh reps.\nDo not append a nuance clause to the line.\n\n## Spend\n\n- Cap: $1.00 of the $1.50 left. The rest is held back for re-runs.\n- Estimate: 60 short calls (about 1.5k tokens in, under 200 out). I haven't measured the cost. The\n  probe and the first batch give the real per-rep cost.\n- Batches: one model, one arm at a time (10 reps), in this order: probes, CONTROL, NEW, OLD.\n- Stop rule: stop when the running total plus the next batch's worst case (10 x the highest per-rep\n  cost seen so far) would pass the cap. Record each batch's cost in the results file as it ends.\n- If the cap stops the run before all arms finish, report what finished. Don't shrink reps on the\n  arms that are left to fit.\n\n## Output\n\n`specs/changelog-entry-microtest-results.md`: the registered rules (unchanged), counts per arm and\nmodel, VOID count, the risk count, every reply with its grade, per-batch cost, and the merge call\nfrom the decision rule.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,132 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..eb59d5f
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,126 @@
++# Micro-test design: step 2 of `changelog-entry`
++
++Status: design only. No rep has been run.
++
++## Question
++
++Does the proposed step 2 make an agent start the entry with the reader's outcome? The proposal is in
++`specs/changelog-entry-wording.md`. Does it do this without causing the risk the proposal names,
++where the agent drops the verb and writes a line longer than 100 characters?
++
++## Arms
++
++Each arm's system prompt is the full `skills/changelog-entry/SKILL.md`. Only step 2 differs.
++
++| Arm | Step 2 |
++|---|---|
++| Control | Step 2 is deleted. Steps 1, 3 and 4 are left as they are. |
++| Old | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |
++| New | `2. Start the line with what a reader can now do or no longer suffers: "Export reports as CSV", "Stop losing the cursor on save".` |
++
++The Old arm is run again here, even though a baseline already exists. The baseline scored replies
++against the old rule ("skipped the rule", 7 of 10). This test scores every arm against one outcome
++rule, under the same setup, so the earlier 7/10 can't be compared directly with these counts.
++
++## Fixtures (user message)
++
++There are two merged-PR fixtures. Each one tempts a known failure. Neither one is about CSV export or
++cursors, so a reply that copies the example in the New line stands out.
++
++**F1: internal-name temptation**
++
++> Here is a merged pull request. Write its entry for CHANGELOG.md.
++>
++> Title: Fix SessionHandler.flush() null deref
++> Body: `flush()` read `this.pending` after `reconnect()` had cleared it. When the connection
++> dropped during a save, the editor threw and the user's unsaved edits were lost. `flush()` now
++> takes a copy of `pending` first. Files: `src/session/SessionHandler.ts`,
++> `test/session/flush.test.ts`. Closes #4182.
++
++- Registered outcome: unsaved edits are no longer lost when the connection drops during a save.
++- Registered internal names: `SessionHandler`, `flush`, `pending`, `reconnect`, `null deref`, `#4182`, any file path.
++
++**F2: length temptation**
++
++> Here is a merged pull request. Write its entry for CHANGELOG.md.
++>
++> Title: Audit log filters
++> Body: Admins can now filter the audit log on the admin page by user, by date range and by action
++> type (login, permission change, deletion, export). The filters can be combined, they persist in
++> the URL so a filtered view can be shared, and they apply to the existing CSV download.
++> Files: `src/admin/AuditLog.tsx`, `src/api/audit.ts`. Closes #4207.
++
++- Registered outcome: admins can filter the audit log (by user, date or action).
++- Registered internal names: `AuditLog.tsx`, `audit.ts`, `#4207`, any file path.
++
++## Reps
++
++- 10 reps per arm on each model: F1 × 5 and F2 × 5. That makes 30 reps per model.
++- Each rep is one fresh-context call: a system prompt and a user message, with no tools.
++- Models: every model that will run this skill. **Partner to confirm the list.** The rep count is
++  the same on each model.
++
++## Registered rules (commit before reading any reply)
++
++The entry is the reply's first line that looks like a changelog line. A leading `- ` or `* ` is
++ignored.
++
++**PASS** needs all of the following:
++1. The first clause states the fixture's registered outcome, or an equivalent that a reader who
++   can't see the code would understand.
++2. No registered internal name appears anywhere in the entry.
++3. The entry is 100 characters or fewer, counted after the bullet is stripped.
++4. The entry is one line and describes one change.
++
++**FAIL** is any other entry. Tag each FAIL with every reason that applies:
++- `internal`: it breaks rule 2, or its first clause names a part ("Fix handler").
++- `vague`: it has no internal name and no outcome ("Fix save bug").
++- `long`: it breaks rule 3. This is the proposal's named risk, so count it separately.
++- `multi`: it breaks rule 4.
++- `echo`: it reuses an example string from the New line.
++
++**VOID**: the reply has no entry, it refuses, it shows that it read files outside its context, or the
++isolation probe has not passed. Replace a VOID rep with a new rep in the same arm and fixture, and
++report how many were replaced.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict. Report the
++counts under both readings.
++
++## Decision rule (registered)
++
++- If Control fails 3 or fewer times out of 10 on every model, stop. There is no failure to fix, so
++  report that instead of a verdict on the new wording.
++- New **works** if, on every model, all of the following hold:
++  - New has at least 8/10 PASS.
++  - New has at least 3 more PASS than Old.
++  - New has at most 1/10 `long`.
++- Under any other result, the wording isn't ready to merge. Report the counts and the FAIL tags.
++- Variance: record the opening shape of each New entry, for example verb-first or noun-first. If
++  the 10 New entries open in many different shapes, the wording isn't binding, even when the PASS
++  count is high.
++
++## Procedure
++
++1. **Kit.** Put the three system prompts, the two fixtures, the runner script and the scrub in
++   `specs/changelog-entry-microtest/kit/`. Nothing goes under `skills/`, because everything in a
++   skill directory ships with the skill.
++2. **Commit** this file and the kit before any rep runs. This registers the rules.
++3. **Isolate.** Run each rep from a new empty directory outside every repository. User settings,
++   instruction files and memory are off, and the rep has no tools. The spec, this file and the kit
++   are out of the rep's reach.
++4. **Probe.** Run one pilot rep that asks what context it can see: instruction files, memory,
++   tools, other sessions and the user's name. Any answer we did not plan for means the setup
++   leaks. Fix it before any scored rep.
++5. **Run** the reps in shuffled order across arms and fixtures.
++6. **Blind.** Copy each entry onto a sheet named with a random ID. The sheet shows no arm, path,
++   order or count. Keep the ID→arm key in a separate file and don't open it until grading is done.
++7. **Grade** every sheet by hand against the registered rules. That includes every automated
++   `long` or `internal` hit, because quoted text and echoes can look like hits.
++8. **Unblind**, tally by model × arm × fixture and apply the decision rule.
++
++## Spend
++
++- Cap: **partner to set.** Suggested: $1 per model. At 30 short single-shot reps plus a probe, the
++  expected cost is well under that.
++- Stop rule: stop when the running total plus the worst case of the next batch would pass the cap.
++- Log the cost of each batch in `specs/changelog-entry-microtest/results.md`.

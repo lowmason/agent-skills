@@ -1,0 +1,140 @@
+{
+  "case": "M1",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "c6049eb56deb39f136debc34f67a6193a41c669b",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/new/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "b3e820ee64c7e1fc306e6593a78665a04f604a8a7c1cd3e68bb090bee748e000",
+  "claude_exit": 0,
+  "wall_seconds": 65,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 34,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 64531,
+    "total_cost_usd": 0.22833960000000003,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5378,
+        "cacheReadInputTokens": 32458,
+        "cacheCreationInputTokens": 14283,
+        "webSearchRequests": 0,
+        "costUSD": 0.22833960000000003,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1613,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14283,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the design to `specs/changelog-entry-microtest.md`. Nothing has been run and nothing is committed.\n\n**What it compares:** three versions of the full skill that differ only in step 2:\n- **Control:** step 2 removed.\n- **Old line:** the current wording.\n- **New line:** the proposed wording.\n\nI re-run the old line under the same setup rather than reusing the earlier 7/10 baseline. That run had a different setup and scoring rule, so its numbers can't be compared directly with the new ones.\n\n**Test tasks:** three merged PRs written in internal terms, so each one tempts an entry like \"Fix parser\". One is a fix, one adds a feature, and one is a refactor bundled with an internal rename, which tempts a line over 100 characters. None of them is about CSV export or the cursor, so an agent can't pass by copying the examples in the new line.\n\n**Scoring:** every reply is graded on the same rubric whichever version produced it:\n- **Pass:** one line of 100 characters or fewer, the reader's outcome comes first, and no file, symbol or ticket number appears.\n- **Fail:** recorded by type: internal part first, too long, contains an identifier, or two changes on one line.\n\nI also record the character count and the first word of each reply. That checks the risk in the proposal that the agent drops the leading verb and writes a long sentence. Grading is blind and a person reads every reply that is flagged or passes.\n\n**Decision rule, set before any results:**\n- If the control fails on fewer than 3 of its 30 reps, the problem didn't show up in this setup. We stop and draw no conclusion about the wording.\n- Otherwise the new line passes if, on every model:\n  - it passes at least 24 of 30 reps, and at least 7 of 10 on each task;\n  - it scores at least 6 more passes than the old line;\n  - it has at most 1 more too-long line than the old line;\n  - its replies for each task settle on one shape.\n- If it fails only on length, that means the risk in the proposal came true.\n\n**Before the run:**\n1. **Models:** which models will run this skill? Each one gets 90 reps.\n2. **Spend cap:** the stop rule is already written; it needs the cap.\n3. **Commit the design first.** I can't run git from here, so that's on you.\n\nAfter the micro-test, the original baseline scenario still needs a re-run with the new line before you merge. That's the GREEN check against 7/10.\n\nOne thing I noticed while reading the skill: its frontmatter has no `license` field, which the writing-skills checklist requires. That's separate from this change.",
+  "tool_calls": [
+    {
+      "id": "toolu_01SQjiw3A9bQVPeDytgHPrYE",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01D51dmJGVfmQk6itVkMhwT5",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01X9riFPyiNVDVsC1KELz8xQ",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01P8F2meBetHyfkAydZcuaJ5",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01814LZLgpYWmCa8MNrbicbU",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. Nothing has been run. Register this file in git before the first rep.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make an agent put the reader's outcome\nat the front of a changelog line, instead of a verb followed by an internal part (\"Fix handler\")?\nAnd does it do that without breaking the 100-character limit in step 4 (the risk named in the\nproposal)?\n\n## Arms\n\nEach arm's system prompt is the full `skills/changelog-entry/SKILL.md`. Only step 2 differs.\n\n| Arm | Step 2 in the system prompt |\n|-----|-----------------------------|\n| C (no-guidance control) | Step 2 removed. Steps renumbered 1-3. |\n| O (old line) | `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.` |\n| N (new line) | `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".` |\n\nArm O is re-run under this design instead of reusing the earlier 7/10 baseline. That baseline used a\ndifferent setup and a different scoring rule, so it is not a like-for-like comparison. We cite it\nfor context only.\n\n## Tasks\n\nEach user message gives the agent a merged PR and asks for one `CHANGELOG.md` line. Each PR is\nwritten in internal terms, so it tempts the agent to name the part instead of the outcome. None of\nthe PRs touches CSV export or the cursor, so a reply cannot pass by copying the examples in arm N.\n\n- **T1 (Fix-shaped):** PR \"Guard null `tz` in `ScheduleParser.resolve()`\". Body: meetings created\n  from a calendar invite with no time zone showed up at 00:00 UTC. They now use the user's zone.\n  Closes #482.\n- **T2 (Add-shaped):** PR \"Add `bulkArchive` endpoint + wire to `InboxToolbar`\". Body: users can\n  select many threads and archive them in one step. Before, they had to archive one at a time.\n- **T3 (Change-shaped, length bait):** PR \"Refactor `RetryPolicy`; backoff now capped at 30s; tidy\n  logging\". Body: failed uploads retry sooner on flaky networks. They used to wait up to 5 minutes.\n  This PR also renames two internal loggers (not user-visible).\n\nThe user message is the same in every arm: \"This PR just merged. Write its CHANGELOG.md entry. Reply\nwith the entry only.\"\n\n## Reps, models, cost\n\n- 10 reps per arm per task per model: 3 arms \u00d7 3 tasks \u00d7 10 = 90 reps per model. (10 also matches\n  the size of the baseline.)\n- Models: every model that will run this skill, with the same rep count on each. **Partner to\n  confirm the list** before the run.\n- Spend cap: **partner to set**. Stop rule: stop when the running total plus the next batch's worst\n  case would pass the cap. Record each batch's cost in the run log.\n- Order: run the arms interleaved by batch, not one arm after the other.\n\n## Isolation\n\n- Each rep is a single fresh-context call (or a single-shot subagent). It runs in a new empty\n  directory outside every repository, with no tools, and with user settings, instruction files\n  and memory turned off.\n- Pilot probe first: one unscored rep that asks what context it can see (instruction files,\n  memory, tools, other sessions, the user's name). If the answer shows anything we did not plan\n  for, fix the setup before any scored rep.\n- Quarantine: this file, the proposal, the kit and the baseline records must be out of every\n  rep's reach. A rep that reads one is VOID.\n- Kit (prompts, runner flags, scrub, blinding key) goes in `specs/changelog-entry-microtest/`. That\n  is outside the skill directory, so none of it ships with the skill.\n\n## Scoring rules (registered before any reply is read)\n\nEvery reply is scored with the same rubric, whatever its arm. Scoring is per reply.\n\n**PASS** if all of these hold:\n1. It is exactly one line of \u2264 100 characters. Count the line after a leading `- ` bullet is\n   stripped.\n2. The first clause, up to the first comma, semicolon, colon or dash, names something the reader\n   can now do or no longer suffers (T1: meetings at the right time; T2: archive many threads at\n   once; T3: uploads retry sooner).\n3. It names no file, class, function, endpoint, ticket or PR number.\n4. It describes one change. For T3, the logger rename is left out.\n\n**FAIL**, with every code that applies recorded:\n- `F-internal`: the first clause names an internal part, or leads with a bare verb plus an\n  internal noun (\"Fix parser\", \"Change RetryPolicy\").\n- `F-length`: more than 100 characters, or more than one line. *This is the proposal's risk.*\n- `F-id`: a file, symbol, ticket or PR number appears anywhere.\n- `F-two`: two changes on one line.\n\n**VOID:** the rep refused, gave no entry, read a quarantined file, or the probe shows the setup\nleaked. VOID reps are re-run and counted separately.\n\nRecorded on every reply (for information, not part of the verdict): character count, and the first\nword, put in one of three groups: Add/Fix/Remove/Change, another verb, or not a verb. This shows\nwhether arm N drops the leading verb, as the proposal fears.\n\n## Blind scoring\n\n- The scrub strips each reply down to its text and gives it a random ID. Sheets are shuffled across\n  arms and tasks. No file name, path, order or count can show the arm. The key is kept in the kit\n  and is not opened until every sheet is graded.\n- A script may pre-flag length, identifiers and leading words. A human reads every flagged reply\n  and every PASS before the grade is final. If the automated count and the human grade disagree,\n  the human grade stands and the disagreement is logged.\n- If a reply shows a reading these rules did not foresee, keep the registered verdict and report\n  the counts under both readings.\n\n## Decision rule (registered)\n\nPer model, after unblinding:\n\n1. **Control check:** if arm C fails on fewer than 3 of its 30 reps (`F-internal` or `F-id`), the\n   failure did not appear in this setup. Stop and report. Do not judge the wording on this run.\n2. **New line works** if all of these hold:\n   - Arm N passes on \u2265 24/30 reps, and on \u2265 7/10 within each task.\n   - Arm N's PASS count is at least 6 above arm O's.\n   - Arm N's `F-length` count is no higher than arm O's + 1.\n3. **Variance:** read arm N's replies for each task side by side. If they do not converge on one\n   shape (for example, some lead with an outcome, some with a verb plus a part, some are full\n   sentences), report the wording as not binding, even if step 2's counts pass.\n4. If step 2 fails only on `F-length`, report that as the proposal's risk coming true. Do not merge\n   as-is.\n\nThe new line must meet this rule on every model to count as a pass. Report per-model counts in a\ntable: arm \u00d7 task \u00d7 {PASS, F-internal, F-length, F-id, F-two, VOID}.\n\n## After the micro-test\n\nThis micro-test checks only the wording. Before merging, re-run the original baseline scenario with\narm N's skill and compare it to the 7/10 result. That is the GREEN step.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

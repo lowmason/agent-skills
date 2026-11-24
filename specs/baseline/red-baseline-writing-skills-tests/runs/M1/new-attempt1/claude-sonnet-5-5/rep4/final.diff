@@ -1,0 +1,89 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..d55a2b4
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,83 @@
++# Micro-test design: step 2 of `changelog-entry`
++
++Status: design only. Nothing has been run. Commit this file, with the rules below filled in, before any rep.
++
++## Question
++
++Does the proposed step 2 ("Start the line with what a reader can now do or no longer suffers...") produce entries that name the reader's outcome, without pushing entries past 100 characters?
++
++## Failure type
++
++The old line's failure is a shaping failure: entries come out as "Fix handler" or "Change parser". The proposed line is a recipe for the output's first words, which is the right form. The test checks whether the recipe binds. It also checks the risk named in the proposal: dropped verbs and entries over 100 characters.
++
++## Open items (resolve before the first rep)
++
++1. The repo has no record of the baseline (7 of 10 skipped). I need its scenario text and its definition of "skipped the rule". Arm A reuses that scenario. If the baseline judged something other than the rubric below, the rubric must be reconciled with it first.
++2. Which models run this skill? The default below is the three Claude 5 models. Drop any that will not run it.
++
++## Arms
++
++All arms use the full `skills/changelog-entry/SKILL.md` as the system prompt. Only step 2 differs.
++
++| Arm | Step 2 |
++|---|---|
++| A (control) | The old line, verbatim |
++| B (candidate) | The proposed line, verbatim |
++
++Arm A is rerun in the same harness, not taken from the earlier baseline. The earlier run may have used a different model, harness or date. The old line already fails 7 of 10, so the control is known to show the failure. If A does not fail again, stop. There is then nothing to fix, or the harness differs from the baseline's.
++
++## Tasks
++
++Each rep is one fresh single-shot call. The user message gives one merged PR (title, description, diff summary) and asks for the changelog entry. Use 5 scenarios, each run twice per arm per model, which gives 10 reps per cell. The scenarios:
++
++1. The baseline scenario (item 1 above).
++2. A bug fix whose PR title names an internal part ("Fix off-by-one in save handler") and whose user effect is only in the body.
++3. A feature whose natural description runs past 100 characters.
++4. A PR titled with a ticket number ("PROJ-412") with the behavior only in the body.
++5. A change to parser internals that has a small user-visible effect.
++
++The tasks must not mention the rubric, the arms or this test.
++
++## Isolation
++
++Follow `references/micro-tests.md`:
++- Each rep starts in a new directory outside every repository, with no tools, and with user settings, instruction files and memory off.
++- Run one probe rep first. Ask what context it can see: instruction files, memory, tools, other sessions, the user's name. Fix any unplanned answer before a scored rep.
++- Keep this file, the proposal and the baseline record out of every rep's reach. A rep that reads one is VOID.
++
++## Rules (register and commit before reading any reply)
++
++Grade each reply on four checks. A reply is PASS only if it passes all four.
++
++1. **One line.** Exactly one entry, on one line.
++2. **Length.** 100 characters or fewer. Count it with a script, not by eye.
++3. **Outcome first.** The opening words say what the reader can now do or no longer suffers, in user terms. A reply opening with an internal part (handler, parser, module, file) fails. So does one that stops at a verb plus an internal noun.
++4. **No ticket or file.** It names no ticket number and no file path as its description.
++
++Checks 1, 2 and 4 are mechanical. Check 3 is judged by hand, on blind sheets.
++
++- **FAIL:** any check fails. Record which checks, so the risk in the proposal is counted on its own: entries over 100 characters, and entries with no leading verb.
++- **VOID:** the rep read a quarantined file, the call errored or was truncated, or the reply is not an entry (a question or a refusal). A VOID rep is rerun, and the count of VOID reps is reported.
++- A missing leading verb is recorded but is not a FAIL by itself. The new line does not require one.
++
++## Verdict (per model)
++
++- **Ship B** on a model if B fails at most 1 of 10 there, and B fails fewer reps than A by a margin that A's own count supports. A at about 7 of 10 and B at 1 or fewer is a clear separation.
++- **Do not ship** if B fails 3 or more of 10 on any model, or if the over-100-character count in B is higher than in A by 3 or more.
++- **Between those** (B fails 2, or the gap is small), change the wording and rerun. Do not merge and do not add a nuance clause to the line.
++- Also read the variance. If B's 10 replies take many different shapes, the wording is not binding, even when the count passes.
++- If a reply shows a reading these rules did not foresee, keep the verdict above and report the counts under both readings.
++
++## Blind scoring
++
++Strip each reply to the entry text. Give each sheet a random id. No file name, path, order or count may show the arm or the model. Grade every sheet, then unblind.
++
++## Models and spend
++
++- Models: `claude-sonnet-5-5`, `claude-opus-5-5`, `claude-haiku-5-5`. Each runs both arms with 10 reps per arm, so 60 reps in all, plus the probe.
++- Cap: $1.00 of the $1.50 remaining. Stop rule: stop when the running total plus the next batch's worst case would pass the cap.
++- Run in batches of one model at a time, cheapest first (haiku, sonnet, opus). Record each batch's cost here as it finishes. I have not priced these runs, so I will compute the worst case for the first batch before I start it.
++
++| Batch | Reps | Cost | Running total |
++|---|---|---|---|
++| probe | 1 | | |

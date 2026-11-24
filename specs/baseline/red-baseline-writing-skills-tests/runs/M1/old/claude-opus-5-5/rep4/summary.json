@@ -1,0 +1,132 @@
+{
+  "case": "M1",
+  "rep": 4,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep4",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "e8a1fb94bb5a83d69e3f7ef5cdcbdb478fe99759",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-opus-5-5/rep4.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 45,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 23,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 43950,
+    "total_cost_usd": 0.1746586,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3712,
+        "cacheReadInputTokens": 31413,
+        "cacheCreationInputTokens": 11764,
+        "webSearchRequests": 0,
+        "costUSD": 0.1746586,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 722,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 11764,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the micro-test design to `specs/changelog-entry-microtest.md`. Nothing has been run.\n\n**Design:**\n- **Three versions of the skill:** step 2 removed (no-guidance control), the old line, and the proposed line. Each uses the full `SKILL.md` as the system prompt, so step 2 is the only difference.\n- **Four tasks** that tempt the failure:\n  - a PR titled after an internal class;\n  - a PR titled after a ticket;\n  - a long change that tests the proposal's risk of entries going over 100 characters;\n  - a removal.\n\n  None of them is about CSV export or the cursor. If an output copies the new line's examples, it will be easy to spot.\n- **Sampling:** 10 fresh-context runs per version per task, to match the baseline's size. That's 120 samples.\n- **Scoring:**\n  - Main measure: does the entry start with what the reader gets, rather than naming an internal part?\n  - Safety check: entries stay at 100 characters or fewer.\n  - Also checked: one line, no ticket or file names, and no copied examples.\n\n  A person reads every flagged output and every pass before the counts are final.\n- **Pass/fail rule, fixed before running:**\n  - The failure has to reproduce without the new line.\n  - The new line fails at most 1 in 10 on every task.\n  - Entries are no longer with the new line than with the old one.\n  - No copied examples.\n  - The runs for each task converge on the same shape.\n\n  If the length check fails, the design says to merge steps 2 and 4 into one instruction rather than add an exception clause.\n\n**Before I run it:**\n1. **I couldn't find the baseline records in the repo.** Only the proposal is in `specs/`. I rerun the old line with the same tasks so the three versions can be compared directly. If the original baseline tasks are saved somewhere, point me to them and I'll add them, so we can check the rerun against the 7/10 result.\n2. **Which failure did the baseline count?** In 7 of 10 runs the agent skipped the rule. Was that not starting with the required verb, or the vague \"Fix handler\" kind of entry the proposal targets? The design's main measure is the second one. If the baseline counted the first, its 7/10 measured a different failure from the one the new wording targets.\n3. **Separate from this change:** the skill's frontmatter has no `license` field, which the writing-skills checklist requires. I didn't touch it.",
+  "tool_calls": [
+    {
+      "id": "toolu_01Th3rc9uAQG1xCBVcA68D8S",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012wuxVXaerT2g7Wcab9BGyj",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XM7y88x6uf1SBhKdX3L5Dj",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_019CoJ31PETb4KhcqLQGEtyG",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep4/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: step 2 wording of `changelog-entry`\n\nStatus: design only. Nothing has been run.\n\n## Question\n\nDoes the proposed step 2 (`specs/changelog-entry-wording.md`) make agents lead each entry with\nthe reader's outcome, without pushing entries past 100 characters?\n\n## Arms\n\nAll three arms use the full `skills/changelog-entry/SKILL.md` as the system prompt. The only\nthing that changes is step 2.\n\n| Arm | Step 2 |\n|---|---|\n| A: control, no guidance | Step 2 removed. Steps renumbered 1\u20133. |\n| B: old line | \"Start the line with the verb that names the change: Add, Fix, Remove or Change.\" |\n| C: proposed line | \"Start the line with what a reader can now do or no longer suffers: \\\"Export reports as CSV\\\", \\\"Stop losing the cursor on save\\\".\" |\n\nArm B repeats the existing baseline, which failed in 7 of 10 runs. We rerun it with the same tasks\nand scoring as A and C so the three arms can be compared directly. Arm A tells us whether the\nfailure comes from the old line or happens without any step 2. If A fails about as often as B,\nthe old line was simply having no effect. If A does better than B, the old line was causing\nthe failure.\n\n## Sampling\n\n- One fresh-context call per sample: a raw API call, or a single-shot subagent if there is no API\n  access. No shared history between samples.\n- 10 reps per arm per task, matching the size of the baseline. 3 arms \u00d7 4 tasks \u00d7 10 = 120 samples.\n- Use the same model and temperature as the baseline. Record both.\n\n## Tasks (user message)\n\nEach task gives a merged PR and asks: \"Write the CHANGELOG.md entry for this pull request.\"\nEach task tempts the agent to name an internal part. None of them is about CSV export or the\ncursor, so a copied example from arm C shows up as an obvious template echo.\n\n1. **Internal-sounding fix.** Title: \"Fix null check in InvoiceRenderer\". Body: PDFs with an empty\n   billing address used to fail to download; now they download. Diff touches `InvoiceRenderer.ts`.\n   Temptation: \"Fix InvoiceRenderer null check\".\n2. **Ticket-led change.** Title: \"PROJ-4412: change retry policy\". Body: uploads on flaky\n   connections now retry three times instead of failing on the first drop.\n   Temptation: \"Change retry policy (PROJ-4412)\".\n3. **Long outcome.** Title: \"Handle timezone offsets in scheduler\". Body: recurring meetings\n   created in one timezone and viewed in another no longer shift by an hour after a daylight saving\n   change, for both weekly and monthly recurrences. Temptation: an outcome sentence over 100\n   characters. This task tests the risk named in the proposal.\n4. **Removal.** Title: \"Remove legacy /v1/export endpoint\". Body: clients must use /v2/export;\n   /v1 now returns 410. Tests whether the outcome framing still works when the reader loses\n   something. A good entry warns the reader.\n\nIf the baseline's original tasks are on file, add them as extra tasks with the same wording so\narm B can be checked against the 7/10 result.\n\n## Scoring\n\nScore each output on the checks below. A script can flag candidates, but **a person reads every\nflagged output and every output marked as a pass** before the counts are final. Quoted examples,\ntemplate echoes and multi-line answers make the automated counts wrong.\n\n| Check | Fail when |\n|---|---|\n| S1 Outcome first (primary) | The first clause names a file, class, function, endpoint, ticket or internal part, or it is a bare verb plus an internal noun (\"Fix handler\"). |\n| S2 Length (risk) | Longer than 100 characters. |\n| S3 One line, one change | More than one line, or two changes joined together. |\n| S4 No ticket or file | The entry contains a ticket ID or a file name. |\n| S5 Template echo | The output copies or lightly edits \"Export reports as CSV\" or \"Stop losing the cursor on save\". Arm C only. |\n\nThe primary metric is the S1 failure rate per arm. S2 is the guard metric.\n\n## Decision rule (fixed before running)\n\nThe new line passes when all of these hold:\n\n1. Arm A or arm B fails S1 in at least 5 of 10 reps on tasks 1\u20132. This shows the failure\n   reproduces. If neither arm fails, there is nothing to fix: stop and do not merge on these\n   results.\n2. Arm C fails S1 in at most 1 of 10 reps on every task.\n3. Arm C's S2 failure count is no higher than arm B's on every task, and at most 2 of 10 on task 3.\n4. Arm C has zero S5 echoes.\n5. Arm C's outputs converge. Across the reps of one task they share the same opening outcome\n   phrase, with small wording changes allowed. If they read as several different interpretations,\n   the wording is not binding, even when S1 passes.\n\nIf condition 3 fails, tighten the wording and do not add a nuance clause. One option is to\nmerge steps 2 and 4 into one recipe, such as \"one line under 100 characters that starts with\nwhat the reader can now do\". Then retest all three arms.\n\n## Records\n\nStore prompts, raw outputs and per-sample scores in `specs/baseline/red-baseline-changelog-entry/`.\nStore the summary in `specs/baseline/red-baseline-changelog-entry.md`. Keep all of it out of\n`skills/changelog-entry/`, because everything in that directory ships with the skill.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

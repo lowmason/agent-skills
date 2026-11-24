@@ -62,7 +62,9 @@ prompt, arm, condition or model, must match it, and the runner refuses a batch w
 | `test_wst_kit.py` | plan 105's tests, renamed, and the tests that Task 1 adds | 361 tests with a stub `claude` and no model (plan 105's kit has 191). The suite `writing-skills-tests-kit` in `build/suites.toml` runs them. |
 
 **The arms.** `old` is `SKILL.md`'s body and the skill folder at the commit before an item's text. `new` is
-the same at the commit of the item's text. Tasks 3 to 5 fill in the shas here. The `pilot` arm of Task 2 is
+the same at the commit of the item's text. Tasks 3 to 5 fill in the shas here. For item 1 (case M1) they are
+M1-OLD `ec641509e2719e88370bf1dec12156de4bbed1e7`, M1-NEW `fe00dc0407670040879f514fecc57961be28132b` (attempt 1)
+and M1-NEW2 `f87b1e76cf1f88bfc0888ca739b559f556327e3e` (attempt 2); see the Task 3 section. The `pilot` arm of Task 2 is
 built from HEAD and is not scored. Task 6's arms are TR-OLD and TR-NEW (the trigger test).
 
 **The Glob limits, closed.** Plan 105's audit judged a Glob pattern by its literal part only. Its record named
@@ -249,9 +251,15 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 | Task 2 Step 3: case pilot M1, T2 and R3, Sonnet | 3 | $0.2332 | $1.1745 |
 | Task 2 Step 3: case pilot R3, Opus | 1 | $0.1746 | $1.3492 |
 | Task 2 Step 3: case pilot R3 again after the fixture change, Sonnet | 1 | $0.0687 | $1.4179 |
+| Task 3 Step 1: M1 `old`, Sonnet | 5 | $0.3920 | $1.8099 |
+| Task 3 Step 1: M1 `old`, Opus | 5 | $0.9373 | $2.7473 |
+| Task 3 Step 5, attempt 1: M1 `new` at M1-NEW, Sonnet | 5 | $0.5151 | $3.2623 |
+| Task 3 Step 5, attempt 1: M1 `new` at M1-NEW, Opus | 5 | $1.1486 | $4.4109 |
+| Task 3 Step 5, attempt 2: M1 `new` at M1-NEW2, Sonnet | 5 | $0.5067 | $4.9176 |
+| Task 3 Step 5, attempt 2: M1 `new` at M1-NEW2, Opus | 5 | $1.1471 | $6.0647 |
 
 Running total after Task 2: $1.42 (about $1.4179, summed from unrounded costs). The projection below adds the
-scored runs.
+scored runs. Running total after Task 3: $6.0647 (summed from unrounded costs).
 
 ## Task 2: probes, pilots and spend projection
 
@@ -321,6 +329,147 @@ Opus case pilot cost + 96 x the mean Sonnet trigger pilot cost + 96 x the mean O
 The projection is below the $42 stop. It is also below the plan's expected $30 to $35, because the pilot reps
 are cheap (each case pilot rep ended in 5 to 17 turns, and each trigger pilot rep in at most 4 turns). A scored
 rep can cost more, and the per-pair check in Spend stop still applies.
+
+## Task 3: item 1, the micro-test method (case M1)
+
+Raw output, sheets, keys and grades stay outside the repository, in the scratch folder. Only the scrubbed rep
+folders are committed, in `runs/M1/old/<model>/`, `runs/M1/new-attempt1/<model>/` and `runs/M1/new/<model>/`
+(attempt 2). Each holds `final.diff` and `summary.json` for each rep. `check_scrub.py` printed PASS and
+`privacy_sweep.py` found 0 hits in 60 files of the runs folder. The Claude Code version was `2.1.323`.
+
+**The arms.**
+
+| Name | Commit | What it is |
+|---|---|---|
+| M1-OLD | `ec641509e2719e88370bf1dec12156de4bbed1e7` | `skills/writing-skills/` as at `main` `bc01afc`. `SKILL.md` body 19,053 characters. No `micro-tests.md`. |
+| M1-NEW | `fe00dc0407670040879f514fecc57961be28132b` | Attempt 1. Adds `references/micro-tests.md` and the pointer in micro-test step 1. Body 19,194 characters. |
+| M1-NEW2 | `f87b1e76cf1f88bfc0888ca739b559f556327e3e` | Attempt 2. M1-NEW plus one sentence in `micro-tests.md`, section "Run each model" (below). Body still 19,194 characters. |
+
+**RED (Step 1).** Five `old` reps on each model, graded alone by one Opus agent with no key. No rep was void.
+
+| Model | `old` PASS | RED |
+|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | shown |
+| `claude-opus-5-5` | 0 of 5 | shown |
+
+Every `old` rep failed part (c): it named no second model, and left one model for every arm. Three of the ten
+also failed part (a). RED is shown on both models, so item 1 is not null (Open for plan review item 3).
+
+**GREEN, attempt 1 (Step 5, at M1-NEW).** The grader graded the 10 `old` and the 10 `new` sheets together, freshly.
+
+| Model | `old` PASS | `new` PASS | RED | GREEN |
+|---|---|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | 2 of 5 | shown | missed |
+| `claude-opus-5-5` | 0 of 5 | 0 of 5 | shown | missed |
+
+GREEN missed, so the run stopped and the executor changed no wording (Open for plan review item 4). The graders'
+notes give the reason. All 8 failing `new` reps failed part (c): the design left the model list to the partner
+and named none. Seven of those 8 held parts (a) and (b). The eighth (Sonnet rep 5) also failed part (a), because
+it did not state that the directory was outside the repository. The two passing reps (Sonnet reps 2 and 4) named
+Opus, Sonnet and Haiku. All 10 `new` reps read `micro-tests.md`, and the grading of `old` did not change.
+
+**The owner's ruling (2026-11-23).** Tighten the model rule, and run the `new` arm again, with the `old` reps kept.
+The owner approved this sentence, to go at the end of the section "Run each model" in `micro-tests.md`, and
+nothing else:
+
+> Name at least two models in the design itself. If the user has not said which, choose two and say so; do not leave the choice open.
+
+This is M1-NEW2. Attempt 1's reps, sheets, key and grades stay in the scratch folder. Attempt 1's `new` reps are
+committed under `runs/M1/new-attempt1/`.
+
+**GREEN, attempt 2 (at M1-NEW2).** Five new `new` reps on each model. The grader graded the 10 `old` and the
+10 attempt-2 `new` sheets together, freshly. No rep was void.
+
+| Model | `old` PASS | `new` PASS | RED | GREEN |
+|---|---|---|---|---|
+| `claude-sonnet-5-5` | 0 of 5 | 5 of 5 | shown | met |
+| `claude-opus-5-5` | 0 of 5 | 5 of 5 | shown | met |
+
+GREEN is met on both models: `new` is at least 4 of 5 and at least `old` + 2 (Open for plan review item 4). The
+mixed grading did not change the RED verdict. `old` was 0 of 5 on both models in the RED-only grading, in
+attempt 1's mixed grading and in attempt 2's mixed grading.
+
+**Reads of `micro-tests.md`** (descriptive, from `audit.py`; no rep Read it partially or with an error). None of the
+10 `old` reps read it, because the `old` arm has no such file. All 10 `new` reps read it in attempt 1, and all 10
+in attempt 2. The Sonnet reps read it at tool call 1 (two reps in attempt 1, one in attempt 2) or at call 3. Every
+Opus rep read it at call 3.
+
+**Every scored rep.** Costs are `total_cost_usd` of each rep. The running total starts at $1.4179 (after Task 2) and
+is summed from unrounded costs.
+
+*`old` reps (RED run).* The three grade columns are the three grading rounds.
+
+| Model | Rep | RED-only grade | Mixed grade, attempt 1 | Mixed grade, attempt 2 | Read `micro-tests.md` | Cost (USD) | Running total (USD) | Grader note (RED-only round) |
+|---|---|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | FAIL | FAIL | FAIL | no | 0.0754 | 1.4933 | (c) fails: same model for every arm. (a) also missing: only a single-shot call or subagent. |
+| claude-sonnet-5-5 | 2 | FAIL | FAIL | FAIL | no | 0.0783 | 1.5716 | (c) fails: same model and settings in every arm, no second model named. |
+| claude-sonnet-5-5 | 3 | FAIL | FAIL | FAIL | no | 0.0710 | 1.6426 | (c) fails: no model named. (a) missing: fresh single-shot call only. (b) weak: threshold left to user. |
+| claude-sonnet-5-5 | 4 | FAIL | FAIL | FAIL | no | 0.0868 | 1.7294 | (c) fails: no model named at all. |
+| claude-sonnet-5-5 | 5 | FAIL | FAIL | FAIL | no | 0.0806 | 1.8099 | (c) fails: no model named. (a) also missing: a single-shot subagent is fine. |
+| claude-opus-5-5 | 1 | FAIL | FAIL | FAIL | no | 0.2224 | 2.0324 | (c) fails: same model and settings for all arms, no second model named. |
+| claude-opus-5-5 | 2 | FAIL | FAIL | FAIL | no | 0.1884 | 2.2208 | (c) fails: same model and settings as the baseline run, one model only. |
+| claude-opus-5-5 | 3 | FAIL | FAIL | FAIL | no | 0.1815 | 2.4022 | (c) fails: same model and settings for every arm, no second model named. |
+| claude-opus-5-5 | 4 | FAIL | FAIL | FAIL | no | 0.1747 | 2.5769 | (c) fails: same model and temperature as the baseline, one model only. |
+| claude-opus-5-5 | 5 | FAIL | FAIL | FAIL | no | 0.1703 | 2.7473 | (c) fails: same model and settings for all arms, no second model named. |
+
+*Attempt 1, `new` reps (M1-NEW).*
+
+| Model | Rep | Grade | Read `micro-tests.md` | Cost (USD) | Running total (USD) | Grader note |
+|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | FAIL | yes | 0.1106 | 2.8579 | (a) and (b) hold; (c) fails: asks which models, names none. |
+| claude-sonnet-5-5 | 2 | PASS | yes | 0.1066 | 2.9645 | Empty dir outside repo with settings and memory off, rules registered first, names opus, sonnet and haiku 5-5. |
+| claude-sonnet-5-5 | 3 | FAIL | yes | 0.1022 | 3.0667 | (a) and (b) hold; (c) fails: asks partner which models, names none. |
+| claude-sonnet-5-5 | 4 | PASS | yes | 0.1024 | 3.1691 | Dir outside repos with settings and memory off, rules committed first, names sonnet, opus and haiku 5-5. |
+| claude-sonnet-5-5 | 5 | FAIL | yes | 0.0932 | 3.2623 | (c) fails: model list left for partner, none named; (a) directory not stated outside repo. |
+| claude-opus-5-5 | 1 | FAIL | yes | 0.2262 | 3.4885 | (a) and (b) hold; (c) fails: models left open, none named. |
+| claude-opus-5-5 | 2 | FAIL | yes | 0.2296 | 3.7181 | (a) and (b) hold; (c) fails: partner to name models, none named. |
+| claude-opus-5-5 | 3 | FAIL | yes | 0.2234 | 3.9415 | (a) and (b) hold; (c) fails: model list left for partner, none named. |
+| claude-opus-5-5 | 4 | FAIL | yes | 0.2411 | 4.1826 | (a) and (b) hold; (c) fails: models left to fill in, falls back to one baseline model. |
+| claude-opus-5-5 | 5 | FAIL | yes | 0.2283 | 4.4109 | (a) and (b) hold; (c) fails: model list left for partner to confirm, none named. |
+
+*Attempt 2, `new` reps (M1-NEW2).*
+
+| Model | Rep | Grade | Read `micro-tests.md` | Cost (USD) | Running total (USD) | Grader note |
+|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 1 | PASS | yes | 0.1088 | 4.5197 | (a) empty dir outside repos, settings/instructions/memory off; (b) registered rules; (c) Sonnet and Haiku named. |
+| claude-sonnet-5-5 | 2 | PASS | yes | 0.0925 | 4.6122 | (a) empty dir outside repos, no settings/memory; (b) rules committed before reading; (c) Haiku and Sonnet named. |
+| claude-sonnet-5-5 | 3 | PASS | yes | 0.0976 | 4.7098 | (a) empty dir outside repos, settings/instructions/memory off; (b) rules registered first; (c) Sonnet and Haiku named. |
+| claude-sonnet-5-5 | 4 | PASS | yes | 0.0994 | 4.8092 | (a) empty dir outside repos, settings/instructions/memory off; (b) rules committed first; (c) Sonnet and Haiku named. |
+| claude-sonnet-5-5 | 5 | PASS | yes | 0.1084 | 4.9176 | (a) empty dir outside repo, no settings/instructions/memory; (b) rules committed first; (c) Sonnet and Haiku named. |
+| claude-opus-5-5 | 1 | PASS | yes | 0.2221 | 5.1397 | (a) empty dir outside repos, no settings/instructions/memory; (b) rules registered by commit; (c) Opus and Sonnet named. |
+| claude-opus-5-5 | 2 | PASS | yes | 0.2297 | 5.3694 | (a) empty dir outside repos, no settings/instructions/memory; (b) rules registered before reading; (c) Opus and Sonnet named. |
+| claude-opus-5-5 | 3 | PASS | yes | 0.2184 | 5.5878 | (a) raw API, new dir outside repos, settings/instructions/memory off; (b) rules registered; (c) Opus and Sonnet named. |
+| claude-opus-5-5 | 4 | PASS | yes | 0.2191 | 5.8068 | (a) empty dir outside repos, settings/instructions/memory off; (b) rules committed first; (c) Opus and Sonnet named. |
+| claude-opus-5-5 | 5 | PASS | yes | 0.2579 | 6.0647 | (a) empty dir outside repos, no settings/instructions/memory; (b) rules committed first; (c) Opus and Sonnet named. |
+
+**Spend by batch.** The running total is $6.0647 at the end of Task 3, below the $50 cap. The pair check passed
+before each pair (the running total plus 5 x $1.50 was at most $11.91).
+
+| Batch | Reps | Cost | Running total |
+|---|---|---|---|
+| M1 `old`, Sonnet | 5 | $0.3920 | $1.8099 |
+| M1 `old`, Opus | 5 | $0.9373 | $2.7473 |
+| M1 `new` at M1-NEW (attempt 1), Sonnet | 5 | $0.5151 | $3.2623 |
+| M1 `new` at M1-NEW (attempt 1), Opus | 5 | $1.1486 | $4.4109 |
+| M1 `new` at M1-NEW2 (attempt 2), Sonnet | 5 | $0.5067 | $4.9176 |
+| M1 `new` at M1-NEW2 (attempt 2), Opus | 5 | $1.1471 | $6.0647 |
+
+**Limits.**
+
+1. *Blind scoring is not fully blind.* A sheet that names `micro-tests.md` shows its arm, because the file exists only
+   in the `new` arm. In attempt 1, 4 of the 20 sheets named it. In attempt 2, 1 of the 20 did. The graders also
+   marked a hint on many sheets. A hint mark means the grader saw a clue about the arm or the model. Counts, by
+   arm, from the keys: the RED-only round marked 7 of the 10 `old` sheets. Attempt 1's mixed round marked 12 of 20
+   (7 `old`, 5 `new`). Attempt 2's mixed round marked 16 of 20 (7 `old`, 9 `new`). The verdicts do not turn on a
+   hint: every `old` rep failed in all three rounds, and an attempt-2 `new` rep passed when it named two models,
+   which is a visible fact of the design.
+2. *The added sentence repeats part (c) of the PASS rule.* Attempt 2's GREEN was met after a wording change that
+   attempt 1's miss guided, and the sentence asks for exactly what part (c) scores. The owner approved the sentence
+   (the ruling above). The record reports both attempts, and a reader should weigh attempt 2 as a result that the
+   first miss shaped.
+3. *Three grading rounds, one agent each.* The graders were Opus agents with no key: the RED-only grading of the 10
+   `old` sheets, attempt 1's mixed grading of 20 sheets, and attempt 2's mixed grading of 20 sheets. The `old`
+   sheets were graded three times, each time freshly, with new ids.
 
 ## Deviations from the plan's Task 1 text
 

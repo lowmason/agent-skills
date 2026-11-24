@@ -1,0 +1,133 @@
+{
+  "case": "M1",
+  "rep": 1,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep1",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "22d9435edeb0bd08c7d111a04b1db42f37f58529",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-sonnet-5-5/rep1.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 24,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep1/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 20,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 24146,
+    "total_cost_usd": 0.0754123,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 2852,
+        "cacheReadInputTokens": 31083,
+        "cacheCreationInputTokens": 10943,
+        "webSearchRequests": 0,
+        "costUSD": 0.0754123,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 309,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 10943,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**Design**\n- **Arms:**\n  - A uses the current skill with the old step 2.\n  - B uses the same file with only step 2 replaced.\n  - C is a no-guidance control.\n  - Each system prompt is the whole skill file, not step 2 alone.\n  - I re-run A rather than reuse the old 7 of 10, so all arms share the same tasks, model and scoring.\n- **Samples:** 3 tasks \u00d7 5 reps \u00d7 3 arms is 45 fresh-context samples. The tasks are:\n  1. A PR with an internal-sounding title, which tempts \"Fix handler\".\n  2. A mixed fix-and-feature PR, which tempts two changes on one line or a line that runs long.\n  3. A removal PR, to check the new wording doesn't hurt the case where the old verb-first line worked.\n- **Scoring:** I read every output by hand. Each one is checked for:\n  - outcome first;\n  - a behavior named instead of a file or ticket;\n  - 100 characters or fewer;\n  - one change on one line.\n\n  I track a dropped leading verb separately, since the proposal names it as a risk. Copies of the two quoted examples count as echoes, not passes.\n- **Decision rule, set before running:**\n  - Ship B if its pass rate is clearly above A's and it doesn't push more entries past 100 characters or drop the verb more often.\n  - If B's outputs take different shapes across reps, tighten the form before adding words.\n  - If C already passes, the skill isn't the cause, so we stop.\n\n**Open items**\n- The old baseline's prompts and transcripts aren't in the repo. `specs/` only has the proposal. Could you point me to the task text it used? I'd reuse it for task 1, and I need to know which rule the agents skipped. I assumed it was the vague, internal-part entries, but I haven't confirmed that.\n- 15 samples per arm can tell 30% from 90%, but not a small difference. If the result is close, I'll say so rather than call it.\n- This checks the wording only. It doesn't replace a pressure scenario.",
+  "tool_calls": [
+    {
+      "id": "toolu_011deFDkZesAPeqr87FKYD8u",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016QAHQt7y2fznsnDG3sAAhw",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012kSoo3Ya336dsYBg1yuT9A",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*",
+        "path": "/private/tmp/wst107/rep1/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XDnBc9a2CgbSt8gpqtNq3J",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep1/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: new step 2 wording for `changelog-entry`\n\nStatus: design only. Nothing has been run.\n\n## Question\n\nDoes the proposed step 2 produce entries that lead with the reader's outcome, without the two regressions the proposal names (no leading verb, over 100 characters)? Does it do so better than the old line?\n\n## Variants\n\n| Arm | System prompt |\n|---|---|\n| A. Control (old line) | Full current `skills/changelog-entry/SKILL.md` |\n| B. Candidate (new line) | Same file with only step 2 replaced by the proposed line |\n| C. No guidance | No skill text. Only a one-line role (\"You write entries for CHANGELOG.md.\") |\n\nArm C tells us whether the failure exists without the skill. If C already writes good entries, there is nothing to fix and we stop. Arm A is the baseline already run (7 of 10 skipped the rule). I re-run it here anyway, so A and B share the same tasks, model and scoring. Don't compare B to the old runs.\n\nThe system prompt is the whole skill file, not step 2 alone, because that is the context the line lives in.\n\n## Samples\n\n- One fresh context per sample: a single-shot call or subagent, no shared history.\n- 3 tasks \u00d7 5 reps \u00d7 3 arms = 45 samples. 5 reps per cell is the floor.\n- Same model for every arm.\n\n## Tasks\n\nThe user message gives a merged PR (title, short diff summary, ticket id) and asks for the CHANGELOG.md line. Each task tempts a different failure:\n\n1. Internal-looking PR. Title \"Fix handler null check in ExportController (PROJ-412)\". The real effect is that CSV export no longer crashes on empty reports. This tempts \"Fix handler\".\n2. Mixed PR. A bug fix and a small new option. This tempts two changes on one line, and a long sentence trying to cover both.\n3. Removal PR. A deprecated flag is removed. This is the case where a verb-first entry is most natural, so it shows whether the new line damages a case the old one handled.\n\nBefore running, I need the task text the baseline used. If those prompts are on disk, reuse them for task 1 at least. I could not find them in `specs/`.\n\n## Scoring\n\nRead every output by hand. Programmatic checks only pre-sort. Each output gets these labels:\n\n1. Outcome first: the line starts with what the reader can now do or no longer suffers. A line like \"Fix handler\" fails.\n2. Names a behavior, not a file, class or ticket number (step 3).\n3. 100 characters or fewer (programmatic, exact count).\n4. Exactly one line, one change (Common Mistakes).\n5. Leading verb dropped. A line starting with a noun phrase like \"CSV export of empty reports\" is flagged as a regression, whatever its quality.\n\nPass means labels 1\u20134 hold. Label 5 is tracked separately, because the proposal calls it a risk. It is not a requirement.\n\nManually check anything that matched by accident: a quoted example copied from the skill (\"Export reports as CSV\") counts as an echo, not as success. Count echoes separately.\n\n## Decision rule (set before running)\n\n- Ship B if its pass rate is clearly above A's (the old baseline failed 7 of 10, so I expect A near 30%), and B's over-100-characters and dropped-verb counts are not higher than A's by more than one sample per task.\n- If the reps in B give different shapes (some verb-first, some noun phrases, some sentences), the wording does not bind. Tighten the form first. Don't add words.\n- If B fixes the vague entries but pushes lines over 100 characters, a fix would be a separate conditional on an observable predicate. Don't add an \"unless\" clause to step 2.\n- If C passes about as often as A and B, the skill is not the cause. Stop and report.\n\n## Limits\n\n- 15 samples per arm can separate 30% from 90%. It cannot show small differences. Say so if the result is close.\n- This checks the wording. It is not a pressure scenario, and it does not replace one if you want the skill checked under time or sunk-cost pressure.\n- Echo of the two quoted examples is likely. Task 3 and the scoring above are there to catch it.\n\n## Output\n\nWrite results to `specs/changelog-entry-microtest-results.md`: a table per arm and task with counts per label, plus every failing output verbatim.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,133 @@
+{
+  "case": "M1",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep5",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "350c9f1eeb9a2e6c6a619696efd1b8e0d1b2b286",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 26,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 21,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 25279,
+    "total_cost_usd": 0.0805581,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3217,
+        "cacheReadInputTokens": 31281,
+        "cacheCreationInputTokens": 11312,
+        "webSearchRequests": 0,
+        "costUSD": 0.0805581,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 549,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 11312,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**One open point.** The baseline records aren't in `specs/`, so I don't know which rule the agent skipped in 7 of 10 runs or how it was scored. The design scores outputs on the same checks the proposal cares about. Can you point me to the baseline scenarios and scoring? If you can't, I'll rebuild them. Reusing the baseline runs only works if they used the same harness.\n\n**What the design compares.**\n- **Variants:** A is the full current SKILL.md. B is the same file with only step 2 replaced by the proposed line. C is no skill at all, as a floor.\n- **Runs:** each variant gets one fresh single-shot sample per call, with the full skill as the system prompt. A and B get 10 runs per scenario, and C gets 5.\n- **Scenarios (5):**\n  - A bug fix in an internal component (a handler or parser).\n  - A PR whose title names a file and a ticket number.\n  - A PR with two user-visible changes.\n  - A refactor-only PR, which should produce no entry.\n  - A feature that is long to describe, to pressure the 100-character limit.\n\n**Scoring.** I read every output by hand. The checks are:\n- Does the line state the reader's outcome?\n- Does it start with that outcome?\n- Is it 100 characters or fewer, on one line?\n- Does it describe a behavior rather than a file or ticket?\n\nThe two risks from the proposal, a dropped leading verb and an over-100-character line, are counted separately. A line that starts with a verb other than Add, Fix, Remove or Change doesn't count as a dropped verb, because the new line allows it.\n\n**Decision rules, fixed before running.**\n- **Merge B** if the outcome, start, length and behavior checks each pass in at least 8 of 10 runs in every scenario. B must also beat A on the outcome check in the first two scenarios.\n- **Don't merge** if B's rate of over-100 or dropped-verb lines is 2 or more runs higher than A's in any scenario.\n- **Tighten the wording** if B's outputs split across shapes and none holds in 7 of 10 runs. I'd tighten the form before adding words.\n- **Rethink the scenarios** if A already passes the outcome check in 8 or more of 10 runs. In that case the baseline failure doesn't reproduce here.\n\nIf you approve the design, I'll run it after you answer the baseline question.",
+  "tool_calls": [
+    {
+      "id": "toolu_01MVW82AbjXQ93ZudiTppUn7",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01HYpXLa3Cim6GcGaZFfaguC",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013gkiH4VbP1PsRwpqsJPtAi",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*",
+        "path": "/private/tmp/wst107/rep5/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CuianVjQUkbUftE3pyptE5",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep5/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test: `changelog-entry` step 2 wording\n\nNothing has been run. This is the design only.\n\n## Question\n\nDoes the proposed step 2 make agents lead with the reader's outcome, without the two risks in the proposal: a dropped leading verb, and a line over 100 characters?\n\n## Failure type\n\nThe old line produces entries with the wrong shape (\"Fix handler\", \"Change parser\"). The proposed line is a positive recipe, which is the right form for this failure. The test checks that the recipe binds. It does not test a rule-skipping failure.\n\n## Open point to settle before running\n\nThe baseline says the agent \"skipped the rule\" in 7 of 10 runs. The baseline records are not in `specs/`, so I don't know which rule was skipped or how it was scored. Step 5 below scores the same way the baseline did. Please point me to the baseline scenarios and scoring, or tell me if they should be rebuilt.\n\n## Variants\n\n| Variant | Skill text given to the agent |\n|---|---|\n| A: old | Full current SKILL.md (step 2 as is) |\n| B: new | Full SKILL.md with only step 2 replaced by the proposed line |\n| C: none | No skill at all, as a floor |\n\n- B differs from A by that one line. Nothing else changes: no added counters, no nuance clauses.\n- If the baseline used the same scenarios and harness, reuse its 10 runs as A. Otherwise rerun A now, so A and B share a harness.\n\n## Setup\n\n- One fresh-context sample per call. A single-shot subagent is fine.\n- System prompt: the variant's SKILL.md in full.\n- User message: a merged-PR description and diff summary, with the task \"write the changelog entry\".\n- Scenarios, each tempting a different failure:\n  1. Bug fix inside an internal component (a handler or parser), where the user symptom is only implied by the diff.\n  2. A behavior change whose PR title names a file and a ticket number.\n  3. A PR with two user-visible changes, to see whether the line is split or merged.\n  4. A refactor-only PR, which should produce no entry (step 1).\n  5. A feature whose natural description is long, to pressure the 100-character limit.\n- Reps: 10 per variant per scenario (A, B). C gets 5 per scenario.\n- Record each output verbatim.\n\n## Scoring\n\nEach entry gets these checks, scored by hand. I will read every output. Programmatic length counts are a helper only.\n\n1. Reader outcome: the line states what the reader can now do or no longer suffers. A line that names only an internal part fails.\n2. Starts with that outcome: the first words are the outcome.\n3. Length: 100 characters or fewer, on one line.\n4. Behavior, not file or ticket: no ticket number or filename standing in for a description.\n5. One change per line (scenario 3 only: a split into separate lines counts as a pass).\n6. Scenario 4 only: no entry written.\n\nSeparate counts for the two risks in the proposal:\n- Dropped verb: the line has no verb at all, such as a bare noun phrase. A line that starts with a verb other than Add, Fix, Remove or Change is not a drop. The new line permits it.\n- Over 100 characters.\n\n## Decision rules, fixed before running\n\n- Merge B if checks 1 through 4 each pass in at least 8 of 10 runs in every scenario, and B beats A on check 1 in scenarios 1 and 2.\n- Do not merge if B's over-100 or dropped-verb rate is above A's by 2 or more runs of 10 in any scenario.\n- If B's runs split across shapes (for example, a mix of \"Export...\" phrasing, noun phrases and \"Fix...\" lines) and no shape holds in 7 of 10, the wording is not binding. Tighten the form before adding words.\n- If A already passes check 1 in 8 or more of 10 runs on these scenarios, the baseline failure doesn't reproduce here. Stop and rethink the scenarios before judging B.\n\n## Notes\n\n- Check 2 matters because the proposal's own examples (\"Export reports as CSV\", \"Stop losing the cursor on save\") start with verbs, so agents may copy that shape. That is fine if the verb carries the outcome. It is a failure if the line is \"Fix: cursor loss\" or similar.\n- If B fails on length, a length fix goes in step 4 only if it is tested separately. It is not bundled into this change.\n- C is only for context. It is not part of the merge decision.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

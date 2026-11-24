@@ -1,0 +1,132 @@
+{
+  "case": "M1",
+  "rep": 2,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst107/rep2",
+  "skill_root": "/private/tmp/wst107-skill",
+  "base": "85fff2f4cca61a068155bdb28df7d231bb8ea486",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan107/cases/M1/old/claude-sonnet-5-5/rep2.jsonl",
+  "prompt_sha256": "19b93db0e8d55ea32fbc0d3c41a9d35ea4af8a389c573e41f3707101fe26ad47",
+  "claude_exit": 0,
+  "wall_seconds": 24,
+  "init": {
+    "cwd": "/private/tmp/wst107/rep2/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 20,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 24410,
+    "total_cost_usd": 0.0783104,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3067,
+        "cacheReadInputTokens": 31044,
+        "cacheCreationInputTokens": 11131,
+        "webSearchRequests": 0,
+        "costUSD": 0.0783104,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 348,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 11131,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the micro-test design to `specs/changelog-entry-microtest.md`. I haven't run anything.\n\n**What it tests:** two arms, with only step 2 (line 20 of SKILL.md) differing between them.\n- **Control:** the old verb line. It's rerun so both arms share the same tasks, model and scorer.\n- **Variant:** the proposed line.\n- **Optional third arm:** no skill, to see whether the skill helps at all.\n\nEach arm gets at least 10 fresh single-shot samples per scenario, matching the baseline's 10. There are five scenarios:\n- a \"Fix handler\" trap\n- a parser change\n- a feature removal\n- a change that is hard to say in 100 characters, to probe the risk you named\n- a refactor with one small visible change\n\n**Scoring:** every output is checked for these:\n- The entry leads with the reader's outcome.\n- It's one line of 100 characters or fewer, counted by script.\n- It has no ticket ID or file name, checked by regex.\n- It holds one change.\n- A pure refactor gets no entry.\n\nWhether the line starts with Add, Fix, Remove or Change is recorded but not scored. Dropping the verb is only a problem if it leads to a failed outcome or length check.\n\n**Merge criteria, fixed before running:** merge if the new wording fails the outcome check in at most 2 of 10 runs per scenario. It must also have no more length failures than the old line, and no more failures than the old line on the ticket/file, one-change and refactor checks. If it fixes the outcome check but raises length failures, revise instead of merging. If the old line doesn't reproduce the failure again, stop.\n\n**Two things I need from you:**\n1. **Baseline scenarios:** I couldn't find the baseline's scenarios or outputs under `specs/`. Only the proposal is there. If you have them, the test should reuse them. If not, the design uses scenarios I wrote, and the old-line arm has to be rerun anyway.\n2. **Definition of \"skipped the rule\":** I assumed it means the entry doesn't lead with the reader's outcome. If your baseline defined it differently, for example as a missing leading verb, tell me so I can align the scoring.\n\nI also couldn't write the recipe for a revised line, since that depends on the results.",
+  "tool_calls": [
+    {
+      "id": "toolu_01QtH9Anhvzjb7Y3oyDm3hCK",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01L7BgEXE97jBtK87BMvquui",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/skills/changelog-entry/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01PUwQumjByqLkEPpDTgTLiT",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XtKbTML61p1i2ZMzs1nUCT",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst107/rep2/repo/specs/changelog-entry-microtest.md",
+        "content": "# Micro-test design: `changelog-entry` step 2 wording\n\nStatus: design only. Nothing has been run.\n\n## Question\n\nDoes the proposed step 2 make agents write entries that lead with the reader's outcome, without\nbreaking the 100-character limit or the other steps?\n\n- Old (control): `2. Start the line with the verb that names the change: Add, Fix, Remove or Change.`\n- New (variant): `2. Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\".`\n\nThe failure is a shaping failure (entries with the wrong shape, such as \"Fix handler\"). The new line is\nalready a positive recipe, so this test checks that wording and does not add prohibitions.\n\n## Arms\n\n| Arm | System prompt | Purpose |\n|---|---|---|\n| A. Old line | Full current SKILL.md | Control. The baseline gave 7/10 skips. Rerun it so both arms use the same tasks, model and scorer. |\n| B. New line | Full SKILL.md with only line 20 changed | Variant |\n| C. No skill (optional) | Bare \"write a changelog entry\" instruction | Shows whether the skill helps at all. Skip if A already reproduces the failure. |\n\nOnly line 20 may differ between A and B. Diff the two prompt files before running.\n\n## Samples\n\n- One fresh-context call per sample: a single-shot subagent or a raw API call, with no shared history.\n- At least 10 reps per arm per scenario, matching the baseline's 10. Five is the minimum.\n- Use the same model and settings in every arm.\n\n## Scenarios (user message)\n\nEach one is a merged-PR description that tempts the failure. **Reuse the baseline's scenarios if the\nbaseline kit has them.** I did not find them under `specs/`, so please point me to them. If they\nare lost, write the ones below and rerun arm A.\n\n1. A bug fix inside an internal part. The diff touches `handler.py` and the ticket is `PROJ-482`.\n   The user-visible effect is that the cursor no longer jumps on save. This is the \"Fix handler\" trap.\n2. A parser change that adds support for a new input format.\n3. A change that removes a feature, such as a deprecated flag.\n4. A change with a user-visible effect that is hard to say in 100 characters. A long PR description\n   with many details tests the stated risk.\n5. A refactor plus one small visible change. This checks that step 1 still holds.\n\n## Scoring\n\nScore every output with these observable checks. Do not use judgment calls beyond the two marked \"read\".\n\n| Check | Pass condition |\n|---|---|\n| P1 Outcome first | The line states what the reader can do or no longer suffers. It does not name an internal part, file or ticket as its subject. (read) |\n| P2 Length | The entry is one line of 100 characters or fewer. Count it with a script. |\n| P3 No ticket or file | No ticket ID and no file name appears. Check with a regex. |\n| P4 One change | The line holds exactly one change. (read) |\n| P5 Step 1 | If the PR is a pure refactor, the agent writes no entry. |\n\nAlso record, without scoring it as pass or fail: whether the line begins with Add, Fix, Remove or Change.\nThis measures the stated risk (verb dropped) and is not itself a failure. P1 and P2 decide.\n\n\"Skipped the rule\" means that P1 fails. Use the same definition the baseline used. If the baseline\nused another one, align to it before running.\n\nRead every flagged output by hand. Quoted examples copied from the skill (\"Export reports as CSV\")\ncan look like hits, so check that they are not echoes.\n\n## Decision, fixed before running\n\n- **Merge** if B fails P1 in at most 2 of 10 runs per scenario, B has no more P2 failures than A, and B\n  does not fail P3, P4 or P5 more than A does.\n- **Do not merge, revise** if B fixes P1 but raises P2 failures. That is the stated risk. Then try a\n  recipe that keeps the outcome first and adds the length limit in the same step. Retest it as a new arm.\n- **Do not merge** if B is no better than A on P1.\n- If the 10 outputs of B take many different shapes, the wording does not bind. Tighten the form\n  before adding words.\n- If A does not reproduce the failure (fewer than about 5 of 10 skips), stop. The baseline is not\n  stable and there is nothing to fix yet.\n\n## Record\n\nSave the prompts, raw outputs and score table in `specs/baseline/` next to the existing baseline\nrecord, not in `skills/changelog-entry/`. Keep the kit out of the skill directory because everything\nin it ships.\n\n## Limits\n\n- This checks the wording only. The skill is a technique skill, and the full pressure-scenario run\n  is a separate gate.\n- The 10-run sample is small. Treat a result near the threshold as unclear and run more.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/changelog-entry-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

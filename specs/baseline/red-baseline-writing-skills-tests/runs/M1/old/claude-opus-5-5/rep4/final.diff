@@ -1,0 +1,101 @@
+diff --git a/specs/changelog-entry-microtest.md b/specs/changelog-entry-microtest.md
+new file mode 100644
+index 0000000..ba5c9cf
+--- /dev/null
++++ b/specs/changelog-entry-microtest.md
+@@ -0,0 +1,95 @@
++# Micro-test design: step 2 wording of `changelog-entry`
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does the proposed step 2 (`specs/changelog-entry-wording.md`) make agents lead each entry with
++the reader's outcome, without pushing entries past 100 characters?
++
++## Arms
++
++All three arms use the full `skills/changelog-entry/SKILL.md` as the system prompt. The only
++thing that changes is step 2.
++
++| Arm | Step 2 |
++|---|---|
++| A: control, no guidance | Step 2 removed. Steps renumbered 1–3. |
++| B: old line | "Start the line with the verb that names the change: Add, Fix, Remove or Change." |
++| C: proposed line | "Start the line with what a reader can now do or no longer suffers: \"Export reports as CSV\", \"Stop losing the cursor on save\"." |
++
++Arm B repeats the existing baseline, which failed in 7 of 10 runs. We rerun it with the same tasks
++and scoring as A and C so the three arms can be compared directly. Arm A tells us whether the
++failure comes from the old line or happens without any step 2. If A fails about as often as B,
++the old line was simply having no effect. If A does better than B, the old line was causing
++the failure.
++
++## Sampling
++
++- One fresh-context call per sample: a raw API call, or a single-shot subagent if there is no API
++  access. No shared history between samples.
++- 10 reps per arm per task, matching the size of the baseline. 3 arms × 4 tasks × 10 = 120 samples.
++- Use the same model and temperature as the baseline. Record both.
++
++## Tasks (user message)
++
++Each task gives a merged PR and asks: "Write the CHANGELOG.md entry for this pull request."
++Each task tempts the agent to name an internal part. None of them is about CSV export or the
++cursor, so a copied example from arm C shows up as an obvious template echo.
++
++1. **Internal-sounding fix.** Title: "Fix null check in InvoiceRenderer". Body: PDFs with an empty
++   billing address used to fail to download; now they download. Diff touches `InvoiceRenderer.ts`.
++   Temptation: "Fix InvoiceRenderer null check".
++2. **Ticket-led change.** Title: "PROJ-4412: change retry policy". Body: uploads on flaky
++   connections now retry three times instead of failing on the first drop.
++   Temptation: "Change retry policy (PROJ-4412)".
++3. **Long outcome.** Title: "Handle timezone offsets in scheduler". Body: recurring meetings
++   created in one timezone and viewed in another no longer shift by an hour after a daylight saving
++   change, for both weekly and monthly recurrences. Temptation: an outcome sentence over 100
++   characters. This task tests the risk named in the proposal.
++4. **Removal.** Title: "Remove legacy /v1/export endpoint". Body: clients must use /v2/export;
++   /v1 now returns 410. Tests whether the outcome framing still works when the reader loses
++   something. A good entry warns the reader.
++
++If the baseline's original tasks are on file, add them as extra tasks with the same wording so
++arm B can be checked against the 7/10 result.
++
++## Scoring
++
++Score each output on the checks below. A script can flag candidates, but **a person reads every
++flagged output and every output marked as a pass** before the counts are final. Quoted examples,
++template echoes and multi-line answers make the automated counts wrong.
++
++| Check | Fail when |
++|---|---|
++| S1 Outcome first (primary) | The first clause names a file, class, function, endpoint, ticket or internal part, or it is a bare verb plus an internal noun ("Fix handler"). |
++| S2 Length (risk) | Longer than 100 characters. |
++| S3 One line, one change | More than one line, or two changes joined together. |
++| S4 No ticket or file | The entry contains a ticket ID or a file name. |
++| S5 Template echo | The output copies or lightly edits "Export reports as CSV" or "Stop losing the cursor on save". Arm C only. |
++
++The primary metric is the S1 failure rate per arm. S2 is the guard metric.
++
++## Decision rule (fixed before running)
++
++The new line passes when all of these hold:
++
++1. Arm A or arm B fails S1 in at least 5 of 10 reps on tasks 1–2. This shows the failure
++   reproduces. If neither arm fails, there is nothing to fix: stop and do not merge on these
++   results.
++2. Arm C fails S1 in at most 1 of 10 reps on every task.
++3. Arm C's S2 failure count is no higher than arm B's on every task, and at most 2 of 10 on task 3.
++4. Arm C has zero S5 echoes.
++5. Arm C's outputs converge. Across the reps of one task they share the same opening outcome
++   phrase, with small wording changes allowed. If they read as several different interpretations,
++   the wording is not binding, even when S1 passes.
++
++If condition 3 fails, tighten the wording and do not add a nuance clause. One option is to
++merge steps 2 and 4 into one recipe, such as "one line under 100 characters that starts with
++what the reader can now do". Then retest all three arms.
++
++## Records
++
++Store prompts, raw outputs and per-sample scores in `specs/baseline/red-baseline-changelog-entry/`.
++Store the summary in `specs/baseline/red-baseline-changelog-entry.md`. Keep all of it out of
++`skills/changelog-entry/`, because everything in that directory ships with the skill.
