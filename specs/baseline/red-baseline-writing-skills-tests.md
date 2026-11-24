@@ -199,6 +199,33 @@ A rep loads when `triggers.py loads` says `load`. It reads the stream as it stan
 `triggers.py tally` applies these rules to the counts. A full run has 3 reps in each of 64 cells (8 prompts,
 2 arms, 2 conditions, 2 models).
 
+### The narrow check
+
+The owner registered this check on 2026-11-24, after the 15-rep test above failed its floor. The 15-rep test
+stays as registered. Its `triggers.py tally` verdict stays `uninformative (below the floor)`: on Sonnet, the `old`
+arm in `full` loaded `writing-skills` in 3 of 15 should-load reps (P3 only; P1, P2, P4 and P5 loaded nothing),
+the same as the pilot.
+
+These rules were written after the floor failed at Sonnet `old` in `full`. The 25 Sonnet `old` reps in `full`
+already existed when the rules were written, and they were read first. Their loads of `writing-skills` were: P3
+3 of 3 valid reps (rep 1 was void, and rep 4 replaced it), and N1, N2 and N3 0 of 3 each. The rules below reuse
+those reps. The Sonnet `old` `full` result therefore did not test a prediction. It is the input that these rules
+use.
+
+- **Cells.** For each model (`claude-sonnet-5-5`, `claude-opus-5-5`) and condition (`full`, `cut150`): P3 with 5
+  valid reps per arm (should-load), and N1, N2 and N3 with 3 valid reps each per arm (near-miss, 9 per arm).
+  The arms are `old` (TR-OLD) and `new` (TR-NEW). A void rep is replaced, as in the VOID rule.
+- **Informative cell.** A cell (one model and one condition) is informative only when `old` loads `writing-skills`
+  in at least 3 of the 5 P3 reps. A cell that is not informative says so, and its `new` group is not run, because
+  nothing can be lost there.
+- **Bars,** on an informative cell: P3 loads of `new` are at least `old` - 1 (of 5), and near-miss loads of
+  `writing-skills` in `new` are at most `old` + 1 (of 9).
+- **Verdict.** The check passes when at least one `full` cell is informative and every informative cell meets
+  both bars. It is uninformative when no `full` cell is informative. The description reorder stays on a pass. On
+  a failed bar the controller asks the owner, and the default is to revert.
+- **Reading.** The tally for this check is by hand, from `triggers.py loads` for each prompt. The record shows the
+  table.
+
 ## Codex cut
 
 Task 6 Step 1 measures this. The check passes when the candidate's Codex entry holds "micro-testing" whole
