@@ -4914,6 +4914,7 @@
   "skills/writing-skills/SKILL.md": {
    "skills.description": "sha256:132d431c37bb5ee5a14c088018ae5ae91c212d53cae0f0f5365dddc4dc65b99c",
    "skills.frontmatter": "sha256:0552041796f1bfb07744a4b7963a8a68737ca230d383206591eef67949641b55",
+   "skills.iterating": "sha256:9b4d78a3ef465865b60d25f164e591e6be6ea293bb195b1497a65c55231e83a4",
    "skills.listing-budget": "sha256:c5d2d7fa1ed84bbe689e0c801bae70f69150fbc179d91a1097952ab98e1bf937",
    "skills.locations": "sha256:df2ebadb677ff51dc92458ca523316cb01bf162ec31eabe3f6df37ca903abefb",
    "skills.progressive-disclosure": "sha256:d362daa0485a8505a431cf71fe4cbd1d30f89a419d507d106e234a207785a9b8",
