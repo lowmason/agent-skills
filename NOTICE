@@ -1190,6 +1190,17 @@ Changes from upstream:
     comment and in any letter case, as dot does. Its --combine option
     skips an undirected graph block, names it on stderr and renders the
     rest. These changes are local, and no upstream text was taken.
+  - Plan 107 (2026-11-24) changed writing-skills, from
+    specs/writing-skills-improvements.md. The changes are local, and no
+    upstream text was taken. references/micro-tests.md is new: it says how
+    to isolate reps, probe the isolation, quarantine the scenario, register
+    the rules first, score blind, run each model and cap the spend.
+    discovery.md gains a trigger test, and claude-code.md the Claude Code
+    mechanics of the trigger test. Items 1 and 2 were tested RED first,
+    with this repository's own fixtures
+    (specs/baseline/red-baseline-writing-skills-tests.md). The rename
+    procedure was dropped, because its control already passed. The
+    reordered description was reverted, because its trigger check failed.
 
     brainstorming/
     dispatching-parallel-agents/
