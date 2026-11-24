@@ -69,7 +69,8 @@ and M1-NEW2 `f87b1e76cf1f88bfc0888ca739b559f556327e3e` (attempt 2); see the Task
 (attempt 1), T2-NEW2 `261e039efcb9cb10811b47e839e3513e8841689f` (attempt 2) and T2-NEW3
 `bfe4da46806d5d88249278ade30fd980947f0cd5` (attempt 3); see the Task 4 section. For item 10 (case R3) there is
 R3-OLD `068115951015ed8204f6f25fe89c7c6dd14d4a60` only, because the control was null and no `new` arm exists; see the
-Task 5 section. The `pilot` arm of Task 2 is built from HEAD and is not scored. Task 6's arms are TR-OLD and TR-NEW (the trigger test).
+Task 5 section. The `pilot` arm of Task 2 is built from HEAD and is not scored. For item 3b (Task 6, the trigger test) TR-OLD is `32b296a2d4537599e57c924c86330b31a3a136de` and TR-NEW is
+`063b8b823a72aa24cd305ab399fdb7314a7c15f4`; see the Task 6 section.
 
 **The Glob limits, closed.** Plan 105's audit judged a Glob pattern by its literal part only. Its record named
 three open reaches. Plan 107 closes each one, with a test and a mutant:
@@ -298,11 +299,19 @@ one model and condition. A pair that fails the check stops the run: report BLOCK
 | Task 4 Step 6, attempt 3: T2 `new` at T2-NEW3, Opus | 5 | $1.0712 | $11.4386 |
 | Task 5 Step 1: R3 `old`, Sonnet | 5 | $0.3025 | $11.7411 |
 | Task 5 Step 1: R3 `old`, Opus | 5 | $0.7508 | $12.4919 |
+| Task 6 Step 3: trigger test, Sonnet `full` `old`, P1 to P5 and N1 to N3 (3 reps each) | 24 | $1.6952 | $14.1871 |
+| Task 6: P3 `old` `full` Sonnet, rep 4 (replaces void rep 1) | 1 | $0.1005 | $14.2876 |
+| Task 6: aborted P3 `old` `full` Sonnet rep 5 (runner killed; stream kept in scratch, never scored) | 1 | $0.0876 | $14.3752 |
+| Task 6, narrow check: P3 `old` `full` Sonnet, reps 5 and 6 (top-up) | 2 | $0.1575 | $14.5327 |
+| Task 6, narrow check: Sonnet `full` `new` (P3 5 reps, N1 to N3 3 reps each) | 14 | $1.1061 | $15.6388 |
+| Task 6, narrow check: Sonnet `cut150` `old` (with 2 replacements for voids) | 16 | $0.7507 | $16.3895 |
+| Task 6, narrow check: Sonnet `cut150` `new` (stopped by the third void) | 14 | $0.7058 | $17.0953 |
 
 Running total after Task 2: $1.42 (about $1.4179, summed from unrounded costs). The projection below adds the
 scored runs. Running total after Task 3: $6.0647 (summed from unrounded costs).
 Running total after Task 4: $11.4386 (summed from unrounded costs).
 Running total after Task 5: $12.4919 (summed from unrounded costs).
+Running total after Task 6: $17.0953 (summed from unrounded costs).
 
 ## Task 2: probes, pilots and spend projection
 
@@ -803,6 +812,118 @@ Both bounds are far below the $50 cap.
    of the old text. Item 10 stays open in the spec. The plan-completion gate should list it as a known gap.
 4. *The `sniffing-csv-headers` flag is descriptive only.* It does not score a rep. The count (Sonnet 0 of 5, Opus 2
    of 5) comes from `audit.py`, which tests whether the final message names that skill.
+
+## Task 6: item 3b, front-load the description
+
+Raw output stays outside the repository, in the scratch folder. The scrubbed tally and the per-rep load lines are
+committed in `runs/triggers/` (`tally.txt` is `triggers.py tally` on the scored root, and `loads.tsv` has one line
+for each rep: valid or void, whether it loaded `writing-skills`, the skills it called, its result subtype and its
+cost). There are no raw streams, no `competitors.txt` and no skill text. The Claude Code version was `2.1.323`.
+
+**The commits.**
+
+| Name | Commit | What it is |
+|---|---|---|
+| TR-OLD | `32b296a2d4537599e57c924c86330b31a3a136de` | `skills/writing-skills/` at the head of Task 5. The old description. |
+| TR-NEW | `063b8b823a72aa24cd305ab399fdb7314a7c15f4` | The description with the testing triggers first (368 characters; the first 150 hold "fails to trigger", "over-triggers", "tightening a description", "pressure-testing" and "micro-testing"). The `SKILL.md` body stayed at 19,258 characters. |
+| Revert | `0620898effcc108fe7f398331f824ecd8e0cc578` | `git revert` of TR-NEW, after the owner's ruling below. `git diff 32b296a HEAD -- skills` is empty and the body measures 19,258. |
+
+**Step 1: the Codex cut.** `codex --version` printed `codex-cli 0.167.2`. The command was `codex debug prompt-input`,
+which renders the prompt and calls no model. A copy of the two personal skill folders (`~/.agents/skills` and
+`~/.codex/skills`, dereferenced) listed 76 entries and cut the old `writing-skills` entry at 220 description
+characters. A real HOME listed 95 entries and cut it at 152 (the entry ends mid-word, so it lacks "micro-testing").
+The listed count did not match, so the first scratch HOME did not measure the real cut (the budget is about 22,150
+characters of list, so a shorter list shows longer entries). Adding the plugin cache and `config.toml` did not fix it
+either (88 entries, cut at 172). The owner ruled to pad the scratch HOME instead. The padding is 19 synthetic filler
+skills with made-up names (43 characters each) and made-up descriptions (400 characters each, no real text). With
+them the scratch HOME listed 95 entries, and its old `writing-skills` entry was byte for byte the real one, cut at
+152. The new entry, with the same fillers, listed 95 entries and cut at 152 too. It holds "micro-testing" whole. The
+word ends at character 148, so the margin is 4 characters (2 if the cut counts bytes, because the em dash takes 3).
+Step 1 passes: the old entry lacks "micro-testing" and the new one holds it whole. The measure is a gain in Codex only.
+
+**Step 3: the registered 15-rep test.** The runs root is `~/.cache/agent-skills/scratch/plan107/triggers-scored`
+(raw streams in `triggers-scored-raw`). The pair check ran first (bound in the spend table). Sonnet, `full`, arm `old`
+ran 24 reps (P1 to P5 and N1 to N3, 3 reps each). One rep was void (P3 rep 1), and rep 4 replaced it. Loads of
+`writing-skills`, valid reps only, in 3:
+
+| Prompt | Loads of 3 | What else loaded |
+|---|---|---|
+| P1 | 0 | nothing |
+| P2 | 0 | nothing |
+| P3 | 3 | |
+| P4 | 0 | nothing |
+| P5 | 0 | `update-config` in 1 rep |
+| N1 | 0 | `plugin-authoring` in 1 rep, `skill-development` in 1 rep |
+| N2 | 0 | `writing-plans` in 1 rep |
+| N3 | 0 | `init` in 3 reps |
+
+The floor needs at least 8 of 15 should-load loads. Sonnet `old` `full` had 3 of 15 (only P3 loads the skill, as in the
+Task 2 pilot, where P1 loaded it in 0 of 9). The run stopped there by the controller's ruling: no Sonnet `new`, no
+Opus and no `cut150` group ran for the 15-rep test. The registered verdict is **uninformative (below the floor)**.
+`runs/triggers/tally.txt` was taken after the narrow check's reps were added, so it prints a floor of 5 of 15 (P3 now
+has 5 valid reps) and `verdict: incomplete` (the root does not hold every cell). Its `bar` and `prediction` lines count P3 only on a partial root. They are not the registered bars
+and not the narrow check's.
+
+**The narrow check.** The owner ruled on 2026-11-24 to replace the 15-rep test with a narrow check on P3 and N1 to
+N3. The rules are in "The narrow check" under Reading rule, triggers, committed in `4dd9cd8` before any later rep. The
+rules came after the floor failed and after the old Sonnet reps in `full` had been read. Reps reused: Sonnet `old`
+`full`, P3 reps 2, 3 and 4 (rep 1 was void), and N1 to N3 reps 1 to 3 (all valid). P3 reps 5 and 6 topped the cell
+up to 5 valid reps. Counts of `writing-skills` loads, valid reps only:
+
+| Model | Condition | Arm | P3 loads of 5 | Near-miss loads of 9 | Status |
+|---|---|---|---|---|---|
+| Sonnet | `full` | `old` | 5 | 0 | informative (5 of 5 is at least 3) |
+| Sonnet | `full` | `new` | 3 | 0 | |
+| Sonnet | `cut150` | `old` | 5 | 0 | informative |
+| Sonnet | `cut150` | `new` | 2 of 2 valid (3 reps void) | 0 of 8 valid (N2 has 2) | incomplete: the third-void stop |
+| Opus | `full` | `old`, `new` | not run | not run | |
+| Opus | `cut150` | `old`, `new` | not run | not run | |
+
+Bars: Sonnet `full` P3: `new` 3 against `old` - 1 = 4, **missed**. Sonnet `full` near-miss: `new` 0 against `old` + 1 = 1,
+held. Sonnet `cut150` cannot be scored (the `new` group is incomplete). The check's verdict: not a pass, because an
+informative cell missed a bar. The two `new` reps of Sonnet `full` P3 that did not load called no skill at all.
+Other skills loaded in the near-miss reps as before (`writing-plans` for N2 in every `new` rep and in `cut150` `old`,
+and `init` for N3), and none of those counts for `writing-skills`.
+
+**Ruling.** On a failed bar the default was to revert, and the owner ruled on 2026-11-24 to revert the description.
+The revert is the commit in the table above. No more reps ran, and the running total stays $17.0953.
+
+**Voids.** 7 reps in the root were void, each with the reason "path audit: 1 hit(s)": a Bash call that the trigger
+runner's tool list (`Read`, `Glob`, `Grep`, `Skill`) does not name. Five of the 7 had loaded `writing-skills` (all five
+P3 voids: `old` `full` rep 1, `old` `cut150` rep 2, `new` `cut150` reps 1, 3 and 5). The other two (N2 `new` `cut150`
+rep 3 and N3 `old` `cut150` rep 1) loaded nothing. The stop was the third void in Sonnet `cut150` `new`: 4 voids there.
+One rep was also aborted: the first launch of the narrow check ran P3 `old` `full` rep 5 and its runner was killed,
+because the driver's loop did not guard the runner's standard input. The rep had finished (it loaded `writing-skills`, and cost
+$0.0876) but not summarized. Its files were moved to scratch (`aborted/`), it was never scored, its cost is in the
+spend table, and rep 5 was rerun.
+
+**Spend.** Pair checks ran before each pair, with the true running total (`running total + the pair's reps x $0.25 <= $50`):
+
+| Pair | Check | Result |
+|---|---|---|
+| Sonnet `full`, registered pair (48 reps) | $12.4919 + $12.00 = $24.4919 | pass |
+| Sonnet `full`, narrow (16 reps), first launch | $14.2876 + $4.00 = $18.2876 | pass (run killed, see Voids) |
+| Sonnet `full`, narrow (16 reps), second launch | $14.3752 + $4.00 = $18.3752 | pass |
+| Sonnet `cut150`, narrow (28 reps) | $15.6388 + $7.00 = $22.6388 | pass |
+
+The groups' costs are in the Spend stop table. The running total at the end of Task 6 is $17.0953, below the $50 cap.
+
+**Limits.**
+
+1. *The trigger-rep VOID rule drops reps that loaded.* A rep that calls Bash is void, and a rep that has just loaded
+   `writing-skills` is the one that goes on to run `git` commands. So the rule lowers the valid load counts, most in
+   the arm that loads more. Sonnet `cut150` `new` shows it: all 5 P3 reps loaded `writing-skills`, but 3 were void.
+   The Sonnet `full` `new` result (3 of 5) had no voids, so that miss is real, but the `cut150` numbers are not fair.
+2. *Claude Code routing for the reorder is unproven either way.* The one clean Sonnet `full` pair shows a drop (5 to
+   3 of 5), and Opus never ran. A pair of 5 reps cannot separate a real loss from noise.
+3. *The Codex gain is measured, not shipped.* The reorder moves "micro-testing" inside the 152-character cut (margin 4
+   characters), and the revert gives that up.
+4. *The registered 15-rep test cannot run on these prompts.* Only P3 loads the skill on Sonnet, so the floor fails.
+5. *Opus never ran.* No Opus group started, so no Opus cell is informative.
+
+For the plan-completion gate, the known gaps are: item 3b's Codex gain is measured but not shipped, Claude Code
+routing for the reorder is unproven, Opus never ran, and the trigger-rep VOID rule needs a ruling before any later
+trigger test. Item 2's open status (spec item 2) is unchanged.
 
 ## Deviations from the plan's Task 1 text
 
