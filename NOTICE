@@ -1205,6 +1205,19 @@ Changes from upstream:
     (specs/baseline/red-baseline-writing-skills-tests/prompts-*/) embed the
     skill's old and new text, upstream-derived parts included (MIT,
     LICENSE-superpowers).
+  - Plan 108 (2026-11-25) changed writing-skills, from
+    specs/writing-skills-improvements.md. The changes are local, and no
+    upstream text was taken. The Iron Law section now names a guard run
+    as the test for an edit meant to keep behavior: the cases the edit
+    can reach, run on the old text and on the new, with no drop.
+    Micro-test step 1 no longer offers a subagent as a rep, and sends the
+    reader to micro-tests.md for an isolated session. Both were tested
+    RED first on Opus and Sonnet, with this repository's own fixtures
+    (specs/baseline/red-baseline-writing-skills-guard-run.md). The
+    committed prompts
+    (specs/baseline/red-baseline-writing-skills-guard-run/prompts-*/)
+    embed the skill's old and new text, upstream-derived parts included
+    (MIT, LICENSE-superpowers).
 
     brainstorming/
     dispatching-parallel-agents/
