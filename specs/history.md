@@ -820,3 +820,20 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "**Close the three Glob audit limits when the guard kit is reused (plan 105, rulings at Task 3).** The path" (deferred by 105-writing-skills-improvements).
+
+## 108-writing-skills-improvements — 2026-11-25
+Plan: specs/plans/completed/108-writing-skills-improvements.md · Spec: specs/completed/writing-skills-improvements.md (retired)
+
+Differences from the design:
+- Ruling: Task 1 audit.py VOID on any tool outside the five stands — it replaces plan 107's Bash audit for a case set that gets no Bash, and the record states it — if wrong, a rep that somehow surfaced another tool would void instead of count, which Task 2's probes would show.
+- Ruling: Task 3 grading is controller-dispatched (implementers cannot dispatch graders): implementer runs reps and builds sheets, controller dispatches an Opus grader per case with no key, implementer unblinds and records.
+- Ruling: (owner, 2026-11-25) ship item 9 as measured + deferred watch item for an explicit 'a reword is new guidance' clause; recorded in commit 62c3749.
+- Deviation (Task 1): two fix rounds after the review, ending with 30 mutants, all caught. Source: plan, Task 1.
+- Deviation (Task 3): the RED run went into its own commit (e281629), before the text commit (c64d168). Source: plan, Task 3.
+- Deviation (Task 4): the controller dispatched the blind grader, as in Task 3. The RED run went into its own commit (7bc25de), before the text commit (fb48a03). Source: plan, Task 4.
+- Deviation (Task 4): the controller corrected two figures in the record by hand (49134dc). Source: plan, Task 4.
+- Deviation (Task 5): the final review ran without Codex, by the owner's D1 answer. Source: plan, Task 5.
+- Deferred: 4 items. Source: specs/deferred_items.md, § 108-writing-skills-improvements.
+
+Closed earlier deferred items:
+- "**Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers" (deferred by 107-writing-skills-improvements).

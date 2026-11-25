@@ -1,5 +1,7 @@
 # writing-skills Guard Run for Edits That Keep Behavior Implementation Plan
 
+**Status: COMPLETE (2026-11-25)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > ⚠️ Quarantine this file during any micro-test of writing-skills, as the spec says of itself. Task 1
 > names the cases and what each one scores, so a rep that reads this file is void.
 
@@ -11,7 +13,7 @@
 
 **Tech Stack:** Markdown skill text; plan 107's `claude -p` case kit (bash 3.2 and Python 3.11+, stdlib), copied; pytest through `build/run_suites.py`; TOML (the register).
 
-**Spec:** `specs/writing-skills-improvements.md`, approved for planning on 2026-11-22, with the owner rulings in its Owner decisions section (Q4 for this plan). This plan covers Proposed sequence step 4: item 9. It also carries one backlog item, "Fix the subagent fallback in `SKILL.md` micro-test step 1" (`specs/deferred_items.md`, section `107-writing-skills-improvements`).
+**Spec:** `specs/completed/writing-skills-improvements.md`, approved for planning on 2026-11-22, with the owner rulings in its Owner decisions section (Q4 for this plan). This plan covers Proposed sequence step 4: item 9. It also carries one backlog item, "Fix the subagent fallback in `SKILL.md` micro-test step 1" (`specs/deferred_items.md`, section `107-writing-skills-improvements`).
 
 ## Global Constraints
 
@@ -92,11 +94,12 @@ This task spends nothing. Its review gates the kit, the cases and the rules befo
 
 **Brief note.** Copy files; never edit plan 107's kit in place. The kit changes no skill text.
 
-- [ ] **Step 1: Copy and prune**
+- [x] **Step 1: Copy and prune**
+  > Deviation: `audit.py` voids a call of any tool outside the five (`Read`, `Glob`, `Grep`, `Edit`, `Write`). This replaces plan 107's Bash audit, because this case set gets no Bash.
 
 Copy the files under Consumes into the new kit, and `test_wst_kit.py` as `test_wsg_kit.py`. Remove what case mode here does not use: the M1, T2 and R3 cases and fixtures, the Bash tools and the Bash audit (`tools_for_case` gives every case `Read,Glob,Grep,Edit,Write`), `r3_check`, the trigger paths in `common.sh` and `audit.py`, and their tests. Change every root, scratch path and module docstring from plan 107 to plan 108. Record `claude --version` for the record's Kit section.
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 In `test_wsg_kit.py`, adapt the copied case tests to G1, L2 and F3 (Step 3's table), and add:
 - `test_no_kit_file_keeps_a_plan_107_root`: no kit file holds `wst107` or `plan107`.
@@ -112,7 +115,7 @@ In `test_wsg_kit.py`, adapt the copied case tests to G1, L2 and F3 (Step 3's tab
 
 Register the suite. Run: `uv run python build/run_suites.py writing-skills-guard-run-kit`. Expected: FAIL on the new cases, the fixtures and the no-loss tests.
 
-- [ ] **Step 3: Write the cases, the fixtures and the no-loss bar**
+- [x] **Step 3: Write the cases, the fixtures and the no-loss bar**
 
 `kit/cases.py` holds `FRAME_T` (plan 107's), `TOOLS_TEXT` (`Read, Glob, Grep, Edit and Write` for each case), `CASES`, `TARGET`, `PASS`, `COLUMNS`, `REFERENCE` (`{'F3': 'micro-tests.md'}`, descriptive) and `BAR` (`{'G1': 'red-green', 'L2': 'no-loss', 'F3': 'red-green'}`). For a no-loss case, `sheets.py unblind` prints each model's `old` and `new` counts and one of `met`, `missed`, `uninformative` or `incomplete`, then the case verdict: missed if any model missed, else incomplete if any model lacks reps, else uninformative if each model is, else met.
 
@@ -129,7 +132,7 @@ Fixtures under `kit/fixtures/<case>/repo/`, each with a short `README.md`. The r
 
 Run the suite. Expected: all pass.
 
-- [ ] **Step 4: Write and commit the record's rules before any rep runs**
+- [x] **Step 4: Write and commit the record's rules before any rep runs**
 
 Create `specs/baseline/red-baseline-writing-skills-guard-run.md`, with a quarantine banner and these sections:
 - **Kit:** the paths, the plan 107 source, the `claude` version and the roots. The arms per item: `old` is the skill folder at the commit before that item's text, and `new` is the same at the item's text commit. Tasks 3 and 4 fill in the shas.
@@ -140,7 +143,8 @@ Create `specs/baseline/red-baseline-writing-skills-guard-run.md`, with a quarant
 - **Blind grading:** sheets show the sheet id and the case, never the arm. G1's RED verdict comes from a grading of its `old` sheets alone (Task 3 Step 1). At the GREEN run, a fresh grader grades G1's `old` and `new` sheets together, and the record reports any change. L2 is graded once, both arms together. F3 follows G1. Limit: a GREEN answer that says "guard run" shows its arm, and the record counts those sheets.
 - **Spend stop:** Global Constraints' cap, projection and batch check, with a running-total table that starts at $0.00.
 
-- [ ] **Step 5: Mutant step and commit**
+- [x] **Step 5: Mutant step and commit**
+  > Deviation: Task 1 took two fix rounds after its review (two Important findings on the mutant step, then one more on the new-text domain shape). The mutant step ended with 30 mutants, all caught.
 
 Run the mutant step on `audit.py` and `sheets.py`. The no-loss bar gets at least one mutant for each verdict (met, missed, uninformative), which its tests must catch. Run the commit gate. Commit: `test(baseline): add the writing-skills guard-run kit and its rules`. This commit comes before any probe or rep.
 
@@ -153,19 +157,19 @@ Run the mutant step on `audit.py` and `sheets.py`. The no-loss bar gets at least
 - Consumes: Task 1's kit and record.
 - Produces: the projection that Task 3's first batch needs.
 
-- [ ] **Step 1: Probes**
+- [x] **Step 1: Probes**
 
 Run `probe_tools.sh` on each model, and add each cost to the running total. Expected: NO on probe lines 1 to 6 and 8. Line 7 (the user's identity) may read YES: the watch item "Account identity reaches the isolated micro-test runs" tracks it. Any other YES stops the run.
 
-- [ ] **Step 2: Case pilot**
+- [x] **Step 2: Case pilot**
 
 Run `rep_tools.py place-copy HEAD` and `build_prompts.py HEAD pilot <scratch>/prompts-pilot`. Run one rep each of G1, L2 and F3 on `claude-sonnet-5-5`, and one G1 rep on `claude-opus-5-5`. Expected, for the kit's mechanics only: `audit.py` shows no finding, the stream parses, `summary.json` and `final.diff` are written, every Edit or Write call that a rep makes succeeds, and no rep costs more than $0.90 (60% of its cap). Whether a rep edits or writes at all is behavior, not a kit check: a G1 rep may refuse to edit before a test. On a miss, fix the kit with a test, or stop and ask. Empty the skill copy.
 
-- [ ] **Step 3: Project the spend**
+- [x] **Step 3: Project the spend**
 
 Projected total = spend so far + 45 × the mean Sonnet pilot cost + 45 × the Opus pilot cost (30 scored reps per model, and 15 for one retry of each item). If the projection passes $21, stop and ask before any scored rep.
 
-- [ ] **Step 4: Record and commit**
+- [x] **Step 4: Record and commit**
 
 Add the probe answers, the pilot facts, the projection and the running total to the record. Run `privacy_sweep.py` on anything committed, then the commit gate. Commit: `test(baseline): record the guard-run kit's probes and pilots`.
 
@@ -180,11 +184,12 @@ Add the probe answers, the pilot facts, the projection and the running total to 
 - Consumes: Task 1's kit, Task 2's projection.
 - Produces: the item 9 line, which Task 5's register line and `NOTICE` bullet describe; the ledger shas ITEM9-OLD and ITEM9-NEW.
 
-- [ ] **Step 1: RED run (G1)**
+- [x] **Step 1: RED run (G1)**
+  > Deviation: the controller dispatched the blind graders, because implementers cannot dispatch subagents. The implementer ran the reps and built the sheets. The RED run went into its own commit (e281629), before the text commit (c64d168).
 
 Record `git rev-parse HEAD` in the ledger as ITEM9-OLD. Run the batch check before each batch. Build `prompts-item9-old` at ITEM9-OLD, place the copy at ITEM9-OLD, and run G1 reps 1 to 5 on each model. Run `audit.py`, build the sheets of G1's `old` reps, and have one grader grade them. The grader tags each FAIL, in extra `grades.tsv` columns, with the PASS part it missed, its kind (shipped untested; a RED-first test with a control; the new text only, or recorded results as the old run; other) and the reason the rep gave, quoted from its final message. Record the RED verdict per model and the tags: they are the baseline that picks a retry's form (Match the Form to the Failure). If the control is null (Open for plan review item 9), stop, record and ask (item 10).
 
-- [ ] **Step 2: Write the line**
+- [x] **Step 2: Write the line**
 
 In `SKILL.md`, replace:
 
@@ -200,11 +205,12 @@ This applies to NEW skills AND EDITS to existing skills. That includes an edit m
 
 Measure the body. Expected: 19,473.
 
-- [ ] **Step 3: Check and commit the text**
+- [x] **Step 3: Check and commit the text**
 
 Run `uv run python build/check_links.py`, `uv run --with pyyaml python build/check_conformance.py` and `uv run python build/cc_guide/cli.py lint`. Expected: each passes, with no line for writing-skills. Run the commit gate. Commit: `feat(writing-skills): name a guard run as the test for edits that keep behavior`. Record `git rev-parse HEAD` as ITEM9-NEW.
 
-- [ ] **Step 4: GREEN and no-loss runs, grade, verdict**
+- [x] **Step 4: GREEN and no-loss runs, grade, verdict**
+  > Deviation: the controller dispatched the graders, as in Step 1. L2 passed its no-loss bar, but its FAIL kinds shifted toward "a check that only requires no drop" (4 of 10 `new` FAILs, 0 of 10 `old`). The owner ruled on 2026-11-25 to ship as measured, with a watch item → item: Watch whether the guard-run line steers a reword to a no-drop bar.
 
 Run the batch check before each batch. Place the copy at ITEM9-OLD and run L2 reps 1 to 5 on each model from `prompts-item9-old`. Build `prompts-item9-new`, place the copy at ITEM9-NEW, and run G1 and L2 reps 1 to 5 on each model. Grade G1's 20 sheets together, freshly, and L2's 20 sheets together, one grader per case. Each grader tags each FAIL as in Step 1 (L2's kinds: shipped untested; a check that only requires no drop; other). Record the results tables, the tags, the count of sheets that say "guard run", and the verdicts against Open for plan review item 9. If the mixed grading turns G1's RED null, stop and ask. On a G1 miss or an L2 loss, stop, record and ask, and change no wording. Run `check_scrub.py` and `privacy_sweep.py` on the runs folder, then the commit gate. Commit: `test(baseline): run the guard-run cycle`.
 
@@ -218,19 +224,21 @@ Run the batch check before each batch. Place the copy at ITEM9-OLD and run L2 re
 **Interfaces:**
 - Consumes: Task 3's HEAD as STEP1-OLD.
 
-- [ ] **Step 1: RED run**
+- [x] **Step 1: RED run**
+  > Deviation: the controller dispatched the blind grader, because implementers cannot dispatch subagents. The RED run went into its own commit (7bc25de), before the text commit (fb48a03).
 
 As Task 3 Step 1, for F3, with STEP1-OLD = HEAD and `prompts-step1-old`. F3's FAIL kinds: a subagent of the working session as a rep; a fresh session that is not isolated; other. If the control is null, stop, record and ask (Open for plan review item 11).
 
-- [ ] **Step 2: Write the clause**
+- [x] **Step 2: Write the clause**
 
 In micro-test step 1 of `SKILL.md`, replace `a raw API call, or a single-shot subagent if you don't have API access.` with `a raw API call, or a fresh session isolated as micro-tests.md says.` Measure the body. Expected: 19,469.
 
-- [ ] **Step 3: Check and commit the text**
+- [x] **Step 3: Check and commit the text**
 
 As Task 3 Step 3. Commit: `fix(writing-skills): drop the subagent fallback from micro-test step 1`. Record STEP1-NEW.
 
-- [ ] **Step 4: GREEN run, grade, verdict**
+- [x] **Step 4: GREEN run, grade, verdict**
+  > Deviation: the controller dispatched the graders, as in Task 3. The controller corrected two figures in the record by hand (49134dc).
 
 Run the batch check. Build `prompts-step1-new`, place the copy at STEP1-NEW, and run F3 reps 1 to 5 on each model. Grade F3's 20 sheets together, freshly. Record the results table, the `micro-tests.md` read counts and the verdict against Open for plan review item 9. If the mixed grading turns the RED verdict null, stop and ask. On a miss, stop, record and ask, and change no wording. Run `check_scrub.py` and `privacy_sweep.py` on the runs folder, then the commit gate. Commit: `test(baseline): run the step 1 isolation cycle`.
 
@@ -240,24 +248,25 @@ Run the batch check. Build `prompts-step1-new`, place the copy at STEP1-NEW, and
 - Modify: `build/cc_guide/conformance.toml:673-674` (entry `writing-skills-tdd-for-docs`: `reason`, `evidence`)
 - Modify: `NOTICE` (a new last bullet of the superpowers change list, after plan 107's)
 
-- [ ] **Step 1: The register lines**
+- [x] **Step 1: The register lines**
 
 Only if Task 3's text shipped. Replace the entry's `reason` and `evidence` lines with:
 
 ```toml
 reason = "The guide keeps TDD for behaviour changes, and skill wording changes agent behaviour, so the departure is narrow. writing-skills' Iron Law also covers an edit that changes no instruction (a typo, a link, a verbatim move), which the guide's TDD row would let skip the test. For such an edit the skill names a guard run as the test: the cases the edit can reach, run on the old text and on the new, with no drop. The owner may still waive a test case by case (commit 7bb8810)."
-evidence = 'Audit row S-97; owner gate 2026-10-04; owner decisions D2 and D4 of the writing-skills guide-rewrite spec, 2026-11-12 (plan 92); owner ruling Q4 of specs/writing-skills-improvements.md, 2026-11-22, and its pressure test in specs/baseline/red-baseline-writing-skills-guard-run.md (plan 108).'
+evidence = 'Audit row S-97; owner gate 2026-10-04; owner decisions D2 and D4 of the writing-skills guide-rewrite spec, 2026-11-12 (plan 92); owner ruling Q4 of specs/completed/writing-skills-improvements.md, 2026-11-22, and its pressure test in specs/baseline/red-baseline-writing-skills-guard-run.md (plan 108).'
 ```
 
 `revisit` stays, because the Iron Law's code block does not change. Run `uv run --with pyyaml python build/check_conformance.py` and `uv run python build/cc_guide/cli.py lint`. Expected: both pass. Run the commit gate. Commit: `chore(cc-guide): name the guard run in the writing-skills TDD deviation`.
 
-- [ ] **Step 2: The `NOTICE` bullet**
+- [x] **Step 2: The `NOTICE` bullet**
+  > Deviation: the final review ran without Codex, by the owner's D1 answer (2026-11-25). The Opus code-reviewer seat ran alone.
 
 Fetch, and compare `NOTICE` on `origin/main` with this branch; keep every line other plans added. Add this bullet last, wrapped like its neighbors, with the commit's date. For a change that did not ship, drop its sentence and say instead that it was dropped and why. For a change that shipped under an owner waiver, say so in place of "tested RED first".
 
 ```text
   - Plan 108 (<YYYY-MM-DD>) changed writing-skills, from
-    specs/writing-skills-improvements.md. The changes are local, and no
+    specs/completed/writing-skills-improvements.md. The changes are local, and no
     upstream text was taken. The Iron Law section now names a guard run
     as the test for an edit meant to keep behavior: the cases the edit
     can reach, run on the old text and on the new, with no drop.

@@ -3,7 +3,7 @@
 > ⚠️ Quarantine this file during any micro-test of writing-skills. It names the cases and what each one
 > scores, so a rep that reads this file is void.
 
-This record belongs to plan 108 (`specs/plans/108-writing-skills-improvements.md`). The plan ships two
+This record belongs to plan 108 (`specs/plans/completed/108-writing-skills-improvements.md`). The plan ships two
 changes to `skills/writing-skills/SKILL.md`. Item 9 names a guard run as the test for an edit meant to keep
 behavior (Task 3). The step 1 fix drops the subagent fallback from micro-test step 1 (Task 4). Item 9 gets a
 RED run of case G1 first: five reps on the current skill, on each of two models. The text follows. A GREEN run

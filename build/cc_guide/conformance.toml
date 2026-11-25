@@ -671,7 +671,7 @@ sections = ['lean.ceremony']
 artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'Skip TDD for formatting, documentation and config changes.'
 reason = "The guide keeps TDD for behaviour changes, and skill wording changes agent behaviour, so the departure is narrow. writing-skills' Iron Law also covers an edit that changes no instruction (a typo, a link, a verbatim move), which the guide's TDD row would let skip the test. For such an edit the skill names a guard run as the test: the cases the edit can reach, run on the old text and on the new, with no drop. The owner may still waive a test case by case (commit 7bb8810)."
-evidence = 'Audit row S-97; owner gate 2026-10-04; owner decisions D2 and D4 of the writing-skills guide-rewrite spec, 2026-11-12 (plan 92); owner ruling Q4 of specs/writing-skills-improvements.md, 2026-11-22, and its pressure test in specs/baseline/red-baseline-writing-skills-guard-run.md (plan 108).'
+evidence = 'Audit row S-97; owner gate 2026-10-04; owner decisions D2 and D4 of the writing-skills guide-rewrite spec, 2026-11-12 (plan 92); owner ruling Q4 of specs/completed/writing-skills-improvements.md, 2026-11-22, and its pressure test in specs/baseline/red-baseline-writing-skills-guard-run.md (plan 108).'
 revisit = "When the guide's TDD row names agent-facing text such as skills or prompts, or when writing-skills' Iron Law changes."
 
 [[exception]]
