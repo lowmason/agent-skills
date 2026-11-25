@@ -453,6 +453,14 @@ The confound: 3 of those 4 sheets say "guard run" (Sonnet `new` reps 2 and 4, an
 could see the arm when it tagged them. Sonnet `new` rep 3 is the one without the words, and its `hint` is no. L2's
 "met" rests on Sonnet alone, since Opus is uninformative. The owner rules on this before any PR.
 
+The `old` FAILs tagged "other" make the same kind of error in other words. They test the old and the new rule and
+call the change safe if neither leaks, with no bar that the old text must fail. One example is Opus `old` rep 2:
+"If both versions already redact everything, you've shown it's only wording and you can ship." So the shift in tags
+is mostly a shift in words. This is a reading made after the reps were seen, and it changes no verdict.
+
+Owner ruling (2026-11-25): ship item 9 as measured. A deferred item tracks whether the line should say that a
+reword is new guidance.
+
 ## Task 4: the step 1 fix (F3)
 
 ### Step 1: RED run (F3)
