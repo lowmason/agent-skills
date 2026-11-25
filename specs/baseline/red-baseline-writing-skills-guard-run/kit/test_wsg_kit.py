@@ -677,6 +677,11 @@ QUARANTINED = ('specs/writing-skills-improvements.md', 'specs/plans/108-writing-
                'specs/baseline/red-baseline-writing-skills-guard-run.md')
 
 
+# On this machine the repository sits under the real home, so the audit names that. Elsewhere (CI) it is outside.
+REAL_REPO_WHY = ('the real home' if str(REPO_ROOT).lower().startswith((str(Path.home()).lower() + '/', '/users/'))
+                 else 'outside the allowed roots')
+
+
 @pytest.mark.parametrize('rel', QUARANTINED)
 def test_a_read_glob_or_grep_of_the_real_repository_is_a_hit(rel):
     path = str(REPO_ROOT / rel)
@@ -684,6 +689,7 @@ def test_a_read_glob_or_grep_of_the_real_repository_is_a_hit(rel):
                        ('Glob', {'pattern': path}), ('Glob', {'pattern': '**/*.md', 'path': str(REPO_ROOT / 'specs')})):
         found = hits(name, **args)
         assert len(found) == 1 and found[0].startswith(f'call 1 {name}'), (name, args, found)
+        assert found[0].endswith(f'({REAL_REPO_WHY})'), (name, args, found)
 
 
 
