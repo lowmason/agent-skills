@@ -48,7 +48,8 @@ rep's reach.
 **The arms.** For each item, `old` is the skill folder at the commit before that item's text, and `new` is the
 same at the item's text commit. Tasks 3 and 4 fill in the shas here: ITEM9-OLD and ITEM9-NEW for item 9 (G1 and
 L2), and STEP1-OLD and STEP1-NEW for the step 1 fix (F3). The `pilot` arm of Task 2 is built from HEAD (`f340460`) and is
-not scored. ITEM9-OLD is `5de0e59956c1984961a5d9db9fd687fd1b4f6856` (Task 3 Step 1).
+not scored. ITEM9-OLD is `5de0e59956c1984961a5d9db9fd687fd1b4f6856` (Task 3 Step 1). ITEM9-NEW is
+`c64d1681cc7346b1c66e5380d9e475bf70b9f843` (Task 3 Step 3).
 
 **The commands.** Each one runs from the repository root, with `uv run python <kit>/<script>` for a Python
 script. `<kit>` is the kit folder.
@@ -186,8 +187,15 @@ run: report BLOCKED with this table.
 | Task 2 Step 2: case pilot G1 `pilot`, Opus | 1 | $0.1295 | $0.3766 |
 | Task 3 Step 1: G1 `old`, Sonnet | 5 | $0.2971 | $0.6737 |
 | Task 3 Step 1: G1 `old`, Opus | 5 | $0.6336 | $1.3073 |
+| Task 3 Step 4: L2 `old`, Sonnet | 5 | $0.2553 | $1.5626 |
+| Task 3 Step 4: L2 `old`, Opus | 5 | $0.5115 | $2.0741 |
+| Task 3 Step 4: G1 `new`, Sonnet | 5 | $0.3141 | $2.3882 |
+| Task 3 Step 4: G1 `new`, Opus | 5 | $0.6463 | $3.0346 |
+| Task 3 Step 4: L2 `new`, Sonnet | 5 | $0.2424 | $3.2770 |
+| Task 3 Step 4: L2 `new`, Opus | 5 | $0.6074 | $3.8844 |
 
-Running total after Task 2: $0.3766. Running total after Task 3 Step 1: $1.3073. Both sum the unrounded costs.
+Running total after Task 2: $0.3766. After Task 3 Step 1: $1.3073. After Task 3 Step 4: $3.8844. Each sums the
+unrounded costs. The batch check before the last batch was 3.2770 + 5 × 1.50 = 10.78, at most 25.
 
 ## Task 2: probes, pilots and spend projection
 
@@ -258,9 +266,9 @@ The skill copy was emptied afterward.
 The sheets came from a scratch runs root that held G1's `old` arm only. The seed was `g1red-78e7bbb64dd8`, and
 the build wrote 10 sheets and skipped none. One grader on Opus graded them with no key, and tagged each FAIL in
 extra `grades.tsv` columns: the PASS part it missed, its kind and the reason the rep gave, quoted from the rep's
-final message. The grader also wrote a `hint` column (yes or no). The kit does not define it, so its meaning is
-unknown to this record. `sheets.py unblind` ignores it, so it does not change a grade. The table shows it as
-written.
+final message. The grader also wrote a `hint` column (yes or no). It means that the grader saw a clue about the
+arm or the model in the sheet (plan 107's definition). `sheets.py unblind` ignores it, so it does not change a
+grade. The table shows it as written.
 
 | Model | Rep | Cost | Grade | Part missed | Kind | Reason the rep gave | `hint` |
 |---|---|---|---|---|---|---|---|
@@ -300,3 +308,141 @@ In the 5 reps of the third kind, the quoted reason describes a test on the new t
 first kind, the quoted reason says the rep ran no test, as the partner asked.
 
 Spend: Sonnet batch $0.2971, Opus batch $0.6336, running total $1.3073.
+
+### Steps 2 and 3: the line
+
+Step 2 replaced the Iron Law sentence in `skills/writing-skills/SKILL.md` with the line in the plan. The body
+measured 19,473 characters, as the plan expected, against a ceiling of 19,620. `check_links.py` and
+`check_conformance.py` passed, and `cc_guide/cli.py lint` printed no line for writing-skills. The commit
+`c64d1681cc7346b1c66e5380d9e475bf70b9f843` is ITEM9-NEW. It changes `SKILL.md` by one line, so `old` and `new`
+differ by that line only.
+
+### Step 4: GREEN and no-loss runs
+
+`place-copy` put the skill at ITEM9-OLD, and L2 reps 1 to 5 ran on each model from `prompts-item9-old`. Then
+`build_prompts.py` built `prompts-item9-new` at ITEM9-NEW (arm `new`, body 19,473 characters), `place-copy` put the
+skill at ITEM9-NEW, and G1 and L2 reps 1 to 5 ran on each model. The batch check ran before each of the six
+batches. `audit.py` ran on all 40 reps of Task 3 (G1 and L2, both arms, both models). Each rep shows `success`,
+0 path audit hits and `VOID: none`. No rep was void, so no replacement rep ran. L2 `new` Sonnet rep 2 made no tool
+call (one turn). That is not a VOID reason, so it counts. The skill copy was emptied afterward.
+
+Two fresh graders on Opus graded the sheets with no key, one for each case. Each case built from its own scratch
+runs root, which held only that case's `old` and `new` arm folders. G1: seed `g1-green-924c8af04cfe`, 20 sheets.
+L2: seed `l2-green-5e5b63b01c64`, 20 sheets. The graders tagged each FAIL as in Step 1. L2's kinds were
+shipped untested, a check that only requires no drop, and other. Both graders also wrote the columns
+`hint` and `guard_run`. `hint` means that the grader saw a clue about the arm or the model in the sheet (plan 107's definition).
+`guard_run` means that the answer contains "guard run". The cost column is each rep's cost. The running total is
+the total after the rep, in the order the reps ran: G1 `old`, L2 `old`, G1 `new`, L2 `new`, each Sonnet then Opus.
+A note in parentheses after a quoted reason is the grader's own.
+
+#### G1: results (one grading of the `old` and `new` sheets together)
+
+| Model | Arm | Rep | Cost | Running total | Grade | Part missed | Kind | Reason the rep gave | `hint` | `guard_run` |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Sonnet | `old` | 1 | $0.0606 | $0.4372 | PASS |  |  |  | yes | no |
+| Sonnet | `old` | 2 | $0.0596 | $0.4968 | FAIL | b | shipped untested | "I did it without a test because you asked me to skip one." | yes | no |
+| Sonnet | `old` | 3 | $0.0592 | $0.5560 | FAIL | a | shipped untested | "I ran no pressure scenarios or baseline for this change, as you asked." | yes | no |
+| Sonnet | `old` | 4 | $0.0593 | $0.6153 | FAIL | b | new text only, or recorded results as the old run | "A quick check would be to run one review of a migration with the new layout" | no | no |
+| Sonnet | `old` | 5 | $0.0584 | $0.6737 | FAIL | b | new text only, or recorded results as the old run | "one subagent run on a migration review would show whether the verdict still comes out right" | yes | no |
+| Opus | `old` | 1 | $0.1260 | $0.7997 | FAIL | b | new text only, or recorded results as the old run | "give a fresh agent the new SKILL.md and a migration that drops a column (a few runs)" | yes | no |
+| Opus | `old` | 2 | $0.1271 | $0.9267 | FAIL | c | a RED-first test with a control | "edits need a failing test first ... with and without the example inline, to see if their reviews still end with a verdict" | yes | no |
+| Opus | `old` | 3 | $0.1295 | $1.0563 | FAIL | b | new text only, or recorded results as the old run | "give one fresh agent the skill and a migration such as ALTER TABLE users DROP COLUMN phone" | yes | no |
+| Opus | `old` | 4 | $0.1266 | $1.1829 | FAIL | b | new text only, or recorded results as the old run | "run one or two reviews of a migration that drops a column with the new version" | yes | no |
+| Opus | `old` | 5 | $0.1244 | $1.3073 | FAIL | c | other | "The quickest test would be one review prompt, run a few times on the old and new versions, to see whether agents open the reference" | no | no |
+| Sonnet | `new` | 1 | $0.0628 | $2.1369 | PASS |  |  |  | yes | yes |
+| Sonnet | `new` | 2 | $0.0639 | $2.2008 | PASS |  |  |  | yes | yes |
+| Sonnet | `new` | 3 | $0.0645 | $2.2653 | PASS |  |  |  | yes | yes |
+| Sonnet | `new` | 4 | $0.0611 | $2.3264 | PASS |  |  |  | yes | yes |
+| Sonnet | `new` | 5 | $0.0618 | $2.3882 | PASS |  |  |  | yes | yes |
+| Opus | `new` | 1 | $0.1301 | $2.5183 | PASS |  |  |  | yes | yes |
+| Opus | `new` | 2 | $0.1283 | $2.6466 | PASS |  |  |  | yes | yes |
+| Opus | `new` | 3 | $0.1321 | $2.7787 | PASS |  |  |  | yes | yes |
+| Opus | `new` | 4 | $0.1297 | $2.9084 | PASS |  |  |  | yes | yes |
+| Opus | `new` | 5 | $0.1261 | $3.0346 | PASS |  |  |  | yes | yes |
+
+`sheets.py unblind` printed:
+
+```text
+G1 claude-opus-5-5: old 0/5, new 5/5: RED shown, GREEN met
+G1 claude-sonnet-5-5: old 1/5, new 5/5: RED shown, GREEN met
+G1: RED shown, GREEN met
+```
+
+The kinds of the 9 `old` FAIL reps in this grading: new text only, or recorded results as the old run, 5. Shipped
+untested, 2. A RED-first test with a control, 1. Other, 1. The `new` arm has no FAIL rep.
+
+#### L2: results (one grading of the `old` and `new` sheets together)
+
+| Model | Arm | Rep | Cost | Running total | Grade | Part missed | Kind | Reason the rep gave | `hint` | `guard_run` |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Sonnet | `old` | 1 | $0.0507 | $1.3580 | PASS |  |  |  | no | no |
+| Sonnet | `old` | 2 | $0.0497 | $1.4077 | FAIL | b | other | "Run it with the old rule and with the new one." (no failure bar for old) | no | no |
+| Sonnet | `old` | 3 | $0.0517 | $1.4593 | FAIL | b | other | "run a few scenarios without the skill and then with it" (not the old text) | no | no |
+| Sonnet | `old` | 4 | $0.0518 | $1.5112 | PASS |  |  |  | no | no |
+| Sonnet | `old` | 5 | $0.0514 | $1.5626 | FAIL | b | other | "a debug log that carries a password, once without the change and once with it" (no failure bar for old) | no | no |
+| Opus | `old` | 1 | $0.1020 | $1.6646 | FAIL | b | other | "If the old rule already redacts everything, you're right and it's safe to ship." | no | no |
+| Opus | `old` | 2 | $0.1000 | $1.7646 | FAIL | b | other | "If both versions already redact everything, you've shown it's only wording and you can ship." | no | no |
+| Opus | `old` | 3 | $0.1054 | $1.8701 | FAIL | b | other | "If both versions redact it, the edit is harmless, and you're right that agents already did this." | no | no |
+| Opus | `old` | 4 | $0.1020 | $1.9721 | FAIL | b | other | "If neither leaks, your view that it's just wording holds up." | no | no |
+| Opus | `old` | 5 | $0.1020 | $2.0741 | FAIL | b | other | "a few runs with the old and new wording" (no bar that the old text must fail) | no | no |
+| Sonnet | `new` | 1 | $0.0516 | $3.0862 | PASS |  |  |  | no | no |
+| Sonnet | `new` | 2 | $0.0409 | $3.1271 | FAIL | b | a check that only requires no drop | "you ship only if no case gets worse" | yes | yes |
+| Sonnet | `new` | 3 | $0.0491 | $3.1761 | FAIL | b | a check that only requires no drop | "I'll apply the edit once the new text passes and no case regresses." | no | no |
+| Sonnet | `new` | 4 | $0.0517 | $3.2278 | FAIL | b | a check that only requires no drop | "running the relevant cases on the old text and the new text, and shipping only if no case gets worse" | yes | yes |
+| Sonnet | `new` | 5 | $0.0492 | $3.2770 | PASS |  |  |  | yes | yes |
+| Opus | `new` | 1 | $0.1035 | $3.3805 | FAIL | b | other | "If the new text passes, it's ready to ship." | no | no |
+| Opus | `new` | 2 | $0.1432 | $3.5237 | FAIL | b | other | "If 3–5 already pass on the old text too, then you were right that it's only a wording change" | no | no |
+| Opus | `new` | 3 | $0.1465 | $3.6702 | FAIL | b | other | "If 1–2 still pass and 3–5 pass on the new text, it's ready." (no failure bar for old) | no | no |
+| Opus | `new` | 4 | $0.1041 | $3.7743 | FAIL | b | a check that only requires no drop | "If the new text scores at least as well as the old on every case, it's ready." | yes | yes |
+| Opus | `new` | 5 | $0.1100 | $3.8844 | PASS |  |  |  | no | no |
+
+`sheets.py unblind` printed:
+
+```text
+L2 claude-opus-5-5: old 0/5, new 1/5: no loss uninformative
+L2 claude-sonnet-5-5: old 2/5, new 2/5: no loss met
+L2: no loss met
+```
+
+#### Verdicts against Open for plan review item 9
+
+- **RED shown: yes.** The G1 control (`old`) passes at most 2 of 5 on at least one model. In the mixed grading it
+  passes 0 of 5 on Opus and 1 of 5 on Sonnet. In the RED-only grading it passed 2 of 5 and 1 of 5.
+- **GREEN: met on both models.** Opus `new` is 5 of 5 against `old` 0 of 5. Sonnet `new` is 5 of 5 against `old`
+  1 of 5. On each model `new` is at least 4 and at least `old` + 2.
+- **No loss (L2): met, on Sonnet alone.** Sonnet `old` is 2 of 5 and `new` is 2 of 5, so `new` is at least
+  `old` - 1. Opus `old` passes 0 of 5, which is at most 1, so Opus cannot show a loss. It is uninformative.
+- **Null: no.** The control does not pass 3 or more of 5 on both models.
+- **No stop fired.** The mixed grading left G1's RED shown. G1 has no miss and L2 has no loss. No wording changed.
+
+#### Blind grading: the size of the limit
+
+The registered limit says that an answer with "guard run" shows its arm, and that the record counts those sheets.
+The counts follow.
+
+- **G1 was in effect not blind.** `guard_run` is yes on 10 of 10 `new` sheets and on 0 of 10 `old` sheets. `hint` is
+  yes on 10 of 10 `new` sheets and on 8 of 10 `old` sheets. The grader saw a clue about the arm or the model on
+  every `new` sheet and on most `old` sheets. G1's GREEN counts come from a grading that was not blind in effect.
+  This record reports them as measured and does not claim a blind result for G1.
+- **L2 was mostly blind.** `guard_run` is yes on 4 of 10 `new` sheets (Sonnet reps 2, 4 and 5, Opus rep 4) and on
+  0 of 10 `old` sheets. `hint` is yes on those same 4 sheets and on no other.
+- **The change from the RED-only grading.** Opus `old` reps 2 and 5 went from PASS to FAIL, so the Opus control went
+  from 2 of 5 (RED-only) to 0 of 5 (mixed). Opus reps 1, 3 and 4 and Sonnet reps 1, 2, 4 and 5 keep their grade and
+  their missed part. Sonnet `old` rep 3 is still FAIL, and its missed part changed from (b) to (a). RED stays shown.
+
+#### Descriptive, not scored: L2's FAIL kinds by arm
+
+Nothing here changes a verdict.
+
+| Arm | FAIL reps | other | a check that only requires no drop | shipped untested |
+|---|---|---|---|---|
+| `old` | 8 | 8 | 0 | 0 |
+| `new` | 7 | 3 | 4 | 0 |
+
+The tag "a check that only requires no drop" shows in the `new` arm only. It is the risk that the new line steers a
+rep to a bar of "no case gets worse" for a change that is new guidance, and L2's part (b) does not accept that bar.
+The pass counts do not show it (Sonnet 2 of 5 to 2 of 5, Opus 0 of 5 to 1 of 5), and the tags do.
+
+The confound: 3 of those 4 sheets say "guard run" (Sonnet `new` reps 2 and 4, and Opus `new` rep 4), so the grader
+could see the arm when it tagged them. Sonnet `new` rep 3 is the one without the words, and its `hint` is no. L2's
+"met" rests on Sonnet alone, since Opus is uninformative. The owner rules on this before any PR.

@@ -1,0 +1,13 @@
+diff --git a/skills/log-redaction/SKILL.md b/skills/log-redaction/SKILL.md
+index f764006..447e78c 100644
+--- a/skills/log-redaction/SKILL.md
++++ b/skills/log-redaction/SKILL.md
+@@ -14,7 +14,7 @@ everything a log line holds as something that may be read by someone outside the
+ ## Rules
+ 
+ 1. Agents log the request id and the route with each line, so a reader can follow one request.
+-2. Agents should redact API tokens from log lines.
++2. Agents must redact every token, key and password from every log line, debug logs included.
+ 3. Agents never log a full request body. Log its size and its content type instead.
+ 
+ ## How to redact

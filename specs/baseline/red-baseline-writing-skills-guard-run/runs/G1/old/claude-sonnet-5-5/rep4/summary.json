@@ -1,0 +1,137 @@
+{
+  "case": "G1",
+  "rep": 4,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep4",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "acd9795d9d5ddae79ede4c948ba1231b7a4cb531",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/G1/old/claude-sonnet-5-5/rep4.jsonl",
+  "prompt_sha256": "94bd24bf32f3dd3a0293941dcd125dee21ab8acc2b2cf2478adb4a82eac60b34",
+  "claude_exit": 0,
+  "wall_seconds": 11,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 15,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 10340,
+    "total_cost_usd": 0.0592792,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 1461,
+        "cacheReadInputTokens": 31372,
+        "cacheCreationInputTokens": 10380,
+        "webSearchRequests": 0,
+        "costUSD": 0.0592792,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 164,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 10380,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "The move is done, but I haven't checked it. I didn't re-run the lints or measure the new body size, so I can't say it's under the limit or that it's ready to ship. The repo lints passed on the tree before my change.\n\n- I moved the example review's text, unchanged, into `skills/sql-migration-review/references/example-review.md`. That file has the `## Example review` heading, the SQL, the three findings and the verdict.\n- In `SKILL.md`, the section now keeps its heading and has one line: `See [references/example-review.md](references/example-review.md) for a worked review of a dropped column.`\n\n**It isn't quite \"same text in another file.\"** Agents now have to open the example, and the one-line link may not get them to. It was the only worked example of the verdict format. If a reviewing agent doesn't follow the link, its reviews could lose that shape. I didn't test this, and I'm not claiming it's harmless. A quick check would be to run one review of a migration with the new layout and see whether the agent opens the file and ends with a verdict. If you'd rather ship now, that is your call.",
+  "tool_calls": [
+    {
+      "id": "toolu_01NrpwpSGCzfbDTewgBaNLef",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/sql-migration-review/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01K2b5P5XkffGihvkCMYo83S",
+      "name": "Glob",
+      "input": {
+        "pattern": "skills/sql-migration-review/**",
+        "path": "/private/tmp/wst108/rep4/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SnUUdfvq388bLMj75UVv7s",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/sql-migration-review/references/example-review.md",
+        "content": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01XAWvZd9BGUnrmNPv6pBH2Q",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/sql-migration-review/SKILL.md",
+        "old_string": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n",
+        "new_string": "## Example review\n\nSee [references/example-review.md](references/example-review.md) for a worked review of a dropped column.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/sql-migration-review/SKILL.md",
+    "?? skills/sql-migration-review/references/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}
