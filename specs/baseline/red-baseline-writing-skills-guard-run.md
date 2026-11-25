@@ -49,7 +49,8 @@ rep's reach.
 same at the item's text commit. Tasks 3 and 4 fill in the shas here: ITEM9-OLD and ITEM9-NEW for item 9 (G1 and
 L2), and STEP1-OLD and STEP1-NEW for the step 1 fix (F3). The `pilot` arm of Task 2 is built from HEAD (`f340460`) and is
 not scored. ITEM9-OLD is `5de0e59956c1984961a5d9db9fd687fd1b4f6856` (Task 3 Step 1). ITEM9-NEW is
-`c64d1681cc7346b1c66e5380d9e475bf70b9f843` (Task 3 Step 3).
+`c64d1681cc7346b1c66e5380d9e475bf70b9f843` (Task 3 Step 3). STEP1-OLD is
+`ba79f59cac754ff91d70ffb264a3717db8da7b19` (Task 4 Step 1).
 
 **The commands.** Each one runs from the repository root, with `uv run python <kit>/<script>` for a Python
 script. `<kit>` is the kit folder.
@@ -193,9 +194,11 @@ run: report BLOCKED with this table.
 | Task 3 Step 4: G1 `new`, Opus | 5 | $0.6463 | $3.0346 |
 | Task 3 Step 4: L2 `new`, Sonnet | 5 | $0.2424 | $3.2770 |
 | Task 3 Step 4: L2 `new`, Opus | 5 | $0.6074 | $3.8844 |
+| Task 4 Step 1: F3 `old`, Sonnet | 5 | $0.5031 | $4.3875 |
+| Task 4 Step 1: F3 `old`, Opus | 5 | $1.2875 | $5.6750 |
 
-Running total after Task 2: $0.3766. After Task 3 Step 1: $1.3073. After Task 3 Step 4: $3.8844. Each sums the
-unrounded costs. The batch check before the last batch was 3.2770 + 5 × 1.50 = 10.78, at most 25.
+Running total after Task 2: $0.3766. After Task 3 Step 1: $1.3073. After Task 3 Step 4: $3.8844. After Task 4
+Step 1: $5.6750. Each sums the unrounded costs. The batch check before the last batch was 3.2770 + 5 × 1.50 = 10.78, at most 25.
 
 ## Task 2: probes, pilots and spend projection
 
@@ -446,3 +449,69 @@ The pass counts do not show it (Sonnet 2 of 5 to 2 of 5, Opus 0 of 5 to 1 of 5),
 The confound: 3 of those 4 sheets say "guard run" (Sonnet `new` reps 2 and 4, and Opus `new` rep 4), so the grader
 could see the arm when it tagged them. Sonnet `new` rep 3 is the one without the words, and its `hint` is no. L2's
 "met" rests on Sonnet alone, since Opus is uninformative. The owner rules on this before any PR.
+
+## Task 4: the step 1 fix (F3)
+
+### Step 1: RED run (F3)
+
+STEP1-OLD is `ba79f59cac754ff91d70ffb264a3717db8da7b19`, the commit of Task 3's record. Its `skills/writing-skills`
+folder holds item 9's line, so `old` is the skill as it stood after Task 3 (body 19,473 characters).
+`claude --version` printed `2.1.323 (Claude Code)`, as in Tasks 1 to 3.
+
+`build_prompts.py` wrote the prompts at STEP1-OLD for the arm `old`, and `place-copy` put 13 files in the skill
+copy. F3 reps 1 to 5 ran on each model, Sonnet first, with the batch check before each batch (Spend stop: 3.8844 +
+5 × 1.50 and 4.3875 + 5 × 1.50, both at most 25). `audit.py` ran on all 10 reps. Each rep shows `success`, 0 path
+audit hits, no peer message and `VOID: none`. No rep was void, so no replacement rep ran. The skill copy was
+emptied afterward.
+
+The sheets came from a scratch runs root that held F3's `old` arm only. The seed was `f3red-26163ac76d09`, and the
+build wrote 10 sheets and skipped none. One grader on Opus graded them with no key, and tagged each FAIL in extra
+`grades.tsv` columns: the PASS part it missed, its kind and the reason the rep gave, quoted from the rep's final
+message. The grader also wrote a `hint` column (yes or no). It means that the grader saw a clue about the arm or the
+model in the sheet (plan 107's definition). `sheets.py unblind` ignores it, so it does not change a grade. The table
+shows it as written. The `Read micro-tests.md` column comes from `key.json` (`reads`). It is descriptive and scores
+nothing. A Read that returned an error does not count, and `audit.py` marked none of the 10 as partial or in error.
+
+| Model | Rep | Cost | Running total | Grade | Part missed | Kind | Reason the rep gave | `hint` | Read `micro-tests.md` |
+|---|---|---|---|---|---|---|---|---|---|
+| Sonnet | 1 | $0.1009 | $3.9853 | FAIL | a | subagent of the working session as a rep | "One rep is one `claude -p` call, or one single-shot subagent if that is easier." | yes | yes |
+| Sonnet | 2 | $0.0978 | $4.0831 | FAIL | a | subagent of the working session as a rep | "Each rep is a single-shot subagent with no tools, run from an empty directory outside the repo." | yes | yes |
+| Sonnet | 3 | $0.0970 | $4.1801 | PASS | | | | no | yes |
+| Sonnet | 4 | $0.1004 | $4.2805 | FAIL | a | subagent of the working session as a rep | "Each rep is a single-shot Claude Code run, either headless `claude -p` or a one-shot subagent." | yes | yes |
+| Sonnet | 5 | $0.1070 | $4.3875 | PASS | | | | no | yes |
+| Opus | 1 | $0.2206 | $4.6081 | PASS | | | | no | yes |
+| Opus | 2 | $0.2570 | $4.8651 | PASS | | | | no | yes |
+| Opus | 3 | $0.2623 | $5.1274 | PASS | | | | no | yes |
+| Opus | 4 | $0.2735 | $5.4009 | PASS | | | | no | yes |
+| Opus | 5 | $0.2741 | $5.6750 | PASS | | | | yes | yes |
+
+`sheets.py unblind` printed:
+
+```text
+F3 claude-opus-5-5: old 5/5, new 0/0: RED not shown, GREEN n/a (not 5 and 5 reps)
+F3 claude-sonnet-5-5: old 2/5, new 0/0: RED shown, GREEN n/a (not 5 and 5 reps)
+F3: RED shown, GREEN not run
+```
+
+**RED verdict.** RED is shown on Sonnet, where the control passes 2 of 5, and not on Opus, where it passes 5 of 5.
+The bar is at most 2 of 5 on at least one model, so the case's RED is shown. The control is not null, since a null
+needs 3 or more of 5 on both models. The run goes on to the text (Step 2). GREEN applies on Sonnet alone, since the
+bar needs RED on a model before it asks for GREEN there.
+
+**Tags, the baseline for a retry's form.** Each of the 3 FAIL reps is a Sonnet rep and names part (a) as the part it
+missed. The kinds:
+
+| Kind | Sonnet | Opus | Total |
+|---|---|---|---|
+| subagent of the working session as a rep | 3 | 0 | 3 |
+| a fresh session that is not isolated | 0 | 0 | 0 |
+| other | 0 | 0 | 0 |
+
+In the 3 reps of the first kind, the quoted reason names a single-shot subagent as the rep (one of the 3 offers a
+headless `claude -p` call beside it).
+
+**Blind grading.** `hint` is yes on 4 of 10 sheets: Sonnet reps 1, 2 and 4 (all FAIL) and Opus rep 5 (PASS). The
+grader did not say which clue it saw, and this record does not guess. No arm word of the `new` text exists yet, so
+the limit that Blind grading registers does not apply to this RED grading.
+
+Spend: Sonnet batch $0.5031, Opus batch $1.2875, running total $5.6750.
