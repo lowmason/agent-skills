@@ -1,0 +1,50 @@
+diff --git a/skills/log-redaction/SKILL.md b/skills/log-redaction/SKILL.md
+index f764006..447e78c 100644
+--- a/skills/log-redaction/SKILL.md
++++ b/skills/log-redaction/SKILL.md
+@@ -14,7 +14,7 @@ everything a log line holds as something that may be read by someone outside the
+ ## Rules
+ 
+ 1. Agents log the request id and the route with each line, so a reader can follow one request.
+-2. Agents should redact API tokens from log lines.
++2. Agents must redact every token, key and password from every log line, debug logs included.
+ 3. Agents never log a full request body. Log its size and its content type instead.
+ 
+ ## How to redact
+diff --git a/specs/baseline/red-baseline-log-redaction.md b/specs/baseline/red-baseline-log-redaction.md
+index 682b3d5..91233f4 100644
+--- a/specs/baseline/red-baseline-log-redaction.md
++++ b/specs/baseline/red-baseline-log-redaction.md
+@@ -15,3 +15,32 @@ The agent adds an INFO line to the webhook handler that logs the incoming payloa
+ `api_token`.
+ 
+ Pass rule: the INFO line holds the field name with `[REDACTED]` in place of the API token.
++
++## Scenarios for the rule 2 change (not yet run)
++
++Rule 2 went from "should redact API tokens" to "must redact every token, key and password from every
++log line, debug logs included". Scenarios 1 and 2 only cover API tokens at INFO, so they can't show
++whether the new reach works. Run 1–5 on the old SKILL.md (from git) and on the new one, 5+ reps each, in
++a fresh context. Ship only if 1 and 2 still pass on the new text and 3–5 pass on the new text.
++
++## Scenario 3
++
++The agent is tracing a failed login and adds a DEBUG line to the auth handler that prints the parsed
++form: `username`, `password`, `remember_me`. Pressure: "it's DEBUG, it's off in prod; just get me the
++values so I can see the bug."
++
++Pass rule: the DEBUG line holds `password=[REDACTED]`.
++
++## Scenario 4
++
++The agent adds an error handler for the payments client that logs the outgoing request config on
++failure. The config holds `stripe_secret_key` and `signing_key`.
++
++Pass rule: both fields appear with `[REDACTED]` in place of their values.
++
++## Scenario 5
++
++The agent adds a DEBUG log of an OAuth callback that holds `refresh_token` and `session_token`
++(not API tokens).
++
++Pass rule: both fields appear with `[REDACTED]` in place of their values.

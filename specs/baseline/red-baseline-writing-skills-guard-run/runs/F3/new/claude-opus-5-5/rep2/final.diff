@@ -1,0 +1,146 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..70811d5
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,140 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. Nothing has been run. Commit this file before reading any reply (the rules below
++count as registered from that commit).
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take."
++(proposal: `specs/api-error-messages-wording.md`) make agents write error messages that include a next
++step, without breaking the parts of the skill that already worked?
++
++Baseline already known: with the old sentence, 6 of 10 runs wrote a message with no next step.
++
++## Arms
++
++Each arm is the full `skills/api-error-messages/SKILL.md`, frontmatter and all, with only line 16 changed.
++
++| Arm | Line 16 starts with |
++|---|---|
++| CONTROL | (sentence removed) "Name the field, the value and the rule it broke, in that order. ..." |
++| OLD | "Say what went wrong. Name the field, ..." (current text) |
++| NEW | "Say what went wrong and the next step the caller can take. Name the field, ..." |
++
++OLD is re-run here, not taken from the baseline, so that OLD and NEW are scored in the same run, by the
++same rules, on the same scenarios. CONTROL is the no-guidance control: if CONTROL and OLD both rarely fail,
++there is nothing to fix and we stop.
++
++The code example on line 20 has no explicit next step and stays the same in every arm. It may pull replies
++toward the old shape. This test measures the sentence as proposed; if NEW fails, the example is the first
++suspect for a follow-up test.
++
++## Models
++
++Two models, same reps on each: **claude-opus-5-5** and **claude-sonnet-5-5**. (Chosen by me; change
++here before the run if the skill will run on other models, e.g. add claude-haiku-5-5.)
++
++## Scenarios (user message)
++
++Five tasks, each used twice per arm per model, so 10 reps per arm per model. None mentions next steps,
++retries or what the caller should do. Each ends with the same line:
++"Write the JSON error response body. Reply with the JSON only."
++
++1. 400: `POST /v1/payments` received `"currency": "usd"`.
++2. 400: `POST /v1/users` received `"birth_date": "31/12/1990"`; the API stores dates as ISO 8601.
++3. 404: `GET /v1/invoices/inv_8812` – no invoice with that id exists in this account.
++4. 409: `POST /v1/orders` reused `Idempotency-Key: k-551` with a different request body.
++5. 409: `DELETE /v1/projects/prj_42` – the project still has 3 active deployments.
++
++Scenarios 3–5 are where the baseline failure is most likely (no field/value/rule to lean on).
++
++Totals: 3 arms x 5 scenarios x 2 reps x 2 models = **60 scored reps**, plus 1 probe rep per model.
++
++## How each rep runs (Claude Code only, no API key)
++
++- One fresh empty directory per rep under `/tmp/aem-mt/<random-id>/`, outside every repository. The
++  directory name must not reveal the arm.
++- Headless `claude -p`, with: the arm's SKILL.md text passed via `--append-system-prompt` (realistic: the
++  skill sits on top of Claude Code's own prompt); `--model` set to the model under test; no tools; no
++  user/project settings, instruction files, memory or MCP servers; `--output-format json` so cost is
++  recorded per rep. There is no kit in this repo yet, so confirm the exact flag names with
++  `claude --help` on this machine before the probe and record the final command line in this file.
++- The scenario text is the only user message.
++- Save each reply as `/tmp/aem-mt/raw/<random-id>.json`. Keep the arm/model/scenario key in
++  `/tmp/aem-mt/key.csv`, which the grader does not open until every sheet is graded.
++
++### Probe first
++
++One probe rep per model, same setup, user message: "List every piece of context you can see:
++instruction files, memory, tools, other sessions, project files, and the user's name." Any answer we did
++not plan for (CLAUDE.md content, memory, tools, the repo, the user's name) means the setup leaks: fix it,
++re-probe, and only then start scored reps.
++
++### Quarantine
++
++Reps have no tools and run outside the repo, so they cannot read `specs/`. A rep whose reply quotes or
++refers to this file, the proposal or the baseline is VOID.
++
++## Scoring rules (registered)
++
++Score the `message` string only. (The skill puts detail in `details`; a next step hidden there does not
++reach a developer reading the message, which is the proposal's point.)
++
++**Next step** = an action the caller can take, stated as an action or as a concrete thing to send:
++an imperative or "you can/should" clause (send, use, call, retry with, create, remove, wait), or a concrete
++replacement value/format to send (e.g. "send 'USD'", "use YYYY-MM-DD").
++
++- **PASS**: the `message` contains a next step.
++- **FAIL**: the `message` only says what went wrong. A bare rule statement ("it must be an upper-case ISO
++  4217 code", "the key was already used") is FAIL under the registered reading.
++- **VOID**: no parseable JSON with a `message` field; refusal; runner error; tool use; any sign the rep saw
++  context the probe ruled out. Re-run a VOID rep with a new id; record that it happened.
++
++The baseline's 6/10 was scored by whoever ran it; before the run, check that its rule for "no next step"
++matches the one above. If it differs, the OLD arm here is the comparison, not the old 6/10.
++
++If a reply shows a reading these rules did not foresee (most likely: a rule statement that names the exact
++valid value), keep the registered verdict and also report counts under the alternative reading.
++
++### Guard checks (things the edit could break)
++
++Scored on every reply, same sheets:
++
++- G1: `message` is 200 characters or fewer.
++- G2 (scenarios 1–2 only): `message` names field, value and rule, in that order.
++- G3: `message` names no internal class or stack frame.
++
++## Blind grading
++
++- Build one sheet per reply: a random sheet number, the scenario text and the reply JSON. Nothing else: no
++  arm, model, path, timestamp or position that tracks the arm. Shuffle across arms and models.
++- Grader: a person (preferably not the one who ran the reps) or a fresh Claude Code session given only
++  this file's "Scoring rules" and "Guard checks" sections plus the sheets.
++- Manually read every FAIL and every PASS that hinges on a single word; automated counting alone is not a
++  grade.
++- Unblind with `key.csv` only after all 60 sheets have a grade.
++
++## Decision rule (registered)
++
++Per model, report PASS / FAIL / VOID counts per arm, guard-check failures per arm, and a one-line note on
++how much the NEW replies vary in shape.
++
++- **Ship NEW** if, on **both** models: NEW has at most 2/10 FAIL, NEW has at least 3 fewer FAIL than OLD,
++  and NEW has no more guard-check failures than OLD (G1 especially: the longer sentence may push messages
++  past 200 characters).
++- **Stop, nothing to fix** if CONTROL and OLD each have at most 2/10 FAIL on both models.
++- **Do not ship, iterate** otherwise. If NEW passes on one model and not the other, it does not ship. If
++  NEW reps disagree in shape (some next steps in `message`, some in `details`, some none), tighten the
++  wording rather than add words; the example on line 20 is the first thing to test.
++
++## Spend
++
++- Cap: **$5.00** total across probe and scored reps (adjust here before the run if needed).
++- Run in batches of 10 reps (one arm-mixed batch per model at a time). Record each batch's cost from the
++  JSON output in a table below.
++- Stop rule: before each batch, stop if the running total plus the worst case for the next batch
++  (the most expensive rep so far x 10, or $0.50 before any rep has run) would pass the cap.
++
++| Batch | Model | Reps | Cost | Running total |
++|---|---|---|---|---|
++| | | | | |

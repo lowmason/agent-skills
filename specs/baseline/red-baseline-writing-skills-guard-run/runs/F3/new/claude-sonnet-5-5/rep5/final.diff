@@ -1,0 +1,104 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..92907f5
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,98 @@
++# Micro-test design: api-error-messages sentence change
++
++Status: DESIGN ONLY. Nothing has been run.
++
++## Question
++
++Does "Say what went wrong and the next step the caller can take." make agents write error messages that
++include a next step, where "Say what went wrong." did not (baseline: 6 of 10 runs had none)?
++
++Failure type: the agent complies but omits an element. The change is a wording swap inside the existing
++instruction, so the test is a head-to-head of the two sentences with everything else identical.
++
++## Arms
++
++| Arm | Context |
++|---|---|
++| OLD | Full current `skills/api-error-messages/SKILL.md`, unchanged. |
++| NEW | The same file with only the one sentence replaced. Check with `diff`: exactly one line differs. |
++
++OLD is the control. The earlier baseline is not reused as the control unless its model, flags, prompt and
++isolation are shown to match this design. Otherwise re-run OLD in the same batch, so both arms share the
++same setup and the same day.
++
++## Models (chosen by me; say if you want others)
++
++- `claude-sonnet-5-5`
++- `claude-haiku-5-5`
++
++Same number of reps on each: 10 reps per arm per model, 40 reps in all. A wording that binds one model
++can fail on the other, so the verdict is per model.
++
++## Task prompt
++
++Reuse the baseline's task prompt word for word, so the OLD arm can be compared with the baseline. If it
++is not on hand, use: "Write the JSON error response for a 404 returned by POST /orders when `customer_id`
++'c_91' does not exist. Reply with the JSON only." The prompt must not mention next steps, fixes or
++guidance.
++
++## Isolation (Claude Code only, no API key)
++
++Each rep is a separate `claude -p` call, one sample per call.
++
++- Run from a new empty directory outside every repository.
++- No tools. Turn off user settings, CLAUDE.md files and memory.
++- Put the skill text in the system prompt, and the task as the user message.
++- I have not checked the exact flags. The reference points to the newest `specs/baseline/*/kit/`, and
++  that directory does not exist in this repo. Before the first rep, check the flags against
++  `claude --help` and write them into the runner.
++- Pilot first: one throwaway rep that asks what context it can see (instruction files, memory, tools,
++  other sessions, the user's name). If anything is unplanned, fix the setup and repeat the pilot. Pilot
++  output is never scored.
++- Keep this spec, the proposal and the baseline records out of each rep's reach.
++
++## Rules (registered before any reply is read; commit this file first)
++
++Per rep, grade the `message` text.
++
++- **PASS:** the message names a specific next step the caller can take: a value to send, an endpoint to
++  call, or a named action, such as "create the customer with POST /customers first".
++- **FAIL:** the message gives only the cause, or its only next step is vague ("check your request",
++  "see the docs", "try again").
++- **VOID:** the rep read a file or used a tool, the reply has no message, or the isolation leaked. A void
++  rep is replaced by a fresh rep. The void count is reported.
++
++Secondary checks, reported and not part of the verdict:
++
++- The message is under 200 characters. The new sentence could push messages over the limit.
++- Field, value and rule appear in that order, where they apply.
++- The message names no internal class or stack frame.
++
++Success: in each model, NEW passes at least 9 of 10, and passes at least 4 more reps than OLD. If NEW
++passes on one model and not on the other, the wording is not adopted as it stands. If a reply shows a
++reading these rules did not foresee, keep the registered verdict and report the counts under both
++readings.
++
++## Blind scoring
++
++- The runner writes each reply to a sheet with a random ID. Nothing on the sheet (name, path, order,
++  length of the file name, count) shows arm or model.
++- The mapping from ID to arm and model goes in a separate file that the grader does not open.
++- A fresh Claude Code session grades the sheets against the rules above. It has not seen the proposal.
++- I read every FAIL and every borderline PASS myself. I unblind only after every sheet has a grade.
++
++## Spend
++
++No API key means these runs use Claude Code's own billing. I cannot see its per-call cost in advance.
++
++- Cap: $1.00 of the $1.50 remaining. The rest is a reserve for replacing void reps and re-grading.
++- Run the pilot, then one batch of 4 reps (one per arm per model), and record the cost of each batch.
++- Stop rule: stop when the running total plus the worst-case cost of the next batch would pass the cap.
++  Use the most expensive batch so far as the worst case.
++- If the full 40 reps do not fit, cut the reps equally across all four cells and report the smaller
++  count. Do not drop a model.
++
++## Output
++
++A table of PASS, FAIL and VOID counts per arm per model, the secondary checks, the cost per batch, and
++the verdict under the registered rules.

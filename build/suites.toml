@@ -220,6 +220,12 @@ with = ['pytest']
 notes = ['render_graphs.py tests, stdlib only. The tests that render skip when graphviz dot is not on PATH.']
 
 [[suite]]
+name = 'writing-skills-guard-run-kit'
+dir = 'specs/baseline/red-baseline-writing-skills-guard-run/kit'
+with = ['pytest']
+notes = ['Plan 108 guard-run kit: the case runner (stub claude, no model), rep_tools.py, audit.py, sheets.py with the no-loss bar, build_prompts.py, cases.py and the fixtures. bash, git and uv required.']
+
+[[suite]]
 name = 'writing-skills-layout-kit'
 dir = 'specs/baseline/red-baseline-writing-skills-layout/kit'
 with = ['pytest']

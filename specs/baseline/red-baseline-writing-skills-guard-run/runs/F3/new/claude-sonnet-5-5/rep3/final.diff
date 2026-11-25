@@ -1,0 +1,129 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..025412f
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,123 @@
++# Micro-test design: "next step" sentence in api-error-messages
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take."
++make agents write error messages that include a next step?
++
++The old sentence already failed in the baseline: 6 of 10 runs had no next step. So there is something to fix.
++The old sentence is the control, so no separate no-guidance arm is needed.
++
++## Arms
++
++Both arms use the full `skills/api-error-messages/SKILL.md` as the system prompt, so the sentence sits in its
++real context (the 200-character limit, the example, the red flags). The two arms differ in that one sentence.
++
++- **A (control):** the SKILL.md as committed. Sentence is "Say what went wrong."
++- **B (new):** the same text with the sentence from `specs/api-error-messages-wording.md`.
++
++Build both system-prompt files by copying SKILL.md and changing only that sentence. Diff them and check that
++exactly one line differs.
++
++## Models
++
++This machine only has Claude Code, and the partner did not name models. I chose two:
++`claude-sonnet-5-5` and `claude-haiku-5-5`. Every arm runs on both, with the same number of reps.
++Change the models if the skill will run on others.
++
++## Reps
++
++10 per arm per model, 40 scored reps. 10 matches the baseline size. Every rep is a fresh process with one
++sample.
++
++## Task prompts
++
++The user message tempts the failure: the agent has to name a problem where a bare cause is the easy output.
++Rotate two scenarios evenly across reps, 5 each per arm per model. Use the same assignment in both arms.
++
++1. "Write the message text for a 409 returned by POST /users when the email 'ana@example.com' is already
++   registered. Reply with the JSON error body only."
++2. "Write the message text for a 404 returned by POST /orders when the `warehouse_id` 'wh_77' does not exist.
++   Reply with the JSON error body only."
++
++The baseline prompt is not in the repo. If the baseline used a different prompt, that is fine, because arm A
++re-measures the control in the same batch. If the partner wants the baseline's 10 runs to count, they need to
++supply the prompt and model.
++
++## Isolation (Claude Code, no API key)
++
++Run each rep as `claude -p` in a fresh empty directory under /tmp, outside every repository. Check the exact
++flags with `claude --help` during the probe. The setup needs:
++
++- no tools;
++- no user or project settings, memory or CLAUDE.md;
++- no session persistence;
++- the arm's file passed as the system prompt;
++- the model set per run.
++
++Keep the scenario, the specs, and all earlier records out of reach. Reps run with cwd in the scratch
++directory and no file tools, and the specs stay in the repo.
++
++**Probe first.** Run one pilot rep and ask it what it can see: instruction files, memory, tools, other
++sessions, the user's name. If it reports anything unplanned, fix the setup and probe again before any scored
++rep. Record the pilot's cost. It sets the per-rep estimate for the spend rule.
++
++## Rules, registered before any reply is read
++
++Commit this file with these rules before reading any output.
++
++**Unit scored:** the `message` string in the JSON body.
++
++**Has next step (strict):** the message tells the caller a concrete action: a value to send, a call to make,
++or an endpoint to use. Restating the violated rule does not count. "must be an upper-case ISO 4217 code" is
++no next step. "send 'USD'" or "GET /warehouses to list valid ids" is one.
++Also record the lenient reading, where a restated rule counts, and report both counts.
++
++**VOID rep** (rerun, and do not count): the reply is not a JSON error body; the rep reports reading a file or
++using a tool; or the probe showed a leak.
++
++**PASS**, on each model separately:
++- arm A has at least 4 of 10 without a next step (the failure exists on that model); and
++- arm B has at most 2 of 10 without a next step, and at least 4 fewer than arm A; and
++- arm B has no more messages over 200 characters than arm A (the added clause must not break the length limit).
++
++**FAIL:** any model misses a PASS condition. If A shows under 4 failures on a model, report that model as
++"nothing to fix", not as PASS.
++
++With 10 reps, 2/10 against 6/10 is directional, not conclusive. 0 or 1 of 10 is the clear result. If the
++result lands on a boundary, run another 10 per arm on that model before deciding. Do not move the thresholds.
++
++**Variance:** record how many different shapes arm B's messages take. If they split five ways across five
++reps, the wording is not binding even if the count passes.
++
++## Blind scoring
++
++1. Collect each reply's `message` into a sheet with a random ID. Do not put arm, model, file name, path,
++   order or count on the sheet. Keep the ID-to-arm key in a separate file.
++2. Grade in a new isolated Claude Code session that sees only the rubric above and the sheets. Ask for
++   strict and lenient yes/no per sheet.
++3. The partner or I read every graded sheet, since automated grading can misread. Unblind only after every
++   sheet has a grade.
++4. If a reply shows a reading the rules did not foresee, keep the registered verdict and report counts under
++   both readings.
++
++## Spend
++
++Cap: $1.20 total (the remaining budget is $1.50, and this keeps a margin). Run in batches of one model
++(20 reps) after the pilot. Stop rule: stop when the running total plus the next batch's worst case (20 times
++the highest per-rep cost seen so far) would pass the cap. Record each batch's cost. If the cap cuts off the
++second model, report the result as covering one model only.
++
++## Risks to watch
++
++- The SKILL.md example has no next step. Agents may copy it, which would hold arm B down. Arm B is still the
++  fair test of the sentence alone. If B fails, the example is the first suspect.
++- The 200-character limit competes with the added clause, hence the length check.
++- Two scenarios cover little. A pass here does not show the wording works for every status code.
++
++## Output
++
++Write records to `specs/api-error-messages-microtest-results.md` (counts per arm and model, both readings,
++costs, probe answer) and keep raw replies and the key outside `skills/`.

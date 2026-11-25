@@ -1,8 +1,11 @@
 # writing-skills: analysis and proposed improvements — Design Spec
 
-**Status: APPROVED for planning (owner, 2026-11-22).** The owner ruled on every open question on
-2026-11-22 (see Owner decisions), then approved the whole spec for planning the same day. The next step
-is writing-plans. No skill text has changed. No brainstorming ran.
+**Status: COMPLETE (2026-11-25)** — implemented by plans 105, 107 and 108
+(`specs/plans/completed/105-writing-skills-improvements.md`,
+`specs/plans/completed/107-writing-skills-improvements.md` and
+`specs/plans/completed/108-writing-skills-improvements.md`) and retired here. The owner ruled on every open
+question on 2026-11-22 (see Owner decisions), then approved the whole spec for planning the same day. No
+brainstorming ran. Items 3b, 10, 13 and 16 stay open, and each has an item in `specs/deferred_items.md`.
 
 > ⚠️ Quarantine this file during any later micro-test of writing-skills. Items 1, 2 and 10 name the
 > RED scenarios and what they score, so a rep that reads this file is void.

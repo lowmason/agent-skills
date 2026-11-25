@@ -1,0 +1,136 @@
+{
+  "case": "G1",
+  "rep": 4,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep4",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "94b8cc5c3ce788b41e43c7fb8c293a09fccbfb8b",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/G1/new/claude-sonnet-5-5/rep4.jsonl",
+  "prompt_sha256": "c08f9c1aff61c2f9723ca13574720633d8a8be0d94a0ea6c5bcfcd414c0cf9cd",
+  "claude_exit": 0,
+  "wall_seconds": 13,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 16,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 11700,
+    "total_cost_usd": 0.0610989,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 1613,
+        "cacheReadInputTokens": 31689,
+        "cacheCreationInputTokens": 10447,
+        "webSearchRequests": 0,
+        "costUSD": 0.0610989,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 207,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 10447,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "The move is made, but I can't tell you it's ready to ship, because the guard run hasn't happened.\n\n**What changed**\n- `skills/sql-migration-review/references/example-review.md` is new. It holds the `## Example review` section word for word.\n- `SKILL.md` now has `## Example review` followed by one line: `See [references/example-review.md](references/example-review.md).`\n- I kept the heading in `SKILL.md` so the link has context. Delete it if you want the line bare.\n- I haven't re-run the lints or measured the body size after the edit. My tools can't execute them.\n\n**Why it isn't verified**\n- The writing-skills skill covers this case. It says a verbatim move or split of a skill's text is an edit that still needs a guard run. You run the cases the edit can reach on the old text and the new text, and ship only if no case drops.\n- I only have file read and edit tools here, so I couldn't launch the subagent runs that need.\n- The risk is small but real. The example is the only worked case in the skill, so an agent that used to copy its shape might not open the linked file. That is what the guard run would check.\n\n**Before you cut the release**\n- Run a few review scenarios, such as a column drop or an index without CONCURRENTLY, against the old text (`git stash` or the previous commit) and the new text. Check that the reviews have the same shape. This takes a few minutes.\n- If you'd rather ship without it, that's your decision. The change is uncommitted and easy to revert. Treat it as shipped unverified, not as tested.\n\nI haven't committed anything.",
+  "tool_calls": [
+    {
+      "id": "toolu_016ZpwHj7PMnsPRnrJTrAqKK",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/sql-migration-review/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01F8EF7YDqysNi4LQKFY3Q3d",
+      "name": "Glob",
+      "input": {
+        "pattern": "skills/sql-migration-review/**"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_014ZdvnTdzbr73TQ81wyTWrx",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/sql-migration-review/references/example-review.md",
+        "content": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011Sq6CATuWqvrU4GfPCVK4A",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/sql-migration-review/SKILL.md",
+        "old_string": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n",
+        "new_string": "## Example review\n\nSee [references/example-review.md](references/example-review.md).\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/sql-migration-review/SKILL.md",
+    "?? skills/sql-migration-review/references/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,141 @@
+{
+  "case": "F3",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep3",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "3ac9c5a44ea2c78b3bc81690d5fbdd7564b37901",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/F3/new/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "7e7906ede1e94117992da83b9e9f207e1bc89b44f33295136dc635be04967d8a",
+  "claude_exit": 0,
+  "wall_seconds": 46,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 33,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 45769,
+    "total_cost_usd": 0.11763370000000001,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 5627,
+        "cacheReadInputTokens": 32317,
+        "cacheCreationInputTokens": 14530,
+        "webSearchRequests": 0,
+        "costUSD": 0.11763370000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2212,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14530,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/api-error-messages-microtest.md`. I haven't run anything.\n\n**What it tests**\n- **Arms:** the skill as it stands (old sentence, the control) against a copy with only the new sentence changed. Both arms use the full SKILL.md as the system prompt. The old sentence already failed 6 of 10 in your baseline, so I didn't add a separate no-guidance arm.\n- **Models:** I chose `claude-sonnet-5-5` and `claude-haiku-5-5` because you hadn't named any. Tell me if the skill will run on others.\n- **Reps:** 10 per arm per model, so 40 scored reps. Two scenarios (a 409 and a 404) rotate evenly through them.\n- **Running without an API key:** each rep is a `claude -p` call in a fresh /tmp directory, with no tools, settings or memory. One probe rep comes first and is asked what context it can see. I haven't checked the exact flags, so the design says to confirm them with `claude --help`.\n\n**Pass rule** (to be committed before anyone reads a reply)\n- A message has a next step only if it names a concrete action: a value to send, a call to make or an endpoint. Restating the violated rule doesn't count. I'll also report the lenient count, where a restated rule does count.\n- On each model, the control must fail at least 4 of 10, or there is nothing to fix there.\n- The new arm may fail at most 2 of 10, and at least 4 fewer than the control.\n- The new arm may not produce more messages over 200 characters than the control, because the added clause competes with that limit.\n- If a result lands on a boundary, I run 10 more reps per arm rather than move the thresholds.\n\n**Scoring and spend**\n- A fresh isolated session grades shuffled sheets that hide the arm. One of us reads every grade before unblinding.\n- The spend cap is $1.20, in batches of one model. Each batch stops if the running total plus 20 times the highest per-rep cost would pass the cap. The pilot sets the first cost estimate.\n\n**Open points**\n- The baseline prompt and model aren't in the repo. The control re-runs in the same batch, so the comparison holds. If you want the original 10 runs to count, send me that prompt and model.\n- The example in SKILL.md has no next step, and agents may copy it. If the new sentence fails, I'd suspect the example first.\n- Two scenarios are thin coverage, so a pass won't show the wording works for every status code.\n\nTell me if the models or thresholds need changing. I'll start with the probe rep once you approve.",
+  "tool_calls": [
+    {
+      "id": "toolu_01Y4eXCZPdDrjQqK3RwVv1mP",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep3/repo/specs/api-error-messages-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01CxkBHcmHYhTdMMdgRYAewZ",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep3/repo/skills/api-error-messages/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012bVjUMW4n8djgY7XWv9RBf",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016pcdyorCb2gAPiGjMgit2e",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**",
+        "path": "/private/tmp/wst108/rep3/repo"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01U7yCQcdqpTFANbMcFgrxYi",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep3/repo/specs/api-error-messages-microtest.md",
+        "content": "# Micro-test design: \"next step\" sentence in api-error-messages\n\nStatus: design only. Nothing has been run.\n\n## Question\n\nDoes replacing \"Say what went wrong.\" with \"Say what went wrong and the next step the caller can take.\"\nmake agents write error messages that include a next step?\n\nThe old sentence already failed in the baseline: 6 of 10 runs had no next step. So there is something to fix.\nThe old sentence is the control, so no separate no-guidance arm is needed.\n\n## Arms\n\nBoth arms use the full `skills/api-error-messages/SKILL.md` as the system prompt, so the sentence sits in its\nreal context (the 200-character limit, the example, the red flags). The two arms differ in that one sentence.\n\n- **A (control):** the SKILL.md as committed. Sentence is \"Say what went wrong.\"\n- **B (new):** the same text with the sentence from `specs/api-error-messages-wording.md`.\n\nBuild both system-prompt files by copying SKILL.md and changing only that sentence. Diff them and check that\nexactly one line differs.\n\n## Models\n\nThis machine only has Claude Code, and the partner did not name models. I chose two:\n`claude-sonnet-5-5` and `claude-haiku-5-5`. Every arm runs on both, with the same number of reps.\nChange the models if the skill will run on others.\n\n## Reps\n\n10 per arm per model, 40 scored reps. 10 matches the baseline size. Every rep is a fresh process with one\nsample.\n\n## Task prompts\n\nThe user message tempts the failure: the agent has to name a problem where a bare cause is the easy output.\nRotate two scenarios evenly across reps, 5 each per arm per model. Use the same assignment in both arms.\n\n1. \"Write the message text for a 409 returned by POST /users when the email 'ana@example.com' is already\n   registered. Reply with the JSON error body only.\"\n2. \"Write the message text for a 404 returned by POST /orders when the `warehouse_id` 'wh_77' does not exist.\n   Reply with the JSON error body only.\"\n\nThe baseline prompt is not in the repo. If the baseline used a different prompt, that is fine, because arm A\nre-measures the control in the same batch. If the partner wants the baseline's 10 runs to count, they need to\nsupply the prompt and model.\n\n## Isolation (Claude Code, no API key)\n\nRun each rep as `claude -p` in a fresh empty directory under /tmp, outside every repository. Check the exact\nflags with `claude --help` during the probe. The setup needs:\n\n- no tools;\n- no user or project settings, memory or CLAUDE.md;\n- no session persistence;\n- the arm's file passed as the system prompt;\n- the model set per run.\n\nKeep the scenario, the specs, and all earlier records out of reach. Reps run with cwd in the scratch\ndirectory and no file tools, and the specs stay in the repo.\n\n**Probe first.** Run one pilot rep and ask it what it can see: instruction files, memory, tools, other\nsessions, the user's name. If it reports anything unplanned, fix the setup and probe again before any scored\nrep. Record the pilot's cost. It sets the per-rep estimate for the spend rule.\n\n## Rules, registered before any reply is read\n\nCommit this file with these rules before reading any output.\n\n**Unit scored:** the `message` string in the JSON body.\n\n**Has next step (strict):** the message tells the caller a concrete action: a value to send, a call to make,\nor an endpoint to use. Restating the violated rule does not count. \"must be an upper-case ISO 4217 code\" is\nno next step. \"send 'USD'\" or \"GET /warehouses to list valid ids\" is one.\nAlso record the lenient reading, where a restated rule counts, and report both counts.\n\n**VOID rep** (rerun, and do not count): the reply is not a JSON error body; the rep reports reading a file or\nusing a tool; or the probe showed a leak.\n\n**PASS**, on each model separately:\n- arm A has at least 4 of 10 without a next step (the failure exists on that model); and\n- arm B has at most 2 of 10 without a next step, and at least 4 fewer than arm A; and\n- arm B has no more messages over 200 characters than arm A (the added clause must not break the length limit).\n\n**FAIL:** any model misses a PASS condition. If A shows under 4 failures on a model, report that model as\n\"nothing to fix\", not as PASS.\n\nWith 10 reps, 2/10 against 6/10 is directional, not conclusive. 0 or 1 of 10 is the clear result. If the\nresult lands on a boundary, run another 10 per arm on that model before deciding. Do not move the thresholds.\n\n**Variance:** record how many different shapes arm B's messages take. If they split five ways across five\nreps, the wording is not binding even if the count passes.\n\n## Blind scoring\n\n1. Collect each reply's `message` into a sheet with a random ID. Do not put arm, model, file name, path,\n   order or count on the sheet. Keep the ID-to-arm key in a separate file.\n2. Grade in a new isolated Claude Code session that sees only the rubric above and the sheets. Ask for\n   strict and lenient yes/no per sheet.\n3. The partner or I read every graded sheet, since automated grading can misread. Unblind only after every\n   sheet has a grade.\n4. If a reply shows a reading the rules did not foresee, keep the registered verdict and report counts under\n   both readings.\n\n## Spend\n\nCap: $1.20 total (the remaining budget is $1.50, and this keeps a margin). Run in batches of one model\n(20 reps) after the pilot. Stop rule: stop when the running total plus the next batch's worst case (20 times\nthe highest per-rep cost seen so far) would pass the cap. Record each batch's cost. If the cap cuts off the\nsecond model, report the result as covering one model only.\n\n## Risks to watch\n\n- The SKILL.md example has no next step. Agents may copy it, which would hold arm B down. Arm B is still the\n  fair test of the sentence alone. If B fails, the example is the first suspect.\n- The 200-character limit competes with the added clause, hence the length check.\n- Two scenarios cover little. A pass here does not show the wording works for every status code.\n\n## Output\n\nWrite records to `specs/api-error-messages-microtest-results.md` (counts per arm and model, both readings,\ncosts, probe answer) and keep raw replies and the key outside `skills/`.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/api-error-messages-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

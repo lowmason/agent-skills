@@ -1,0 +1,83 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..a2c48d0
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,77 @@
++# Micro-test design: "next step" sentence in api-error-messages
++
++Status: design only. Nothing has been run. Follows `references/micro-tests.md` of the writing-skills skill.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take." make agents include a next step in the error message they write? Does it do that without breaking the rest of the section: field, value and rule in that order, and under 200 characters?
++
++The failure type is "omits a required element from something they already produce". The proposal is a prose sentence. Verdict rule 4 covers the case where it does not bind.
++
++## Arms
++
++| Arm | System prompt |
++|---|---|
++| CONTROL | Full current `skills/api-error-messages/SKILL.md`, old sentence |
++| NEW | Same file, only that sentence replaced with the new one (diff must be exactly one sentence) |
++
++CONTROL is the no-guidance control. The old sentence is the guidance in force, and the earlier baseline (6 of 10 with no next step) shows the failure exists. Re-run it here anyway. The old baseline's model, prompt and scoring may differ from this run, so it is not a valid comparison arm.
++
++## Models
++
++Every arm runs on two models, with the same reps on each: `claude-sonnet-5-5` and `claude-haiku-5-5`. You did not name models, so I chose these two. Change them if the skill runs on others in production.
++
++## Reps and tasks
++
++- 10 reps per arm per model, so 40 reps in all.
++- One fresh single-shot call per rep.
++- User message: the same task prompt the baseline used. Its record is not in `specs/`, so please point me to it. If it is lost, use a task that tempts the failure, for example "Write the message text for a 404 when `GET /v1/invoices/inv_912` names an invoice that does not exist. Reply with the JSON body only."
++- Use 2 or 3 distinct tasks (400 bad field, 404 missing resource, 409 conflict) spread evenly across the 10 reps. This keeps one lucky scenario from deciding the result. The task assignment is identical in both arms.
++
++## Running it with Claude Code only (no API key)
++
++- One rep is one `claude -p` call, or one single-shot subagent if that is easier. The system prompt is the arm's SKILL.md text. The user message is the task.
++- Run each rep from a new empty directory outside every repository, for example `/tmp/mt-api-err/rep-<random id>/`.
++- Give it no tools. Turn off user and project settings, CLAUDE.md files and memory.
++- Keep the spec, this design and the baseline records out of reach of the reps. The reps must not be able to read `specs/`.
++- Pilot first. Run one probe rep and ask it what context it can see: instruction files, memory, tools, other sessions, the user's name. Fix any leak before any scored rep. Check the newest `specs/baseline/*/kit/` if it exists, for the runner flags, probe and scrub.
++
++## Registered rules (commit this file before reading any reply)
++
++Grade each reply on three yes/no checks:
++
++1. NEXT STEP: the message tells the caller something to do. Examples: a value to send, an endpoint to call first, a field to change. A message that only restates the problem is NO. Saying "must be X" about the rule broken is NO unless it also tells the caller what to send or call.
++2. ORDER: it names the field, then the value, then the rule.
++3. LENGTH: the `message` string is under 200 characters.
++
++VOID rep (discard and rerun, and count the voids): the reply is empty or is not an error body. It mentions seeing files, instructions or other context. It used a tool. The setup leaked.
++
++PASS: on each model, NEW has check 1 = YES in at least 9 of 10 non-void reps. Checks 2 and 3 are also YES in at least 9 of 10, and no worse than CONTROL by more than 1 rep. CONTROL on that model must show the failure (check 1 = NO in at least 4 of 10). If it doesn't, there was nothing to fix on that model and I report that rather than a pass.
++
++FAIL: NEW is below 9 of 10 on check 1 on either model. Or NEW breaks check 2 or 3 as described above.
++
++Mixed result (passes on one model, fails on the other): report as FAIL for the wording and give both counts. Do not average.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report the counts under both readings.
++
++Variance: also report how many distinct shapes the 10 NEW replies take on each model. If NEW passes but the replies are all different, say so. It means the wording is binding loosely.
++
++## Blind scoring
++
++- Each reply goes on its own sheet, labelled with a random ID. No arm, model, file name, path, order or count on a sheet may show where it came from.
++- The arm and model for each ID are kept in a separate key file that nobody opens until every sheet has a grade.
++- Grade with a fresh single-shot call per sheet. It sees only the reply and the three checks. Read every grade that is YES on NEXT STEP yourself. Template echoes and quoted counter-examples can pass for hits.
++- Unblind only after all 40 sheets are graded. Then compute the counts.
++
++## Spend cap and stop rule
++
++- Cap for the whole test: USD 1.00. The remaining session budget is about USD 1.46, and the cap leaves room for regrading and reruns of void reps.
++- Run the pilot probe and one batch of 4 reps (one per arm per model) first. Record the cost of each and set the worst-case cost per rep from the larger of them.
++- Run in batches by model. Stop when the running total plus the next batch's worst case would pass the cap. Record each batch's cost as you go.
++- If the cap stops the run early, report the partial counts as inconclusive. Do not call them a pass.
++
++## Next after the verdict
++
++- PASS: edit the one sentence in the skill and commit it.
++- FAIL on check 1: the prose sentence is not binding. Go back to the form table. For an omitted element, the fix is a structural slot, for example a required "Next step:" part in the template of the message. That is a new wording and gets its own test.
++- Do not add nuance clauses to the new sentence to rescue it.

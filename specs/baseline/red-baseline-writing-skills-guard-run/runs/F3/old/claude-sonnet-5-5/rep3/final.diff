@@ -1,0 +1,112 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..8f34273
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,106 @@
++# Micro-test design: "next step" sentence in api-error-messages
++
++Status: design only. Nothing has been run. No API key on this machine, so every rep is a single-shot Claude Code
++run (`claude -p`), not a raw API call.
++
++## Question
++
++Does "Say what went wrong and the next step the caller can take." (NEW) cut the share of error messages that
++have no next step, compared with "Say what went wrong." (OLD)?
++
++Baseline already in hand: OLD, 6 of 10 messages had no next step. The baseline's models, task prompts and
++scoring rule are not recorded in `specs/`. Partner to confirm them (open item 1). If they can't be matched, rerun OLD under this design.
++
++## Arms
++
++All arms use the full `skills/api-error-messages/SKILL.md` as the system prompt. Only the one sentence differs.
++
++| Arm | Sentence in "Writing the message" |
++|---|---|
++| NONE (control) | sentence deleted; the rest of the paragraph stays |
++| OLD | "Say what went wrong." |
++| NEW | "Say what went wrong and the next step the caller can take." |
++
++NONE tells us whether OLD's failure comes from the sentence or from the model's default. If NONE also fails
++about as often as OLD, the sentence was never the cause, and the rest of the design still tests whether NEW fixes it.
++
++## Models
++
++Two, chosen by me because none was named: `claude-sonnet-5-5` and `claude-haiku-5-5`. Same arms and same
++rep count on each. Results are reported per model and never pooled. Swap in the models the skill will really run on if they differ.
++
++## Tasks
++
++User message asks for the message text of one error response, with no hint about next steps. Three tasks,
++used in equal numbers in every arm and model:
++
++1. 400: `currency` sent as `usd` (reuse the baseline task if it was this one).
++2. 404: `GET /v1/invoices/inv_123` for an invoice that does not exist.
++3. 409: creating a customer whose `external_id` already exists.
++
++Reps: 10 per arm per model (60 total), tasks cycled 1,2,3,1,2,3,... so each arm gets 3-4 of each task.
++Each rep is one fresh sample. Fixed assignment, not chosen after seeing output.
++
++## Isolation (per rep)
++
++- Run from a new empty directory outside every repository, one per rep.
++- No tools, no user settings, no CLAUDE.md or memory, no MCP. Take the exact flags from the newest kit under
++  `specs/baseline/*/kit/`. None exists in this repo (open item 2).
++- Quarantine: this file, the proposal, the baseline records and the scoring rules must not be inside any rep's reach.
++- Pilot first: one probe rep asks what context it can see (instruction files, memory, tools, other sessions,
++  user name). Any answer not matching the plan means the setup leaks. Fix it before any scored rep.
++- Save each reply to its own file, replies only, no metadata.
++
++## Rules (registered and committed before any reply is read)
++
++Unit: one reply = the `message` string in the JSON error the agent wrote. If the reply has no single message
++string, VOID.
++
++- **PASS**: the message names what went wrong AND gives a concrete next step the caller can take (a value to
++  send, an endpoint to call first, a field to change). "Check your request" and "see the docs" are not a next
++  step. The new sentence's own examples count.
++- **FAIL**: the message names the problem and has no concrete next step.
++- **VOID**: the rep read a quarantined file, had tools or context the plan didn't allow, or gave no message.
++  Void reps are rerun with the same task slot. Report the void count.
++
++Guard metrics, scored on the same sheets:
++- Length: message over 200 characters (the skill's own limit). NEW adds content to a capped field, so this can
++  trade off.
++- Invented step: the next step names an endpoint, field or value that the task did not supply. This counts
++  as FAIL for the PASS/FAIL rule, and is also reported separately.
++
++If a reply shows a reading these rules didn't foresee, keep the registered verdict and report counts under both readings.
++
++## Scoring
++
++Blind. A separate Claude Code run (fresh, no tools) grades each reply against the rules above. It sees only the
++task text and the message, in a shuffled order, with ids that carry no arm, model, path or order. I map ids back to
++arms only after every sheet has a grade. I read every FAIL, every invented-step flag, and a 20% sample of PASS
++grades by hand. Template echoes and quoted examples can fool the grader.
++
++## Decision rule (also registered up front)
++
++Per model, count FAIL (no next step) out of 10.
++- NEW ships if, on both models, NEW has at most 2 FAIL, OLD has at least 4, and NEW's over-200-character
++  count is no more than 2 above OLD's.
++- If NEW is at most 2 FAIL on one model and more on the other, the wording does not bind across models. Tighten
++  the form before adding words.
++- If NEW's reps scatter (no common shape across reps), the wording isn't binding. Same action.
++- Anything else: don't ship the sentence. Note that 10 reps per cell is coarse, and report the raw counts.
++
++The Iron Law applies after this: if NEW passes, it still has to pass the full pressure scenarios before the edit
++to SKILL.md lands.
++
++## Spend
++
++Total budget is $1.50. Cap for this test: $1.00. Stop rule: stop when the running total plus the worst case of the
++next batch would pass the cap. Batches: pilot (1 rep), then one arm-model cell of 10 reps at a time, then grading.
++Record each batch's cost in the results file as you go. Measure the cost of the pilot first and extrapolate; if
++60 reps plus grading won't fit, cut to 6 reps per cell, not to one model.
++
++## Open items for the partner
++
++1. Which models, task prompts and scoring rule did the 10-run baseline use? If they differ from the above, the baseline
++   can't be a comparison, and OLD gets rerun (already in the design).
++2. Where is the runner kit (flags, isolation probe, scrub)? Not found in `specs/`.
++3. Confirm the model choice (Sonnet 5.5 and Haiku 5.5).

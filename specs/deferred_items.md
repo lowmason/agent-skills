@@ -6189,6 +6189,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.
+      → progress 2026-11-25 (plan 108): the Task 2 probe ran on each model with the kit's isolated flags. Sonnet answered YES on line 7 (the name or email address of the user), and Opus answered NO. The record leaves out the address. The signal has not fired: no verdict in plan 108 turned on it. Record: specs/baseline/red-baseline-writing-skills-guard-run.md, Task 2 (Probes).
 
 ## peer-session-inbound-probe (no plan; owner request, branch claude/peer-session-inbound-probe) — 2026-11-18
 - [x] **Test whether a message sent to a busy no-tools `claude -p` rep reaches it.** On 2026-11-18, while plan 101's control arms ran, `ListAgents` in a coordinating Desktop session listed a kit rep, `plan101-rep-m4rvf8-f0`, as a peer session. The rep ran under `env -i`, so `env -i` does not keep a rep off the peer list, and any session on the machine can address a running rep by name. The outbound half is closed for kits that pass `--tools ""` with `--strict-mcp-config`, such as plan 97's review kit (`specs/baseline/red-baseline-change-reverted-mutant/review-kit/run_reps.sh`): the rep has no `ListAgents` or `SendMessage`. The inbound half is not tested. A cross-session message reaches a session at its next tool round, and a no-tools rep has none, but the message could also arrive as an extra turn. Until the test runs, no controller or coordinator may message or subscribe to a session whose name carries a running kit's rep prefix. The test: start one probe rep with the review kit's flags and a prompt that keeps it busy for about 30 seconds and tells it to quote, word for word, any message from another session that it sees. Find its name with `ListAgents`, send it a unique marker with `SendMessage`, and search its JSON result for the marker. A `num_turns` above 1 also shows an extra turn. The kit passes `--no-session-persistence`, so the JSON result is the only record. A missing marker proves nothing unless the rep would have quoted it, so first run a positive control: the same probe with one tool (for example `--tools Read`) and a prompt that makes it call that tool, so the message can arrive at a tool round. If the control rep does not quote its marker, the test is inconclusive. Run the probe only while no kit runs, so the marker cannot reach a live rep. Size: quick-fix. Done when: the control and the probe have run and this item's tick note says whether each marker arrived, quoting the field that shows it. If it arrived, the tick note also carries `→ item:` for the kit fix.
@@ -6416,7 +6417,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       records that 3 of 5 is enough.
 - [ ] **Write item 10's rename procedure once a case can show the loss (plan 105 spec, item 10; plan 107, owner
       ruling at Task 5).** R3's control passed 10 of 10 on the old text, so RED was null and the owner dropped
-      the text. Spec item 10 stays open in `specs/writing-skills-improvements.md`. Size: design. Done when: a
+      the text. Spec item 10 stays open in `specs/completed/writing-skills-improvements.md`. Size: design. Done when: a
       harder R3 fixture (one where the old text passes at most 2 of 5 on a model) exists and its RED run is not
       null, then the rename list is written in `skills/writing-skills/references/discovery.md` § 3 and its GREEN
       run meets the bar, or the owner drops item 10 from the spec.
@@ -6433,7 +6434,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "the newest committed kit", which is now this kit. Size: quick-fix. Revisit if: a new directory under
       `specs/baseline/` holds a copy of `run_trigger_reps.sh` or `triggers.py`. Then decide whether a rep that
       loaded before the void counts, and say so in the new record.
-- [ ] **Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers
+- [x] **Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers
       "a single-shot subagent if you don't have API access". That rep inherits the user's instruction files, so
       it conflicts with `references/micro-tests.md` (a new directory, instruction files off) and with the guide
       section `subagents.isolation`. Size: quick-fix. Done when: step 1 names no subagent fallback, or says it
@@ -6441,8 +6442,55 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `SKILL.md` body stays at or below 19,700 characters. Step 4's plan (item 9) also edits `SKILL.md`, so it
       can carry this edit.
       → planned 2026-11-24: specs/plans/108-writing-skills-improvements.md
+      → done 2026-11-25 (plan 108): micro-test step 1 of `SKILL.md` now reads "a raw API call, or a fresh session isolated as micro-tests.md says" and names no subagent fallback (fb48a03). It ran RED first with case F3: Sonnet `old` passed 2 of 5 and `new` 5 of 5, and Opus passed 5 of 5 on both arms, so RED showed on Sonnet alone. The body is 19,469 characters. Record: specs/baseline/red-baseline-writing-skills-guard-run.md, Task 4.
 - [ ] **Give `discovery.md` § 6 a number of runs per prompt (plan 107, final review).** `### 6. Test triggering`
       step 3 says to run each prompt in a fresh session with each description but gives no count, and 5 reps
       cannot separate a loss from noise (plan 107's narrow check). Size: quick-fix. Done when: step 3 states a
       number of runs per prompt and says how to read a difference of one load, run RED first or under an owner
       waiver.
+
+## 108-writing-skills-improvements — 2026-11-25
+- [ ] **Watch whether the guard-run line steers a reword to a no-drop bar (plan 108, owner ruling at the gate).**
+      The sentence pair at `skills/writing-skills/SKILL.md:203` names a guard run ("ship only if no case drops")
+      as the test for an edit meant to keep behavior. An agent may apply that bar to a reword that changes an
+      instruction, which is new guidance and needs a RED-first test. Case L2's `new` arm had 4 of 10 FAILs of that
+      kind (a check that only requires no drop) against 0 of 10 in the `old` arm
+      (`specs/baseline/red-baseline-writing-skills-guard-run.md`, Task 3, "Descriptive, not scored"). The pass
+      counts show no loss. The kind shift has a confound: the grader could see the arm on 3 of the 4 sheets (they
+      say "guard run"), and the 8 `old` FAILs tagged "other" make the same equivalence error in other words. The
+      owner ruled on 2026-11-25 to ship as measured. The candidate fix is a clause that says a reword is new
+      guidance, tested RED first. The body is 19,469 characters, and item 13 of
+      `specs/completed/writing-skills-improvements.md` will add about 40. About 110 characters then stay free below
+      the 19,620 ceiling that plan 108 set (the lint allows 19,700), so the clause must fit there. Size: plan.
+      Revisit if: a graded rep or a reviewed plan uses a guard run as the only test for an edit that changes an
+      instruction.
+- [ ] **Watch whether a guard-run reader takes micro-test step 2's stop rule as a stop (plan 108, final review).**
+      The guard-run sentence (`skills/writing-skills/SKILL.md:203`, The Iron Law) comes before micro-test step 2's
+      rule "If the control doesn't exhibit the failure, there is nothing to fix — stop, don't author the guidance"
+      (`SKILL.md:337`). A guard run on a verbatim move has no failing control by design, so a reader could take
+      that rule as a stop. Case G1 part (c) tests this, and all 10 `new` reps passed it (Sonnet 5 of 5, Opus 5 of
+      5; `specs/baseline/red-baseline-writing-skills-guard-run.md`, Task 3, G1 results). The plan fixed the
+      placement (`specs/plans/completed/108-writing-skills-improvements.md`, Open for plan review item 5), and the
+      owner chose on 2026-11-25 to file a watch item. Size: quick-fix. Revisit if: a graded rep or a real run shows
+      an agent that stopped at micro-test step 2 because its guard run had no failing control.
+- [ ] **Fix the subagent offer in the RED step at `SKILL.md:315` (plan 108, final review).** Line 315 of
+      `skills/writing-skills/SKILL.md` reads "Run pressure scenario with subagent WITHOUT the skill. Document exact
+      behavior:". A subagent of the working session inherits the user's instruction files, so it leaks context.
+      This is the leak that plan 108's step 1 fix removed from micro-test step 1, and case F3 showed it: 3 of 5
+      Sonnet `old` reps chose a subagent as the rep (`specs/baseline/red-baseline-writing-skills-guard-run.md`,
+      Task 4). The line is upstream text for full pressure runs, so plan 108 left it (Open for plan review item
+      13). Size: quick-fix. Done when: line 315 no longer offers a subagent as the control, or says that it leaks
+      context and must be isolated as `references/micro-tests.md` says, run RED first or under an owner waiver,
+      with the `SKILL.md` body at or below 19,700 characters.
+- [ ] **Cut repeated text from the body (first found in specs/completed/writing-skills-improvements.md, 2026-11-22;
+      spec item 16, held under Q6; plan 108, Open for plan review item 14).** Item 16 of that spec proposes a cut of
+      about 1,200 characters from `skills/writing-skills/SKILL.md`. The cycle is stated seven times (`SKILL.md:21`,
+      `:25`, `:29`, the table at `:41-56`, `:303-324`, the checklist at `:378-418`, and `:433-441`), two sections
+      share a layout (`:83-103` and `:166-191`), and Discovery Workflow (`:420-431`) restates Skill Discovery
+      Optimization. The change merges the two layout sections, drops the second statement of the cycle at `:29` and
+      The Bottom Line, and keeps the listing caveat. Those line numbers were taken on 2026-11-22, before plans 105,
+      107 and 108 changed the file, so read them again. The owner ruled (Q6) to keep the repetition for now, because
+      the commitment principle in `skills/writing-skills/references/persuasion-principles.md` relies on repetition,
+      and to revisit item 16 when the free room runs out. A cut needs a guard run with pressure scenarios, not a
+      waiver. Size: plan. Revisit if: an edit to `skills/writing-skills/SKILL.md` would take the body past 19,700
+      characters, the `compaction-window` limit of `build/check_conformance.py`.

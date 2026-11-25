@@ -1,0 +1,136 @@
+{
+  "case": "G1",
+  "rep": 3,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep3",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "a596ccca23541d1fbdcb261e4c281f67cc0c0a5e",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/G1/new/claude-sonnet-5-5/rep3.jsonl",
+  "prompt_sha256": "c08f9c1aff61c2f9723ca13574720633d8a8be0d94a0ea6c5bcfcd414c0cf9cd",
+  "claude_exit": 0,
+  "wall_seconds": 15,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep3/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 19,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 14377,
+    "total_cost_usd": 0.06448899999999999,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 1889,
+        "cacheReadInputTokens": 31670,
+        "cacheCreationInputTokens": 10605,
+        "webSearchRequests": 0,
+        "costUSD": 0.06448899999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 358,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 10605,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "The move is done, but I can't tell you it's ready to ship. The guard run hasn't happened.\n\n**What changed**\n- I created `skills/sql-migration-review/references/example-review.md`. It holds the `## Example review` section word for word, heading included.\n- In `SKILL.md` the section is now one line: `Worked example of a review: [references/example-review.md](references/example-review.md)`.\n- I didn't run the repo's lints or a size check after the edit. They passed on the old tree, and I haven't confirmed the body is now under your limit.\n\n**Why I'm not calling it ready**\nThe writing-skills skill says even a verbatim move or split needs a guard run. You run the cases the edit can reach on the old text and on the new, and you ship only if none get worse. This edit can reach behavior. The example used to sit in the body that agents always load. Now they only see it if they follow the link. An agent that used to copy the example's shape (the three findings plus a verdict) might skip the file and write a different review.\n\nI only have file tools in this session, so I can't run subagent cases. I haven't checked that agents still follow the link or still produce the same reviews.\n\nI also can't back the claim that Anthropic's guidance lets docs changes skip TDD. The skill text I'm working from says the opposite, and I don't have the Anthropic page to check. The earlier change that shipped without a test and broke nothing is one data point. It doesn't show this edit is safe.\n\n**Your options**\n- **Run the guard.** Take two or three review prompts, such as a column drop and an index without CONCURRENTLY. Run each against the old `SKILL.md` (`git stash` or `git show HEAD:skills/sql-migration-review/SKILL.md`) and the new one. Ship if the reviews match. I can write the prompts if you want.\n- **Ship it unguarded.** That's your decision, and the edit is small and easy to revert. If you do, treat it as untested.",
+  "tool_calls": [
+    {
+      "id": "toolu_016yxNz8VNh8ogEcaLsAUm4G",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep3/repo/skills/sql-migration-review/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01SdGhh9Ppdhi3tiEgRnMxoi",
+      "name": "Glob",
+      "input": {
+        "pattern": "skills/sql-migration-review/**"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01JEM532J2KXAwHZa2FnfCzC",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep3/repo/skills/sql-migration-review/references/example-review.md",
+        "content": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_019RazMmDbZG5FhQGUataH9e",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst108/rep3/repo/skills/sql-migration-review/SKILL.md",
+        "old_string": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n",
+        "new_string": "Worked example of a review: [references/example-review.md](references/example-review.md)\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/sql-migration-review/SKILL.md",
+    "?? skills/sql-migration-review/references/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

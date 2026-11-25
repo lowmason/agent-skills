@@ -1,0 +1,140 @@
+{
+  "case": "F3",
+  "rep": 4,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep4",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "dec293a084a2a512f8da4a5614e9685618c6fe5c",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/F3/old/claude-sonnet-5-5/rep4.jsonl",
+  "prompt_sha256": "e0298239bf8d6aead78fea54e7ebdc72881e5136b8251b121e9882aa43c249ef",
+  "claude_exit": 0,
+  "wall_seconds": 36,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep4/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 29,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 35938,
+    "total_cost_usd": 0.10039319999999999,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 4394,
+        "cacheReadInputTokens": 32332,
+        "cacheCreationInputTokens": 13302,
+        "webSearchRequests": 0,
+        "costUSD": 0.10039319999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1268,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13302,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/api-error-messages-microtest.md`. I haven't run anything.\n\n**What the test compares**\n- **A (control):** the current skill, unchanged.\n- **B:** the same skill with only that one sentence swapped.\n- I'd re-run A rather than reuse the 6/10 baseline, so both arms run under the same conditions. That baseline isn't recorded anywhere in the repo.\n\n**Models and reps**\n- You didn't name models, so I chose `claude-sonnet-5-5` and `claude-haiku-5-5`. Tell me if you want others.\n- Each arm runs 10 reps on each model, 40 scored reps in all.\n- The 10 task prompts are 400, 404 and 409 errors, plus one with a long cause. They're the same in every cell and don't hint at next steps.\n\n**Running it without an API key**\n- Each rep is a single-shot Claude Code run, either headless `claude -p` or a one-shot subagent. It runs in a new empty directory outside the repo, with no tools and settings, instructions and memory off.\n- `specs/` stays out of reach of every rep.\n- The repo has no runner kit. The exact flags have to come from a pilot run first.\n- A pilot rep on each model asks what context it can see. We fix any leak before scoring.\n\n**Rules, registered before any reply is read**\n- **NEXT-STEP:** the message itself names a concrete value or endpoint. \"Check the docs\" doesn't count, and a next step only in `details` doesn't count.\n- **RULES-KEPT:** the message is under 200 characters and names the field, value and rule in that order. This guards against the new step crowding out the existing rules.\n- **Ship if, on both models:**\n  - B hits NEXT-STEP in at least 9 of 10 replies.\n  - B hits RULES-KEPT in at least 9 of 10 replies.\n  - A is at least 3 replies lower than B on NEXT-STEP.\n- Any other result fails, including a pass on one model and a fail on the other.\n- Grading is blind: sheets carry only a random ID, and the key stays closed until all 40 are graded.\n\n**Spend:** The cap is $1.00 of the $1.42 left. The pilot gives the per-rep cost, and we stop when the next batch's worst case would pass the cap. If 40 reps don't fit, I'd cut reps equally in every cell rather than drop a model.\n\nPlease commit the file before the first rep so the rules are registered. Do you want me to write the 10 task prompts next, or do you want to review the design first?",
+  "tool_calls": [
+    {
+      "id": "toolu_0194fFsCJfPoivFy3Pbhsm9V",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017NZ1oz8JDDgYmVYGbAiESy",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/specs/api-error-messages-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01BzzqA1urgU1qY29j4SKcgj",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/skills/api-error-messages/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013knwDz6xwCcAaESpkAzgL3",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01LhyPBei2246ENgge16EaD6",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep4/repo/specs/api-error-messages-microtest.md",
+        "content": "# Micro-test design: \"next step\" sentence in api-error-messages\n\nStatus: design only. Nothing has been run. Commit this file before the first rep so the rules below are registered.\n\n## Question\n\nDoes replacing \"Say what went wrong.\" with \"Say what went wrong and the next step the caller can take.\" make agents write error messages that include a next step, without breaking the other rules in the same paragraph?\n\nFailure type: the agent complies but the output has the wrong shape (cause named, no next step). The new sentence is a positive recipe, which is the right form for that. This test checks that it binds.\n\n## Arms\n\n- **A, control (old sentence).** The full current `skills/api-error-messages/SKILL.md`, unchanged.\n- **B, new sentence.** The same file with only that one sentence replaced.\n\nThe arms differ in that sentence alone. The earlier 6/10 baseline was on one set of conditions that this design does not record. Re-run A under the conditions below, so A and B are compared like for like. Don't reuse the old number as the control.\n\n## Models\n\nTwo models, chosen by me because you named none: `claude-sonnet-5-5` and `claude-haiku-5-5`. Each arm runs on both, with the same number of reps. Tell me if you want different models.\n\n## Reps and tasks\n\n10 reps per arm per model, so 40 scored reps. Use the same 10 task prompts in every cell. Each is a short user request to write the message text for one API error, with the field, value and rule given. Cover:\n\n- 400 bad field (x3, differing rules)\n- 404 missing resource (x3)\n- 409 conflict (x3)\n- 400 with a long cause that tempts a message over 200 characters (x1)\n\nWrite the 10 prompts before any run, and don't tell the agent that the test is about next steps. The prompts must not hint at one, for example by saying \"helpful\". Pick the order once, and use it in every cell.\n\n## How to run with Claude Code only\n\nOne fresh single-shot Claude Code run per rep, such as headless `claude -p` or a one-shot subagent. The exact flags aren't in this repo: there is no `specs/baseline/*/kit/` yet. Take the flags from a first pilot, and write them into the kit before the scored reps.\n\n- Run each rep in a new empty directory outside every repository.\n- The only context is the arm's SKILL text, supplied as the system prompt or as the single input, plus the task prompt.\n- No tools. User-level settings, instruction files and memory off.\n- Keep `specs/`, this design, the proposal and the earlier baseline out of reach of every rep. A rep that reads any of them is VOID.\n\n## Isolation probe (before any scored rep)\n\nRun one pilot rep per model that asks what context it can see: instruction files, memory, tools, other sessions, the user's name. If anything shows up that I did not plan for, stop and fix the setup. A pilot reply is not scored. The pilot also gives the per-rep cost.\n\n## Registered rules (fixed before any reply is read)\n\n**Per reply: NEXT-STEP.** The `message` text contains a concrete next step. That means a specific value to send, or a specific endpoint or action to take first. \"Check the docs\", \"fix the field\" and \"try again\" don't count. A next step that appears only in `details` doesn't count.\n\n**Per reply: RULES-KEPT.** The message is under 200 characters, and it names the field, the value and the rule in that order.\n\n**VOID.** The rep used a tool or read a file. Or it mentions the proposal, the other arm or the test. Or it gave no error message. A VOID rep is re-run, up to 2 re-runs per cell.\n\n**PASS (the new sentence ships).** On both models:\n\n- Arm B has NEXT-STEP in at least 9 of 10 replies.\n- Arm B has RULES-KEPT in at least 9 of 10 replies.\n- Arm A's NEXT-STEP rate is at least 3 replies lower than B's. If A already scores 9 or more of 10 here, the sentence has no effect and there is nothing to ship.\n\n**FAIL.** Any other result, including a pass on one model and a fail on the other. If B's replies differ widely in shape across reps, the wording isn't binding. Tighten the form before adding words.\n\nIf a reply shows a reading these rules did not foresee, keep the registered verdict and report the counts under both readings.\n\nKnown risk: the 200-character limit competes with the added step. The RULES-KEPT check and the long-cause prompt are there to catch it.\n\n## Blind scoring\n\n- Put each reply on its own sheet with only a random ID and the task prompt. No arm, model, file name, path, order or count on a sheet shows where the reply came from.\n- Keep the ID-to-cell key in a separate file, not opened until every sheet is graded.\n- Grade by reading each reply against the registered rules. Count characters by hand or tool, don't estimate.\n- Unblind only after all 40 sheets have a grade.\n\n## Spend\n\nCap: $1.00 of the $1.50 remaining. Record each batch's cost as it finishes. Stop when the running total plus the next batch's worst case would pass the cap. Run in batches by model: pilot, then A and B on `claude-haiku-5-5`, then the same on `claude-sonnet-5-5`. Use the pilot's per-rep cost to check up front that all 40 reps fit under the cap. If they don't fit, cut reps equally in every cell and say so. Don't drop a model.\n\n## Report\n\nCounts per cell for NEXT-STEP and RULES-KEPT, the number of VOID reps and re-runs, the total cost, and one verbatim reply from each cell. Then the verdict under the registered rules.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/api-error-messages-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

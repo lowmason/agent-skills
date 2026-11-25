@@ -1,0 +1,128 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..a8031dc
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,122 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take."
++in `skills/api-error-messages/SKILL.md` make agents put a next step in the error message, without
++breaking the rest of the "Writing the message" rules?
++
++Baseline (already run, old sentence): 6 of 10 runs wrote a message with no next step.
++
++## Runner
++
++There is no API key on this machine, so each rep is a single-shot, fresh-context Claude Code call
++(`claude -p`), one sample per call.
++
++- Start each rep in its own new, empty directory under `/tmp`, outside every git repository.
++- No tools for the rep (the task needs none).
++- User-level settings, CLAUDE.md / instruction files, memory and skills turned off, so the rep sees
++  only the system prompt and task below.
++- Capture the reply and the reported cost of each call (JSON output).
++
++### Isolation probe (pilot, before any scored rep)
++
++Run one rep per model with the same setup and this user message:
++
++> List every piece of context you can see besides this message: instruction files, memory, tools,
++> skills, other sessions, files, and the user's name or email.
++
++Expected: the system prompt only, no tools, no files, no memory. Any other item means the setup leaks;
++fix it and re-probe before scoring anything.
++
++### Quarantine
++
++No rep may reach `specs/` or this repo: the rep directory is outside the repo and the rep has no tools.
++A reply that quotes this spec, the proposal or the pass rules is VOID.
++
++## Arms
++
++The system prompt for every arm is the full `SKILL.md` body (realistic context, not the sentence alone).
++Only the first sentence of "Writing the message" differs.
++
++| Arm | First sentence of "Writing the message" |
++|---|---|
++| OLD | `Say what went wrong.` (current text; reruns the baseline under this exact setup) |
++| NEW | `Say what went wrong and the next step the caller can take.` |
++| CONTROL | Sentence removed; everything else in the skill unchanged (no-guidance control) |
++
++Everything else (frontmatter, overview, the `currency` example, red flags) is byte-identical across arms.
++
++## Tasks
++
++If the baseline's task prompts are on record, reuse them verbatim so OLD here is comparable to 6/10.
++Otherwise use these three. Each one has a real next step available, so FAIL is never forced.
++
++- **T1 (400 bad field):** "Write the JSON error body our `POST /payments` endpoint returns when the
++  request has `amount: -5`. Amounts must be positive integers in minor units."
++- **T2 (404 missing resource):** "Write the JSON error body `GET /invoices/inv_123` returns when the
++  invoice does not exist. Invoices are created with `POST /invoices`."
++- **T3 (409 conflict):** "Write the JSON error body `POST /customers` returns when a customer with
++  email `a@example.com` already exists. Existing customers can be updated with `PATCH /customers/{id}`."
++
++## Reps and models
++
++- Models: **claude-opus-5-5** and **claude-sonnet-5-5** (chosen here because no model was specified;
++  swap in whichever models will actually load this skill, keeping two or more).
++- 5 reps per task per arm per model: 3 tasks x 5 reps = 15 reps per arm per model.
++- Total: 3 arms x 15 x 2 models = 90 scored reps, plus 2 probe reps.
++
++## Scoring rules (register and commit before reading any reply)
++
++Score only the `message` string (and `details`, where noted).
++
++**Next step (primary):**
++- **PASS:** the message names a concrete action the caller can take: a value or format to send
++  ("send a positive integer such as 500"), an endpoint to call ("create it with POST /invoices"),
++  or an action to take ("update the existing customer with PATCH /customers/{id}").
++- **FAIL:** the message only states what went wrong or restates the rule
++  ("amount must be a positive integer"), or puts the next step only in `details` and not in `message`.
++- **VOID:** no JSON error body, a refusal, a reply that is not an answer to the task, or a reply that
++  shows it read the spec or the rules.
++
++**Guards (the edit can reach these; they must not drop):**
++- G1: `message` is under 200 characters.
++- G2: `message` names the field, the value and the rule (T1 only; T2/T3 score N/A).
++- G3: no internal class name or stack frame.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report the
++counts under both readings.
++
++## Blind scoring
++
++- After all reps finish, write each reply to its own sheet with a random ID. The sheet holds only the
++  task ID and the reply text: no arm, model, file path, run order or count.
++- Shuffle the sheets. Grade every sheet against the rules above (PASS/FAIL/VOID plus G1-G3).
++- Read every reply by hand, including any flagged by an automated check; do not trust counts alone.
++- Unblind only after every sheet has a grade.
++
++## Decision rule (fixed now)
++
++1. If OLD and CONTROL both fail on fewer than 4 of 15 on a model, this setup does not reproduce the
++   problem on that model: stop and report, do not judge NEW there.
++2. NEW **works** if, on each model, NEW's next-step FAILs are at most 2 of 15, and at least 4 fewer
++   than OLD's.
++3. NEW is **rejected** if any guard (G1-G3) has more failures in NEW than in OLD on either model, even
++   if rule 2 holds.
++4. Variance check: report whether NEW's passing messages share one shape (next step as a trailing
++   clause/sentence) or scatter. Scattered shapes mean the wording is not binding yet.
++
++## Spend
++
++- Cap: **$10** total across probe and all arms.
++- Record the cost of each batch (one arm x one model x one task = 5 reps) as it finishes.
++- Stop rule: before starting a batch, stop if the running total plus that batch's worst case (the
++  highest single-rep cost so far x 5, x 2 for margin) would pass the cap.
++
++## Out of scope, noted for later
++
++The skill's own example ends at the rule ("it must be an upper-case ISO 4217 code") with no next step
++in the T1-style sense. It may anchor replies toward FAIL in every arm. This test changes only the one
++sentence; if NEW misses the bar, the example is the next thing to test.

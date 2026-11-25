@@ -1,0 +1,115 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..e4ff828
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,109 @@
++# Micro-test design: api-error-messages wording
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take." make agents write error messages that include a next step?
++
++- Failure type: the agent omits a required element from something it already produces (the error message).
++- Baseline for the old sentence: 6 of 10 runs had no next step.
++- Wording under test is prose, so the test checks that the prose binds. If it does not, the fallback is a structural slot in the template. That is a separate design.
++
++## Gaps to close before the first rep
++
++- I found no baseline record or kit in `specs/` (the only file there is the proposal). The scenario prompt and the pass rule used for the 6/10 baseline must be copied in here before running. Reuse the baseline scenario prompt verbatim so the numbers are comparable.
++- Which model produced the 6/10 is unknown. The control arm is re-run below, so this does not block the design.
++
++## Arms
++
++| Arm | System prompt |
++|---|---|
++| CONTROL | Full current `skills/api-error-messages/SKILL.md`, unchanged ("Say what went wrong. Name the field, ...") |
++| NEW | Same file with only that one sentence replaced by the proposed one |
++
++Build NEW by a single string replacement and diff it against CONTROL. The diff must show exactly one changed sentence.
++
++The system prompt is the whole skill file, because that is the context the sentence will live in.
++
++## Scenarios
++
++The user message is a task that tempts the failure: write the message text for an error response. Use 3 scenarios, taken from the skill's own description:
++
++- S1: the baseline scenario, verbatim.
++- S2: a 404 for a missing resource.
++- S3: a 409 for a conflict.
++
++Each rep gets one scenario. Scenarios are balanced across reps in each arm and model.
++
++## Models
++
++I chose two, because you did not name any: `claude-sonnet-5-5` and `claude-haiku-5-5`. Tell me if the skill ships to a different model and I will swap them. Both arms run on both models with equal reps.
++
++## Reps
++
++10 per arm per model, 40 reps in all. S1 gets 4 reps per cell and S2 and S3 get 3 each. This also reproduces the old 10-run baseline under CONTROL.
++
++## Running reps with Claude Code only (no API key)
++
++One `claude -p` call per rep, each from a fresh empty directory outside every repository, for example `mktemp -d` under `/tmp`. Check the exact flags against `claude --help` in the probe rep. The settings below are what each rep needs:
++
++- No tools.
++- No user or project settings, no CLAUDE.md or memory, no session persistence.
++- The system prompt replaced by the arm's skill text.
++- `--model` set per cell.
++- JSON output, so the cost of each rep is recorded.
++
++Keep the spec, this design, the proposal, the baseline and the scoring sheets out of every rep's reach. A rep that reads one is VOID.
++
++## Probe first
++
++Run one probe rep before any scored rep. Ask it what it can see: instruction files, memory, tools, other sessions and the user's name. Any answer I did not plan for means the setup leaks. Fix it and re-probe. Probe each model.
++
++## Rules, registered before any reply is read
++
++Commit this section before the first reply is read. If the rules miss a reading, keep the registered verdict and report counts under both readings.
++
++Per reply:
++
++- PASS: the message gives the caller a concrete next step. Examples are a value to send, an endpoint to call first, or a field to change.
++- FAIL: the message names the problem and no step.
++- VOID: the rep saw a file or context outside the plan, used a tool, or produced no message.
++- Guard, scored separately: the message is 200 characters or fewer and still names the field, the value and the rule. A reply that passes on next step but breaks the guard is a GUARD-FAIL. The longer sentence could crowd out the rest of the skill.
++
++Void reps are re-run until each cell has 10 valid reps. Report how many were voided.
++
++Per model, the NEW wording works if all of these hold:
++
++1. NEW has at most 2 of 10 FAIL.
++2. NEW has fewer FAIL than CONTROL on that model.
++3. NEW has no more than 1 GUARD-FAIL more than CONTROL.
++
++The wording is accepted only if it works on both models. If it works on one, report that and do not accept it.
++
++Stop rule on the control: if CONTROL shows 2 or fewer FAIL of 10 on a model, there is no failure to fix on that model. Report that and stop for that model.
++
++Variance counts as a result. Report whether the NEW replies converge on one shape or spread across several readings.
++
++## Blind scoring
++
++1. Strip each reply down to the message text. Remove the arm, model, file names and order.
++2. Give each reply a random ID and shuffle. The ID-to-arm map goes in a separate file that the scorer never sees.
++3. A fresh no-tools session grades each sheet against the registered rules above, one sheet per call.
++4. I then read every reply that was flagged, whether PASS or FAIL. Template echoes and quoted examples can look like a next step.
++5. Unblind only after every sheet has a grade.
++
++## Spend
++
++The remaining budget is $1.50. Cap this test at $1.00.
++
++- The pilot (2 probe reps plus 2 scored reps, one per model) goes first. Its recorded cost sets the per-rep worst case.
++- Run in batches of 10. Stop when the running total plus the next batch's worst case would pass $1.00.
++- Scoring calls count against the same cap. Budget for 40 grading calls.
++- Record each batch's cost in a table at the end of this file.
++
++If the cap stops the run early, report the partial counts as partial and do not accept the wording on them.
++
++## Outputs
++
++Add to this file after the run: the per-cell counts (PASS, FAIL, VOID, GUARD-FAIL), the cost table, the verdict under the registered rules, and any reading the rules did not foresee.

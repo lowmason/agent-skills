@@ -4,7 +4,7 @@
 > each case must read and the marker each case scores, so a rep that reads this file is void.
 
 This record holds the guard run of plan 105 (`specs/plans/completed/105-writing-skills-improvements.md`), Tasks 3,
-4 and 6. The spec, `specs/writing-skills-improvements.md`, tests item 8b with "A guard run on plan 72's
+4 and 6. The spec, `specs/completed/writing-skills-improvements.md`, tests item 8b with "A guard run on plan 72's
 `t3` cases, old layout against new". Item 8b moves three support files of writing-skills into
 `references/`. The plan's D1 adds one case with tools for each moved file. So the run compares the `old`
 layout with the `new` one on six cases: plan 72's no-tools cases W1–W3 and the tools cases T1–T3. Each

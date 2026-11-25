@@ -1,0 +1,161 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..b0d431d
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,155 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. Nothing has been run. The rules below are registered here, and get committed,
++before anyone reads a reply.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take."
++in `skills/api-error-messages/SKILL.md` make agents put a next step in the error message, without
++losing what the current section already gets right?
++
++Prior evidence: the old-sentence baseline had 6 of 10 messages with no next step. That run is not
++reused as an arm here. It was not scored blind under these rules, so the old arm runs again below
++under the same setup as the others.
++
++## Arms
++
++Each arm's system prompt is the full SKILL.md, frontmatter included. Only the one sentence differs.
++
++| Arm | Sentence in "Writing the message" |
++|---|---|
++| CONTROL | Sentence removed. The section starts at "Name the field, the value and the rule it broke, in that order." |
++| OLD | "Say what went wrong." (current file) |
++| NEW | "Say what went wrong and the next step the caller can take." |
++
++CONTROL is the required no-guidance arm. If CONTROL and OLD both rarely omit the next step under
++this setup, there is nothing to fix: stop and report that, and do not adopt NEW.
++
++## Tasks (user message)
++
++Three tasks, so the result doesn't rest on one prompt. Each one invites a short, cause-only message.
++None of them mentions next steps, fixes or what the caller should do.
++
++- **T1 (400):** "Our API `POST /v1/payments` received `{\"amount\": \"12.50\"}`. `amount` must be an
++  integer in minor units (cents). Write the JSON error response body. Reply with the JSON only."
++- **T2 (404):** "A client called `GET /v1/orders/ord_123/refunds`. There is no order `ord_123`.
++  Write the JSON error response body. Reply with the JSON only."
++- **T3 (409):** "A client called `POST /v1/customers` with email `a@example.com`. Customer `cus_88`
++  already has that email. Write the JSON error response body. Reply with the JSON only."
++
++T1 deliberately uses a different field from the skill's `currency` example, so a rep can't pass by
++copying the example.
++
++If the baseline's task prompt is on record, send it to me. I will add it as T0 so this run can be
++compared directly with the 6/10.
++
++## Reps and models
++
++- 4 reps per task, so 12 per arm per model.
++- Models: **Claude Opus 5.5** (`claude-opus-5-5`) and **Claude Sonnet 5.5** (`claude-sonnet-5-5`).
++  Nobody chose these, so I picked the two that are most likely to run this skill. Swap one before the
++  run if the skill runs on a different model, such as Haiku 5.5.
++- Total: 3 arms × 2 models × 12 = 72 scored reps, plus 1 isolation probe per model.
++
++## Runner (no API key, so Claude Code headless)
++
++Each rep is one fresh `claude -p` call. It runs from a new empty directory under `/tmp`, outside every
++git repository, and gets no tools. Candidate invocation:
++
++```
++cd "$(mktemp -d /tmp/aem-rep.XXXXXX)"
++claude -p --model <model> --system-prompt "$(cat <arm-skill-file>)" \
++  --tools "" --setting-sources "" --strict-mcp-config \
++  --output-format json "<task message>"
++```
++
++The arm skill files are copied into one directory outside the repo. They are named `s1.md`, `s2.md`
++and `s3.md`, and the mapping to arms is held separately. The rep reaches them only through
++`--system-prompt` and can't read them as files. If any flag above behaves differently in the
++installed version, the probe will show it. Fix the invocation before any scored rep.
++
++### Isolation probe (pilot, before any arm)
++
++Same invocation, with the OLD system prompt. User message: "List everything in your context besides
++this message: system prompt contents, instruction files such as CLAUDE.md, memory, tools, other
++sessions, and the user's name if you know it."
++
++The probe passes if the reply shows only the skill text, no tools, no CLAUDE.md or memory, and no
++project details. Anything else means the setup leaks: fix it and probe again. Probe replies are not
++scored.
++
++### Quarantine
++
++Every rep's cwd is outside this repo, and no rep has tools. Nothing in `specs/`, the baseline
++record or this file can reach a rep. A reply that quotes content only those files contain is VOID.
++
++## Registered scoring rules
++
++The unit is one reply. The primary criterion reads only the `message` string.
++
++- **PASS:** `message` contains at least one concrete action the caller can take. That is an
++  instruction or explicit option that names a value to send, a field to change, an endpoint or
++  resource to call or use first, or a condition to wait for. Examples: "send amount as an integer
++  number of cents, e.g. 1250"; "create the order first, or list orders with GET /v1/orders";
++  "use PATCH /v1/customers/cus_88 to update the existing customer".
++- **FAIL:** `message` states only the cause or the rule ("amount must be an integer in minor
++  units", "order not found", "email already exists"). A bare constraint counts as FAIL even when a
++  reader could infer the fix. Generic pointers ("see the docs", "contact support", "check your
++  request") also count as FAIL.
++- **VOID:** no parseable JSON error body, a refusal, a runner or CLI error, or a reply that shows
++  context outside the plan (see Quarantine). Re-run a VOID rep once with a fresh directory, and report
++  the VOID count per arm.
++
++Secondary reading, reported alongside but not used for the decision: the same PASS test applied to
++the whole body (`message` plus `details` and any other field). The skill puts detail in `details`,
++so a next step there may be a legitimate reading.
++
++If a reply shows a reading these rules did not foresee, it keeps its registered verdict. Counts are
++then reported under both readings.
++
++### Guard checks (the edit must not cost these)
++
++These are recorded for every non-VOID reply:
++
++- G1: `message` is 200 characters or fewer.
++- G2 (T1 only): `message` names the field, the value and the rule, in that order.
++
++## Blind scoring
++
++1. After all reps are in, extract each reply's JSON onto its own sheet named by a random ID. Sheets
++   are shuffled across arms, models and tasks. The ID→arm/model/task map goes in a separate file that
++   stays closed until grading ends.
++2. Scrub any verbatim quote of an arm's sentence from a sheet, since an echo of "the next step the
++   caller can take" would reveal the arm. Note the scrub on the sheet but not what it removed.
++3. Grade every sheet PASS/FAIL/VOID plus G1/G2 by hand. A script may pre-flag candidates, but every
++   flagged sheet is read before it gets a grade.
++4. Unblind only after every sheet has its grade.
++
++## Decision rule (registered)
++
++Adopt NEW only if all of the following hold on **both** models:
++
++- The NEW arm has at most 3 of 12 FAILs, and at least 4 fewer FAILs than OLD.
++- Neither the G1 nor the G2 pass count in NEW is more than 1 below OLD.
++- NEW's replies converge on one shape across reps. If they carry the next step in visibly different
++  ways or places, report the wording as not binding even if the counts pass.
++
++If NEW passes on one model and not the other, do not adopt it. Report the split.
++
++## Spend cap and stop rule
++
++- Cap: **$6.00** total, probes included. A batch is one arm × one model × 12 reps.
++- Before each batch: stop if the running total plus that batch's worst case would exceed the cap.
++  The worst case is 12 × the costliest single rep seen so far on that model, or 12 × $0.10 before
++  any rep has run.
++- Record each batch's cost from the `total_cost_usd` field of the JSON output in a cost log next to
++  the run records.
++
++## Where records go
++
++The kit (arm files, task file, runner script, probe) goes in
++`specs/baseline/red-baseline-api-error-messages-next-step/kit/`. Replies, sheets, the arm map and the
++cost log go in `specs/baseline/red-baseline-api-error-messages-next-step/`, and the summary goes in
++`specs/baseline/red-baseline-api-error-messages-next-step.md`. None of these go in the skill
++directory. The rep directories under `/tmp` are deleted after extraction.

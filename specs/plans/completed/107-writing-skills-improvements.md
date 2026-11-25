@@ -13,7 +13,7 @@
 
 **Tech Stack:** Markdown skill text; a `claude -p` micro-test kit (bash 3.2 and Python 3.11+, stdlib), copied from plan 105's kit; pytest through `build/run_suites.py`; `codex debug prompt-input` for one local measurement.
 
-**Spec:** `specs/writing-skills-improvements.md`, approved for planning on 2026-11-22, with the owner rulings in its Owner decisions section. This plan covers Proposed sequence step 3: items 1, 2 and 10, then 3b. Step 4 (item 9) gets its own plan. Item 13 goes with its backlog item's plan. Item 16 is held (Q6).
+**Spec:** `specs/completed/writing-skills-improvements.md`, approved for planning on 2026-11-22, with the owner rulings in its Owner decisions section. This plan covers Proposed sequence step 3: items 1, 2 and 10, then 3b. Step 4 (item 9) gets its own plan. Item 13 goes with its backlog item's plan. Item 16 is held (Q6).
 
 ## Global Constraints
 
@@ -459,7 +459,7 @@ Fetch, and compare `NOTICE` on `origin/main` with this branch; keep every line o
 
 ```text
   - Plan 107 (<YYYY-MM-DD>) changed writing-skills, from
-    specs/writing-skills-improvements.md. The changes are local, and no
+    specs/completed/writing-skills-improvements.md. The changes are local, and no
     upstream text was taken. references/micro-tests.md is new: it says how
     to isolate reps, probe the isolation, quarantine the scenario, register
     the rules first, score blind, run each model and cap the spend.

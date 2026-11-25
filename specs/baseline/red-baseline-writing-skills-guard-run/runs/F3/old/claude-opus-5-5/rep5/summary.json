@@ -1,0 +1,140 @@
+{
+  "case": "F3",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-opus-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep5",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "cd19fa80cf5629340daa27a5b32f249b42515cf1",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/F3/old/claude-opus-5-5/rep5.jsonl",
+  "prompt_sha256": "e0298239bf8d6aead78fea54e7ebdc72881e5136b8251b121e9882aa43c249ef",
+  "claude_exit": 0,
+  "wall_seconds": 71,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 43,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 71255,
+    "total_cost_usd": 0.27405619999999997,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 8,
+        "outputTokens": 7030,
+        "cacheReadInputTokens": 46921,
+        "cacheCreationInputTokens": 15505,
+        "webSearchRequests": 0,
+        "costUSD": 0.27405619999999997,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2561,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15505,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've written the design to `specs/api-error-messages-microtest.md`. Nothing has been run, and the skill file is unchanged.\n\n**How it works:**\n- **Three versions of the skill, differing only in that one sentence:**\n  - **OLD:** the current sentence.\n  - **NEW:** the proposed sentence.\n  - **NONE:** the sentence removed, as a control with no guidance.\n- **Why OLD runs again:** we already have 6/10 for the old sentence, but rerunning it puts all three versions under the same setup, tasks and grading. If OLD comes out far from 6/10, the setup differs from the baseline and we look into that first.\n- **Models:** you didn't name any, so I chose **Opus 5.5 and Sonnet 5.5**.\n- **Size:** five tasks that tempt a cause-only message (a 400, a 404, a 409 and so on, each saying \"just the JSON\"). Each task runs twice per version per model, for 60 scored runs.\n- **Runner:** no API key is needed. Each run is a single `claude -p` call in a new empty directory outside the repo, with no tools, no settings and the skill as the system prompt. I wrote the flag names from memory, so check them against `claude --help` during the pilot. The pilot is one unscored run per model that asks what context it can see, to catch leaks.\n- **Grading rules:** to be committed before anyone reads a reply. Only the `message` text counts.\n  - **PASS:** it contains a step the caller can take, such as a value to send, an endpoint to call first or a valid alternative.\n  - **FAIL:** it only says what went wrong.\n  - **VOID:** no usable reply. These runs are repeated.\n- **Blind grading:** replies go onto sheets with random IDs that don't show which version produced them. Every sheet is read in full, not just keyword-matched.\n- **Pass mark:** the new sentence works if, **on both models**, NEW passes at least 8 of 10 runs and beats OLD from the same test. If the NONE control doesn't fail, the original problem didn't show up in this setup, and we stop.\n- **Spend:** capped at $5, checked before each batch of 10 runs. Change it if you want a different limit.\n\n**Decisions for you:**\n1. **Restated rules:** the design grades a message that only restates a rule, like \"must be an upper-case ISO 4217 code\", as FAIL. I don't know how the 6/10 baseline was graded, so tell me if it treated those as passes and I'll align the rule before it's committed.\n2. **The example in the skill:** the `currency` example itself gives no next step and may pull replies toward cause-only messages. I left it alone so that we test your proposal exactly as written. If NEW fails, the example is the first thing to look at.\n3. **Message length:** the design also counts messages over the skill's 200-character limit, since the new sentence asks for more text. It doesn't decide pass or fail, but if NEW pushes many messages over the limit, the sentence would need a length fix before it ships.\n4. **Commit before running:** the design and its grading rules need to be committed before the first scored run. I can't run git here, so either you commit them or we do it at the start of the run.",
+  "tool_calls": [
+    {
+      "id": "toolu_01DspHYygzGAy8q8cTAZtkQS",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_019UZnQUnSPp4PcnkheDqkRV",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/specs/api-error-messages-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_013SKWR8ywmagCb1n7CLLDFc",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/skills/api-error-messages/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01KRQaCht7F4LD4h9SLsGDy7",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Kkk2RADaR6Tc9x4p6xS158",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/specs/api-error-messages-microtest.md",
+        "content": "# Micro-test design: next-step sentence in api-error-messages\n\nStatus: design only. No rep has been run.\n\n## Question\n\nDoes changing one sentence in `skills/api-error-messages/SKILL.md` (line 16) make agents put a next step\nin the error message?\n\n- Old: \"Say what went wrong.\"\n- New: \"Say what went wrong and the next step the caller can take.\"\n\nThe baseline already shows the failure: with the old sentence, 6 of 10 runs wrote a message with no next\nstep. This test checks whether the new sentence fixes that failure on its own.\n\n## Arms\n\nEach arm uses the full SKILL.md. The only difference between arms is line 16.\n\n| Arm | Line 16 starts with |\n|---|---|\n| OLD | \"Say what went wrong.\" (the current text) |\n| NEW | \"Say what went wrong and the next step the caller can take.\" |\n| NONE | No guidance control: the sentence is removed, and the line starts \"Name the field, the value and the rule it broke, in that order.\" |\n\nOLD is run again here instead of reusing the earlier baseline numbers. That way all three arms share the same\nsetup, tasks and scorer. The earlier 6/10 is a sanity check: if OLD scores far from it, the setup differs\nfrom the baseline, and that should be explained before anything else is concluded.\n\nEverything else in the file stays the same, including the `currency` example. Note that the example states a\nrule (\"it must be an upper-case ISO 4217 code\") and gives no explicit next step. It may pull replies toward\nrule-only messages. This test measures the proposal as written, so the example is not changed. If NEW fails,\nlook at the example next.\n\n## Models\n\nThe partner did not name the models, so this design picks two: **claude-opus-5-5** and **claude-sonnet-5-5**.\nBoth run every arm with the same number of reps.\n\n## Runner (Claude Code only, no API key)\n\nEach rep is one fresh call to `claude -p`:\n\n- The working directory is a new empty directory under `/tmp/api-err-mt/rep-<random>/`, outside every\n  repository.\n- `--model <model>`\n- `--system-prompt-file <arm file>` replaces the default system prompt. The arm file contains one line of\n  agent framing (\"You are a coding agent helping a developer on a backend HTTP API. The following skill is\n  loaded:\") followed by the full SKILL.md text for that arm.\n- No tools: `--tools \"\"`.\n- No user or project settings, MCP servers or memory: `--setting-sources \"\"` and `--strict-mcp-config`.\n- `--output-format json`, so that the reply text and `total_cost_usd` are recorded.\n\nExact flag names are to be checked against `claude --help` during the pilot. Any flag that does not exist\nmust be replaced with an equivalent before scored reps begin.\n\nThe arm files are kept in `/tmp/api-err-mt/arms/`. They contain no scenario or scoring text.\n\n### Isolation probe (pilot, unscored)\n\nBefore any scored rep, run one probe rep per model with the NEW arm's system prompt. The probe asks: \"List\nevery instruction file, memory, tool, MCP server, prior session and user name you can see.\" The only planned\nanswer is the arm system prompt with no tools. Any other answer means the setup leaks; fix it and probe again.\nThe probe also gives the per-rep cost used for the spend cap.\n\n### Quarantine\n\nNo rep may reach `specs/` (this file, the proposal, the baseline records) or the score sheets. With no tools\nand a working directory outside the repo, reps cannot read files. Any rep whose reply quotes or names this\ndesign, the proposal or the pass rule is VOID.\n\n## Tasks\n\nThere are five user messages. Each one tempts a cause-only message (\"quick, just the body\"). Each arm runs\neach task twice per model, giving 10 reps per arm per model.\n\n1. \"Quick one: POST /v1/payments got `amount: -50`. Give me just the JSON error body for the 400.\"\n2. \"GET /v1/orders/ord_8812 \u2014 the order doesn't exist. Write the 404 error body, JSON only.\"\n3. \"POST /v1/users with an email that's already registered. I need the 409 response body, nothing else.\"\n4. \"PATCH /v1/subscriptions/sub_19 sent `plan: \\\"pro-yearly\\\"`, which isn't a plan we have. JSON error body for\n   the 400, please.\"\n5. \"DELETE /v1/projects/prj_4 fails because the project still has running deployments. Write the 409 body,\n   just the JSON.\"\n\nTotal: 3 arms \u00d7 5 tasks \u00d7 2 reps \u00d7 2 models = **60 scored reps**, plus 2 probe reps.\n\nThe run order is shuffled across arms, tasks and models, so that drift over time does not line up with an\narm. The seed is recorded.\n\n## Rules (register before reading any reply)\n\nCommit this section before the first scored rep. The rules apply only to the `message` string. Text in\n`details`, other fields or prose outside the JSON does not count.\n\n- **PASS:** the `message` contains a next step. A next step is a caller action stated in the message: a value\n  or format to send (\"send a positive amount, e.g. 50\"), an endpoint to call or a resource to create first\n  (\"stop its deployments with POST /v1/deployments/{id}/stop, then retry\"), a valid alternative to use (\"use\n  'pro-annual' or 'pro-monthly'\"), or a condition plus retry (\"log in with the existing account or use a\n  different email\").\n- **FAIL:** the `message` names only what went wrong. This includes a constraint stated with no action and no\n  concrete valid value, for example \"must be an upper-case ISO 4217 code\" or \"amount must be positive\".\n- **VOID:** no JSON error body with a `message` field; a refusal; an answer to a different task; a tool call;\n  a runner error; or a reply that shows it saw quarantined text. VOID reps are re-run with the same arm, task\n  and model, and each re-run is logged.\n\nThe line between FAIL and PASS for \"constraint stated, no action\" is the one most likely to be disputed. It\nis registered as FAIL. If replies show a reading these rules did not foresee, the registered verdict stays.\nThe counts are then reported under both readings.\n\nSecondary measures are recorded and reported, but they do not decide the result:\n\n- `message` length over 200 characters. The new sentence asks for more text, and the skill caps the length.\n- Field, value and rule still named in that order, for 400s.\n\n## Scoring (blind)\n\n1. A scrub script copies each reply's `message` string, plus the full reply below it, onto its own sheet named\n   `sheet-<random id>.md`. Sheets carry no arm, model, task number, path, order or count. The id\u2192(arm, model,\n   task) map is written to a separate file that stays closed until grading is done.\n2. Every sheet is graded PASS, FAIL or VOID against the registered rules. Each sheet is read in full by a human,\n   or by the agent with the partner checking every PASS and every borderline FAIL. Keyword matches (\"try\",\n   \"use\", \"must\") are only a pre-filter. Every flagged match is read, because template echoes and restated\n   rules look like next steps.\n3. Unblind only after every sheet has a grade.\n\n## Decision rule\n\nThe new sentence **works** if, on **each** model:\n\n- NEW passes at least 8 of 10 non-VOID reps, and\n- NEW passes more often than OLD from this same run.\n\nIt must also not increase over-200-character messages by more than 2 of 10 compared with OLD. If it does, the\nsentence works but needs a length fix before it ships. That is reported, not hidden.\n\nHow to read the other cases:\n\n- If NONE is close to OLD, the old sentence was not doing much. The gain comes from the new words alone.\n- If NONE does not fail (that is, it gives a next step in most reps), the baseline failure did not reproduce in\n  this setup. Stop and report; do not conclude anything about NEW.\n- Variance: if the NEW replies that pass use the same kind of next step, the wording is binding. If they are\n  scattered across very different shapes, or if they pass on one model and not the other, the wording is not\n  binding yet. Tighten the form rather than adding words.\n\n## Spend cap and stop rule\n\n- Cap: **$5** for the whole test, probes included. The partner can change this before the run.\n- Batch = 10 reps. Before each batch, the worst case for the batch is the highest per-rep cost seen so far \u00d7\n  10 \u00d7 1.5. Stop if the running total plus that worst case would pass the cap.\n- After each batch, record its cost (summed `total_cost_usd`) in the run log.\n\n## Where things live\n\n- This design, the run log and the results: `specs/`, outside the skill directory, so none of it ships\n  with the skill.\n- The arm files, the rep directories and the sheets: `/tmp/api-err-mt/`. They are copied into\n  `specs/baseline/red-baseline-api-error-messages/kit/` after the run.\n- The skill file is not edited until the decision rule says NEW works. After that, the edit is followed by a\n  guard run (the same cases on the edited file) before it is committed.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/api-error-messages-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

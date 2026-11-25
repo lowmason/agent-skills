@@ -1,0 +1,127 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..9c023cf
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,121 @@
++# Micro-test design: new sentence in api-error-messages
++
++Status: design only. Nothing has been run. Commit this file before the first scored rep.
++
++## Question
++
++Does "Say what went wrong and the next step the caller can take." make agents write error messages that
++include a next step, where "Say what went wrong." did not (baseline: 6 of 10 runs had no next step)?
++
++## Open items for the partner (needed before running)
++
++1. The scenario prompts used in the old baseline run. Reusing them keeps the old-sentence arm comparable.
++   I have not seen them. If they are lost, the three tasks below stand in.
++2. Whether the baseline's 10 runs were on one model. I do not know, so this design re-runs the old sentence.
++3. Confirm the two models and the cap below, or change them.
++
++## Arms
++
++| Arm | System prompt |
++|---|---|
++| A. control | The skill with the sentence "Say what went wrong." deleted. Nothing else changed. |
++| B. old | The skill as committed (old sentence). |
++| C. new | The skill with only that sentence replaced by the new one. |
++
++Everything else in the skill text is byte-identical across arms: frontmatter, the 200-character rule, the
++example, the red flags. A is needed to show whether the failure comes from the old sentence at all. B is
++re-run so each model has its own baseline. If A already contains a next step in most reps, the sentence is not
++the cause, and the test stops there.
++
++## Models
++
++Two models, chosen by me because none was named: `claude-sonnet-5-5` and `claude-haiku-5-5`. Same number of
++reps on each. A wording that binds one can fail on the other.
++
++## Reps and tasks
++
++Target 10 reps per arm per model: 3 arms x 2 models x 10 = 60 reps. Minimum acceptable is 5 per cell; below
++that, report "not enough" instead of a verdict. Rotate three tasks over the reps, the same rotation in every
++cell, so task is balanced across arms (reps 1,4,7,10 get task 1; 2,5,8 task 2; 3,6,9 task 3):
++
++1. A POST /payments request sent `currency: "usd"`. Write the error response for the 400.
++2. GET /orders/ord_123 returns nothing because the order lives under another tenant. Write the 404 response.
++3. POST /users with an email that already exists. Write the 409 response.
++
++The user message gives the task only, with no mention of next steps and no mention of the skill. The skill
++text is the system prompt. These tasks tempt the failure because "name the problem and stop" is a complete-
++looking answer.
++
++## Running without an API key
++
++Each rep is a fresh `claude -p` call, one sample per call, as the reference allows ("a fresh session isolated").
++Per rep:
++
++- Run in a new empty directory outside every repository, such as `/private/tmp/mt-run/<random-id>/`.
++- Pass the arm's text as the system prompt (`--system-prompt-file`), pass the model with `--model`, and run
++  with no tools (`--tools ""`). Turn off user settings, memory and CLAUDE.md for the rep. The newest
++  `specs/baseline/*/kit/` has the exact flags and scrub. This repo has none yet, so I will confirm the flags
++  against `claude --help` before the pilot, not guess them.
++- Keep this spec, the proposal and the baseline records out of reach of the rep (not in or above its directory).
++  A rep that reads one is VOID.
++
++Pilot first, one rep, before any scored rep: ask it which instruction files, memory, tools, other sessions and
++user name it can see. Any answer I did not plan for means the setup leaks; fix it, then rerun the pilot. The
++pilot is not scored. Record its cost; it sets the per-rep estimate.
++
++## Rules, registered before any reply is read
++
++For each reply, extract the `message` text (if the reply is not an error response at all, see VOID).
++
++- PASS: the message contains a concrete next step the caller can take: a value to send, a field to change, or
++  an endpoint or action to use first. Restating the rule alone ("it must be an upper-case ISO 4217 code") is
++  not a next step by itself. It counts only if the message tells the caller what to do or send, such as
++  "send 'USD'". The example message in the skill is therefore a FAIL as written. This matches the baseline's
++  meaning of "no next step".
++- FAIL: the message names the problem and no next step.
++- VOID: the rep read a forbidden file, the isolation probe found a leak that rep shared, the reply is not an
++  error response, or the run errored. VOID reps are rerun, not counted.
++
++Secondary check, scored separately and never allowed to turn a FAIL into a PASS: the message is under 200
++characters, and names field, value, rule in that order (when the task has a field). The new sentence might push
++length over the limit, and that is a regression worth seeing.
++
++If a reply shows a reading the rules did not foresee, keep the verdict above and report counts under both
++readings.
++
++## Blind scoring
++
++A script assigns each reply a random id and writes sheets that hold only the id and the `message` text. No
++file name, path, order or count shows the arm, model or task. The key stays in a separate file I do not open
++until every sheet has a grade. Grades go in a file; then unblind.
++
++## What counts as success
++
++Judged per model, on the PASS rate for the next step:
++
++- Success: arm C passes in at least 9 of 10 on both models, and arm B stays near its baseline (failures
++  clearly present). The gap should be fully separated, not marginal.
++- Reps that converge on the same shape are a good sign. If C's replies show many different readings of "next
++  step" (some a retry hint, some a docs link), the wording is not binding. Tighten the form before adding words.
++- Fail: C is not clearly above B on either model. Or C passes the next-step check but breaks the 200-character or
++  field/value/rule order on more than 2 of 10 reps. Then the sentence trades one problem for another.
++- If A is as good as C, the sentence is unneeded and the change has no support.
++
++With 10 per cell, small differences are noise. Do not call a 7-of-10 against 5-of-10 result a win.
++
++## Spend cap and stop rule
++
++Cap: $1.20 total for this micro-test, which keeps $0.30 of the $1.50 budget in reserve. Rule: before each
++batch, stop if the running total plus that batch's worst case would pass the cap. A batch is one arm on one
++model. The worst case is 10 reps at the highest per-rep cost seen so far. Record each batch's cost in a table at
++the bottom of this file as it completes.
++
++Run the order so the question is answered first if money runs out: C and B on the first model, then C and B on
++the second model, then A on each. If the pilot shows 60 reps will not fit under the cap, cut reps evenly across
++cells (not below 5) instead of dropping a model, and say so in the report.
++
++## Cost log
++
++| Batch | Reps | Cost | Running total |
++|---|---|---|---|
++| pilot | 1 | | |

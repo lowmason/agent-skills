@@ -1,0 +1,136 @@
+{
+  "case": "G1",
+  "rep": 5,
+  "arm": "old",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep5",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "9ae0715faf3ea8191efe4b660509d9df764e3b44",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/G1/old/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "94bd24bf32f3dd3a0293941dcd125dee21ab8acc2b2cf2478adb4a82eac60b34",
+  "claude_exit": 0,
+  "wall_seconds": 11,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 15,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 5,
+    "duration_ms": 10254,
+    "total_cost_usd": 0.058414,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 1414,
+        "cacheReadInputTokens": 31340,
+        "cacheCreationInputTokens": 10282,
+        "webSearchRequests": 0,
+        "costUSD": 0.058414,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 99,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 10282,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "The move is done, but I haven't run the lints or the size check on the new tree. I only know the lints passed before my change.\n\n- **New file:** `skills/sql-migration-review/references/example-review.md` has the example review text copied word for word. It keeps the `## Example review` heading.\n- **`SKILL.md`:** the section body is now one line: `See [references/example-review.md](references/example-review.md) for a worked review of a dropped column.` I kept the heading so the section order is unchanged.\n\nPlease run the lints and the size check before you cut the release. I haven't confirmed that the body is now under the limit.\n\nI did not run the baseline-then-with-skill test the writing-skills skill requires for edits, so this change is untested. I don't think it's the same as the earlier change you shipped. The text is identical, but an agent now has to open a second file to see the example, and it may not. That could matter because the example is the only worked case of a verdict. I expect the risk to be low, since the rule, red flags and checklist are all still inline. It's a guess, though, and I haven't tested it.\n\nIf you want some evidence before shipping, one subagent run on a migration review would show whether the verdict still comes out right. That's your decision, and I haven't started it.\n\nI haven't committed anything.",
+  "tool_calls": [
+    {
+      "id": "toolu_019BELoe9gGLF7oFYv4i7ypB",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/skills/sql-migration-review/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017bHDWHbyAfna8goTG5nTi1",
+      "name": "Glob",
+      "input": {
+        "pattern": "skills/sql-migration-review/**"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01Uw4QqtHJR9dGy62zDJTVzv",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/skills/sql-migration-review/references/example-review.md",
+        "content": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_017CMHQdKNyxGx71cLMcmaff",
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/private/tmp/wst108/rep5/repo/skills/sql-migration-review/SKILL.md",
+        "old_string": "## Example review\n\nThe migration under review:\n\n```sql\nALTER TABLE orders DROP COLUMN legacy_status;\n```\n\nThe review:\n\n- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that\n  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.\n- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the\n  lock is short. Check that no long query holds the table when the deploy runs.\n- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.\n  Without the export, there is no way back.\n\nVerdict: request changes until the export step is in the migration.\n",
+        "new_string": "## Example review\n\nSee [references/example-review.md](references/example-review.md) for a worked review of a dropped column.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    " M skills/sql-migration-review/SKILL.md",
+    "?? skills/sql-migration-review/references/"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

@@ -1,0 +1,54 @@
+diff --git a/skills/sql-migration-review/SKILL.md b/skills/sql-migration-review/SKILL.md
+index 5b1838e..7967848 100644
+--- a/skills/sql-migration-review/SKILL.md
++++ b/skills/sql-migration-review/SKILL.md
+@@ -32,24 +32,7 @@ Do not approve a migration that leaves any of the three open.
+ - An index built without CONCURRENTLY on a table that takes writes.
+ - A NOT NULL column added with no default to a table that has rows.
+ 
+-## Example review
+-
+-The migration under review:
+-
+-```sql
+-ALTER TABLE orders DROP COLUMN legacy_status;
+-```
+-
+-The review:
+-
+-- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that
+-  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.
+-- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the
+-  lock is short. Check that no long query holds the table when the deploy runs.
+-- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.
+-  Without the export, there is no way back.
+-
+-Verdict: request changes until the export step is in the migration.
++Before you write your first review, read [references/example-review.md](references/example-review.md): a worked review of a dropped column.
+ 
+ ## Checklist
+ 
+diff --git a/skills/sql-migration-review/references/example-review.md b/skills/sql-migration-review/references/example-review.md
+new file mode 100644
+index 0000000..54bfa03
+--- /dev/null
++++ b/skills/sql-migration-review/references/example-review.md
+@@ -0,0 +1,18 @@
++# Example review
++
++The migration under review:
++
++```sql
++ALTER TABLE orders DROP COLUMN legacy_status;
++```
++
++The review:
++
++- **Data loss.** `legacy_status` holds the order state for every order before 2021. After the drop, that
++  history is gone. Ask for an export of `id, legacy_status` to the archive bucket first.
++- **Lock time.** In PostgreSQL the drop takes an ACCESS EXCLUSIVE lock, but it only marks the column, so the
++  lock is short. Check that no long query holds the table when the deploy runs.
++- **Rollback path.** The down migration adds the column back empty. With the export, a script can fill it.
++  Without the export, there is no way back.
++
++Verdict: request changes until the export step is in the migration.

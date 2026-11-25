@@ -13,7 +13,7 @@
 
 **Tech Stack:** Markdown skill text; a stdlib Python 3.11+ script that calls Graphviz `dot`; pytest through `build/run_suites.py`; a `claude -p` micro-test kit (bash 3.2 and Python).
 
-**Spec:** `specs/writing-skills-improvements.md`, approved for planning at `6828ed7`, with the owner rulings in its Owner decisions section. This plan covers Proposed sequence steps 1 and 2: items 3a, 5, 6, 7, 11, 12, 14, 15, then 8 and 4. Steps 3 (items 1, 2, 10, 3b) and 4 (item 9) get their own plans. Item 13 goes with its backlog item's plan. Item 16 is held (Q6).
+**Spec:** `specs/completed/writing-skills-improvements.md`, approved for planning at `6828ed7`, with the owner rulings in its Owner decisions section. This plan covers Proposed sequence steps 1 and 2: items 3a, 5, 6, 7, 11, 12, 14, 15, then 8 and 4. Steps 3 (items 1, 2, 10, 3b) and 4 (item 9) get their own plans. Item 13 goes with its backlog item's plan. Item 16 is held (Q6).
 
 ## Global Constraints
 
@@ -512,7 +512,7 @@ Fetch, and compare `NOTICE` on `origin/main` with this branch. Plans 103 and 106
 
 ```text
   - Plan 105 (<YYYY-MM-DD>) changed writing-skills, from
-    specs/writing-skills-improvements.md. testing-skills-with-subagents.md,
+    specs/completed/writing-skills-improvements.md. testing-skills-with-subagents.md,
     persuasion-principles.md and graphviz-conventions.dot moved into
     references/, as upstream v7.0.1's map has them, and SKILL.md now links
     each one at the step that uses it. render-graphs.js is gone.
