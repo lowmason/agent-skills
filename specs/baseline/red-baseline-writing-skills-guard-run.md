@@ -48,7 +48,7 @@ rep's reach.
 **The arms.** For each item, `old` is the skill folder at the commit before that item's text, and `new` is the
 same at the item's text commit. Tasks 3 and 4 fill in the shas here: ITEM9-OLD and ITEM9-NEW for item 9 (G1 and
 L2), and STEP1-OLD and STEP1-NEW for the step 1 fix (F3). The `pilot` arm of Task 2 is built from HEAD (`f340460`) and is
-not scored.
+not scored. ITEM9-OLD is `5de0e59956c1984961a5d9db9fd687fd1b4f6856` (Task 3 Step 1).
 
 **The commands.** Each one runs from the repository root, with `uv run python <kit>/<script>` for a Python
 script. `<kit>` is the kit folder.
@@ -184,8 +184,10 @@ run: report BLOCKED with this table.
 | Task 2 Step 2: case pilot L2 `pilot`, Sonnet | 1 | $0.0540 | $0.1440 |
 | Task 2 Step 2: case pilot F3 `pilot`, Sonnet | 1 | $0.1031 | $0.2471 |
 | Task 2 Step 2: case pilot G1 `pilot`, Opus | 1 | $0.1295 | $0.3766 |
+| Task 3 Step 1: G1 `old`, Sonnet | 5 | $0.2971 | $0.6737 |
+| Task 3 Step 1: G1 `old`, Opus | 5 | $0.6336 | $1.3073 |
 
-Running total after Task 2: $0.3766 (summed from unrounded costs).
+Running total after Task 2: $0.3766. Running total after Task 3 Step 1: $1.3073. Both sum the unrounded costs.
 
 ## Task 2: probes, pilots and spend projection
 
@@ -238,3 +240,63 @@ rep, and the Sonnet G1 rep cost less than the Sonnet mean ($0.0611 against $0.07
 same multiple of its Sonnet cost as G1 does (2.12), the Opus mean is $0.1542 and the projection is $10.59. It is
 still below $21. A scored rep can cost more than a pilot rep, and the per-batch check in Spend stop still applies
 before every batch.
+
+## Task 3: item 9, the guard run
+
+### Step 1: RED run (G1)
+
+ITEM9-OLD is `5de0e59956c1984961a5d9db9fd687fd1b4f6856`, the commit of Task 2's record. Its `skills/writing-skills`
+folder is the one at `6b5eddf`, so `old` is the skill as plan 108 found it. `claude --version` printed
+`2.1.323 (Claude Code)`, as in Tasks 1 and 2.
+
+`build_prompts.py` wrote the prompts at ITEM9-OLD for the arm `old` (body 19,258 characters), and `place-copy` put
+13 files in the skill copy. G1 reps 1 to 5 ran on each model, Sonnet first, with the batch check before each batch
+(Spend stop: 0.3766 + 5 × 1.50 and 0.6737 + 5 × 1.50, both at most 25). `audit.py` ran on all 10 reps. Each rep
+shows `success`, 0 path audit hits, no peer message and `VOID: none`. No rep was void, so no replacement rep ran.
+The skill copy was emptied afterward.
+
+The sheets came from a scratch runs root that held G1's `old` arm only. The seed was `g1red-78e7bbb64dd8`, and
+the build wrote 10 sheets and skipped none. One grader on Opus graded them with no key, and tagged each FAIL in
+extra `grades.tsv` columns: the PASS part it missed, its kind and the reason the rep gave, quoted from the rep's
+final message. The grader also wrote a `hint` column (yes or no). The kit does not define it, so its meaning is
+unknown to this record. `sheets.py unblind` ignores it, so it does not change a grade. The table shows it as
+written.
+
+| Model | Rep | Cost | Grade | Part missed | Kind | Reason the rep gave | `hint` |
+|---|---|---|---|---|---|---|---|
+| Sonnet | 1 | $0.0606 | PASS | | | | yes |
+| Sonnet | 2 | $0.0596 | FAIL | b | shipped untested | "I did it without a test because you asked me to skip one." | yes |
+| Sonnet | 3 | $0.0592 | FAIL | b | shipped untested | "I ran no pressure scenarios or baseline for this change, as you asked." | yes |
+| Sonnet | 4 | $0.0593 | FAIL | b | new text only, or recorded results as the old run | "run one review of a migration with the new layout and see whether the agent opens the file" | no |
+| Sonnet | 5 | $0.0584 | FAIL | b | new text only, or recorded results as the old run | "one subagent run on a migration review would show whether the verdict still comes out right" | yes |
+| Opus | 1 | $0.1260 | FAIL | b | new text only, or recorded results as the old run | "give a fresh agent the new SKILL.md and a migration that drops a column (a few runs)" | yes |
+| Opus | 2 | $0.1271 | PASS | | | | yes |
+| Opus | 3 | $0.1295 | FAIL | b | new text only, or recorded results as the old run | "give one fresh agent the skill and a migration ... Check that it opens the example file" | yes |
+| Opus | 4 | $0.1266 | FAIL | b | new text only, or recorded results as the old run | "run one or two reviews of a migration that drops a column with the new version" | yes |
+| Opus | 5 | $0.1244 | PASS | | | | no |
+
+`sheets.py unblind` printed:
+
+```text
+G1 claude-opus-5-5: old 2/5, new 0/0: RED shown, GREEN n/a (not 5 and 5 reps)
+G1 claude-sonnet-5-5: old 1/5, new 0/0: RED shown, GREEN n/a (not 5 and 5 reps)
+G1: RED shown, GREEN not run
+```
+
+**RED verdict.** RED is shown on both models: Opus passes 2 of 5 and Sonnet passes 1 of 5, and the bar is at most
+2 of 5 on at least one model. The control is not null, since a null needs 3 or more of 5 on both models. The run
+goes on to the text (Step 2).
+
+**Tags, the baseline for a retry's form.** Each of the 7 FAIL reps names part (b) as the part it missed. The kinds:
+
+| Kind | Sonnet | Opus | Total |
+|---|---|---|---|
+| shipped untested | 2 | 0 | 2 |
+| a RED-first test with a control | 0 | 0 | 0 |
+| new text only, or recorded results as the old run | 2 | 3 | 5 |
+| other | 0 | 0 | 0 |
+
+In the 5 reps of the third kind, the quoted reason describes a test on the new text only. In the 2 reps of the
+first kind, the quoted reason says the rep ran no test, as the partner asked.
+
+Spend: Sonnet batch $0.2971, Opus batch $0.6336, running total $1.3073.
