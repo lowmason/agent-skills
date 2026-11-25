@@ -1,0 +1,163 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..a89cade
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,157 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. No rep has been run. Commit this file before the first rep. That commit registers
++the rules below.
++
++## Question
++
++Does changing "Say what went wrong." to "Say what went wrong and the next step the caller can take."
++in `skills/api-error-messages/SKILL.md` make agents put a next step in the error message they write?
++It must do so without breaking the rest of the section: field, value and rule in that order, and
++under 200 characters.
++
++Known baseline: with the old sentence, 6 of 10 runs wrote a message with no next step.
++
++## Arms
++
++All three arms use the full SKILL.md as the system prompt. Only the first sentence of
++"Writing the message" changes.
++
++| Arm | Text of the sentence |
++|---|---|
++| CONTROL | Sentence deleted. The section starts at "Name the field, ..." |
++| OLD | "Say what went wrong." (current file) |
++| NEW | "Say what went wrong and the next step the caller can take." |
++
++OLD is run again here instead of reusing the earlier 6/10. The earlier runs used a different setup,
++and those runs cannot be graded blind next to NEW. If OLD does not show the failure in this setup, the
++test cannot tell us anything about NEW. See the stop rules.
++
++Each arm file is the whole SKILL.md text with that one sentence edited, frontmatter included. Diff it
++against the live file before use. The diff must show exactly one changed line.
++
++## Task (user message)
++
++Use the exact user message from the old-sentence baseline, so that OLD here can be compared with the
++6/10. That prompt is not in this repo. **Open item: paste it here verbatim before committing.**
++
++If it cannot be recovered, use this one and label the OLD result as a new baseline rather than a
++replication:
++
++> Our payments API gets `POST /v1/charges` with `{"amount": 500, "currency": "usd"}`. Currency must be an
++> upper-case ISO 4217 code. Write the JSON error response body we return.
++
++The task must contain enough context for a real next step to exist. In this one, the next step is to
++send `"USD"`. If no real step exists, a correct reply can only invent one, and the PASS rule would
++reward that.
++
++## Models and reps
++
++- Models: `claude-sonnet-5-5` and `claude-opus-5-5`. My partner did not name the models, so I chose
++  these two. Change them before the commit if the skill runs on others, such as Haiku 5.5.
++- 10 reps per arm per model. That makes 3 arms × 2 models × 10 = 60 scored reps, plus the pilot.
++- Each model is run and judged separately. NEW must pass on both.
++
++## Runner (Claude Code only, no API key)
++
++One rep = one fresh `claude -p` call in its own new empty directory outside every repository:
++
++```sh
++d=$(mktemp -d /tmp/aem-rep.XXXXXX) && cd "$d" && \
++claude -p --model "$MODEL" \
++  --system-prompt "$(cat "$ARM_FILE")" \
++  --tools "" \
++  --setting-sources "" \
++  --output-format json \
++  "$TASK" > "$OUT_DIR/$(uuidgen).json"
++```
++
++- `--system-prompt` replaces Claude Code's default prompt, so the rep sees the skill text instead of
++  Claude Code's agent prompt. This is the closest Claude Code gets to a raw API call.
++- No tools. No user or project settings. Keep arm files, `$OUT_DIR` and the key outside `/tmp/aem-rep.*`.
++- Check the flag names against `claude --help` during the pilot. The pilot below is the real check that
++  isolation holds; the flags alone do not prove it.
++- Run the arms interleaved (round-robin across arms), not one arm after another, so that time-of-day
++  drift does not line up with an arm.
++
++## Pilot (before any scored rep)
++
++Run one rep per model with the CONTROL system prompt and this user message: "List every piece of
++context you can see: instruction files, memory, tools, other sessions, the user's name, the current
++directory." Any answer that names a CLAUDE.md, memory, a tool, this repo or this project means the
++setup leaks. Fix it and run the pilot again. Pilot replies are not scored.
++
++## Registered rules
++
++Grade the `message` string of the error body. Other fields count only when the message points to them
++by name.
++
++**PASS (primary):** the message gives at least one concrete action the caller can take to get past this
++error. Examples: a value to send ("send 'USD'"), a format to use, a call to make first ("create the
++customer with POST /v1/customers first"), or a wait or retry with a condition.
++
++**FAIL (primary):**
++- The message names only the cause.
++- Or the only "step" is generic and could fit any error: "check your request", "see the docs",
++  "contact support", "try again".
++- Or the step appears only in `details` or another field, and the message does not refer to it.
++
++**VOID:**
++- The reply has no error body.
++- Or the rep errored or was cut off.
++- Or the reply shows it saw context outside the plan (repo files, the spec, memory).
++
++Void reps are re-run with a new rep. They are not scored.
++
++**Guard checks (secondary).** These are scored on every non-void rep and reported for each arm:
++- G1: the message is under 200 characters.
++- G2: it names the field, the value and the rule. The rule must come before any next step.
++- G3: no internal class name or stack frame.
++
++**Borderline readings.** One case is unforeseen: a step that is specific but wrong for the task. Keep
++the registered verdict (PASS), mark the rep, and report the counts under both readings.
++
++## Blind scoring
++
++1. Extract each reply's error body into a sheet named by a random ID. Shuffle all sheets from all arms
++   and models together.
++2. Write the ID → (arm, model) key into one file. The grader does not open it.
++3. Read every sheet by hand and grade PASS/FAIL/VOID plus G1–G3. A script may pre-flag length or
++   keywords, but every flag is confirmed by reading.
++4. Unblind only after every sheet has a grade.
++
++Grader: my partner, or a fresh Claude Code session that gets only the sheets and this rules section.
++It must not get the arm texts or the key.
++
++## Decision rule
++
++**Stop early, before NEW is judged:**
++- If CONTROL and OLD both fail on 1 or fewer of 10 on a model, this setup does not reproduce the
++  problem on that model. Report that and do not judge NEW on that model.
++
++**NEW works** if it meets all of these on **both** models:
++- Primary: at least 9/10 PASS.
++- It has at least 3 more PASSes than OLD on the same model.
++- It has no more G1 or G2 failures than OLD, plus at most one more. The new sentence asks for more text,
++  so G1 (the 200-character limit) is the guard most likely to break.
++
++Also report the shape of NEW's next steps across reps. If the reps take 10 different forms, the
++wording is not binding even when the count passes.
++
++**Otherwise:** NEW does not work as worded. Report the counts and the failing replies, and propose a
++rewording for a second round. A second round needs its own registered rules.
++
++## Spend
++
++- Proposed cap: **$5** across pilot and scored reps. My partner to confirm or change before the first
++  rep.
++- Record `total_cost_usd` from each JSON output. Keep a running total for each batch. A batch is one
++  round-robin pass, which is 6 reps.
++- Stop rule: stop before a batch if the running total plus 2× the most expensive batch so far would
++  pass the cap.
++
++## Quarantine
++
++Reps run outside the repo with no tools, so they cannot read this file, the proposal, the arm files or
++the baseline records. Keep the sheets, the key and the raw outputs outside the skill directory, under
++`specs/`. Nothing from this test goes in `skills/api-error-messages/`.

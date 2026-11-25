@@ -1,0 +1,159 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..7c3336e
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,153 @@
++# Micro-test design: "next step" sentence in api-error-messages
++
++Status: design only. Nothing has been run.
++
++## Question
++
++The proposal (`specs/api-error-messages-wording.md`) changes one sentence in
++`skills/api-error-messages/SKILL.md`:
++
++- Old: "Say what went wrong."
++- New: "Say what went wrong and the next step the caller can take."
++
++Does the new sentence make agents put a next step in the error message? Does it do that without breaking the
++rules the skill already sets: field, value and rule in that order, and under 200 characters?
++
++Baseline we already have: with the old sentence, 6 of 10 runs produced a message with no next step.
++
++## Arms
++
++Each arm's system prompt is the full SKILL.md. The arms differ only in the first sentence of
++"Writing the message". Everything else stays byte-identical, including the `currency` example, which has no
++explicit next step.
++
++| Arm | Sentence in "Writing the message" |
++|---|---|
++| C (no-guidance control) | sentence removed; the paragraph starts at "Name the field, …" |
++| O (old) | "Say what went wrong." |
++| N (new) | "Say what went wrong and the next step the caller can take." |
++
++Arm C is required (SKILL.md, micro-test step 2). If C rarely lacks a next step, the old sentence is not what
++causes the failure. In that case we stop and look again before changing anything.
++
++Arm O re-runs the baseline in this harness. That way all three arms share the same runner, models and date.
++The earlier 6/10 is not reused as the O count.
++
++## Task (user message)
++
++Use the task prompt or prompts from the baseline run verbatim, split across reps the same way. This keeps
++O comparable with the 6/10. **Open item:** the baseline task text is not in the repo. Add it to
++`specs/api-error-messages-microtest/tasks/` before the run.
++
++If the baseline task can't be recovered, use these two tasks with 5 reps each per arm per model. Each task gives
++the agent the facts it needs for a real next step, so a pass doesn't depend on invented endpoints. Neither task
++hints that a next step is wanted.
++
++- T1 (404/422): "Our `POST /v1/orders` endpoint rejects a request because `customer_id` is `cus_123`, and no
++  customer has that ID. Customers are created with `POST /v1/customers`. Write the JSON error response body."
++- T2 (409): "Our `POST /v1/payments` endpoint rejects a request because its `Idempotency-Key` header value
++  `k-42` was already used with a different request body in the last 24 hours. Write the JSON error response
++  body."
++
++Neither task uses `currency`, because the skill's example already answers that case.
++
++## Runner (no API key: single-shot Claude Code)
++
++- One rep = one `claude -p` call, started in a fresh `mktemp -d` directory outside every repository.
++- System prompt = the arm's SKILL.md text, passed as the whole system prompt (replace, not append).
++- No tools. Turn off user and project settings, CLAUDE.md, memory and MCP. Take the exact flag names from
++  `claude --help` on this machine, and record the full command line in the kit. There is no committed kit in
++  this repo to copy from.
++- `--output-format json`, so each rep records the reply, the model and the cost.
++- Run each model with a pinned `--model`.
++
++### Isolation probe (pilot, before any scored rep)
++
++Run one rep with arm N's system prompt and this user message: "List every instruction file, memory, tool,
++other session, and user or project name you can see." If the answer shows anything beyond the system prompt
++(a CLAUDE.md, the repo path, `specs/`, tools, the partner's name), the setup leaks. Fix it and probe again.
++Keep the probe out of the counts.
++
++### Quarantine
++
++Reps never have access to `specs/`, this file, the proposal, the baseline records or the kit. With no tools
++and a cwd outside the repo, a rep can't read them. If a reply quotes or names any of them, that rep is VOID.
++
++## Models
++
++The partner has not named models, so this design picks two: **claude-opus-5-5** and **claude-sonnet-5-5**.
++Both run every arm with the same rep count. If the skill also runs on Haiku in practice, add
++**claude-haiku-5-5** as a third with the same reps.
++
++## Reps
++
++10 per arm per model, the same as the baseline: 3 arms × 2 models × 10 = 60 scored reps, plus 1 probe.
++Run arms interleaved in a shuffled order, not one arm per block.
++
++## Scoring rules (commit before reading any reply)
++
++Score only the `message` string of the JSON body the reply produces.
++
++- **PASS (next step):** `message` tells the caller a concrete action they can take to succeed. Examples: the
++  value or format to send, the endpoint to call first, the header to change, or when to retry. Imperative
++  ("Create the customer with POST /v1/customers first") and declarative ("Send a new Idempotency-Key")
++  forms both count.
++- **FAIL (no next step):** `message` only describes what went wrong. That includes a bare rule statement
++  ("no customer with that ID exists"; "key already used"). It also includes a next step that appears only in
++  `details`, or only in prose outside the JSON.
++- **VOID:** no JSON error body; a refusal; a harness error; a reply that refers to the spec, the proposal,
++  the repo or the test; or any probe-detected leak in that batch.
++
++**Registered strict reading:** a step in `details` but not in `message` is FAIL. This follows the proposal's
++aim, which is that the developer reading the message knows what to do. If that pattern appears, also report
++counts under the lenient reading, where `details` counts. The registered verdict stays strict.
++
++**Match the baseline's rule:** if the 6/10 baseline was scored with a different PASS/FAIL line, use that line
++here instead. Then edit this section before committing. The O arm and the baseline must use the same rule.
++
++Regression checks, recorded per reply and reported separately from PASS/FAIL:
++
++- R1: `message` ≤ 200 characters.
++- R2: field (or resource), value and rule appear in that order where the task has them.
++- R3: the next step uses only facts given in the task, with no invented endpoints or parameters.
++
++## Blind scoring
++
++- A script pulls each reply's text into a sheet named by a random ID, with no arm, model, task order or count
++  on it. The ID→arm map goes in a separate file that is not opened until every sheet is graded.
++- Every sheet is read by hand. Pattern matching (for example, an imperative verb or `/v1/` in `message`) may
++  pre-flag sheets, but each flag is confirmed by reading.
++
++## Decision rule (registered)
++
++Per model, let fail(X) be the FAIL count in arm X out of its non-VOID reps.
++
++- **Ship N** if, on **both** models: fail(N) ≤ 2/10, fail(O) ≥ 5/10, and N's regression failures (R1–R3) are
++  no more than O's + 1.
++- **Nothing to fix** if fail(C) and fail(O) are both ≤ 2/10 on both models. Report that the failure didn't
++  reproduce in this harness.
++- **Inconclusive / reword** otherwise. That includes N passing on one model only, or N's replies landing in
++  several different shapes, since high variance means the wording doesn't bind. Next candidate: change form,
++  not wording. Per the skill's form table, an omitted element calls for a structural fix, for example making
++  the example message show a next step. That would be a separate arm and a separate decision.
++- If VOIDs exceed 2 in any arm×model cell, top that cell back up to 10 non-VOID reps before deciding.
++
++## Spend
++
++- Cap: **$5** for the whole micro-test (probe included). The partner can change this before the run.
++- Before each batch, estimate its worst case from the costs recorded so far. Stop when the running total plus
++  that estimate would pass the cap.
++- Record each batch's `total_cost_usd` from the JSON output in `specs/api-error-messages-microtest/costs.md`.
++
++## Where the files go
++
++All of these are outside `skills/`, so none of them ship with the skill:
++
++- `specs/api-error-messages-microtest.md`: this design (the registered rules).
++- `specs/api-error-messages-microtest/arms/{C,O,N}.md`: the three SKILL.md variants.
++- `specs/api-error-messages-microtest/tasks/`: the task prompts.
++- `specs/api-error-messages-microtest/runs/`, `sheets/`, `key.json`, `costs.md`: raw outputs, blind sheets,
++  the arm map and spend.
++
++This is a wording micro-test. Before the change ships, run the full scenario on the edited skill, and check
++that nothing else in the skill gets worse.

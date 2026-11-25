@@ -1,0 +1,140 @@
+{
+  "case": "F3",
+  "rep": 5,
+  "arm": "new",
+  "model": "claude-sonnet-5-5",
+  "cap": "1.50",
+  "rep_dir": "/private/tmp/wst108/rep5",
+  "skill_root": "/private/tmp/wst108-skill",
+  "base": "25653289641c496fd37a780d972abe1cdd094615",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan108/cases/F3/new/claude-sonnet-5-5/rep5.jsonl",
+  "prompt_sha256": "7e7906ede1e94117992da83b9e9f207e1bc89b44f33295136dc635be04967d8a",
+  "claude_exit": 0,
+  "wall_seconds": 32,
+  "init": {
+    "cwd": "/private/tmp/wst108/rep5/repo",
+    "tools": [
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 25,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 31397,
+    "total_cost_usd": 0.0934216,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 3935,
+        "cacheReadInputTokens": 32116,
+        "cacheCreationInputTokens": 12712,
+        "webSearchRequests": 0,
+        "costUSD": 0.0934216,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 983,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12712,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I wrote the design to `specs/api-error-messages-microtest.md`. I haven't run anything.\n\n- **Arms:** OLD is the current skill file. NEW is the same file with only the one sentence swapped. A `diff` should show exactly one changed line.\n- **Control:** I'd re-run OLD in the same batch instead of reusing the earlier 6-of-10 baseline. I can't see that baseline's flags or prompt, and re-running keeps the comparison fair.\n- **Models:** I picked `claude-sonnet-5-5` and `claude-haiku-5-5`, with 10 reps per arm per model, so 40 reps. Tell me if you want different models. The verdict is per model.\n- **Prompt:** I'd reuse the baseline's task prompt word for word. If it isn't on hand, the design has a fallback prompt that never mentions next steps.\n- **Isolation:** Each rep is a separate `claude -p` call from an empty directory, with no tools, no settings, no memory and no instruction files. A throwaway pilot rep comes first and asks what context it can see.\n- **Pass rule:** PASS means the message gives a specific next step, such as a value to send or an endpoint to call. \"Check the docs\" or \"try again\" counts as FAIL. VOID covers tool use, a missing message or a leaked setup, and each void rep gets replaced.\n- **Success:** In each model, NEW must pass at least 9 of 10 and beat OLD by at least 4 reps. The rules get committed before any reply is read.\n- **Blind scoring:** Replies go on sheets with random IDs, and the ID-to-arm mapping is kept in a separate file. A fresh session grades them without having seen the proposal.\n- **Side checks:** I also check the 200-character limit, because the longer sentence could push messages over it.\n- **Spend:** I set a $1.00 cap, with the rest of the $1.50 held back for replacing void reps and re-grading. I'd run small batches and stop when the running total plus the worst-case next batch would pass the cap.\n\nTwo gaps to settle before the first rep:\n- **Runner flags:** I haven't checked the exact `claude -p` flags for isolation. The newest `specs/baseline/*/kit/` that the reference points to doesn't exist in this repo. I'll check them against `claude --help` first.\n- **Run cost:** I can't see what Claude Code runs cost in advance. The first batches will measure it, and if 40 reps don't fit, I'll cut reps equally across all four cells. I won't drop a model.\n\nDo you want me to go ahead with the pilot, or change the models, rep count or cap first?",
+  "tool_calls": [
+    {
+      "id": "toolu_01UDoKhfRJTq2YFKPiB5DnZr",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108-skill/writing-skills/references/micro-tests.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_01FSdLqKpFXaRJL3TWBNTo2F",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/specs/api-error-messages-wording.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_016QVcrkSDSj4JUEGf6XmBwj",
+      "name": "Read",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/skills/api-error-messages/SKILL.md"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_011f9zQ6ZZCazSHthWKntWfS",
+      "name": "Glob",
+      "input": {
+        "pattern": "specs/**/*"
+      },
+      "is_error": false
+    },
+    {
+      "id": "toolu_012p7qzCFqsTQPVG6CnteGsq",
+      "name": "Write",
+      "input": {
+        "file_path": "/private/tmp/wst108/rep5/repo/specs/api-error-messages-microtest.md",
+        "content": "# Micro-test design: api-error-messages sentence change\n\nStatus: DESIGN ONLY. Nothing has been run.\n\n## Question\n\nDoes \"Say what went wrong and the next step the caller can take.\" make agents write error messages that\ninclude a next step, where \"Say what went wrong.\" did not (baseline: 6 of 10 runs had none)?\n\nFailure type: the agent complies but omits an element. The change is a wording swap inside the existing\ninstruction, so the test is a head-to-head of the two sentences with everything else identical.\n\n## Arms\n\n| Arm | Context |\n|---|---|\n| OLD | Full current `skills/api-error-messages/SKILL.md`, unchanged. |\n| NEW | The same file with only the one sentence replaced. Check with `diff`: exactly one line differs. |\n\nOLD is the control. The earlier baseline is not reused as the control unless its model, flags, prompt and\nisolation are shown to match this design. Otherwise re-run OLD in the same batch, so both arms share the\nsame setup and the same day.\n\n## Models (chosen by me; say if you want others)\n\n- `claude-sonnet-5-5`\n- `claude-haiku-5-5`\n\nSame number of reps on each: 10 reps per arm per model, 40 reps in all. A wording that binds one model\ncan fail on the other, so the verdict is per model.\n\n## Task prompt\n\nReuse the baseline's task prompt word for word, so the OLD arm can be compared with the baseline. If it\nis not on hand, use: \"Write the JSON error response for a 404 returned by POST /orders when `customer_id`\n'c_91' does not exist. Reply with the JSON only.\" The prompt must not mention next steps, fixes or\nguidance.\n\n## Isolation (Claude Code only, no API key)\n\nEach rep is a separate `claude -p` call, one sample per call.\n\n- Run from a new empty directory outside every repository.\n- No tools. Turn off user settings, CLAUDE.md files and memory.\n- Put the skill text in the system prompt, and the task as the user message.\n- I have not checked the exact flags. The reference points to the newest `specs/baseline/*/kit/`, and\n  that directory does not exist in this repo. Before the first rep, check the flags against\n  `claude --help` and write them into the runner.\n- Pilot first: one throwaway rep that asks what context it can see (instruction files, memory, tools,\n  other sessions, the user's name). If anything is unplanned, fix the setup and repeat the pilot. Pilot\n  output is never scored.\n- Keep this spec, the proposal and the baseline records out of each rep's reach.\n\n## Rules (registered before any reply is read; commit this file first)\n\nPer rep, grade the `message` text.\n\n- **PASS:** the message names a specific next step the caller can take: a value to send, an endpoint to\n  call, or a named action, such as \"create the customer with POST /customers first\".\n- **FAIL:** the message gives only the cause, or its only next step is vague (\"check your request\",\n  \"see the docs\", \"try again\").\n- **VOID:** the rep read a file or used a tool, the reply has no message, or the isolation leaked. A void\n  rep is replaced by a fresh rep. The void count is reported.\n\nSecondary checks, reported and not part of the verdict:\n\n- The message is under 200 characters. The new sentence could push messages over the limit.\n- Field, value and rule appear in that order, where they apply.\n- The message names no internal class or stack frame.\n\nSuccess: in each model, NEW passes at least 9 of 10, and passes at least 4 more reps than OLD. If NEW\npasses on one model and not on the other, the wording is not adopted as it stands. If a reply shows a\nreading these rules did not foresee, keep the registered verdict and report the counts under both\nreadings.\n\n## Blind scoring\n\n- The runner writes each reply to a sheet with a random ID. Nothing on the sheet (name, path, order,\n  length of the file name, count) shows arm or model.\n- The mapping from ID to arm and model goes in a separate file that the grader does not open.\n- A fresh Claude Code session grades the sheets against the rules above. It has not seen the proposal.\n- I read every FAIL and every borderline PASS myself. I unblind only after every sheet has a grade.\n\n## Spend\n\nNo API key means these runs use Claude Code's own billing. I cannot see its per-call cost in advance.\n\n- Cap: $1.00 of the $1.50 remaining. The rest is a reserve for replacing void reps and re-grading.\n- Run the pilot, then one batch of 4 reps (one per arm per model), and record the cost of each batch.\n- Stop rule: stop when the running total plus the worst-case cost of the next batch would pass the cap.\n  Use the most expensive batch so far as the worst case.\n- If the full 40 reps do not fit, cut the reps equally across all four cells and report the smaller\n  count. Do not drop a model.\n\n## Output\n\nA table of PASS, FAIL and VOID counts per arm per model, the secondary checks, the cost per batch, and\nthe verdict under the registered rules.\n"
+      },
+      "is_error": false
+    }
+  ],
+  "status_porcelain": [
+    "?? specs/api-error-messages-microtest.md"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

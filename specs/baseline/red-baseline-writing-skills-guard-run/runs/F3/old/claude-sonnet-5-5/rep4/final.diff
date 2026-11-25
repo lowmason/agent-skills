@@ -1,0 +1,85 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..d942385
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,79 @@
++# Micro-test design: "next step" sentence in api-error-messages
++
++Status: design only. Nothing has been run. Commit this file before the first rep so the rules below are registered.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take." make agents write error messages that include a next step, without breaking the other rules in the same paragraph?
++
++Failure type: the agent complies but the output has the wrong shape (cause named, no next step). The new sentence is a positive recipe, which is the right form for that. This test checks that it binds.
++
++## Arms
++
++- **A, control (old sentence).** The full current `skills/api-error-messages/SKILL.md`, unchanged.
++- **B, new sentence.** The same file with only that one sentence replaced.
++
++The arms differ in that sentence alone. The earlier 6/10 baseline was on one set of conditions that this design does not record. Re-run A under the conditions below, so A and B are compared like for like. Don't reuse the old number as the control.
++
++## Models
++
++Two models, chosen by me because you named none: `claude-sonnet-5-5` and `claude-haiku-5-5`. Each arm runs on both, with the same number of reps. Tell me if you want different models.
++
++## Reps and tasks
++
++10 reps per arm per model, so 40 scored reps. Use the same 10 task prompts in every cell. Each is a short user request to write the message text for one API error, with the field, value and rule given. Cover:
++
++- 400 bad field (x3, differing rules)
++- 404 missing resource (x3)
++- 409 conflict (x3)
++- 400 with a long cause that tempts a message over 200 characters (x1)
++
++Write the 10 prompts before any run, and don't tell the agent that the test is about next steps. The prompts must not hint at one, for example by saying "helpful". Pick the order once, and use it in every cell.
++
++## How to run with Claude Code only
++
++One fresh single-shot Claude Code run per rep, such as headless `claude -p` or a one-shot subagent. The exact flags aren't in this repo: there is no `specs/baseline/*/kit/` yet. Take the flags from a first pilot, and write them into the kit before the scored reps.
++
++- Run each rep in a new empty directory outside every repository.
++- The only context is the arm's SKILL text, supplied as the system prompt or as the single input, plus the task prompt.
++- No tools. User-level settings, instruction files and memory off.
++- Keep `specs/`, this design, the proposal and the earlier baseline out of reach of every rep. A rep that reads any of them is VOID.
++
++## Isolation probe (before any scored rep)
++
++Run one pilot rep per model that asks what context it can see: instruction files, memory, tools, other sessions, the user's name. If anything shows up that I did not plan for, stop and fix the setup. A pilot reply is not scored. The pilot also gives the per-rep cost.
++
++## Registered rules (fixed before any reply is read)
++
++**Per reply: NEXT-STEP.** The `message` text contains a concrete next step. That means a specific value to send, or a specific endpoint or action to take first. "Check the docs", "fix the field" and "try again" don't count. A next step that appears only in `details` doesn't count.
++
++**Per reply: RULES-KEPT.** The message is under 200 characters, and it names the field, the value and the rule in that order.
++
++**VOID.** The rep used a tool or read a file. Or it mentions the proposal, the other arm or the test. Or it gave no error message. A VOID rep is re-run, up to 2 re-runs per cell.
++
++**PASS (the new sentence ships).** On both models:
++
++- Arm B has NEXT-STEP in at least 9 of 10 replies.
++- Arm B has RULES-KEPT in at least 9 of 10 replies.
++- Arm A's NEXT-STEP rate is at least 3 replies lower than B's. If A already scores 9 or more of 10 here, the sentence has no effect and there is nothing to ship.
++
++**FAIL.** Any other result, including a pass on one model and a fail on the other. If B's replies differ widely in shape across reps, the wording isn't binding. Tighten the form before adding words.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report the counts under both readings.
++
++Known risk: the 200-character limit competes with the added step. The RULES-KEPT check and the long-cause prompt are there to catch it.
++
++## Blind scoring
++
++- Put each reply on its own sheet with only a random ID and the task prompt. No arm, model, file name, path, order or count on a sheet shows where the reply came from.
++- Keep the ID-to-cell key in a separate file, not opened until every sheet is graded.
++- Grade by reading each reply against the registered rules. Count characters by hand or tool, don't estimate.
++- Unblind only after all 40 sheets have a grade.
++
++## Spend
++
++Cap: $1.00 of the $1.50 remaining. Record each batch's cost as it finishes. Stop when the running total plus the next batch's worst case would pass the cap. Run in batches by model: pilot, then A and B on `claude-haiku-5-5`, then the same on `claude-sonnet-5-5`. Use the pilot's per-rep cost to check up front that all 40 reps fit under the cap. If they don't fit, cut reps equally in every cell and say so. Don't drop a model.
++
++## Report
++
++Counts per cell for NEXT-STEP and RULES-KEPT, the number of VOID reps and re-runs, the total cost, and one verbatim reply from each cell. Then the verdict under the registered rules.

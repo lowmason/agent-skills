@@ -50,7 +50,8 @@ same at the item's text commit. Tasks 3 and 4 fill in the shas here: ITEM9-OLD a
 L2), and STEP1-OLD and STEP1-NEW for the step 1 fix (F3). The `pilot` arm of Task 2 is built from HEAD (`f340460`) and is
 not scored. ITEM9-OLD is `5de0e59956c1984961a5d9db9fd687fd1b4f6856` (Task 3 Step 1). ITEM9-NEW is
 `c64d1681cc7346b1c66e5380d9e475bf70b9f843` (Task 3 Step 3). STEP1-OLD is
-`ba79f59cac754ff91d70ffb264a3717db8da7b19` (Task 4 Step 1).
+`ba79f59cac754ff91d70ffb264a3717db8da7b19` (Task 4 Step 1). STEP1-NEW is
+`fb48a03dc14ba0d2b288a36d99e05eeb1c5ac19e` (Task 4 Step 3).
 
 **The commands.** Each one runs from the repository root, with `uv run python <kit>/<script>` for a Python
 script. `<kit>` is the kit folder.
@@ -196,9 +197,11 @@ run: report BLOCKED with this table.
 | Task 3 Step 4: L2 `new`, Opus | 5 | $0.6074 | $3.8844 |
 | Task 4 Step 1: F3 `old`, Sonnet | 5 | $0.5031 | $4.3875 |
 | Task 4 Step 1: F3 `old`, Opus | 5 | $1.2875 | $5.6750 |
+| Task 4 Step 4: F3 `new`, Sonnet | 5 | $0.5246 | $6.1995 |
+| Task 4 Step 4: F3 `new`, Opus | 5 | $1.3103 | $7.5098 |
 
 Running total after Task 2: $0.3766. After Task 3 Step 1: $1.3073. After Task 3 Step 4: $3.8844. After Task 4
-Step 1: $5.6750. Each sums the unrounded costs. The batch check before the last batch was 3.2770 + 5 × 1.50 = 10.78, at most 25.
+Step 1: $5.6750. After Task 4 Step 4: $7.5098. Each sums the unrounded costs. The batch check before the last batch was 3.2770 + 5 × 1.50 = 10.78, at most 25.
 
 ## Task 2: probes, pilots and spend projection
 
@@ -515,3 +518,106 @@ grader did not say which clue it saw, and this record does not guess. No arm wor
 the limit that Blind grading registers does not apply to this RED grading.
 
 Spend: Sonnet batch $0.5031, Opus batch $1.2875, running total $5.6750.
+
+### Steps 2 and 3: the clause
+
+Step 2 replaced `a raw API call, or a single-shot subagent if you don't have API access.` in micro-test step 1 of
+`skills/writing-skills/SKILL.md` with `a raw API call, or a fresh session isolated as micro-tests.md says.` The body
+measured 19,469 characters, as the plan expected, against a ceiling of 19,620. `check_links.py` and
+`check_conformance.py` passed, and `cc_guide/cli.py lint` printed no line for writing-skills. The commit
+`fb48a03dc14ba0d2b288a36d99e05eeb1c5ac19e` is STEP1-NEW. It changes `SKILL.md` by one line, and the commit between
+STEP1-OLD and STEP1-NEW (the Step 1 record) touches no skill file. So `old` and `new` differ by that line only.
+
+### Step 4: GREEN run
+
+The batch check ran before each of the two batches (Spend stop: 5.6750 + 5 × 1.50 and 6.1995 + 5 × 1.50, both at most
+25). `build_prompts.py` built `prompts-step1-new` at STEP1-NEW (arm `new`, body 19,469 characters), and `place-copy`
+put 13 files in the skill copy. F3 reps 1 to 5 ran on each model, Sonnet first. `audit.py` ran on all 10 `new` reps.
+Each rep shows `success`, 0 path audit hits, no peer message and `VOID: none`. No rep was void, so no replacement rep
+ran. The skill copy was emptied afterward.
+
+The Opus `new` batch ran from a detached subshell. Its console output was not kept. The audit shows each rep's
+stream (1 init record, 1 result record, 0 lines that are not JSON), its `summary.json` and `VOID: none`, so the batch
+ran as the Sonnet batch did.
+
+One fresh grader on Opus graded the 20 sheets of F3's `old` and `new` arms together, with no key. The build used a
+scratch runs root that held only those two arm folders. The seed was `f3green-04565adcc01e`, and the build wrote 20
+sheets and skipped none. The grader tagged each FAIL as in Step 1. Its extra columns were `hint` (the grader saw a
+clue about the arm or the model in the sheet, plan 107's definition) and `micro_tests` (the answer names
+`micro-tests.md`). The `Read micro-tests.md` column comes from `key.json` (`reads`). It is descriptive and scores
+nothing. The cost column is each rep's cost. The running total is the total after the rep, in the order the reps ran:
+`old` Sonnet, `old` Opus, `new` Sonnet, `new` Opus.
+
+#### F3: results (one grading of the `old` and `new` sheets together)
+
+| Model | Arm | Rep | Cost | Running total | Grade | Part missed | Kind | Reason the rep gave | `hint` | `micro_tests` | Read `micro-tests.md` |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Sonnet | `old` | 1 | $0.1009 | $3.9853 | FAIL | a | subagent of the working session as a rep | "One rep is one `claude -p` call, or one single-shot subagent if that is easier." | yes | yes | yes |
+| Sonnet | `old` | 2 | $0.0978 | $4.0831 | FAIL | a | subagent of the working session as a rep | "One fresh single-shot subagent per rep ... reps run as Claude Code subagents or `claude -p` calls, whichever lets me set the model" | yes | no | yes |
+| Sonnet | `old` | 3 | $0.0970 | $4.1801 | PASS | | | | no | no | yes |
+| Sonnet | `old` | 4 | $0.1004 | $4.2805 | FAIL | a | subagent of the working session as a rep | "Each rep is a single-shot Claude Code run, either headless `claude -p` or a one-shot subagent." | yes | no | yes |
+| Sonnet | `old` | 5 | $0.1070 | $4.3875 | PASS | | | | no | no | yes |
+| Opus | `old` | 1 | $0.2206 | $4.6081 | PASS | | | | no | no | yes |
+| Opus | `old` | 2 | $0.2570 | $4.8651 | PASS | | | | no | no | yes |
+| Opus | `old` | 3 | $0.2623 | $5.1274 | PASS | | | | no | no | yes |
+| Opus | `old` | 4 | $0.2735 | $5.4009 | PASS | | | | no | no | yes |
+| Opus | `old` | 5 | $0.2741 | $5.6750 | PASS | | | | no | no | yes |
+| Sonnet | `new` | 1 | $0.0987 | $5.7737 | PASS | | | | no | no | yes |
+| Sonnet | `new` | 2 | $0.1128 | $5.8864 | PASS | | | | no | yes | yes |
+| Sonnet | `new` | 3 | $0.1176 | $6.0041 | PASS | | | | no | no | yes |
+| Sonnet | `new` | 4 | $0.1021 | $6.1061 | PASS | | | | no | no | yes |
+| Sonnet | `new` | 5 | $0.0934 | $6.1995 | PASS | | | | no | no | yes |
+| Opus | `new` | 1 | $0.2630 | $6.4626 | PASS | | | | no | no | yes |
+| Opus | `new` | 2 | $0.2491 | $6.7116 | PASS | | | | no | no | yes |
+| Opus | `new` | 3 | $0.2405 | $6.9522 | PASS | | | | no | no | yes |
+| Opus | `new` | 4 | $0.2860 | $7.2382 | PASS | | | | no | no | yes |
+| Opus | `new` | 5 | $0.2716 | $7.5098 | PASS | | | | no | no | yes |
+
+`sheets.py unblind` printed:
+
+```text
+F3 claude-opus-5-5: old 5/5, new 5/5: RED not shown, GREEN n/a
+F3 claude-sonnet-5-5: old 2/5, new 5/5: RED shown, GREEN met
+F3: RED shown, GREEN met
+```
+
+The kinds of the 3 `old` FAIL reps in this grading: subagent of the working session as a rep, 3. A fresh session that
+is not isolated, 0. Other, 0. The `new` arm has no FAIL rep.
+
+#### Verdicts against Open for plan review item 9
+
+- **RED shown: yes, on Sonnet.** The F3 control (`old`) passes 2 of 5 on Sonnet, which is at most 2 of 5. On Opus it
+  passes 5 of 5, so RED is not shown there. The bar needs one model.
+- **GREEN: met on Sonnet.** Sonnet `new` is 5 of 5 against `old` 2 of 5. That is at least 4 and at least `old` + 2.
+  GREEN does not apply on Opus, since RED is not shown there. Opus `new` is 5 of 5, as `old` is.
+- **Null: no.** The control does not pass 3 or more of 5 on both models, since Sonnet passes 2.
+- **No stop fired.** The mixed grading left F3's RED shown. It matches the RED-only grading on both models: Sonnet
+  `old` reps 1, 2 and 4 FAIL and reps 3 and 5 PASS, and Opus `old` is 5 of 5. No wording changed.
+
+#### `micro-tests.md` reads, by arm and model (descriptive, not scored)
+
+Nothing here changes a verdict. `key.json` shows that each of the 20 reps Read `micro-tests.md`. `audit.py` marked
+none as partial or in error.
+
+| Arm | Model | Reps with a Read | Call number of the Read, reps 1 to 5 (`audit.py`) |
+|---|---|---|---|
+| `old` | Sonnet | 5 of 5 | 1, 1, 1, 1, 1 |
+| `old` | Opus | 5 of 5 | 1, 3, 3, 1, 1 |
+| `new` | Sonnet | 5 of 5 | 1, 1, 3, 1, 1 |
+| `new` | Opus | 5 of 5 | 1, 3, 1, 1, 3 |
+
+All three Sonnet `old` FAIL reps (1, 2 and 4) Read `micro-tests.md`. They still chose a subagent as the rep. So the
+Read alone did not keep them from the old fallback. Both arms tell the reader to read the file before the first rep.
+The `new` text adds only the clause that says to isolate the session as that file says.
+
+#### Blind grading: the size of the limit
+
+The registered limit says that an F3 answer that names `micro-tests.md` in the `new` arm shows its arm. The counts
+follow.
+
+- **`micro_tests`** is yes on 2 of 20 sheets: `old` Sonnet rep 1 (FAIL) and `new` Sonnet rep 2 (PASS). One sheet of
+  each arm names the file, so the words are not a clean tell of the arm here.
+- **`hint`** is yes on 3 of 10 `old` sheets (Sonnet reps 1, 2 and 4, all FAIL) and on 0 of 10 `new` sheets. All 3
+  `old` sheets with a `hint` are FAIL reps. The grader did not say which clue it saw, and this record does not guess.
+- **The change from the RED-only grading.** None on either model. Each rep keeps its grade, and each Sonnet `old`
+  FAIL keeps part (a).

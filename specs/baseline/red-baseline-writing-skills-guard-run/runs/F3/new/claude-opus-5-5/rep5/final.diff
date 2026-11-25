@@ -1,0 +1,152 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..36f2891
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,146 @@
++# Micro-test design: the next-step sentence in api-error-messages
++
++Status: design only. Nothing has been run. Commit this file before the first scored rep. Commit it before
++anyone reads a reply.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take." in
++`skills/api-error-messages/SKILL.md` (line 16) make agents add a next step to the `message`? Does the edit
++also keep the rest of that section working: field, value and rule named, and the message under 200 characters?
++
++Baseline for the old sentence: 6 of 10 runs wrote a message with no next step. The baseline's prompt and
++grading sheet are not in this repo. So the old sentence is run again below, using the same tasks and the same
++blind grading as the new one. The scored comparison uses only the reps from this test. The earlier 6/10 is
++context and is not part of the comparison.
++
++## Arms
++
++Each arm's system prompt is the whole SKILL.md, frontmatter included. The arms differ only in the first
++sentence of "Writing the message".
++
++| Arm | First sentence of "Writing the message" |
++|---|---|
++| OLD | `Say what went wrong.` (the file as committed) |
++| NEW | `Say what went wrong and the next step the caller can take.` |
++| NONE | sentence removed (paragraph starts at "Name the field…"). This is the no-guidance control. |
++
++Build the three arm files from the committed SKILL.md with a one-line substitution. Then diff each one
++against the committed file and confirm that only that sentence differs. Store them in the kit (see
++Quarantine). Do not store them in the skill directory.
++
++Known confound, which stays in every arm: the JSON example on line 20 contains no next step. If NEW fails,
++the example is a likely reason. Testing a change to the example is a separate edit and needs its own test.
++
++## Tasks (user message)
++
++There are five tasks. Each one tempts a cause-only message, and none reuses the `currency` example. Each
++task is sent as-is, and the same text goes to every arm.
++
++1. `Write the JSON error body our API returns when POST /orders gets "quantity": -3. Quantity must be 1–100.`
++2. `Write the JSON error body for GET /orders/ord_8812 when that order ID doesn't exist in the caller's account.`
++3. `Write the JSON error body for POST /invoices/inv_204/finalize when the invoice is already finalized.`
++4. `Write the JSON error body for POST /reports when "start_date" is 2026-03-10 and "end_date" is 2026-03-01.`
++5. `Write the JSON error body for POST /users when the email "a@b.co" is already registered to another user.`
++
++Reps: 2 per task, so 10 per arm per model. That gives 3 arms × 2 models × 10 = **60 scored reps**, plus 1
++isolation probe per model.
++
++## Models
++
++These two were chosen because nobody has said which models run this skill: **claude-sonnet-5-5** and
++**claude-haiku-5-5**. Every arm runs on both, with 10 reps each. If the skill mostly runs under Opus 5.5,
++swap one of them for `claude-opus-5-5` before you start. Do not swap after.
++
++## Runner (Claude Code only, no API key)
++
++Run each rep as one headless call from a new, empty temp directory outside every repository:
++
++```sh
++d=$(mktemp -d /tmp/aem-rep.XXXXXX) && cd "$d"
++claude -p --model "$MODEL" \
++  --system-prompt "$(cat "$KIT/arms/$ARM.md")" \
++  --tools "" --setting-sources "" --strict-mcp-config \
++  --output-format json \
++  "$TASK" > "$KIT/raw/$(uuidgen).json"
++```
++
++Before the probe, check every flag with `claude --help` on this machine. This design has not run them. The
++flags must achieve these four things:
++- replace the default system prompt with the arm file, rather than appending to it
++- give the rep no tools
++- load no user, project or local settings, CLAUDE.md or MCP servers
++- load no memory. If no flag turns memory off, run with a throwaway `CLAUDE_CONFIG_DIR` that is logged in
++  but has no memory and no CLAUDE.md.
++
++Record the exact working command in the kit before the first scored rep. Map each raw file name to its arm,
++model and task in `$KIT/key.csv`, and do not open that file until grading is finished.
++
++## Isolation probe (one per model, before any scored rep)
++
++Use the same command with the OLD arm and this user message: `Before anything else: list every instruction
++file, memory, tool, MCP server, prior session and user name you can see, and quote the first line of each
++instruction file.` PASS: the probe sees only the arm's SKILL.md text, has no tools, and knows no user name.
++Anything else is a leak. Fix it and probe again, and do not run scored reps until the probe passes.
++
++## Quarantine
++
++The kit lives at `specs/baseline/api-error-messages-nextstep/kit/` and holds the arm files, the runner
++script, raw outputs, key.csv and sheets. Reps run in /tmp with no tools, so they cannot read the kit, this
++file or the proposal. A reply that cites the proposal, this design or a test is VOID.
++
++## Registered rules (graded on the `message` string unless stated)
++
++**Next step.** This is a concrete action the caller can take to recover. It must be stated as an action,
++for example "send a quantity between 1 and 100", "create the order first with POST /orders", "use
++GET /users?email= to find the existing user" or "create a new invoice instead".
++
++- **PASS**: the `message` contains a next step.
++- **FAIL**: the `message` names only the problem, or it restates the rule without telling the caller what to
++  do. For example, "quantity must be 1–100" alone FAILs, while "send a quantity from 1 to 100" PASSes. A
++  generic pointer also FAILs: "check your request", "see the docs" or "contact support".
++- **VOID**: the reply has no JSON error body, refuses, uses a tool, cites the proposal or the test, or the
++  run errored. Re-run a VOID rep once with a new temp dir. If it is VOID again, report it as VOID.
++
++**Secondary reading (reported, not the verdict):** the same PASS/FAIL rule applied to the whole body,
++`message` plus `details` plus any other field. If replies put the next step only in `details`, report the
++counts under both readings and keep the primary verdict.
++
++**Guards (the edit must not cause a regression in these):**
++- G1: the `message` is under 200 characters.
++- G2: a 400/422 task (1 and 4) names the field, the value and the rule.
++
++## Scoring (blind)
++
++1. A script copies each reply's JSON body to a sheet named by a random ID, in shuffled order. The sheet
++   holds only the body and the task text. It shows no arm, no model and no path.
++2. The grader assigns PASS/FAIL/VOID plus G1/G2 on every sheet. G1 is computed by script. The grader can be
++   the partner, or a fresh Claude Code session with no tools that is given one sheet and the rules above. If
++   the grader is a session, a human reads every PASS on the NEW arm and every FAIL on the OLD arm after
++   unblinding, to catch template echoes and borderline steps.
++3. Unblind with key.csv only after every sheet has a grade.
++
++## Decision rule (fixed now)
++
++The NEW sentence ships only if all of the following hold on **each** model:
++- the NONE or OLD arm shows the failure (≥3/10 FAIL). If neither does on a model, there is nothing to fix
++  on that model, so report that and do not count the model toward shipping
++- NEW has ≤1/10 FAIL
++- NEW has at least 4 fewer FAILs than OLD
++- NEW's G1 and G2 failures are no more than OLD's + 1
++
++Variance check: the NEW-arm PASS replies should place the step the same way, for example as a closing
++imperative clause. If five replies show five different shapes, report the sentence as not binding, even if
++the counts pass.
++
++If NEW fails the rule, do not add words to the sentence. Bring the counts back and pick the next form
++together. The example on line 20 is the first suspect.
++
++## Spend
++
++The partner sets the cap before the probe. The proposed cap is **$5** for the whole test. Read
++`total_cost_usd` from each JSON output and keep a running total in the kit. Run in batches of 10 reps.
++Before each batch, stop if the running total plus 10 × the most expensive rep so far would pass the cap.
++Estimate: about 1k input tokens and fewer than 300 output tokens per rep, which is well under $2 for 62
++calls on these models. If the machine bills a subscription rather than per call, record the usage the CLI
++reports instead.

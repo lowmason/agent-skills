@@ -1,0 +1,165 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..09b028c
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,159 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. No rep has been run.
++
++## Question
++
++Does changing one sentence in `skills/api-error-messages/SKILL.md` (line 16) make agents put a next step
++in the error message?
++
++- Old: "Say what went wrong."
++- New: "Say what went wrong and the next step the caller can take."
++
++The baseline already shows the failure: with the old sentence, 6 of 10 runs wrote a message with no next
++step. This test checks whether the new sentence fixes that failure on its own.
++
++## Arms
++
++Each arm uses the full SKILL.md. The only difference between arms is line 16.
++
++| Arm | Line 16 starts with |
++|---|---|
++| OLD | "Say what went wrong." (the current text) |
++| NEW | "Say what went wrong and the next step the caller can take." |
++| NONE | No guidance control: the sentence is removed, and the line starts "Name the field, the value and the rule it broke, in that order." |
++
++OLD is run again here instead of reusing the earlier baseline numbers. That way all three arms share the same
++setup, tasks and scorer. The earlier 6/10 is a sanity check: if OLD scores far from it, the setup differs
++from the baseline, and that should be explained before anything else is concluded.
++
++Everything else in the file stays the same, including the `currency` example. Note that the example states a
++rule ("it must be an upper-case ISO 4217 code") and gives no explicit next step. It may pull replies toward
++rule-only messages. This test measures the proposal as written, so the example is not changed. If NEW fails,
++look at the example next.
++
++## Models
++
++The partner did not name the models, so this design picks two: **claude-opus-5-5** and **claude-sonnet-5-5**.
++Both run every arm with the same number of reps.
++
++## Runner (Claude Code only, no API key)
++
++Each rep is one fresh call to `claude -p`:
++
++- The working directory is a new empty directory under `/tmp/api-err-mt/rep-<random>/`, outside every
++  repository.
++- `--model <model>`
++- `--system-prompt-file <arm file>` replaces the default system prompt. The arm file contains one line of
++  agent framing ("You are a coding agent helping a developer on a backend HTTP API. The following skill is
++  loaded:") followed by the full SKILL.md text for that arm.
++- No tools: `--tools ""`.
++- No user or project settings, MCP servers or memory: `--setting-sources ""` and `--strict-mcp-config`.
++- `--output-format json`, so that the reply text and `total_cost_usd` are recorded.
++
++Exact flag names are to be checked against `claude --help` during the pilot. Any flag that does not exist
++must be replaced with an equivalent before scored reps begin.
++
++The arm files are kept in `/tmp/api-err-mt/arms/`. They contain no scenario or scoring text.
++
++### Isolation probe (pilot, unscored)
++
++Before any scored rep, run one probe rep per model with the NEW arm's system prompt. The probe asks: "List
++every instruction file, memory, tool, MCP server, prior session and user name you can see." The only planned
++answer is the arm system prompt with no tools. Any other answer means the setup leaks; fix it and probe again.
++The probe also gives the per-rep cost used for the spend cap.
++
++### Quarantine
++
++No rep may reach `specs/` (this file, the proposal, the baseline records) or the score sheets. With no tools
++and a working directory outside the repo, reps cannot read files. Any rep whose reply quotes or names this
++design, the proposal or the pass rule is VOID.
++
++## Tasks
++
++There are five user messages. Each one tempts a cause-only message ("quick, just the body"). Each arm runs
++each task twice per model, giving 10 reps per arm per model.
++
++1. "Quick one: POST /v1/payments got `amount: -50`. Give me just the JSON error body for the 400."
++2. "GET /v1/orders/ord_8812 — the order doesn't exist. Write the 404 error body, JSON only."
++3. "POST /v1/users with an email that's already registered. I need the 409 response body, nothing else."
++4. "PATCH /v1/subscriptions/sub_19 sent `plan: \"pro-yearly\"`, which isn't a plan we have. JSON error body for
++   the 400, please."
++5. "DELETE /v1/projects/prj_4 fails because the project still has running deployments. Write the 409 body,
++   just the JSON."
++
++Total: 3 arms × 5 tasks × 2 reps × 2 models = **60 scored reps**, plus 2 probe reps.
++
++The run order is shuffled across arms, tasks and models, so that drift over time does not line up with an
++arm. The seed is recorded.
++
++## Rules (register before reading any reply)
++
++Commit this section before the first scored rep. The rules apply only to the `message` string. Text in
++`details`, other fields or prose outside the JSON does not count.
++
++- **PASS:** the `message` contains a next step. A next step is a caller action stated in the message: a value
++  or format to send ("send a positive amount, e.g. 50"), an endpoint to call or a resource to create first
++  ("stop its deployments with POST /v1/deployments/{id}/stop, then retry"), a valid alternative to use ("use
++  'pro-annual' or 'pro-monthly'"), or a condition plus retry ("log in with the existing account or use a
++  different email").
++- **FAIL:** the `message` names only what went wrong. This includes a constraint stated with no action and no
++  concrete valid value, for example "must be an upper-case ISO 4217 code" or "amount must be positive".
++- **VOID:** no JSON error body with a `message` field; a refusal; an answer to a different task; a tool call;
++  a runner error; or a reply that shows it saw quarantined text. VOID reps are re-run with the same arm, task
++  and model, and each re-run is logged.
++
++The line between FAIL and PASS for "constraint stated, no action" is the one most likely to be disputed. It
++is registered as FAIL. If replies show a reading these rules did not foresee, the registered verdict stays.
++The counts are then reported under both readings.
++
++Secondary measures are recorded and reported, but they do not decide the result:
++
++- `message` length over 200 characters. The new sentence asks for more text, and the skill caps the length.
++- Field, value and rule still named in that order, for 400s.
++
++## Scoring (blind)
++
++1. A scrub script copies each reply's `message` string, plus the full reply below it, onto its own sheet named
++   `sheet-<random id>.md`. Sheets carry no arm, model, task number, path, order or count. The id→(arm, model,
++   task) map is written to a separate file that stays closed until grading is done.
++2. Every sheet is graded PASS, FAIL or VOID against the registered rules. Each sheet is read in full by a human,
++   or by the agent with the partner checking every PASS and every borderline FAIL. Keyword matches ("try",
++   "use", "must") are only a pre-filter. Every flagged match is read, because template echoes and restated
++   rules look like next steps.
++3. Unblind only after every sheet has a grade.
++
++## Decision rule
++
++The new sentence **works** if, on **each** model:
++
++- NEW passes at least 8 of 10 non-VOID reps, and
++- NEW passes more often than OLD from this same run.
++
++It must also not increase over-200-character messages by more than 2 of 10 compared with OLD. If it does, the
++sentence works but needs a length fix before it ships. That is reported, not hidden.
++
++How to read the other cases:
++
++- If NONE is close to OLD, the old sentence was not doing much. The gain comes from the new words alone.
++- If NONE does not fail (that is, it gives a next step in most reps), the baseline failure did not reproduce in
++  this setup. Stop and report; do not conclude anything about NEW.
++- Variance: if the NEW replies that pass use the same kind of next step, the wording is binding. If they are
++  scattered across very different shapes, or if they pass on one model and not the other, the wording is not
++  binding yet. Tighten the form rather than adding words.
++
++## Spend cap and stop rule
++
++- Cap: **$5** for the whole test, probes included. The partner can change this before the run.
++- Batch = 10 reps. Before each batch, the worst case for the batch is the highest per-rep cost seen so far ×
++  10 × 1.5. Stop if the running total plus that worst case would pass the cap.
++- After each batch, record its cost (summed `total_cost_usd`) in the run log.
++
++## Where things live
++
++- This design, the run log and the results: `specs/`, outside the skill directory, so none of it ships
++  with the skill.
++- The arm files, the rep directories and the sheets: `/tmp/api-err-mt/`. They are copied into
++  `specs/baseline/red-baseline-api-error-messages/kit/` after the run.
++- The skill file is not edited until the decision rule says NEW works. After that, the edit is followed by a
++  guard run (the same cases on the edited file) before it is committed.

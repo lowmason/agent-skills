@@ -1,0 +1,120 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..f07f4aa
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,114 @@
++# Micro-test design: "Say what went wrong and the next step the caller can take."
++
++Status: design only. Nothing has been run. Follows `references/micro-tests.md` of the writing-skills skill.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take." in
++`skills/api-error-messages/SKILL.md` make agents include a next step in the error message they write?
++
++Baseline already seen: with the old sentence, 6 of 10 runs gave a message with no next step. So the failure exists
++and there is something to fix. I don't know which model produced that baseline. This test therefore reruns the old
++sentence on both models below, so each comparison is matched.
++
++## Arms
++
++- **A (old)**: the current SKILL.md, unchanged.
++- **B (new)**: the same file with only that one sentence replaced.
++
++Check before running: `diff` of the two files shows exactly that one line. The system prompt is the full SKILL.md
++(the realistic context), not the sentence alone. Name the two files neutrally (`s1.md`, `s2.md`) and keep the
++key from file to arm outside the rep directories.
++
++A third no-guidance arm is not needed: A already shows the failure, which is what the control is for.
++
++## Models (my choice, since none was specified)
++
++- `claude-sonnet-5-5`
++- `claude-haiku-5-5`
++
++Same number of reps per arm on each model. Say so if you want a different pair (for example Opus 5.5).
++
++## Task prompts (user message)
++
++Three scenarios, each tempting a message that names the problem and stops. Rotate them evenly across reps
++(about 3-4 each per cell), and use the same assignment in both arms.
++
++1. `POST /orders` where `customer_id` refers to a customer that does not exist (404).
++2. `PUT /documents/{id}` with a stale `If-Match` version (409).
++3. `POST /payments` where `amount` is sent as the string `"12.50"` instead of an integer number of cents (400).
++
++Prompt shape: "Write the JSON error response body for this case: <scenario>. Reply with the JSON only."
++The reply must be a single message so it is easy to score.
++
++## Reps and cells
++
++2 models x 2 arms x 10 reps = 40 reps (10 matches the baseline size). Run in batches of 5 reps of each arm on one
++model (10 reps per batch), arms interleaved, so a stop leaves the arms equal.
++
++## Running with Claude Code only
++
++No API key, so each rep is one `claude -p` call (fresh process, one sample). Confirm the exact flags with
++`claude --help` first; the intent is:
++
++- start in a new empty directory outside every repository (e.g. one `mktemp -d` per rep), not inside this repo;
++- pass the SKILL.md copy as the system prompt, replacing the default prompt if the CLI allows it;
++- no tools, so the rep cannot read `specs/` or the repo;
++- no user-level settings, instruction files or memory;
++- `--model` set per cell; a per-rep spend limit if the CLI offers one;
++- scripts and the key live in a different directory from the rep directories.
++
++There is no committed kit under `specs/baseline/*/kit/` in this repo, so the runner and probe are written fresh.
++
++## Probe first
++
++Before any scored rep, run one pilot rep on each model that asks what context it can see: instruction files,
++memory, tools, other sessions, the user's name. Anything unplanned means the setup leaks; fix and re-probe. The
++pilot's reported cost also fixes the per-rep figure used for the spend cap below.
++
++## Rules registered before reading any reply
++
++Commit this file before the first scored rep. If a reply shows a reading these rules did not foresee, keep the
++registered verdict and report counts under both readings.
++
++- **Next step** = the message tells the caller something to do or send: a value to use, a field to change, an
++  endpoint to call first, a header or version to refetch. Restating the rule that was broken ("must be an
++  integer") is not a next step; "send an integer number of cents" is.
++- **PASS**: the message contains a next step.
++- **FAIL**: it names the problem or the broken rule and gives no next step.
++- **VOID**: the rep saw outside context (probe finding, a file naming the scenario or rule), returned more than
++  one message or no JSON, or the process errored. Void reps are rerun, not counted.
++- Open question to settle before running: confirm with whoever scored the baseline that they used this same
++  "next step" definition, or the baseline and this test are not comparable.
++
++## Blind scoring
++
++Strip each reply to the message text, give it a random id, shuffle, and write sheets with no arm, model, file name,
++path, order or count that reveals the source. Grade every sheet against the rules above, then unblind. A fresh
++`claude -p` grader given only the rules and a sheet can do the first pass; I read every grade and every disagreement
++by hand. Template echoes (a reply copying the skill's currency example) are read manually, not counted by script.
++
++## Secondary check (does B break anything)
++
++On B replies, also note whether the message is still under 200 characters and still names field, value and rule.
++A pass rate gain bought by dropping those is not a win.
++
++## Decision rule
++
++Per model, with 10 reps per arm:
++
++- If A fails on fewer than 4 of 10 on a model, that model shows no problem to fix; report it as uninformative.
++- B **works** on a model if at least 8 of 10 PASS and B beats A by at least 4 reps.
++- Adopt the sentence if it works on both models and the secondary check is clean.
++- Mixed results (works on one model only), or different readings across the 10 reps of one cell, mean the wording
++  is not binding: tighten the form (see "Match the Form to the Failure") and retest. A positive recipe such as "the
++  message ends with the value to send or the call to make" is the likely alternative arm.
++
++Report variance too: if the B replies take many different shapes, say so even when the pass count is high.
++
++## Spend
++
++Cap: **$1.20 total**, including probes, the grading calls and reruns of void reps (the remaining budget is $1.46).
++Stop rule: before each batch, stop if the running total plus that batch's worst case (10 reps x the per-rep
++limit) would pass the cap. Record the cost of every batch in this file as it finishes. If the cap stops us early,
++report the reps done per cell and do not claim a verdict beyond them.

@@ -1,0 +1,148 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..5b08723
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,142 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take."
++in `skills/api-error-messages/SKILL.md` make agents write error messages that give the caller a next step,
++without breaking what the skill already gets right?
++
++Baseline (old sentence): 6 of 10 runs wrote a message with no next step. The failure exists, so the test is
++worth running.
++
++## Arms
++
++The proposal changes one sentence. Both arms get the full SKILL.md, identical except for that sentence.
++
++| Arm | System prompt |
++|-----|---------------|
++| Control | SKILL.md as committed (old sentence). This is the no-guidance control: it says nothing about a next step. |
++| New | SKILL.md with only line 16's first sentence replaced by the new sentence. |
++
++The control is re-run here, in the same setup as the new arm, so the two arms are compared with each other
++and not with the earlier baseline, which used a different setup.
++
++## Tasks (user message)
++
++Three tasks, one per error type named in the skill's description. Each one asks for the response body only,
++so that the reply is easy to score. None of them mention a next step, the caller's options or the support
++team.
++
++- **T1 (400):** "Our `POST /payments` endpoint got `{"amount": 1250, "currency": "usd"}`. Currency must be an
++  upper-case ISO 4217 code. Write the JSON error response body. Reply with the JSON only."
++- **T2 (404):** "`GET /orders/ord_8812/refunds` was called, but order `ord_8812` doesn't exist in this
++  account. Write the JSON error response body. Reply with the JSON only."
++- **T3 (409):** "`POST /customers` was called with email `ana@example.com`, but a customer with that email
++  already exists (id `cus_204`). Write the JSON error response body. Reply with the JSON only."
++
++T1 is close to the skill's own example, which has no next step. That makes T1 the hardest task for the new
++arm, which is the point of including it.
++
++## Models and reps
++
++The partner has not said which models will run this skill, so this design picks two:
++**claude-opus-5-5** and **claude-sonnet-5-5**.
++
++Per model, per arm: 4 reps of each task = 12 reps. Total: 2 models × 2 arms × 12 = **48 scored reps**, plus
++1 probe rep per model.
++
++## How each rep runs (Claude Code only, no API key)
++
++Each rep is one single-shot, non-interactive `claude -p` call:
++
++- Run from a new `mktemp -d` directory outside every repository, deleted after the rep.
++- System prompt = the arm's full SKILL.md text, passed as a file, replacing the default system prompt.
++- No tools. User and project settings, CLAUDE.md files, memory and MCP servers turned off.
++- `--model` set to the model under test. JSON output, so that each call's reported cost is recorded.
++- User message = the task text above, and nothing else.
++
++This repo has no committed kit with exact runner flags. Before the probe, check `claude --help` on this
++machine and write the exact command into the kit's runner script. Then the probe confirms it.
++
++## Probe (before any scored rep)
++
++One rep per model, same command, control system prompt, with the user message: "List every piece of context
++you can see: instruction files, memory, tools, other sessions, the project, and the user's name." Anything
++beyond the planned system prompt (a CLAUDE.md, a tool, a repo path, the user's name or email) means the setup
++leaks. Fix it and probe again. No scored rep runs until both probes are clean.
++
++## Quarantine
++
++The kit and the records live in `specs/api-error-messages-microtest/`, outside the skill directory. This file,
++the proposal (`specs/api-error-messages-wording.md`), the kit and the earlier baseline records are never in a
++rep's working directory, system prompt or user message. Because reps have no tools and run outside the repo,
++they cannot reach them. A rep that quotes or names any of them is VOID.
++
++## Scoring rules (commit these before reading any reply)
++
++Score the `message` string (and `details`, if the reply has one) of each reply.
++
++**Primary: next step.**
++
++- **PASS:** the message tells the caller an action they can take that names something concrete: a value or
++  format to send (e.g. "send 'USD'"), an endpoint or operation to call (e.g. "call `GET /customers/cus_204`",
++  "create the order first"), or an existing resource to use instead. Imperative phrasing ("Send …") or
++  addressed phrasing ("You can …", "Use … instead") both count.
++- **FAIL:** no such action. These are FAIL on their own:
++  - The broken rule only, stated as a constraint ("it must be an upper-case ISO 4217 code"). The skill
++    already asks for the rule. The new sentence must add something beyond it.
++  - A generic pointer: "check your input", "see the docs", "contact support", "try again".
++- **VOID:** a refusal, no JSON, a reply to a different task, a reply that shows context the probe ruled out,
++  or a rep that errored. A VOID rep is re-run once with the same arm and task. If it is VOID again, it is
++  reported as VOID and not replaced.
++
++If a reply shows a reading these rules did not foresee (for example, "must be 'USD'" as the only next step),
++keep the registered verdict and report the counts under both readings.
++
++**Guard: the edit must not break what the skill already does.** The new sentence asks for more text, so these
++can drop. Score each reply on each:
++
++- **G1 length:** `message` is under 200 characters.
++- **G2 order (T1 only):** the message names the field, the value and the rule, in that order.
++- **G3 leaks:** no internal class name or stack frame.
++
++## Blind grading
++
++A script turns each reply into a sheet named by a random ID. The sheet holds the task ID and the reply text,
++nothing else. The arm, the model, the run order and the rep number are left out. The ID → arm/model key is
++written to a separate file and not opened until every sheet has a grade. The grader (the partner, or a fresh
++Claude Code session that is given only the sheets and the rules above) records PASS/FAIL/VOID and G1–G3 for
++each sheet. Every FAIL or guard drop is read by hand, not just counted.
++
++Also record the *shape* of each passing next step (value to send, endpoint to call, resource to use). If one
++arm's passes are all the same shape and the other's vary widely, report that: variance shows whether the
++wording binds.
++
++## Decision rule
++
++Per model:
++
++1. If the control fails on fewer than 3 of 12, that model shows no failure to fix. Report it and do not judge
++   the new sentence on that model.
++2. Otherwise the new sentence **works** on that model if its fails are at most 1 of 12 **and** no guard count
++   (G1, G2, G3) is lower than the control's on that model.
++
++Ship the sentence only if it works on both models (or works on one, and the other is excluded by step 1).
++With 12 reps per cell, this shows a direction. It does not show a precise rate. A close result (for example,
++2 or 3 fails in the new arm) means: tighten the wording and run again, not ship.
++
++## Spend cap
++
++Cap: **$6** across all reps, including the probes and re-runs (proposed, for the partner to confirm). Run in
++batches of one model × one arm × one task (4 reps). Record each batch's cost from the JSON output. Stop before
++a batch if the running total plus twice the most expensive batch so far would pass the cap. If the cap stops
++the run, report the cells that are complete and do not judge from partial cells.
++
++## Known risk to watch
++
++The skill's example (line 20) has no next step, and the proposal leaves it unchanged. Agents copy examples
++closely, so the example may pull the new arm back toward FAIL, most of all on T1. If the new arm fails mostly
++on T1, that points to the example, not the sentence. Changing the example would be a second edit and would
++need its own test.

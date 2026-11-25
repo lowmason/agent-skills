@@ -1,0 +1,111 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..b5756bf
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,105 @@
++# Micro-test design: "next step" sentence in api-error-messages
++
++Status: design only. Nothing has been run for this design.
++
++## Question
++
++Does replacing "Say what went wrong." with "Say what went wrong and the next step the caller can take." make agents
++include a next step in the error message they write?
++
++Failure type: the agents' output is missing an element they already produce (a message with no next step). A
++sentence-level wording change is the right form, so this is a wording micro-test, not a pressure scenario.
++
++## Arms
++
++| Arm | SKILL.md text the rep sees |
++|---|---|
++| A (control) | Current skill, old sentence, unchanged |
++| B (new) | Same skill, only that one sentence replaced |
++
++The baseline already run (6 of 10 with no next step) is arm A for one setup. I don't know which model and setup
++produced it. Unless the partner can confirm that, it is not reused. Arm A is rerun on both models below, so A and B
++differ only in the sentence.
++
++The skill is the whole context, not the sentence alone. The skill's example message has no next step and the skill
++caps messages at 200 characters. Both compete with the new sentence, and the test should show whether they win.
++
++## Models
++
++Two models, chosen by me because none were specified: `claude-sonnet-5-5` and `claude-haiku-5-5`. Both arms run on both.
++Say if you want a different pair.
++
++## Reps
++
++10 per arm per model, which is 40 reps. One fresh single-shot subagent per rep, with no reuse and no shared context.
++There is no API key, so reps run as Claude Code subagents or `claude -p` calls, whichever lets me set the model and
++turn off tools.
++
++## Task prompt
++
++The rep gets the skill text, then one task. Three tasks rotate so no single case decides the result. Each arm and model
++gets the same rotation (reps 1-4 task 1, 5-7 task 2, 8-10 task 3):
++
++1. A POST /payments request with `currency: "usd"` fails validation. Write the 400 message.
++2. A GET /invoices/9913 finds nothing. The caller probably used a draft id. Write the 404 message.
++3. A PUT /users/42 with a stale `If-Match` version conflicts. Write the 409 message.
++
++The prompt says: "Write the `message` string for this error. Reply with only the JSON response body." It doesn't mention
++next steps, and it doesn't say what is being tested.
++
++## Isolation
++
++- Each rep starts in a new empty directory outside every repository, with no tools.
++- User-level settings, instruction files and memory are off.
++- Probe first: run one pilot rep and ask what context it can see (instruction files, memory, tools, other sessions, the
++  user's name). If anything shows up that I didn't plan, fix the setup before any scored rep. Probe reps are not scored.
++- Keep `specs/` out of every rep's reach, including this file and the proposal. A rep that reads one is VOID and is rerun.
++- Strip names, project details and the user's email from the prompts.
++
++## Registered rules (commit this file before reading any reply)
++
++Unit: one message string.
++
++- Next step present: the message tells the caller a concrete action. That means a value to send, an endpoint to call or
++  a header to change. Example: "send 'USD'", "list drafts at GET /drafts". Restating the rule alone ("must be an
++  upper-case ISO 4217 code") does not count. I score this strict reading as the registered one. I also record the lenient
++  reading, where a restated rule counts, and report both.
++- Length: 200 characters or fewer.
++- VOID: the rep read a forbidden file, used a tool, answered something other than a JSON body, or the probe showed leaked
++  context. A void rep is rerun and not counted.
++
++Per model, the new wording PASSES if:
++
++1. Arm B has a next step in at least 8 of 10 messages (arm A baseline was 4 of 10 with one), AND
++2. Arm B beats arm A by at least 4 messages, AND
++3. Arm B has at most 1 message over 200 characters, with no more over-length messages than arm A plus 1.
++
++The change PASSES overall only if both models pass. If one model passes and the other doesn't, the verdict is "binds one
++model only", and no change ships on this evidence.
++
++FAIL: any other result. A reply that shows a reading these rules didn't foresee keeps the registered verdict, and I
++report the counts under both readings.
++
++Variance: also record how many distinct shapes the arm B messages take (a next step, a rule only, a cause only). If the
++five or more shapes are scattered, the wording isn't binding even if the count passes. Report that next to the verdict.
++
++## Blind scoring
++
++1. Each reply is saved as a sheet with a random id. The sheet holds only the message text, with no arm, model, task order
++   or file name that shows the arm.
++2. The id-to-arm map goes in a separate file that I don't open until every sheet has a grade.
++3. I grade each sheet against the registered rules, reading every message myself. I don't use a keyword count, because
++   quoted rules and template echoes look like next steps.
++4. Unblind after the last grade, then count.
++
++## Spend
++
++Cap: $1.00 of the $1.50 left. Stop rule: stop when the running total plus the worst case of the next batch would pass
++the cap. Batches are by model (20 reps each), and I record each batch's cost as I go. Run the probe first, then Sonnet,
++then Haiku. If the first batch costs more than half the cap, stop and ask before the second.
++
++## Outputs
++
++- `specs/baseline/microtest-api-error-messages/`: the prompts, the sheets, the map and the grades, outside the skill
++  directory so nothing ships with it.
++- A short result note: counts per arm and model under both readings, the variance read and the verdict.

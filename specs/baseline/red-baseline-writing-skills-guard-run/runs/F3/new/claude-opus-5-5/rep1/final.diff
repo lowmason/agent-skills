@@ -1,0 +1,180 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..7a15f19
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,174 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. No rep has been run.
++
++## Question
++
++Does replacing the old sentence in `skills/api-error-messages/SKILL.md` stop agents from writing error
++messages without a next step, without breaking the rest of the section?
++
++- Old: "Say what went wrong."
++- New: "Say what went wrong and the next step the caller can take."
++
++Baseline, old sentence: in 6 of 10 runs the agent wrote a message with no next step.
++
++## Arms
++
++Each arm is the full SKILL.md. The arms differ only in the first sentence of "Writing the message".
++
++| Arm | First sentence of "Writing the message" |
++|---|---|
++| OLD | "Say what went wrong." (current text) |
++| NEW | "Say what went wrong and the next step the caller can take." |
++| CONTROL | Sentence removed. The paragraph starts at "Name the field, …" |
++
++CONTROL is the no-guidance arm. OLD is run again under the same setup and models as NEW. The earlier
++6/10 came from a different setup, so we can't compare NEW against it directly.
++
++Everything else stays the same in all three arms: the frontmatter, the overview, the 200-character
++limit, the `currency` example and the red flags. Note: the example message states a rule but gives no
++next step. It may pull replies toward the old shape in every arm. This test does not change the
++example, because the proposal changes one sentence only. If NEW fails, the example is the first
++suspect to test separately.
++
++## Models
++
++Run every arm on both models, with the same number of reps on each:
++
++- `claude-sonnet-5-5`
++- `claude-opus-5-5`
++
++I chose these two. If the skill also runs on Haiku in production, add `claude-haiku-5-5` as a third
++model with the same reps.
++
++## Tasks (user message)
++
++Use three tasks, one per error type the skill's description names. Each arm gets each task 4 times,
++so 12 reps per arm per model. None of the tasks mentions a next step, a fix or help for the caller.
++
++- T1 (400): "Our POST /payments endpoint gets `{"amount": 1200, "currency": "usd"}` and rejects it
++  because currency must be upper-case ISO 4217. Write the JSON error response body we return. Reply
++  with the JSON only."
++- T2 (404): "GET /orders/{id} is called with an id that doesn't exist for this account. Write the JSON
++  error response body we return. Reply with the JSON only."
++- T3 (409): "POST /users is called with an email that already belongs to another user. Write the JSON
++  error response body we return. Reply with the JSON only."
++
++If the baseline record keeps its exact task prompt, swap it in as T1 verbatim so OLD can be checked
++against the 6/10.
++
++Total: 3 arms × 3 tasks × 4 reps × 2 models = 72 scored reps, plus probe reps.
++
++## Harness (Claude Code only, no API key)
++
++Each rep is one fresh `claude -p` call:
++
++- It runs from a new empty directory outside every repository, e.g. `/tmp/aem-mt/run/<random-id>/`.
++- The system prompt is the arm file, passed with `--system-prompt-file`. The file holds one framing
++  line ("The following skill is loaded for this task:") and then the full SKILL.md for that arm. The
++  framing line is the same in every arm.
++- Turn off all tools (`--tools ""`), user and project settings (`--setting-sources ""`), MCP servers
++  and memory.
++- Pin the model with `--model`. Use `--output-format json` so that we get the reply and the
++  `total_cost_usd` for each rep.
++- Each rep writes its raw output to the run directory under a random ID. A separate key file maps
++  each ID to its arm, task and model.
++
++The flag names above must be checked against `claude --help` on this machine before the probe. Flags
++change between versions. The probe is the real check.
++
++The kit lives in `specs/api-error-messages-microtest/`: the three arm files, the three task files,
++the runner, the key and the sheets. Nothing goes under `skills/api-error-messages/`, because
++everything in that directory ships with the skill.
++
++## Isolation probe (before any scored rep)
++
++Run one probe rep per model with the NEW arm's system prompt and this user message: "List every
++instruction file, memory, tool, MCP server, earlier session and project file you can see, and the
++user's name if you know it."
++
++The only thing it should report is the skill text. If it names CLAUDE.md, memory, any tool, this
++repo, the specs or a user name, the setup leaks. Fix the setup and probe again. Probe replies are not
++scored.
++
++## Quarantine
++
++Reps run outside the repo and have no tools. They cannot read this file, the proposal, the baseline or
++the kit. A reply that quotes or refers to any of them is VOID.
++
++## Registered rules (commit before reading any reply)
++
++Grade only the `message` string of the JSON in each reply.
++
++**PASS:** `message` tells the caller one concrete action they can take to make the call succeed, and
++the action is specific to this error. For example: the value or format to send ("send 'USD'"), the
++call to make first ("create the order with POST /orders first"), the field to change, or the resource
++to use instead ("use PATCH /users/{id} to update the existing user").
++
++**FAIL:** any of these:
++- `message` names only the problem.
++- `message` only restates the rule ("it must be an upper-case ISO 4217 code") and gives no action.
++- The only next step is generic ("check your request", "see the docs", "contact support").
++- The next step appears only in `details` or in another field, and not in `message`.
++
++**VOID:**
++- There is no parseable JSON with a `message` string.
++- The rep refuses or asks a question back.
++- The rep used a tool.
++- The reply shows context that the probe did not allow (see Quarantine).
++
++VOID reps are rerun with a new ID until the cell has 4 valid reps. Count the VOIDs and report them.
++
++**Alternate readings to report alongside the registered count (the verdict does not change):**
++- R-rule: a stated rule that implies the fix ("must be upper-case") counts as PASS.
++- R-details: a next step in `details` counts as PASS.
++
++**Secondary checks, scored on every non-VOID rep:**
++- S1: `message` is 200 characters or fewer.
++- S2: in T1, `message` names the field, the value and the rule, in that order.
++
++These checks catch a NEW arm that adds a next step but breaks the rest of the paragraph.
++
++## Blind scoring
++
++1. A script pulls the `message` string, with T1/T2/T3 kept, from each raw reply onto one sheet per rep.
++   Each sheet is named only by a fresh random ID that differs from the run ID. Sheets are shuffled.
++   Nothing on a sheet shows the arm or the model.
++2. The grader applies the registered rules and writes PASS/FAIL/VOID, R-rule, R-details, S1 and S2 for
++   each sheet. The grader is you, or a fresh Claude Code session given only the sheets and this rules
++   section.
++3. Unblind with the key only after every sheet is graded. Read every PASS by hand to check that the
++   "next step" is a real action, and that the grader did not credit a template echo.
++
++## Decision rule
++
++Each cell is one arm × one model, with 12 reps.
++
++- **Nothing to fix:** if CONTROL and OLD both fail on 2 or fewer of 12 on both models, the failure did
++  not reproduce. Stop, and do not change the sentence.
++- **NEW works:** on each model, NEW fails on 2 or fewer of 12, and NEW fails at least 4 fewer than
++  OLD. NEW must also do no worse than OLD on S1 or S2, by more than 1 rep each.
++- **NEW does not work:** any other result. Look at what the failing NEW reps did before changing the
++  wording again. Common causes: they stopped at the rule, they moved the step into `details`, or they
++  went over 200 characters.
++- **Variance:** also record whether the NEW reps take one shape (e.g. "…; send X") or many. Many
++  shapes means the wording does not bind, even if the count passes.
++
++## Spend
++
++- Cap: $6 total across the probe and the scored reps, using the `total_cost_usd` Claude Code reports.
++  On a subscription, this is the usage-equivalent figure.
++- Run in batches of one arm × one model (12 reps). Record each batch's cost in
++  `specs/api-error-messages-microtest/costs.md`.
++- Stop rule: before each batch, stop if the running total plus twice the largest batch so far would
++  go over the cap.
++
++## Order of work
++
++1. Partner reviews this design, then commits it with the registered rules before any rep runs.
++2. Build the kit and check the flags.
++3. Run the probe on both models and fix any leaks.
++4. Run the 6 batches, interleaving arms and models.
++5. Make the sheets, grade them blind, then unblind.
++6. Report the counts per cell under the registered reading and both alternate readings, plus S1/S2,
++   VOIDs and the cost.

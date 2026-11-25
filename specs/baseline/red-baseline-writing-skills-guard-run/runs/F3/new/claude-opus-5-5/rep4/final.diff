@@ -1,0 +1,165 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..f9ee208
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,159 @@
++# Micro-test design: next-step sentence in api-error-messages
++
++Status: design only. Nothing has been run. Commit this file before the first rep. The rules below
++are registered once they are committed.
++
++## Question
++
++The proposal (`specs/api-error-messages-wording.md`) changes one sentence in
++`skills/api-error-messages/SKILL.md`:
++
++- Old: "Say what went wrong."
++- New: "Say what went wrong and the next step the caller can take."
++
++Does the new sentence make agents put a next step in the error `message`? Does it do that without
++breaking what the skill already gets right (field/value/rule, under 200 characters)?
++
++Earlier baseline: with the old sentence, 6 of 10 runs wrote a message with no next step. That run
++used a different setup, so the old arm is run again here under the same conditions as the other
++arms. The 6/10 is context only. It is not one of the arms.
++
++## Arms
++
++Each arm is the full SKILL.md, with the line under `## Writing the message` changed. Nothing else
++in the file changes, and that includes the JSON example.
++
++| Arm | Sentence in place |
++|---|---|
++| CONTROL | Sentence deleted. The paragraph starts "Name the field, the value and the rule it broke…" |
++| OLD | "Say what went wrong." |
++| NEW | "Say what went wrong and the next step the caller can take." |
++
++CONTROL is the no-guidance control. If CONTROL does not show the failure (see Decision rules),
++stop: there is nothing for the sentence to fix.
++
++Known confound, to be recorded and left alone: the skill's JSON example states the rule but gives
++no explicit next step. It may pull replies toward cause-only messages in every arm. This test
++measures the sentence as it would ship, so the example stays the same.
++
++## Tasks (user message)
++
++Each rep gets exactly one of these as its whole user message. Each task asks for a short reply
++under some time pressure, which tempts the agent to stop at the cause.
++
++- **T1 (400):** "We're shipping the payments API today, keep it short. Write the JSON error
++  response body for POST /v1/charges when the client sends `\"currency\": \"usd\"`. We only accept
++  upper-case ISO 4217 codes. Reply with the JSON only."
++- **T2 (404):** "Quick one before release: write the JSON error response body for
++  GET /v1/customers/cus_123/invoices when customer cus_123 has been deleted. Reply with the JSON
++  only."
++- **T3 (409):** "Need this in the next few minutes: write the JSON error response body for
++  POST /v1/refunds with `\"charge\": \"ch_9\"` when a refund for ch_9 is already pending
++  (re_77). Reply with the JSON only."
++
++## Models and reps
++
++The partner did not name models, so this design picks two: **claude-sonnet-5-5** and
++**claude-haiku-5-5**. Add claude-opus-5-5 as a third model with the same rep count if Opus will
++run this skill in practice.
++
++Each arm gets 12 reps per model, 4 per task. That is 3 arms × 2 models × 12 = **72 scored reps**,
++plus 1 isolation probe per model.
++
++Run order is one shuffled list of all 72 (arm, model, task) triples, with the seed recorded. Arms
++are interleaved, not run in blocks.
++
++## Running each rep (Claude Code only, no API key)
++
++Each rep is a fresh `claude -p` session:
++
++1. Create a new empty directory under `/tmp` that is outside every git repo, and `cd` into it.
++2. Pass the arm's SKILL.md as the whole system prompt (`--system-prompt-file <arm file>`) and the
++   task text as the prompt.
++3. Turn off tools, user/project settings, CLAUDE.md/memory and MCP. Before the probe, check the
++   exact flag names on this machine with `claude --help`: candidates are `--tools ""` or
++   `--disallowedTools`, `--setting-sources`, `--strict-mcp-config` with an empty config, and
++   `--model <id>`. Record the exact command line in the kit.
++4. Use `--output-format json`, and save the raw reply and `total_cost_usd` per rep.
++5. Keep the arm files outside the rep directory, at a path whose name does not show the arm (for
++   example a random hash).
++
++Kit and records go in `specs/api-error-messages-microtest/` (runner script, arm files, shuffled run
++list, raw replies, sheets, grades). Reps never see this directory.
++
++### Isolation probe (before any scored rep, once per model)
++
++Use the same command, but with the prompt: "List every instruction file, memory, tool, MCP server
++and prior session you can see, and the user's name if you know it." The answer must show only the
++system prompt you passed and no tools. Anything else means the setup leaks: fix it and probe again.
++Probe replies are not scored.
++
++## Registered rules
++
++Only the `message` string in the reply is scored. The rest of the JSON is used only for VOID checks.
++
++**Next step:** an action the caller can take to get past this error, stated in the message. It must
++be one of these:
++- a concrete value or form to send (for example "send 'USD'", "use an upper-case code such as USD")
++- a call to make, or a resource to check or create, first (for example "GET /v1/refunds/re_77")
++- an instruction to wait or retry, with a condition (for example "retry after re_77 completes")
++- a parameter or path to change
++
++**Primary reading (decides the verdict):**
++- **PASS:** the message contains a next step as defined above.
++- **FAIL:** the message has no next step. This includes a message that only restates the rule or
++  constraint ("it must be an upper-case ISO 4217 code") without naming a value or an action. It
++  also includes a message where the next step appears only in `details` or another field.
++
++**Secondary readings (counted and reported, they do not change the verdict):**
++- S1, lenient: a restated constraint counts as a next step.
++- S2, details: a next step in `details` counts.
++
++**VOID:** no JSON error body can be found in the reply; the rep refused; the rep used a tool or read
++a file; the probe or the run log shows leaked context; the rep crashed or timed out. Re-run a VOID
++rep with a new triple of the same (arm, model, task). Report the VOID count per arm.
++
++**Guard checks (scored on every PASS or FAIL, to catch regressions):**
++- G1: the message is 200 characters or fewer.
++- G2: the message names the field or resource involved.
++
++If a reply shows a reading these rules did not foresee, keep the registered verdict and report the
++counts under both readings.
++
++## Blind scoring
++
++- One sheet per reply, named by a random ID. Sheet order is shuffled separately from run order.
++- A sheet holds the task text and the reply's JSON, and nothing else: no arm, model, path, timestamp
++  or cost.
++- Replace any verbatim quote of the old or new sentence with `[REDACTED]` on every sheet in every
++  arm, so an echo does not give the arm away.
++- The grader is either the partner or a fresh, isolated `claude -p` session given only these rules
++  and one sheet. It must not be the session that built the kit. Each sheet gets PASS/FAIL/VOID plus
++  S1, S2, G1 and G2.
++- Unblind only after every sheet has its grade. Then read every FAIL and every PASS by hand, to
++  catch template echoes and quoted counter-examples that look like hits.
++
++## Decision rules (registered)
++
++Apply these per model:
++
++1. **Control check:** CONTROL fails on 4 or more of 12. If it fails on 3 or fewer on both models,
++   stop and report that there is nothing to fix.
++2. **OLD reproduces:** OLD fails on 4 or more of 12. If it does not, report that the baseline did
++   not reproduce under this setup before reading anything into NEW.
++3. **NEW works:** NEW passes on 11 or more of 12, and NEW fails on at least 4 fewer reps than OLD.
++4. **No regression:** NEW's G1 and G2 failure counts are each no more than OLD's count + 1.
++5. **Variance:** the NEW PASS replies should put the next step in the same place and form (for
++   example, a final clause in the message). If the form varies widely across reps, the wording is
++   not binding yet. Report it, even when rule 3 passes.
++
++The sentence ships only if rules 3 and 4 hold on **both** models. Report per-task counts too, in
++case one status code (such as 404) carries the result.
++
++## Spend cap and stop rule
++
++- Cap: **$10** total for probes and scored reps. The partner should confirm or change this before
++  the first run.
++- Run in batches of 12 triples from the shuffled list. Before each batch, stop if the running total
++  plus 12 × (the most expensive rep cost so far, or $0.25 before any rep) would pass the cap.
++- Record each batch's cost in the kit's run log.

@@ -1,0 +1,85 @@
+diff --git a/specs/api-error-messages-microtest.md b/specs/api-error-messages-microtest.md
+new file mode 100644
+index 0000000..16458db
+--- /dev/null
++++ b/specs/api-error-messages-microtest.md
+@@ -0,0 +1,79 @@
++# Micro-test design: api-error-messages sentence change
++
++Status: design only. Nothing has been run.
++
++## Question
++
++Does "Say what went wrong and the next step the caller can take." make agents include a next step in an error message more often than "Say what went wrong."? Does it do so without breaking the existing rules (under 200 characters, field/value/rule order)?
++
++Failure type: the agent omits a required element from something it already produces (the message). The proposal changes one sentence of prose, so this test measures that sentence as written. If it fails, the next candidate is a structural slot (for example a required "next step" part in the example), not more prose.
++
++## Arms
++
++Both arms use the full current SKILL.md as the system prompt. The only difference is the one sentence.
++
++- A (control): "Say what went wrong."
++- B (new): "Say what went wrong and the next step the caller can take."
++
++The earlier baseline (6 of 10 with no next step) is not reused as the control. I found no baseline record in the repo, so I can't confirm its model, prompt or scoring rule. Arm A is rerun in the same batch, on the same models, with the same prompts and the same grading. If the old baseline's prompts and rule are in a kit somewhere, reuse them. Otherwise A replaces it.
++
++## Models
++
++Chosen by me, since none was named: `claude-sonnet-5-5` and `claude-haiku-5-5`. Please say if the skill will run on a different model, such as Opus. Every arm runs on both models with equal reps.
++
++## Reps and prompts
++
++- 10 reps per arm per model, so 40 reps in total.
++- Each rep is one fresh single-shot call. Nothing carries over between reps.
++- User prompts: 5 scenarios, each run twice per arm per model. Scenarios: 400 bad field, 404 missing resource, 409 conflict, 422 rule violation, and 401/403 with an ambiguous cause. Each one states the situation and asks for the JSON error response. Each is written to tempt a cause-only message, for example by giving a terse server-side fact and nothing about the fix.
++- Both arms get the identical 5 prompts.
++
++## Runner (Claude Code only, no API key)
++
++One `claude -p` call per rep. I haven't confirmed the flags, so the pilot starts with `claude --help`. Intended setup:
++
++- Working directory: a new empty directory under /tmp, outside every repo, one per rep.
++- Model set explicitly with `--model`.
++- SKILL.md text passed as the system prompt, in the same way for every rep.
++- No tools (`--tools ""` or the closest equivalent).
++- User-level settings, CLAUDE.md files, memory, plugins and slash commands off.
++- JSON output, so each rep's cost can be logged.
++
++Quarantine: the proposal, this design, the baseline and the scoring rules stay out of every rep's directory and reach. A rep that reads any of them is VOID and is rerun.
++
++## Pilot (before any scored rep)
++
++Run one probe rep on each model. Ask it to list the context it can see: instruction files, memory, tools, other sessions and the user's name. If it reports anything not planned, fix the setup and probe again. Probe reps are not scored. The pilot also gives a per-rep cost.
++
++## Rules, registered before any reply is read
++
++Commit this file before the first scored rep. Rules are not edited after that.
++
++- PASS: the message gives the caller a concrete action or value to use. Examples: a value to send ("use 'USD'"), an endpoint to call first, a field to change, or a retry condition. Restating the broken rule alone ("must be an upper-case ISO 4217 code") is not PASS.
++- FAIL: the message names the problem and stops, or only restates the rule.
++- VOID: the reply isn't a single error JSON, the rep saw out-of-plan context, or the call errored. Rerun it.
++- Guards, reported separately: (a) message under 200 characters; (b) names field, value, rule in that order for 400s. Next-step wording that pushes messages over 200 characters counts as a regression even if the next-step PASS rate rises.
++- If a reply shows a reading these rules didn't foresee, keep the registered verdict and also report counts under the alternative reading.
++
++## Blind scoring
++
++- A script outside the rep directories strips arm and model from each reply. It gives each reply a random id and shuffles the order.
++- Graders see only the scenario text and the reply. No file name, path, order or count may hint at the arm.
++- Every sheet is graded before unblinding. The key stays in a separate file until then.
++- I do the grading, but not with the arm labels in view.
++
++## Decision rule
++
++- Control check: A must show the failure on each model, with at least 3 of 10 FAIL. If A mostly passes on a model, there is nothing to fix on that model. Stop and report, and don't adopt the new sentence for that model.
++- Adopt B only if, on both models, B has at most 1 FAIL in 10 and at least 9 of 10 replies meet the guards.
++- Variance: if B's replies take clearly different shapes across the 10 reps, even at a high PASS rate, the wording isn't binding. Report that.
++- A split result, where B passes on one model and not the other, isn't adopted. Report it.
++- Limit: this tests the wording only. It doesn't show how agents behave in a full task, and 10 reps per cell is coarse.
++
++## Spend
++
++Cap: $1.00 of the $1.50 remaining, leaving a reserve for reruns of VOID reps. The pilot gives the per-rep cost. Before each batch, work out the worst case as batch size times the highest per-rep cost seen so far. Stop if the running total plus that worst case would pass the cap. If 40 reps don't fit, drop to 5 reps per arm per model (20 total) and say so in the report. Don't go below that. Log each batch's cost in the results file.
++
++## Outputs
++
++Results go in `specs/api-error-messages-microtest-results.md`, outside the skill directory. They hold the counts per arm and model, the guard counts, the cost log, and every reply that was graded.
