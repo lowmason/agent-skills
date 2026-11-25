@@ -201,7 +201,7 @@ run: report BLOCKED with this table.
 | Task 4 Step 4: F3 `new`, Opus | 5 | $1.3103 | $7.5098 |
 
 Running total after Task 2: $0.3766. After Task 3 Step 1: $1.3073. After Task 3 Step 4: $3.8844. After Task 4
-Step 1: $5.6750. After Task 4 Step 4: $7.5098. Each sums the unrounded costs. The batch check before the last batch was 3.2770 + 5 × 1.50 = 10.78, at most 25.
+Step 1: $5.6750. After Task 4 Step 4: $7.5098. Each sums the unrounded costs. The batch check before the last batch (F3 `new` on Opus) was 6.1995 + 5 × 1.50 = 13.70, at most 25.
 
 ## Task 2: probes, pilots and spend projection
 
@@ -510,8 +510,8 @@ missed. The kinds:
 | a fresh session that is not isolated | 0 | 0 | 0 |
 | other | 0 | 0 | 0 |
 
-In the 3 reps of the first kind, the quoted reason names a single-shot subagent as the rep (one of the 3 offers a
-headless `claude -p` call beside it).
+In the 3 reps of the first kind, the quoted reason names a single-shot subagent as the rep (each of the 3
+sheets also names a headless `claude -p` call beside it).
 
 **Blind grading.** `hint` is yes on 4 of 10 sheets: Sonnet reps 1, 2 and 4 (all FAIL) and Opus rep 5 (PASS). The
 grader did not say which clue it saw, and this record does not guess. No arm word of the `new` text exists yet, so
