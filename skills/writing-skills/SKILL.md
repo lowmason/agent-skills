@@ -200,7 +200,7 @@ When: Reference material too large for inline
 NO SKILL WITHOUT A FAILING TEST FIRST
 ```
 
-This applies to NEW skills AND EDITS to existing skills.
+This applies to NEW skills AND EDITS to existing skills. That includes an edit meant to keep behavior (a verbatim move, a split, a link or typo fix): its test is a guard run. Run the cases the edit can reach on the old text and on the new, and ship only if no case drops.
 
 Write skill before testing? Delete it. Start over.
 Edit skill without testing? Same violation.
