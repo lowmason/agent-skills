@@ -22,8 +22,9 @@ The kit is `specs/baseline/red-baseline-writing-skills-guard-run/kit/`. It copie
 plan 107's trigger runner, `triggers.py`, `trigger_prompts.py`, the R3 Bash path and the R3 tree check (plan
 108's Open for plan review item 4).
 
-**Step 1 check.** `claude --version` printed `2.1.323 (Claude Code)` when Task 1 ran. If a later task sees
-another version, it runs the probes again first.
+**Step 1 check.** `claude --version` printed `2.1.323 (Claude Code)` when Task 1 ran. Task 2 saw the same
+version, and the init record of every probe and pilot rep names it. If a later task sees another version, it runs
+the probes again first.
 
 | File | Source | Change |
 |---|---|---|
@@ -46,8 +47,8 @@ rep's reach.
 
 **The arms.** For each item, `old` is the skill folder at the commit before that item's text, and `new` is the
 same at the item's text commit. Tasks 3 and 4 fill in the shas here: ITEM9-OLD and ITEM9-NEW for item 9 (G1 and
-L2), and STEP1-OLD and STEP1-NEW for the step 1 fix (F3). The `pilot` arm of Task 2 is built from HEAD and is not
-scored.
+L2), and STEP1-OLD and STEP1-NEW for the step 1 fix (F3). The `pilot` arm of Task 2 is built from HEAD (`f340460`) and is
+not scored.
 
 **The commands.** Each one runs from the repository root, with `uv run python <kit>/<script>` for a Python
 script. `<kit>` is the kit folder.
@@ -177,3 +178,63 @@ run: report BLOCKED with this table.
 | Step | Reps | Cost | Running total |
 |---|---|---|---|
 | Task 1 (no model call) | 0 | $0.00 | $0.00 |
+| Task 2 Step 1: probe, `claude-sonnet-5-5` | 1 | $0.0082 | $0.0082 |
+| Task 2 Step 1: probe, `claude-opus-5-5` | 1 | $0.0207 | $0.0289 |
+| Task 2 Step 2: case pilot G1 `pilot`, Sonnet | 1 | $0.0611 | $0.0900 |
+| Task 2 Step 2: case pilot L2 `pilot`, Sonnet | 1 | $0.0540 | $0.1440 |
+| Task 2 Step 2: case pilot F3 `pilot`, Sonnet | 1 | $0.1031 | $0.2471 |
+| Task 2 Step 2: case pilot G1 `pilot`, Opus | 1 | $0.1295 | $0.3766 |
+
+Running total after Task 2: $0.3766 (summed from unrounded costs).
+
+## Task 2: probes, pilots and spend projection
+
+Nothing here is scored. Raw output stays outside the repository, in `~/.cache/agent-skills/scratch/plan108/`.
+Task 2 changed no kit code and no file under `skills/`. Its only commit is this record.
+
+**Probes (Step 1).** `probe_tools.sh` ran once on each model. Lines 1 to 6 and 8 read NO on both. Line 7 (the
+name or email address of the user) read YES on Sonnet and NO on Opus. The Sonnet quote was the account's email
+address, which this record does not repeat. The watch item "Account identity reaches the isolated micro-test
+runs" tracks it, and Step 1 allows it. On line 6, Opus said NO and added that the session guidance names one
+slash command. It counts as NO, as in plan 107. The init record of each probe lists the tools `Edit`, `Glob`,
+`Grep`, `Read` and `Write`, and no skills, no slash commands and no MCP servers.
+
+**Case pilot (Step 2).** `place-copy HEAD` put 13 files of `skills/writing-skills` in the skill copy. The body
+was 19,258 characters. `build_prompts.py HEAD pilot` wrote the three prompts and `MANIFEST.txt`. One rep each of
+G1, L2 and F3 ran on Sonnet, and one G1 rep ran on Opus. Each rep ran once and was not graded.
+
+| Rep | Cost | Turns | Tool calls | `final.diff` |
+|---|---|---|---|---|
+| G1, Sonnet | $0.0611 | 5 | `Read`, `Glob`, `Write`, `Edit` | 52 lines |
+| L2, Sonnet | $0.0540 | 3 | `Read`, `Edit` | 13 lines |
+| F3, Sonnet | $0.1031 | 6 | `Read` x3, `Glob`, `Write` | 114 lines |
+| G1, Opus | $0.1295 | 5 | `Read`, `Glob`, `Write`, `Edit` | 54 lines |
+
+The kit mechanics all held in every rep:
+
+- `audit.py` shows no path audit hit, no VOID reason and no peer message. Each stream has 0 lines that are not
+  JSON, one init record and one result record, and every result is `success`.
+- `summary.json` and `final.diff` were written, and no `summary.json` holds a `kit_error`.
+- Every `Edit` and `Write` call succeeded (`is_error` false). No `Edit` or `Write` call went to the skill copy,
+  and `skill_copy_changed` is empty.
+- The largest cost is $0.1295, far below the $0.90 limit (60% of the $1.50 cap).
+- Descriptive only: the F3 rep read `micro-tests.md` once, and the read succeeded. The pilot arm is the current
+  text, which has the file.
+- `run_tool_reps.sh` left `/private/tmp/wst108` empty, and parked each rep folder under the scratch folder.
+  The skill copy was emptied after the pilots.
+
+**Spend projection (Step 3).** Projected total = spend so far + 45 x the mean Sonnet pilot cost + 45 x the Opus
+pilot cost. The factor 45 is 30 scored reps per model plus 15 for one retry of each item.
+
+| Input | Reps | Mean | Factor | Part |
+|---|---|---|---|---|
+| Spend so far (2 probes, 4 pilots) | 6 runs | | | $0.3766 |
+| Sonnet case pilot (G1, L2, F3) | 3 | $0.0727 | 45 | $3.2723 |
+| Opus case pilot (G1) | 1 | $0.1295 | 45 | $5.8283 |
+| **Projected total** | | | | **$9.48** |
+
+The projection is below the $21 stop, and below the plan's expected $12 to $15. The Opus cost rests on one G1
+rep, and the Sonnet G1 rep cost less than the Sonnet mean ($0.0611 against $0.0727). If each Opus case costs the
+same multiple of its Sonnet cost as G1 does (2.12), the Opus mean is $0.1542 and the projection is $10.59. It is
+still below $21. A scored rep can cost more than a pilot rep, and the per-batch check in Spend stop still applies
+before every batch.
