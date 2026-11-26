@@ -549,8 +549,10 @@ CHECKOUT = '/work/agent-skills'
 
 @pytest.fixture
 def checkout(world, monkeypatch) -> tuple[Path, Path]:
-    # The quarantined files sit in one checkout of this repository, at CHECKOUT.
+    # The quarantined files sit in one checkout of this repository, at CHECKOUT. The auditor's own HOME (/work)
+    # holds that checkout, so a rep's ~ read as the auditor's HOME would void the rep.
     monkeypatch.setattr(audit, 'checkouts', lambda: (CHECKOUT,))
+    monkeypatch.setenv('HOME', '/work')
     return world
 
 
@@ -590,18 +592,34 @@ def test_rule_5_keeps_a_search_rooted_at_a_folder_that_holds_no_quarantined_file
     assert rule_5(rep) == []
 
 
+@pytest.mark.parametrize(('tool', 'args'), [
+    ('Grep', {'pattern': 'P1', 'path': '~'}),
+    ('Grep', {'pattern': 'P1', 'path': '$HOME/agent-skills/specs'}),
+    ('Grep', {'pattern': 'P1', 'path': '${HOME}/agent-skills'}),
+    ('Glob', {'pattern': '~/agent-skills/specs/**'}),
+])
+def test_rule_5_reads_home_as_the_reps_own_home(checkout, tool, args):
+    # ~ and $HOME are the rep's HOME, under its rep folder, which holds no checkout.
+    rep = write_rep(*checkout, calls=[(tool, args)])
+    assert rule_5(rep) == []
+
+
 def test_rule_5_keeps_a_refused_search_of_a_folder_that_holds_a_quarantined_file(checkout):
     rep = write_rep(*checkout, calls=[('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs'})], errors=(1,))
     assert rule_5(rep) == []
 
 
-def test_the_default_checkouts_hold_this_repository_and_each_git_worktree(world):
+def test_the_default_checkouts_hold_this_repository_and_each_git_worktree(world, monkeypatch):
     listed = subprocess.run(['git', '-C', str(KIT), 'worktree', 'list', '--porcelain'], capture_output=True, text=True)
     worktrees = {line[len('worktree '):].lower() for line in listed.stdout.splitlines() if line.startswith('worktree ')}
     assert str(REPO_ROOT).lower() in audit.checkouts() and worktrees <= set(audit.checkouts())
     rep = write_rep(*world, calls=[('Grep', {'pattern': 'P1', 'path': f'{REPO_ROOT}/specs'})])
     assert rule_5(rep) == ['rule 5: call 1 Grep searches a folder that holds a quarantined file']
     rep = write_rep(*world, n=2, calls=[('Grep', {'pattern': 'P1', 'path': f'{REPO_ROOT}/skills'})])
+    assert rule_5(rep) == []
+    # A search with no path runs in the rep's repo/, not in a checkout or in the auditor's working directory.
+    monkeypatch.chdir(REPO_ROOT)
+    rep = write_rep(*world, n=3, calls=[('Grep', {'pattern': 'P1'}), ('Glob', {'pattern': '**/*.md'})])
     assert rule_5(rep) == []
 
 
