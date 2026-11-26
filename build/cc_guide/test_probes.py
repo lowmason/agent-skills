@@ -893,6 +893,21 @@ def test_collect_teardown_never_signals_a_group_init_or_itself(tmp_path, monkeyp
     assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == f'{line}\nTERM\n'
 
 
+def test_collect_teardown_counts_a_pid_it_may_not_signal_as_alive(tmp_path, monkeypatch):
+    '''PermissionError means a process holds the pid, though this user may not signal it: the pid is not gone, so
+    the hook reads alive, and a SIGKILL refused the same way does not stop collect.'''
+    def refuse(pid, signum):
+        raise PermissionError(1, 'Operation not permitted')
+
+    monkeypatch.setattr(probes, 'TEARDOWN_WAIT', 0.2)
+    monkeypatch.setattr(probes.os, 'kill', refuse)
+    (tmp_path / 'teardown.log').write_text('start 99999\nTERM\n', encoding='utf-8')
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    probes.collect_teardown(tmp_path, run_dir)
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == 'start 99999\nTERM\nalive\n'
+
+
 def test_collect_teardown_copies_a_log_with_no_start_line_and_adds_nothing(tmp_path):
     run_dir = tmp_path / 'run'
     run_dir.mkdir()
