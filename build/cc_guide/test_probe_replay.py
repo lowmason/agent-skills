@@ -162,6 +162,7 @@ CUT_WINDOW = probes.register_window()
      'cannot be told from it'),
     ('agent-payload', lambda: {'payloads.json': json.dumps({'logged': {'any': 0, 'agent': 0}, 'payloads': []})},
      ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    ('agent-payload', lambda: {'payloads.json': None}, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
     ('agent-payload', lambda: payloads_with(lambda p: None), ERROR,
      'the PreToolUse hooks logged 4 payloads, and trim_payload kept none of them (a renamed subagent_type, a moved '
      'tool_input, or payloads that carry agent_id)'),

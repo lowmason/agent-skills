@@ -265,6 +265,68 @@ def test_an_empty_trimmed_log_names_the_stage_that_dropped_it():
     assert nothing == (ERROR, 'the PreToolUse hooks logged no subagent dispatch')
 
 
+def dispatched_twice(agent):
+    '''payload_run's events with a second dispatch of `agent`, sent with the model the prompt asks for.'''
+    events = payload_run()
+    given = {'model': pc.CONTROL_MODEL} if agent == pc.CONTROL_AGENT else {}
+    return [*events[:2], assistant(tool_use('toolu_9', 'Agent', subagent_type=agent, prompt='p', **given)),
+            *events[2:]]
+
+
+@pytest.mark.parametrize('events, finding', [
+    (payload_run(requested={pc.CONTROL_AGENT: 'sonnet'}),
+     "the parent session sent general-purpose with model 'sonnet', but its prompt asks for model 'haiku'"),
+    # Any model on a built-in is the parent's choice, Haiku included: the prompt passes it none.
+    (payload_run(requested={'claude-code-guide': 'haiku'}),
+     "the parent session sent claude-code-guide with model 'haiku', but its prompt asks for no model"),
+    (dispatched_twice(pc.CONTROL_AGENT),
+     'the parent session dispatched general-purpose 2 times, but its prompt asks for one dispatch of each type'),
+    (dispatched_twice('claude-code-guide'),
+     'the parent session dispatched claude-code-guide 2 times, but its prompt asks for one dispatch of each type'),
+])
+def test_a_parent_that_strays_from_its_prompt_is_error(events, finding):
+    assert pc.assess_agent_payload(events, saved(payload_log())) == (ERROR, finding)
+
+
+def test_the_parent_is_read_after_a_broken_run_and_before_an_empty_log():
+    stray = payload_run(requested={pc.CONTROL_AGENT: None})
+    assert pc.assess_agent_payload(stray[:-1], saved(payload_log())) == (ERROR, 'no result event')
+    assert pc.assess_agent_payload(stray, {'logged': {'any': 2, 'agent': 2}, 'payloads': []}) == (
+        ERROR, "the parent session sent general-purpose with no model, but its prompt asks for model 'haiku'")
+
+
+def test_an_empty_log_counts_every_hook_and_reads_no_counts_as_none():
+    '''payloads.json without counts is what assess_payload reads for a missing file.'''
+    one_hook = pc.assess_agent_payload(payload_run(), {'logged': {'any': 3, 'agent': 0}, 'payloads': []})
+    assert one_hook.finding.startswith('the PreToolUse hooks logged 3 payloads, and trim_payload kept none')
+    assert pc.assess_agent_payload(payload_run(), {}) == (ERROR, 'the PreToolUse hooks logged no subagent dispatch')
+
+
+def test_requested_models_reads_the_main_session_calls_in_stream_order():
+    '''Both dispatch tool names count, a call made inside a subagent does
+    not, and a call that passes no model reads None.'''
+    events = [init(), assistant(tool_use('toolu_1', 'Agent', subagent_type='general-purpose', model='haiku')),
+              assistant(tool_use('toolu_2', 'Task', subagent_type='general-purpose'),
+                        tool_use('toolu_3', 'Agent', subagent_type='claude-code-guide', model='opus')),
+              assistant(tool_use('toolu_4', 'Agent', subagent_type='claude-code-guide', model='sonnet'),
+                        parent='toolu_1'),
+              assistant(tool_use('toolu_5', 'Read', file_path='a.py')), result()]
+    assert pc.requested_models(events) == {'general-purpose': ['haiku', None], 'claude-code-guide': ['opus']}
+
+
+def test_payload_file_counts_every_logged_line_and_sorts_what_trim_payload_keeps():
+    def line(agent, **given):
+        return json.dumps({'tool_name': 'Agent', 'tool_input': {'subagent_type': agent, **given}})
+    raw = {'agent': [line('general-purpose', model='haiku'), line('claude-code-guide')],
+           'any': [line('general-purpose', model='haiku'),
+                   json.dumps({'tool_name': 'Read', 'tool_input': {'file_path': 'a.py'}}), line('claude-code-guide')]}
+    saved_file = pc.payload_file(raw)
+    assert saved_file['logged'] == {'agent': 2, 'any': 3}
+    assert [(p['matcher'], p['subagent_type']) for p in saved_file['payloads']] == [
+        ('*', 'claude-code-guide'), ('*', 'general-purpose'), ('Agent', 'claude-code-guide'),
+        ('Agent', 'general-purpose')]
+
+
 def test_trim_payload_keeps_a_main_session_dispatch_and_drops_the_rest():
     '''The kept fields hold no path, id or prompt text, so payloads.json is
     committed as save_fixtures copies it, with no scrub of its own.'''

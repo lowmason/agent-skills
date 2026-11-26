@@ -543,11 +543,13 @@ def fire_payload_hooks(*payloads):
     return side
 
 
-def payload_stream() -> str:
-    '''A parent on Sonnet that dispatches the haiku control and
-    claude-code-guide in one message, each forwarding one Haiku message.'''
+def payload_stream(control_model: str | None = 'haiku') -> str:
+    '''A parent on Sonnet that dispatches the control, with control_model,
+    and claude-code-guide in one message, each forwarding one Haiku
+    message.'''
+    control = {'model': control_model} if control_model else {}
     sent = [{'type': 'tool_use', 'id': f't{n}', 'name': 'Agent', 'input': {'subagent_type': agent, **given}}
-            for n, (agent, given) in enumerate((('general-purpose', {'model': 'haiku'}), ('claude-code-guide', {})))]
+            for n, (agent, given) in enumerate((('general-purpose', control), ('claude-code-guide', {})))]
     parent = {'type': 'assistant', 'parent_tool_use_id': None,
               'message': {'model': 'claude-sonnet-5-5', 'content': sent}}
     forwarded = [{'type': 'assistant', 'parent_tool_use_id': f't{n}',
@@ -591,10 +593,18 @@ def bad_payload(cwd):
     (cwd / 'payloads' / 'any' / 'payload.bad').write_text('not json\n', encoding='utf-8')
 
 
+def empty_payload(cwd):
+    fire_payload_hooks(*PAYLOADS)(cwd)
+    (cwd / 'payloads' / 'agent' / 'payload.empty').write_text('', encoding='utf-8')
+
+
 @pytest.mark.parametrize('side, outcome, finding', [
     (fire_payload_hooks(*PAYLOADS), PASS, 'dispatches reach PreToolUse as Agent, with no model when unset; '
                                           'claude-code-guide served claude-haiku-5-5, as the haiku control was'),
     (bad_payload, ERROR, 'JSONDecodeError: '),
+    # An empty payload is not JSON either, and hooks that never fired leave empty logs, not a broken file.
+    (empty_payload, ERROR, 'JSONDecodeError: '),
+    (lambda cwd: None, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
 ])
 def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome, finding):
     '''From prepare to the verdict through run_probe, with the hooks fired on
@@ -602,6 +612,15 @@ def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome
     fake = FakeRuns({'dispatch': payload_stream()}, side={'dispatch': side})
     verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
     assert verdict.outcome == outcome and verdict.finding.startswith(finding)
+
+
+def test_a_live_run_whose_parent_strays_from_its_prompt_is_error(tmp_path):
+    '''Payloads that match the prompt cannot hide a parent that strayed
+    from it: the stream's own Agent calls decide.'''
+    fake = FakeRuns({'dispatch': payload_stream(control_model=None)}, side={'dispatch': fire_payload_hooks(*PAYLOADS)})
+    verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
+    assert verdict == (ERROR, "the parent session sent general-purpose with no model, but its prompt asks for model "
+                              "'haiku'")
 
 
 def test_register_window_reads_the_compaction_window_check(tmp_path, monkeypatch):
