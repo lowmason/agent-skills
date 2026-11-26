@@ -7,10 +7,12 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 
 import blocks
+import check
 import cli
 import packets
 import settle
 import state
+import test_check
 from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir, fixture_repo,  # noqa: F401
                          fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
 
@@ -37,6 +39,48 @@ def world(tmp_path, docs_dir):
 def load(world):
     repo, cache = world
     return packets.load(state.Source(repo), cache, NOW)
+
+
+def swap_after_record_read(cache, tmp_path, monkeypatch):
+    '''Make packets.load's record read be followed by a check that swaps
+    latest/ to a 2.1.903 fetch with an edited page.'''
+    newer = tmp_path / 'newer'
+    write_tree(newer, DOCS)
+    write_tree(newer, {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha gamma'),
+                       'changelog.md': DOCS['changelog.md'].replace(
+                           '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n'
+                           '</Update>\n<Update label="2.1.902"')})
+    real = packets.read_fetch_at
+
+    def read_then_swap(root):
+        record = real(root)
+        check.live_docs(test_check.MANIFEST, cache, test_check.serving(newer), test_check.NOW)
+        return record
+
+    monkeypatch.setattr(packets, 'read_fetch_at', read_then_swap)
+
+
+def test_load_reads_the_record_and_the_pages_from_one_generation(world, tmp_path, monkeypatch):
+    '''Plan 109's D11: a check that swaps latest/ right after load read the
+    record leaves load with the old fetch's head, changelog and pages.'''
+    _, cache = world
+    old = state.latest_dir(cache)
+    swap_after_record_read(cache, tmp_path, monkeypatch)
+    loaded = load(world)
+    assert state.latest_dir(cache) != old
+    assert loaded.head == '2.1.902'
+    assert loaded.releases[0].label == '2.1.902'
+    assert 'alpha gamma' not in json.dumps(loaded.docs.pages)
+
+
+def test_load_names_the_pinned_generation_in_a_changelog_error(world, tmp_path, monkeypatch):
+    _, cache = world
+    old = state.latest_dir(cache)
+    (old / 'docs' / 'changelog.md').write_text('no releases here\n')
+    swap_after_record_read(cache, tmp_path, monkeypatch)
+    with pytest.raises(state.SetupError) as raised:
+        load(world)
+    assert str(old / 'docs' / 'changelog.md') in str(raised.value)
 
 
 def latest(world, files):

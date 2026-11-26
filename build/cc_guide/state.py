@@ -596,15 +596,17 @@ def same_blocks(held: bytes, body: bytes) -> bool:
         return False
 
 
-def copy_to_snapshot(cache: Path, release: str, files: dict[str, str]) -> Path:
-    '''Copy latest/docs files into <release>/docs, returning that directory.
+def copy_to_snapshot(cache: Path, release: str, files: dict[str, str], source: Path | None = None) -> Path:
+    '''Copy latest/docs files, or those of the `source` docs folder when a caller
+    pinned one generation, into <release>/docs, returning that directory.
     `files` maps the name a message gives each file to its cache file name.
     A file already there that cuts into other blocks is never overwritten,
     since another group's `snapshot` may name it; one with the same blocks
     takes the new bytes, which the verifier greps (owner, 2026-10-20). Every
     file is checked before any is written.'''
     target = writable_snapshot(cache, release)
-    copies = [(label, target / name, (latest_docs(cache) / name).read_bytes()) for label, name in files.items()]
+    source = source or latest_docs(cache)
+    copies = [(label, target / name, (source / name).read_bytes()) for label, name in files.items()]
     for label, held, body in copies:
         if held.is_file() and (old := held.read_bytes()) != body and not same_blocks(old, body):
             raise SetupError(f'{label}: {held} already holds different text, which another group may have '

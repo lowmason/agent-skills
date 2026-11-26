@@ -141,8 +141,8 @@ from lint import lint, stale_lines
 from quotes import check_rows
 from settle import settle
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
-                   copy_to_snapshot, default_cache, dump_baseline, is_iso_date, is_label, latest_docs,
-                   newest_changelog, parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs,
+                   copy_to_snapshot, default_cache, dump_baseline, is_iso_date, is_label, latest_dir,
+                   newest_changelog, parse_baseline, parse_manifest, read_fetch_at, read_utf8, snapshot_docs,
                    snapshot_text, writable_snapshot)
 
 REPO = Path(__file__).resolve().parents[2]
@@ -392,7 +392,8 @@ def run_baseline(args, cache: Path, today: date) -> int:
             raise SetupError(f'{release} is not a release in the newest cached changelog')
         new = baseline.audited(state, manifest, args.group, release, day)
     else:
-        record = read_fetch(cache)
+        root = latest_dir(cache)  # one resolution: the record and the pages come from one fetch
+        record = read_fetch_at(root)
         if record is None:
             raise SetupError('no latest fetch: run check first')
         release = record['changelog_head']
@@ -402,8 +403,8 @@ def run_baseline(args, cache: Path, today: date) -> int:
                              ' compares its blocks again')
         writable_snapshot(cache, release)
         new, pages, notes = baseline.rebaseline(state, manifest, guide_text, args.group, args.refs,
-                                                latest_docs(cache), release, partial(snapshot_text, cache))
-        copy_to_snapshot(cache, release, {page: page_file(page) for page in pages})
+                                                root / 'docs', release, partial(snapshot_text, cache))
+        copy_to_snapshot(cache, release, {page: page_file(page) for page in pages}, root / 'docs')
         for line in notes:
             print(f'note: {line}', file=sys.stderr)
     baseline_path.write_text(dump_baseline(new), encoding='utf-8')

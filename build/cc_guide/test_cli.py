@@ -2,17 +2,20 @@
 `baseline` subcommand's write set, and the manual bookkeeping that brings
 check to exit 0 (drift spec R5, R6.1, R7; Validation 1).'''
 import json
+import shutil
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 import baseline
+import check
 import cli
 import cli_versions
 import notice
 import probes
 import state
+import test_check
 from cc_fixtures import (DOCS, DROPPED_MANIFEST, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML,  # noqa: F401
                          MARKDOWN_PAGE, MDX_PAGE, NO_BETA_GUIDE, NO_BETA_MANIFEST, docs_dir, drift_repo,
                          fixture_repo, git, guide_text, isolated_home, prime_cache, with_extra,
@@ -575,6 +578,41 @@ def test_rebaseline_head_refuses_a_latest_fetch_at_another_release(world, capsys
     assert main(cache, 'baseline', 'rebaseline', 'alpha', 'tools › Tools', '--head', '2.1.902') == 0
     assert dirty(repo) == [state.BASELINE]
     assert (state.snapshot_docs(cache, '2.1.902') / 'tools.md').is_file()
+
+
+def test_rebaseline_head_hashes_the_generation_whose_record_it_read(world, tmp_path, monkeypatch):
+    '''Plan 109's D11: a check that swaps latest/ between rebaseline's record
+    read and its page reads must not make it hash the new fetch's pages under
+    the old head. Both reads come from the one generation it resolved.'''
+    repo, cache, docs_folder = world
+    write_tree(state.latest_docs(cache), {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha batches')})
+    baseline_bytes = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'rebaseline', 'alpha', '--head', '2.1.902') == 0
+    expected = (repo / state.BASELINE).read_bytes()
+    assert expected != baseline_bytes
+    (repo / state.BASELINE).write_bytes(baseline_bytes)
+    shutil.rmtree(state.snapshot_docs(cache, '2.1.902').parent)
+
+    newer = tmp_path / 'newer'
+    write_tree(newer, {name: text for name, text in DOCS.items()})
+    write_tree(newer, {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha gamma'),
+                       'changelog.md': DOCS['changelog.md'].replace(
+                           '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n'
+                           '</Update>\n<Update label="2.1.902"')})
+    real = cli.read_fetch_at
+
+    def read_then_swap(root):
+        record = real(root)
+        check.live_docs(test_check.MANIFEST, cache, test_check.serving(newer), test_check.NOW)
+        return record
+
+    monkeypatch.setattr(cli, 'read_fetch_at', read_then_swap)
+    assert main(cache, 'baseline', 'rebaseline', 'alpha', '--head', '2.1.902') == 0
+    assert state.read_fetch(cache)['changelog_head'] == '2.1.903'
+    assert (repo / state.BASELINE).read_bytes() == expected
+    snapshot = state.snapshot_docs(cache, '2.1.902')
+    assert b'alpha batches' in (snapshot / 'tools.md').read_bytes()
+    assert b'alpha gamma' not in (snapshot / 'tools.md').read_bytes()
 
 
 def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):

@@ -24,7 +24,8 @@ from docs import CHANGELOG, Release, page_file, version_key
 from guide import read_citations, sections
 from lint import stale_citations
 from state import (BASELINE, MANIFEST, Manifest, SetupError, Source, baselined_text, citing_files, copy_to_snapshot,
-                   covered_files, group_terms, latest_docs, parse_baseline, parse_manifest, read_fetch, snapshot_text)
+                   covered_files, group_terms, latest_dir, latest_docs, parse_baseline, parse_manifest, read_fetch_at,
+                   snapshot_text)
 
 INDEX = 'index.json'
 REPORT = 'report.md'
@@ -59,13 +60,14 @@ def load(source: Source, cache: Path, now: datetime) -> World:
     manifest = parse_manifest(source.require(MANIFEST))
     state = parse_baseline(source.require(BASELINE))
     guide = source.require(manifest.guide)
-    record = read_fetch(cache)
+    root = latest_dir(cache)  # one resolution: the record and the pages come from one fetch
+    record = read_fetch_at(root)
     if record is None:
         raise SetupError('no latest fetch: run check --worktree first')
-    docs = offline_docs(manifest, latest_docs(cache))
+    docs = offline_docs(manifest, root / 'docs')
     terms = group_terms(manifest, guide)
     findings, _ = compare(manifest, state, terms, docs, partial(snapshot_text, cache))
-    releases = releases_of(docs.changelog, str(latest_docs(cache) / CHANGELOG))
+    releases = releases_of(docs.changelog, str(root / 'docs' / CHANGELOG))
     return World(source, cache, manifest, state, guide, terms, docs, releases, findings, record['changelog_head'], now)
 
 
