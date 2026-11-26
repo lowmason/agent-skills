@@ -298,6 +298,12 @@ def test_runner_removes_the_rep_folder_and_keeps_only_the_summary_and_the_stream
     assert os.listdir(trig.troot) == []
     assert sorted(os.listdir(trig.tscratch / 'P1' / 'old' / SONNET)) == ['rep1.err', 'rep1.jsonl', 'rep1.prompt.txt']
     assert os.listdir(trig.out() / 'rep1') == ['summary.json']
+    # Nothing of the rep folder (its HOME with claude's own state files) is kept anywhere under either root.
+    kept = sorted(str(p.relative_to(trig.tmp)) for root in (trig.tscratch, trig.tmp / 'out') for p in root.rglob('*'))
+    assert kept == ['out/P1', 'out/P1/old', f'out/P1/old/{SONNET}', f'out/P1/old/{SONNET}/rep1',
+                    f'out/P1/old/{SONNET}/rep1/summary.json', 'tscratch/P1', 'tscratch/P1/old',
+                    f'tscratch/P1/old/{SONNET}', f'tscratch/P1/old/{SONNET}/rep1.err',
+                    f'tscratch/P1/old/{SONNET}/rep1.jsonl', f'tscratch/P1/old/{SONNET}/rep1.prompt.txt']
 
 
 def test_runner_strips_the_credential_field_and_every_origin_from_the_saved_files(trig):
