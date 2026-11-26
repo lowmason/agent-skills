@@ -240,6 +240,14 @@ def test_two_payloads_of_one_type_with_different_inputs_are_error():
     assert verdict.outcome == ERROR and 'general-purpose' in verdict.finding
 
 
+def test_two_agent_matcher_payloads_of_one_type_with_different_models_are_error():
+    log = payload_log()
+    extra = {**next(p for p in log if p['matcher'] == pc.GUARD_MATCHER and p['subagent_type'] == 'claude-code-guide'),
+             'model': 'sonnet'}
+    verdict = pc.check_payloads([*log, extra])
+    assert verdict.outcome == ERROR and 'claude-code-guide' in verdict.finding and pc.GUARD_MATCHER in verdict.finding
+
+
 def test_a_control_model_normalised_to_a_full_id_passes():
     payloads = payload_log({pc.CONTROL_AGENT: {'model': 'claude-haiku-5-5'}})
     assert pc.check_payloads(payloads) is None
