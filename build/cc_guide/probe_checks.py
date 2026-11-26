@@ -268,6 +268,20 @@ def check_parent(events: list[dict]) -> Verdict | None:
     return None
 
 
+def check_dispatched(events: list[dict], payloads: list[dict]) -> Verdict | None:
+    '''ERROR when the parent session never dispatched a type in
+    PAYLOAD_AGENTS: no main-session call of the stream names it, and no
+    payload does. A payload counts, so a dispatch tool Claude Code renames,
+    which the stream's calls no longer show, still reaches check_payloads
+    as drift. None when each type was dispatched.'''
+    sent = set(requested_models(events)) | {p.get('subagent_type') for p in payloads}
+    for agent in PAYLOAD_AGENTS:
+        if agent not in sent:
+            return Verdict(ERROR, f'the parent session never dispatched {agent}, but its prompt asks for one '
+                                  'dispatch of each type')
+    return None
+
+
 def first_by_type(payloads: list[dict], matcher: str) -> dict[str, dict]:
     '''The first payload of each subagent type that the hook with this matcher logged.'''
     found: dict[str, dict] = {}
@@ -316,8 +330,9 @@ def assess_agent_payload(events: list[dict] | None, payload_file: dict) -> Verdi
     does, and `payloads` holds the main session's dispatch payloads among
     them, cut by trim_payload. check_parent reads the stream's Agent calls
     first, so a parent that did not send what its prompt asks is ERROR, not
-    drift. An empty `payloads` is ERROR, named by whether the hooks logged
-    anything. check_payloads reads them next, so a renamed tool is named
+    drift, and check_dispatched then names a type the parent never
+    dispatched. An empty `payloads` is ERROR, named by whether the hooks
+    logged anything. check_payloads reads them next, so a renamed tool is named
     before any message is looked for. Then each subagent's model is read
     from its forwarded messages. The control, which passes model haiku,
     must not be served the session model (the init event's), or a pin
@@ -330,10 +345,10 @@ def assess_agent_payload(events: list[dict] | None, payload_file: dict) -> Verdi
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
-    verdict = check_parent(events)
+    payloads = payload_file.get('payloads') or []
+    verdict = check_parent(events) or check_dispatched(events, payloads)
     if verdict:
         return verdict
-    payloads = payload_file.get('payloads') or []
     if not payloads:
         logged = sum((payload_file.get('logged') or {}).values())
         if logged:

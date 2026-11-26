@@ -101,6 +101,16 @@ def requesting(agent: str, model: str | None):
     return edit
 
 
+def without_dispatch(*agents: str):
+    '''An edit that drops the parent's calls of each of `agents`.'''
+    def edit(event):
+        if event.get('type') == 'assistant' and not event.get('parent_tool_use_id'):
+            event['message']['content'] = [b for b in event['message']['content'] if not (
+                b.get('type') == 'tool_use' and b['input'].get('subagent_type') in agents)]
+        return event
+    return edit
+
+
 def served_by(agent: str, model: str) -> dict[str, str]:
     '''The recorded dispatch stream with each message that `agent` forwarded served by `model`.'''
     probe = probes.PROBE_RUNS['agent-payload']
@@ -171,6 +181,14 @@ CUT_WINDOW = probes.register_window()
      "the parent session sent general-purpose with no model, but its prompt asks for model 'haiku'"),
     ('agent-payload', lambda: edited('agent-payload', 'dispatch.jsonl', requesting('claude-code-guide', 'sonnet')),
      ERROR, "the parent session sent claude-code-guide with model 'sonnet', but its prompt asks for no model"),
+    # A parent that never dispatches a type is named, not the hooks or trim_payload.
+    ('agent-payload', lambda: {**edited('agent-payload', 'dispatch.jsonl', without_dispatch('claude-code-guide')),
+                               **payloads_with(lambda p: None if p['subagent_type'] == 'claude-code-guide' else p)},
+     ERROR, 'the parent session never dispatched claude-code-guide, but its prompt asks for one dispatch of each type'),
+    ('agent-payload', lambda: {
+        **edited('agent-payload', 'dispatch.jsonl', without_dispatch(*probe_checks.PAYLOAD_AGENTS)),
+        'payloads.json': json.dumps({'logged': {'any': 1, 'agent': 0}, 'payloads': []})},
+     ERROR, 'the parent session never dispatched general-purpose, but its prompt asks for one dispatch of each type'),
     # compaction-cut's cases pin their findings too. The recorded run, a header of 159 characters, kept more than the window.
     ('compaction-cut', lambda: cut_measures(keeping(CUT_WINDOW - 1)), DIVERGES,
      f'compaction keeps {CUT_WINDOW - 1} body characters of the prose probe skill (by characters; 159 characters '

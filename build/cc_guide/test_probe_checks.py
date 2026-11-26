@@ -327,6 +327,55 @@ def test_payload_file_counts_every_logged_line_and_sorts_what_trim_payload_keeps
         ('Agent', 'general-purpose')]
 
 
+def without_type(events, agent):
+    '''events with the parent's call of `agent` sent with no subagent_type.'''
+    for e in events:
+        for block in e.get('message', {}).get('content', []) if not e.get('parent_tool_use_id') else []:
+            if block.get('type') == 'tool_use' and block['input'].get('subagent_type') == agent:
+                del block['input']['subagent_type']
+    return events
+
+
+NEVER = 'the parent session never dispatched {}, but its prompt asks for one dispatch of each type'
+CONTROL_ONLY = [init(), assistant(tool_use('toolu_0', 'Agent', subagent_type=pc.CONTROL_AGENT, model=pc.CONTROL_MODEL,
+                                           prompt='p')),
+                assistant({'type': 'text', 'text': 'OK'}, parent='toolu_0', model='claude-haiku-5-5'), result()]
+NO_DISPATCH = [init(), assistant(tool_use('toolu_r', 'Read', file_path='a.py')), result()]
+
+
+@pytest.mark.parametrize('events, payload_file, agent', [
+    # The parent skips claude-code-guide: the hooks miss nothing, so the hook check must not take the blame.
+    (CONTROL_ONLY, saved([p for p in payload_log() if p['subagent_type'] == pc.CONTROL_AGENT]), 'claude-code-guide'),
+    # The control sent with no subagent_type: trim_payload drops its payloads, and the stream names no type.
+    (without_type(payload_run(), pc.CONTROL_AGENT),
+     saved([p for p in payload_log() if p['subagent_type'] != pc.CONTROL_AGENT], logged={'any': 2, 'agent': 2}),
+     pc.CONTROL_AGENT),
+    # The parent dispatches nothing and calls another tool, which the * hook logs: trim_payload is not to blame.
+    (NO_DISPATCH, {'logged': {'any': 1, 'agent': 0}, 'payloads': []}, pc.CONTROL_AGENT),
+])
+def test_a_parent_that_never_dispatches_a_type_is_error_naming_the_parent(events, payload_file, agent):
+    assert pc.assess_agent_payload(events, payload_file) == (ERROR, NEVER.format(agent))
+
+
+def test_a_renamed_dispatch_tool_still_diverges_though_the_stream_shows_no_agent_call():
+    '''A payload of the type counts as a dispatch, so a tool Claude Code
+    renames is named as drift, not as a parent that never dispatched.'''
+    events = payload_run()
+    for block in events[1]['message']['content']:
+        block['name'] = 'Delegate'
+    payloads = [{**p, 'tool_name': 'Delegate'} for p in payload_log()]
+    assert pc.requested_models(events) == {}
+    assert pc.assess_agent_payload(events, saved(payloads)) == (
+        DIVERGES, 'a subagent dispatch reaches PreToolUse as Delegate, not Agent')
+
+
+def test_a_stray_model_is_named_before_a_missing_dispatch():
+    events = [init(), assistant(tool_use('toolu_0', 'Agent', subagent_type=pc.CONTROL_AGENT, model='sonnet')),
+              result()]
+    assert pc.assess_agent_payload(events, saved([])) == (
+        ERROR, "the parent session sent general-purpose with model 'sonnet', but its prompt asks for model 'haiku'")
+
+
 def test_trim_payload_keeps_a_main_session_dispatch_and_drops_the_rest():
     '''The kept fields hold no path, id or prompt text, so payloads.json is
     committed as save_fixtures copies it, with no scrub of its own.'''
