@@ -842,6 +842,14 @@ def test_async_teardown_reads_every_session_start_hook_response_and_no_other():
         DIVERGES, f"{TEARDOWN_PASS}; the stream's SessionStart hook_response reads success, not cancelled")
 
 
+def test_async_teardown_reads_no_outcome_from_a_hook_started_event():
+    '''The live stream also holds the hook's hook_started event, which has no outcome: only hook_response counts.'''
+    started = {'type': 'system', 'subtype': 'hook_started', 'hook_event': 'SessionStart',
+               'hook_name': 'SessionStart:startup'}
+    events = [started, *teardown_run('cancelled')]
+    assert pc.assess_async_teardown(events, ['start 41', 'TERM', 'gone']) == (PASS, TEARDOWN_PASS)
+
+
 @pytest.mark.parametrize('events, why', [(None, 'no stream-json events'), (teardown_run()[:-1], 'no result event')])
 def test_async_teardown_is_error_when_the_run_broke(events, why):
     assert pc.assess_async_teardown(events, ['start 41', 'TERM', 'gone']) == (ERROR, why)
