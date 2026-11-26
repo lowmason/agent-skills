@@ -34,8 +34,9 @@
 - **D1** (owner, brief, 2026-11-26): this plan covers exactly the three lane 1 items of the 2026-11-26 `/deferred` pass. Lanes 2 and 3 own their own files, and no task here touches them. Applied in: Global Constraints.
 - **D2** (owner, brief, 2026-11-26): the IND item goes straight to a plan, with no brainstorming. The 2026-11-17 ruling settles the path (bundle) and the outputs. The expansion rules and row bands are flagged defaults below. Applied in: Task 2.
 - **Settled by the source, not a default:** the Census page (`census.gov/topics/employment/industry-occupation/guidance/code-lists.html`, read 2026-11-26) heads each list "Derived from the 2017 NAICS" and "Derived from the 2022 NAICS". So `census_ind_2017` expands against `naics_2017`, and `census_ind_2022` against `naics_2022`.
+- **D3** (owner, plan review, 2026-11-26): defaults F1 to F7 below approved as drafted: shared partial claims for IND (F5), the description change with its trigger test (F2, F4), a LAUS selector row (F3), tests first (F1), the 230-320 band (F6) and no IND crosswalk (F7). Applied in: Tasks 1 to 5.
 
-### Flagged defaults (for plan review)
+### Defaults approved at plan review (D3)
 
 - **F1. Order.** Task 1 (build tests) lands before Task 2 (IND bundle), so the IND rebuild runs under the count test.
 - **F2. Description.** classification-codes' description gains "IND" with the text in Task 3, which also trims it to 1,005 characters (cap 1,024). The trigger test in Task 3 gates it.
