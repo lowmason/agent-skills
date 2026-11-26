@@ -563,6 +563,96 @@ def assess_compaction_cut(compact: list[dict] | None, cut: dict[str, dict] | Non
     return Verdict(PASS, f'compaction kept {seen}, at least the register window {window}')
 
 
+# explore-override: a project agent named Explore, which overrides the built-in, and a custom control agent, each
+# told to answer from its context alone with its mark, the CLAUDE.md canary word and the files its git status lists.
+# A mark shows which definition served, and a canary, drawn per run, can reach an answer only through the agent's
+# context (owner ruling B2, 2026-10-20; Stage 5 probe candidate (a)).
+EXPLORE_AGENT, EXPLORE_MARK = 'Explore', 'EXPLORE-OVERRIDE'
+CANARY_AGENT, CANARY_MARK = 'canary-control', 'CANARY-CONTROL'
+EXPLORE_MARKS = {EXPLORE_AGENT: EXPLORE_MARK, CANARY_AGENT: CANARY_MARK}
+EXPLORE_REPS = 3
+CANARY_NAMES = {'claude_md': 'CLAUDE.md', 'git_status': 'git-status'}  # canaries.json key -> its name in a finding
+
+
+def explore_sightings(events: list[dict] | None, canaries: dict[str, str]) -> dict:
+    '''One explore-override rep, read from its raw stream: why the run
+    broke, or None; whether a canary leaked into an input of the parent's
+    Agent calls; and, for each agent, how many tool_use blocks its forwarded
+    messages hold and whether their text holds its mark and each canary.
+    The parent loads CLAUDE.md and the git status too, so only the messages
+    forwarded under a dispatch of that agent's type count. An agent the
+    parent never dispatched has no text, so it sees nothing.'''
+    stream = events or []
+    leaked = any(value in json.dumps(block.get('input') or {}) for block in dispatch_blocks(stream)
+                 for value in canaries.values())
+    sent = dispatches(stream)
+    tool_calls, seen = {}, {}
+    for agent, mark in EXPLORE_MARKS.items():
+        ids = {tid for tid, kind in sent.items() if kind == agent}
+        blocks = [block for e in stream if e.get('type') == 'assistant' and e.get('parent_tool_use_id') in ids
+                  for block in (e.get('message') or {}).get('content') or [] if isinstance(block, dict)]
+        said = '\n'.join(str(block.get('text') or '') for block in blocks if block.get('type') == 'text')
+        tool_calls[agent] = sum(block.get('type') == 'tool_use' for block in blocks)
+        seen[agent] = {'mark': mark in said, **{key: canaries[key] in said for key in CANARY_NAMES}}
+    return {'broken': broken(events), 'leaked': leaked, 'tool_calls': tool_calls, 'seen': seen}
+
+
+def explore_void(sighting: dict) -> str | None:
+    '''Why a rep proves nothing, or None: the run broke, a canary leaked
+    into the parent's Agent call, an agent called a tool (it may have read
+    the canary instead of being given it), an agent gave no mark (another
+    definition served, or it ignored its instructions), or the control
+    missed a canary, so a canary the override missed proves nothing.'''
+    if sighting.get('broken'):
+        return f"the run broke: {sighting['broken']}"
+    if sighting.get('leaked'):
+        return 'the parent passed a canary in an Agent call'
+    calls, seen = sighting.get('tool_calls') or {}, sighting.get('seen') or {}
+    for agent in EXPLORE_MARKS:
+        if calls.get(agent):
+            return f'{agent} made {calls[agent]} tool call(s), so its answer may not come from its context alone'
+    for agent, mark in EXPLORE_MARKS.items():
+        if not (seen.get(agent) or {}).get('mark'):
+            return f'{agent} did not give its mark {mark}'
+    missed = [name for key, name in CANARY_NAMES.items() if not seen[CANARY_AGENT].get(key)]
+    if missed:
+        return f"the control missed the {' and '.join(missed)} {'canary' if len(missed) == 1 else 'canaries'}"
+    return None
+
+
+def explore_differences(seen: dict) -> list[str]:
+    '''How the override's sightings differ from what 2.1.304 showed:
+    CLAUDE.md read, as custom agents read it, and no git-status snapshot,
+    as the built-in gets none.'''
+    return [*([] if seen.get('claude_md') else ['did not read CLAUDE.md']),
+            *(['got a git-status snapshot'] if seen.get('git_status') else [])]
+
+
+def assess_explore_override(sightings: list[dict]) -> Verdict:
+    '''explore-override: in every rep the override reads CLAUDE.md and gets
+    no git-status snapshot, while the control gets both. DIVERGES when a
+    valid rep differs, naming each such rep; else ERROR when a rep is void
+    (explore_void), naming each; else PASS. A count of sightings other than
+    EXPLORE_REPS, none included, is ERROR, never a pass.'''
+    if len(sightings) != EXPLORE_REPS:
+        return Verdict(ERROR, f'expected {EXPLORE_REPS} reps, found {len(sightings)}')
+    void, differ = [], []
+    for n, sighting in enumerate(sightings, start=1):
+        why = explore_void(sighting)
+        if why:
+            void.append(f'rep {n}: {why}')
+            continue
+        wrong = explore_differences(sighting['seen'][EXPLORE_AGENT])
+        if wrong:
+            differ.append(f"rep {n}: the Explore override {' and '.join(wrong)}")
+    if differ:
+        return Verdict(DIVERGES, '; '.join(differ))
+    if void:
+        return Verdict(ERROR, '; '.join(void))
+    return Verdict(PASS, f'Explore override read CLAUDE.md and got no git-status snapshot in {EXPLORE_REPS} of '
+                         f'{EXPLORE_REPS} reps; the control got both')
+
+
 def _trim_block(block: dict) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':

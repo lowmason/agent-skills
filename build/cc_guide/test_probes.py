@@ -5,6 +5,7 @@ fake, so no test spends a token or reads the real ~/.claude.'''
 import contextlib
 import json
 import os
+import re
 import shlex
 import shutil
 import signal
@@ -21,6 +22,7 @@ import pytest
 import probe_checks
 import probes
 import state
+import test_probe_checks as tpc
 from cc_fixtures import MANIFEST_TOML, isolated_home, write_tree  # noqa: F401
 from state import DIVERGES, ERROR, PASS
 
@@ -624,6 +626,92 @@ def test_a_live_run_whose_parent_strays_from_its_prompt_is_error(tmp_path):
     verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
     assert verdict == (ERROR, "the parent session sent general-purpose with no model, but its prompt asks for model "
                               "'haiku'")
+
+
+EXPLORE_PASS = 'Explore override read CLAUDE.md and got no git-status snapshot in 3 of 3 reps; the control got both'
+EXPLORE_REPS = [f'explore-{n}' for n in range(1, 4)]
+
+
+def frontmatter(path: Path) -> dict[str, str]:
+    head = path.read_text(encoding='utf-8').split('---\n')[1]
+    return dict(line.split(': ', 1) for line in head.splitlines())
+
+
+def test_the_explore_probe_prepares_two_project_agents_its_canaries_and_three_reps(tmp_path):
+    '''Each run draws its own canaries: the CLAUDE.md word and an untracked file in a fresh git repo. Both agents
+    are project agents that may not read, search or run anything, and the parent's prompt names neither canary
+    nor mark, so an answer can hold them only from the agent's context.'''
+    first, second = tmp_path / 'a', tmp_path / 'b'
+    first.mkdir()
+    second.mkdir()
+    invs = probes.prepare_explore(first, 'claude', REPO)
+    probes.prepare_explore(second, 'claude', REPO)
+    canaries = [json.loads((d / 'canaries.json').read_text(encoding='utf-8')) for d in (first, second)]
+    for key in ('claude_md', 'git_status'):
+        assert canaries[0][key] != canaries[1][key]
+    for drawn in canaries:
+        assert re.fullmatch(r'cm-[0-9a-f]{8}', drawn['claude_md'])
+        assert re.fullmatch(r'gs-[0-9a-f]{8}', drawn['git_status'])
+    word, untracked = canaries[0]['claude_md'], f"{canaries[0]['git_status']}.txt"
+    assert (first / 'CLAUDE.md').read_text(encoding='utf-8') == f'The canary word for this project is {word}.\n'
+    status = subprocess.run(['git', 'status', '--porcelain'], cwd=first, capture_output=True, text=True, check=True)
+    assert f'?? {untracked}' in status.stdout.splitlines()
+    for stem, name, mark in (('explore', 'Explore', 'EXPLORE-OVERRIDE'),
+                             ('canary-control', 'canary-control', 'CANARY-CONTROL')):
+        path = first / '.claude' / 'agents' / f'{stem}.md'
+        assert frontmatter(path) == {'name': name, 'description': 'A drift probe agent.',
+                                     'disallowedTools': 'Read, Grep, Glob, Bash, Edit, Write'}
+        body = path.read_text(encoding='utf-8').split('---\n', 2)[2]
+        assert f'1. {mark}\n' in body and 'CLAUDE.md' in body and 'git status' in body and 'NONE' in body
+    assert sorted(p.name for p in (first / '.claude' / 'agents').iterdir()) == ['canary-control.md', 'explore.md']
+    assert [inv.name for inv in invs] == EXPLORE_REPS
+    inv = invs[0]
+    assert all(other.argv == inv.argv and other.env == inv.env for other in invs)
+    assert (inv.timeout, inv.env) == (probes.PROBE_TIMEOUT, {'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS': '300000'})
+    flags = {flag: inv.argv[inv.argv.index(flag) + 1] for flag in ('--setting-sources', '--settings', '--max-turns',
+                                                                   '--max-budget-usd')}
+    assert (flags['--setting-sources'], flags['--max-turns'], flags['--max-budget-usd']) == ('project', '6', '0.50')
+    assert json.loads(flags['--settings']) == {'permissions': {'defaultMode': 'default', 'allow': ['Agent']}}
+    assert '--forward-subagent-text' in inv.argv and inv.argv[-1] == '--no-session-persistence'
+    prompt = inv.argv[1]
+    for agent in ('Explore', 'canary-control'):
+        assert f'subagent_type "{agent}" with prompt "Follow your instructions."' in prompt
+    for secret in (*canaries[0].values(), 'EXPLORE-OVERRIDE', 'CANARY-CONTROL', 'cm-', 'gs-'):
+        assert secret not in prompt
+
+
+def test_the_explore_probe_reads_its_run_like_a_live_one(tmp_path, monkeypatch):
+    '''From prepare to the verdict through run_probe: three reps from one scratch git repo, each stream built by
+    test_probe_checks' explore_run, with the canaries prepare draws fixed to that file's CANARIES.'''
+    drawn = []
+    monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: drawn.append(n) or '0a1b2c3d')
+    fake = FakeRuns({rep: stream(*tpc.explore_run()) for rep in EXPLORE_REPS})
+    run_dir = tmp_path / 'run'
+    assert probes.run_probe('explore-override', 'claude', REPO, run_dir, fake) == (PASS, EXPLORE_PASS)
+    assert drawn == [4, 4]
+    assert [inv.name for inv, _, _ in fake.ran] == EXPLORE_REPS
+    assert len({cwd for _, cwd, _ in fake.ran}) == 1
+    files = [f for f in fake.ran[0][2] if not f.startswith('.git/')]
+    assert files == ['.claude', '.claude/agents', '.claude/agents/canary-control.md', '.claude/agents/explore.md',
+                     '.git', 'CLAUDE.md', 'canaries.json', 'gs-0a1b2c3d.txt']
+    assert json.loads((run_dir / 'canaries.json').read_text(encoding='utf-8')) == tpc.CANARIES
+    assert json.loads((run_dir / 'sightings.json').read_text(encoding='utf-8')) == [tpc.sighting()] * 3
+    assert sorted(p.name for p in run_dir.iterdir()) == sorted(
+        ['canaries.json', 'sightings.json', *(f'{rep}{suffix}' for rep in EXPLORE_REPS
+                                              for suffix in ('.argv.json', '.err', '.jsonl'))])
+
+
+def test_the_explore_probe_reads_each_rep_from_its_own_stream(tmp_path, monkeypatch):
+    '''A rep whose stream diverges is named by its number, and a missing stream is a broken rep, not a pass.'''
+    monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: '0a1b2c3d')
+    snapshot = tpc.explore_run(explore=[tpc.text(tpc.answer('Explore'))])
+    fake = FakeRuns({'explore-1': stream(*tpc.explore_run()), 'explore-2': stream(*snapshot),
+                     'explore-3': stream(*tpc.explore_run())})
+    assert probes.run_probe('explore-override', 'claude', REPO, tmp_path / 'run', fake) == (
+        DIVERGES, 'rep 2: the Explore override got a git-status snapshot')
+    fake = FakeRuns({'explore-1': stream(*tpc.explore_run()), 'explore-2': stream(*tpc.explore_run())})
+    assert probes.run_probe('explore-override', 'claude', REPO, tmp_path / 'short', fake) == (
+        ERROR, 'rep 3: the run broke: no stream-json events')
 
 
 def test_register_window_reads_the_compaction_window_check(tmp_path, monkeypatch):

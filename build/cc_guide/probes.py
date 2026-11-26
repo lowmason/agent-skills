@@ -13,6 +13,7 @@ import itertools
 import json
 import os
 import re
+import secrets
 import shlex
 import shutil
 import signal
@@ -531,6 +532,69 @@ CUT_PROBE = Probe(prepare_cut, collect_cut, assess_cut,
                   {'cut.jsonl': 'compaction-cut.stream.jsonl', 'cut.json': 'compaction-cut.cut.json'})
 
 
+# explore-override: a project agent named Explore, overriding the built-in, and a custom control. Each may not read,
+# search or run anything, and answers from its context alone; probe_checks.explore_sightings reads the answers.
+EXPLORE_FILES = {'explore': probe_checks.EXPLORE_AGENT, 'canary-control': probe_checks.CANARY_AGENT}  # stem -> name
+EXPLORE_AGENT_FILE = ('---\nname: {name}\ndescription: A drift probe agent.\n'
+                      'disallowedTools: Read, Grep, Glob, Bash, Edit, Write\n---\n\n'
+                      'Use no tools. Answer from your context alone, in exactly three lines:\n'
+                      '1. {mark}\n'
+                      "2. The canary word that this project's CLAUDE.md gives, or NONE if your context holds no "
+                      'CLAUDE.md.\n'
+                      '3. The untracked file names that your git status lists, or NONE if your context holds no git '
+                      'status.\n')
+EXPLORE_PROMPT = ('In one message, call the Agent tool twice: (1) subagent_type "Explore" with prompt "Follow your '
+                  'instructions."; (2) subagent_type "canary-control" with prompt "Follow your instructions.". Wait '
+                  'for both results, then reply with the word DONE.')
+CANARY_BYTES = 4  # secrets.token_hex bytes in each canary: eight hex digits
+
+
+def prepare_explore(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
+    '''explore-override draws two canaries, kept in canaries.json: the
+    word CLAUDE.md gives, and the name of an untracked file, which only a
+    git-status snapshot lists, in a fresh git repo. The two agents are
+    project agents, and only project settings load, so this repo's
+    installed agents/explore.md, a user agent, stays out, as in
+    agent-payload; each agent's mark shows which definition served. The
+    parent names neither canary. Each of the EXPLORE_REPS reps is its own
+    invocation from the same scratch directory, and its dispatches may run
+    in the background, as agent-payload's may.'''
+    subprocess.run(['git', 'init', '-q'], cwd=scratch, check=True, capture_output=True)
+    canaries = {'claude_md': f'cm-{secrets.token_hex(CANARY_BYTES)}',
+                'git_status': f'gs-{secrets.token_hex(CANARY_BYTES)}'}
+    (scratch / 'canaries.json').write_text(json.dumps(canaries, indent=1) + '\n', encoding='utf-8')
+    (scratch / 'CLAUDE.md').write_text(f"The canary word for this project is {canaries['claude_md']}.\n",
+                                       encoding='utf-8')
+    (scratch / f"{canaries['git_status']}.txt").write_text('An untracked file.\n', encoding='utf-8')
+    agents = scratch / '.claude' / 'agents'
+    agents.mkdir(parents=True)
+    for stem, name in EXPLORE_FILES.items():
+        (agents / f'{stem}.md').write_text(EXPLORE_AGENT_FILE.format(name=name, mark=probe_checks.EXPLORE_MARKS[name]),
+                                           encoding='utf-8')
+    argv = claude_args(claude, EXPLORE_PROMPT, turns=PAYLOAD_TURNS, sources='project', mode='default',
+                       allow=('Agent',), extra=('--forward-subagent-text',))
+    env = {'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS': str(PAYLOAD_CEILING_MS)}
+    return [Invocation(f'explore-{n}', argv, env, PROBE_TIMEOUT) for n in range(1, probe_checks.EXPLORE_REPS + 1)]
+
+
+def collect_explore(scratch: Path, run_dir: Path) -> None:
+    '''canaries.json, copied beside the streams, and sightings.json, the
+    one file the assessment and its fixture read: one entry a rep, read
+    from its stream with those canaries. A missing stream is a broken rep.'''
+    shutil.copy(scratch / 'canaries.json', run_dir / 'canaries.json')
+    canaries = json.loads((run_dir / 'canaries.json').read_text(encoding='utf-8'))
+    sightings = []
+    for n in range(1, probe_checks.EXPLORE_REPS + 1):
+        path = run_dir / f'explore-{n}.jsonl'
+        events = stream_of(path.read_text(encoding='utf-8')) if path.is_file() else None
+        sightings.append(probe_checks.explore_sightings(events, canaries))
+    (run_dir / 'sightings.json').write_text(json.dumps(sightings, indent=1) + '\n', encoding='utf-8')
+
+
+def assess_explore(read: Read) -> Verdict:
+    return probe_checks.assess_explore_override(json.loads(read('sightings.json') or '[]'))
+
+
 PROBE_RUNS = {
     'guard-liveness': Probe(prepare_guard, collect_guard, assess_guard,
                             {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)}),
@@ -544,6 +608,8 @@ PROBE_RUNS = {
                                'transcripts.json': 'agent-model-pins.transcripts.json'}),
     'agent-payload': PAYLOAD_PROBE,
     'compaction-cut': CUT_PROBE,
+    'explore-override': Probe(prepare_explore, collect_explore, assess_explore,
+                              {'sightings.json': 'explore-override.sightings.json'}),
 }
 
 

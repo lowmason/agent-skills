@@ -602,6 +602,154 @@ def test_assess_compaction_cut(compact, cut, verdict):
     assert pc.assess_compaction_cut(compact, cut, 20000) == verdict
 
 
+# explore-override: the project agent named Explore, the control, their marks, and the canaries a run draws, fixed
+# here. The two canaries share their hex part, as a fixed token_hex gives them, and differ by their prefixes.
+EXPLORE, CONTROL = 'Explore', 'canary-control'
+MARKS = {EXPLORE: 'EXPLORE-OVERRIDE', CONTROL: 'CANARY-CONTROL'}
+CANARIES = {'claude_md': 'cm-0a1b2c3d', 'git_status': 'gs-0a1b2c3d'}
+EXPLORE_IDS = {EXPLORE: 'toolu_e', CONTROL: 'toolu_c'}
+
+
+def text(words):
+    return {'type': 'text', 'text': words}
+
+
+def answer(agent, claude_md=True, git_status=True, mark=True):
+    '''An agent's three-line answer: its mark, or its name without the mark; the CLAUDE.md canary or NONE; and the
+    untracked files its git status lists, or NONE.'''
+    return '\n'.join([MARKS[agent] if mark else agent, CANARIES['claude_md'] if claude_md else 'NONE',
+                      f"CLAUDE.md, canaries.json, {CANARIES['git_status']}.txt" if git_status else 'NONE'])
+
+
+def explore_run(explore=None, control=None, prompt='Follow your instructions.', **given):
+    '''A parent that dispatches the Explore override and the control in one message, each forwarding one message:
+    explore's and control's blocks, by default the answers PASS expects. given adds fields to each Agent call.'''
+    explore = explore or [text(answer(EXPLORE, git_status=False))]
+    control = control or [text(answer(CONTROL))]
+    sent = [tool_use(tid, 'Agent', subagent_type=agent, prompt=prompt, **given) for agent, tid in EXPLORE_IDS.items()]
+    forwarded = [assistant(*explore, parent=EXPLORE_IDS[EXPLORE]), assistant(*control, parent=EXPLORE_IDS[CONTROL])]
+    return [init(), assistant(*sent), *forwarded, assistant(text('DONE')), result()]
+
+
+def sighting(explore=None, control=None, **fields):
+    '''One rep's sightings as explore_sightings gives them, by default the rep PASS expects. explore and control
+    replace fields of each agent's sightings, and fields replace the rep's own.'''
+    seen = {EXPLORE: {'mark': True, 'claude_md': True, 'git_status': False, **(explore or {})},
+            CONTROL: {'mark': True, 'claude_md': True, 'git_status': True, **(control or {})}}
+    return {'broken': None, 'leaked': False, 'tool_calls': {EXPLORE: 0, CONTROL: 0}, 'seen': seen, **fields}
+
+
+def test_explore_override_passes_when_explore_reads_claude_md_and_skips_git_status():
+    assert pc.assess_explore_override([sighting() for _ in range(3)]) == (
+        PASS, 'Explore override read CLAUDE.md and got no git-status snapshot in 3 of 3 reps; the control got both')
+
+
+@pytest.mark.parametrize('explore, finding', [
+    ({'git_status': True}, 'rep 2: the Explore override got a git-status snapshot'),
+    ({'claude_md': False}, 'rep 2: the Explore override did not read CLAUDE.md'),
+    ({'claude_md': False, 'git_status': True},
+     'rep 2: the Explore override did not read CLAUDE.md and got a git-status snapshot'),
+])
+def test_explore_override_diverges_when_one_valid_rep_differs(explore, finding):
+    assert pc.assess_explore_override([sighting(), sighting(explore), sighting()]) == (DIVERGES, finding)
+
+
+def test_a_diverging_rep_outranks_a_void_one_and_each_diverging_rep_is_named():
+    void = sighting(tool_calls={EXPLORE: 1, CONTROL: 0})
+    assert pc.assess_explore_override([void, sighting(), sighting({'git_status': True})]) == (
+        DIVERGES, 'rep 3: the Explore override got a git-status snapshot')
+    assert pc.assess_explore_override([sighting({'claude_md': False}), sighting(), sighting({'git_status': True})]) == (
+        DIVERGES, 'rep 1: the Explore override did not read CLAUDE.md; rep 3: the Explore override got a git-status '
+                  'snapshot')
+
+
+@pytest.mark.parametrize('agent', [EXPLORE, CONTROL])
+@pytest.mark.parametrize('explore', [{}, {'git_status': True}])
+def test_explore_override_voids_a_rep_whose_subagent_called_a_tool(agent, explore):
+    '''A subagent that read a file may have found a canary there, not in its context, so the rep proves nothing:
+    ERROR, whether its sightings would pass or diverge.'''
+    rep = sighting(explore, tool_calls={EXPLORE: 0, CONTROL: 0, agent: 1})
+    assert pc.assess_explore_override([rep, sighting(), sighting()]) == (
+        ERROR, f'rep 1: {agent} made 1 tool call(s), so its answer may not come from its context alone')
+
+
+@pytest.mark.parametrize('rep, why', [
+    (sighting(control={'claude_md': False}), 'the control missed the CLAUDE.md canary'),
+    (sighting(control={'git_status': False}), 'the control missed the git-status canary'),
+    (sighting(control={'claude_md': False, 'git_status': False}), 'the control missed the CLAUDE.md and git-status '
+                                                                    'canaries'),
+    (sighting({'mark': False}), 'Explore did not give its mark EXPLORE-OVERRIDE'),
+    # The built-in Explore answering in the override's place gives no mark, and its NONEs prove nothing.
+    (sighting({'mark': False, 'claude_md': False}), 'Explore did not give its mark EXPLORE-OVERRIDE'),
+    (sighting(control={'mark': False}), 'canary-control did not give its mark CANARY-CONTROL'),
+    (sighting(leaked=True), 'the parent passed a canary in an Agent call'),
+    (sighting({'git_status': True}, leaked=True), 'the parent passed a canary in an Agent call'),
+    (sighting(broken='no result event'), 'the run broke: no result event'),
+])
+def test_explore_override_is_error_when_the_control_misses_a_canary_or_a_mark_is_absent(rep, why):
+    assert pc.assess_explore_override([sighting(), rep, sighting()]) == (ERROR, f'rep 2: {why}')
+
+
+def test_explore_override_names_every_void_rep():
+    reps = [sighting(leaked=True), sighting(), sighting(broken='no init event')]
+    assert pc.assess_explore_override(reps) == (
+        ERROR, 'rep 1: the parent passed a canary in an Agent call; rep 3: the run broke: no init event')
+
+
+@pytest.mark.parametrize('reps', [0, 2, 4])
+def test_explore_override_needs_one_sighting_for_each_rep(reps):
+    '''No sightings at all, as a missing sightings.json reads, must not pass for want of a diverging rep.'''
+    assert pc.assess_explore_override([sighting() for _ in range(reps)]) == (ERROR, f'expected 3 reps, found {reps}')
+
+
+def parent_echo():
+    '''The parent loads CLAUDE.md and the git status too, so its own text can hold both canaries and both marks.'''
+    events = explore_run(explore=[text(answer(EXPLORE, claude_md=False, git_status=False))])
+    return [*events[:-1], assistant(text(' '.join([*CANARIES.values(), *MARKS.values()]))), events[-1]]
+
+
+def split_answer():
+    '''The Explore override's answer over two forwarded messages: the mark, then the CLAUDE.md canary.'''
+    events = explore_run(explore=[text(MARKS[EXPLORE])])
+    return [*events[:2], assistant(text(CANARIES['claude_md']), parent=EXPLORE_IDS[EXPLORE]), *events[2:]]
+
+
+def never_dispatched(agent):
+    '''The parent's call of `agent` dropped; the message forwarded under its id stays, matching no dispatch.'''
+    events = explore_run()
+    sent = [b for b in events[1]['message']['content'] if b['input']['subagent_type'] != agent]
+    return [events[0], assistant(*sent), *events[2:]]
+
+
+NO_SIGHTING = {'mark': False, 'claude_md': False, 'git_status': False}
+
+
+@pytest.mark.parametrize('events, expected', [
+    (explore_run(), sighting()),
+    (parent_echo(), sighting({'claude_md': False})),
+    (split_answer(), sighting()),
+    # A canary in any field of a parent's Agent call leaks.
+    (explore_run(prompt=f"Follow your instructions. The word is {CANARIES['claude_md']}."), sighting(leaked=True)),
+    (explore_run(description=f"{CANARIES['git_status']}.txt"), sighting(leaked=True)),
+    # Each tool_use block in an agent's forwarded messages counts; the parent's own Agent calls do not.
+    (explore_run(explore=[tool_use('toolu_r1', 'Read', file_path='CLAUDE.md'),
+                          tool_use('toolu_r2', 'Read', file_path='canaries.json'),
+                          text(answer(EXPLORE, git_status=False))]),
+     sighting(tool_calls={EXPLORE: 2, CONTROL: 0})),
+    (explore_run(control=[tool_use('toolu_r', 'Read', file_path='CLAUDE.md'), text(answer(CONTROL))]),
+     sighting(tool_calls={EXPLORE: 0, CONTROL: 1})),
+    # A mark is matched exactly: an agent's own name is not its mark.
+    (explore_run(control=[text(answer(CONTROL, mark=False))]), sighting(control={'mark': False})),
+    (explore_run(explore=[text(answer(EXPLORE, git_status=False, mark=False))]), sighting({'mark': False})),
+    (never_dispatched(EXPLORE), sighting(NO_SIGHTING)),
+    (never_dispatched(CONTROL), sighting(control=NO_SIGHTING)),
+    (explore_run()[:-1], sighting(broken='no result event')),
+    (None, sighting(NO_SIGHTING, NO_SIGHTING, broken='no stream-json events')),
+])
+def test_explore_sightings_reads_marks_canaries_and_leaks_from_the_raw_stream(events, expected):
+    assert pc.explore_sightings(events, CANARIES) == expected
+
+
 def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
     # Shortest first would leave '<private>/work' for the first path.
     assert pc.redact('/home/me/work and /home/me', ['/home/me', '/home/me/work', '']) == '<private> and <private>'

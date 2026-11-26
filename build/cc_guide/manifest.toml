@@ -154,3 +154,10 @@ id = 'compaction-cut'
 # Where Claude Code cuts a skill it re-attaches after compaction: the window the compaction-window check
 # assumes (plan 87, drift finding 17).
 sections = ['skills.progressive-disclosure']
+
+[[probe]]
+id = 'explore-override'
+# A project agent named Explore, overriding the built-in: CLAUDE.md and the git-status snapshot at spawn. The docs say
+# only that the built-in skips both (owner ruling B2, 2026-10-20; Stage 5 probe candidate (a)).
+sections = ['subagents.isolation', 'subagents.models']
+files = ['agents/explore.md']
