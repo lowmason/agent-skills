@@ -738,6 +738,195 @@ def validate_census_expansion(frame: pl.DataFrame, vintage: int, **deps: pl.Data
 
 
 # --------------------------------------------------------------------------------------------
+# Census industry codes — the household-survey (ACS / CPS / SIPP) aggregation of NAICS
+# --------------------------------------------------------------------------------------------
+
+CENSUS_IND_RE = r'^\d{1,4}$'
+CENSUS_IND_BAND = (230, 320)
+NAICS_PREFIX_RE = r'\d{2,6}'
+NAICS_CELL_EXCLUSION_RE = r'\s+exc\.\s+'
+NAICS_CELL_ITEM_SEPARATOR_RE = r',\s*|\s+and\s+'
+NAICS_CELL_PARTIAL_RE = r'^(?:[Pp]ts?\.|[Pp]art of)\s+'
+# The 2017 list codes 9590 as prefix 928 and each military branch as exact 928110, so eight
+# Census codes claim 928110 whole. The 2022 list rewrites all eight as 'pt. 92811'; by owner
+# ruling the 2017 claims on that one code count as partial too. Keyed (vintage, NAICS code) ->
+# the Census codes whose claim on it is partial; any other claimant keeps its own kind.
+CENSUS_IND_PARTIAL_OVERRIDES = {
+  (2017, '928110'): ('9590', '9670', '9680', '9690', '9770', '9780', '9790', '9870'),
+}
+
+
+def parse_naics_cell(cell: str | None) -> list[tuple[str, str]]:
+  '''A Census industry list's NAICS cell -> (prefix, kind) pairs, kind include | partial | exclude.
+
+  Items are NAICS prefixes of 2 to 6 digits, separated by commas or "and". "pt.", "Pts." or
+  "Part of" makes that item and every later one partial (this Census code is one of several that
+  share those codes); " exc. " ends the list, and the prefixes after it are carved out of this
+  Census code's claim. No cell (9920, never worked) maps to nothing. Any other shape raises.
+  '''
+  if cell is None or not cell.strip():
+    return []
+  head, *carve_outs = re.split(NAICS_CELL_EXCLUSION_RE, cell.strip())
+  pairs, kind = [], 'include'
+  for item in re.split(NAICS_CELL_ITEM_SEPARATOR_RE, head):
+    marker = re.match(NAICS_CELL_PARTIAL_RE, item)
+    if marker:
+      kind, item = 'partial', item[marker.end():]
+    pairs.append((item, kind))
+  if len(carve_outs) == 1:
+    pairs.extend((item, 'exclude') for item in re.split(r',\s*', carve_outs[0]))
+  if len(carve_outs) > 1 or not all(re.fullmatch(NAICS_PREFIX_RE, prefix) for prefix, _kind in pairs):
+    raise ValueError(f'unrecognized NAICS cell {cell!r}; the source layout changed.')
+  return pairs
+
+
+def naics_six_digit(naics: pl.DataFrame) -> pl.DataFrame:
+  return naics.filter(pl.col('code').str.contains(NAICS_6_RE))
+
+
+def parse_census_ind(raw: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> pl.DataFrame:
+  '''Census "<vintage> Census Industry Code List" sheet -> census_ind, title, naics_cell, one row
+  per four-digit Census code, sorted.
+
+  Heading rows carry code ranges ("0170-0490") and are dropped. Codes are zero-filled strings. A
+  code listed on two rows (0770, 7570) keeps its first row's title, which a sector heading
+  carries in the first column; the rows must agree on the NAICS cell. naics_cell is stored as
+  published (trimmed), and every prefix in it must reach a six-digit code of the NAICS vintage
+  the list derives from.
+  '''
+  naics = deps[f'naics_{vintage}']
+  body = frame_below_header(raw, [str(vintage), 'census', 'naics'])
+  census_col = find_col(body.columns, 'census', 'code')
+  naics_col = find_col(body.columns, 'naics')
+  title_col = find_col(body.columns, 'description')
+  listed = (
+    body
+    .select(
+      census_ind=code_expr(census_col),
+      title=pl.coalesce(title_expr(title_col), title_expr(body.columns[0])),
+      naics_cell=title_expr(naics_col),
+    )
+    .filter(pl.col('census_ind').str.contains(CENSUS_IND_RE))
+    .with_columns(census_ind=pl.col('census_ind').str.zfill(4))
+  )
+  conflicting = listed.filter(pl.col('naics_cell').n_unique().over('census_ind').gt(1))
+  if conflicting.height:
+    raise ValueError(
+      f'census_ind_{vintage}: Census codes listed twice with different NAICS cells: '
+      f'{conflicting.rows()}; the source layout changed.'
+    )
+  frame = listed.unique(subset='census_ind', keep='first', maintain_order=True).sort('census_ind')
+  reachable = {code[:length] for code in naics_six_digit(naics).get_column('code') for length in range(2, 7)}
+  for census_ind, cell in frame.select('census_ind', 'naics_cell').iter_rows():
+    try:
+      pairs = parse_naics_cell(cell)
+    except ValueError as error:
+      raise ValueError(f'census_ind_{vintage}: Census {census_ind}: {error}') from error
+    for prefix, _kind in pairs:
+      if prefix not in reachable:
+        raise ValueError(
+          f'census_ind_{vintage}: Census {census_ind} names NAICS {prefix} ({cell!r}), which no '
+          f'six-digit code of naics_{vintage} starts with; the vintages do not match.'
+        )
+  return frame
+
+
+def validate_census_ind(frame: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> list[str]:
+  problems = []
+  low, high = CENSUS_IND_BAND
+  if not low <= frame.height <= high:
+    problems.append(f'census_ind_{vintage}: {frame.height} codes is outside the plausible {low}-{high} band')
+  duplicates = frame.filter(pl.col('census_ind').is_duplicated()).height
+  if duplicates:
+    problems.append(f'census_ind_{vintage}: {duplicates} duplicated Census codes')
+  return problems
+
+
+def census_ind_claims(census_ind: str, cell: str | None, codes: list[str], vintage: int) -> dict[str, str]:
+  '''One Census code's six-digit claims -> via. The cell's exclusions remove codes from every item
+  of it; a code that both an include item and a partial item reach keeps the non-partial via.'''
+  pairs = parse_naics_cell(cell)
+  carved = tuple(prefix for prefix, kind in pairs if kind == 'exclude')
+  claims: dict[str, str] = {}
+  for prefix, kind in pairs:
+    if kind == 'exclude':
+      continue
+    via = 'partial' if kind == 'partial' else 'exact' if len(prefix) == 6 else 'prefix'
+    for code in codes:
+      if code.startswith(prefix) and not code.startswith(carved) and claims.get(code, 'partial') == 'partial':
+        claims[code] = via
+  for code in claims:
+    if census_ind in CENSUS_IND_PARTIAL_OVERRIDES.get((vintage, code), ()):
+      claims[code] = 'partial'
+  return claims
+
+
+def non_partial_double_claims(frame: pl.DataFrame, vintage: int) -> list[tuple[str, list[str]]]:
+  '''(NAICS code, Census claimants) for each six-digit code with two or more exact/prefix claims.'''
+  census, naics = f'census_ind_{vintage}', f'naics_{vintage}'
+  return (
+    frame
+    .filter(pl.col('via').ne('partial'))
+    .group_by(naics)
+    .agg(pl.col(census).sort())
+    .filter(pl.col(census).list.len().gt(1))
+    .sort(naics)
+    .rows()
+  )
+
+
+def describe_claims(doubles: list[tuple[str, list[str]]]) -> str:
+  return '; '.join(f'{code} by {", ".join(claimants)}' for code, claimants in doubles)
+
+
+def expand_census_ind(vintage: int, **deps: pl.DataFrame) -> pl.DataFrame:
+  '''Derived: one row per (Census code, six-digit NAICS code) the published list claims.
+
+  via is exact (a six-digit item), prefix (a shorter item, every six-digit code under it) or
+  partial (a "pt." / "Part of" item: this Census code holds a piece of each code under the
+  prefix). Catch-alls such as 3990 "Part of 31, 32, 33" therefore get a partial row beside each
+  specific claim. A code may carry one exact or prefix claim plus any number of partial ones;
+  two non-partial claims on one code mean the reading is wrong for this vintage, so it raises.
+  Codes with no NAICS cell (9920) get no rows.
+  '''
+  census = deps[f'census_ind_{vintage}']
+  naics = naics_six_digit(deps[f'naics_{vintage}'])
+  title_of = dict(zip(naics.get_column('code'), naics.get_column('title')))
+  codes = sorted(title_of)
+  rows = [
+    (census_ind, title, code, title_of[code], via)
+    for census_ind, title, cell in census.select('census_ind', 'title', 'naics_cell').iter_rows()
+    for code, via in census_ind_claims(census_ind, cell, codes, vintage).items()
+  ]
+  frame = pl.DataFrame(
+    rows,
+    schema=[f'census_ind_{vintage}', f'census_title_{vintage}', f'naics_{vintage}', f'naics_title_{vintage}', 'via'],
+    orient='row',
+  ).sort(f'census_ind_{vintage}', f'naics_{vintage}')
+  doubles = non_partial_double_claims(frame, vintage)
+  if doubles:
+    raise ValueError(
+      f'census_ind_{vintage}: {len(doubles)} NAICS codes carry more than one exact or prefix claim '
+      f'({describe_claims(doubles[:5])}); only partial claims may share a code.'
+    )
+  return frame
+
+
+def validate_census_ind_expansion(frame: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> list[str]:
+  name = f'census_ind_{vintage}_to_naics_{vintage}'
+  problems = []
+  six_digit = set(naics_six_digit(deps[f'naics_{vintage}']).get_column('code'))
+  unclaimed = sorted(six_digit.difference(frame.get_column(f'naics_{vintage}')))
+  if unclaimed:
+    sample = ', '.join(unclaimed[:10])
+    problems.append(f'{name}: {len(unclaimed)} six-digit NAICS codes claimed by no Census code (e.g. {sample})')
+  doubles = non_partial_double_claims(frame, vintage)
+  if doubles:
+    problems.append(f'{name}: {len(doubles)} six-digit NAICS codes with more than one exact or prefix claim ({describe_claims(doubles[:5])})')
+  return problems
+
+
+# --------------------------------------------------------------------------------------------
 # Registry
 # --------------------------------------------------------------------------------------------
 
@@ -839,6 +1028,38 @@ BUILDS = [
     validate=partial(validate_census_expansion, vintage=2010),
     requires=('census_occ_2010', 'soc_2010'),
   ),
+  # Census industry code lists (same page). Each list is "Derived from the <vintage> NAICS", so
+  # it validates and expands against that NAICS structure; *_to_naics_* is derived from both.
+  Build(
+    name='census_ind_2022',
+    url='https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2022-Census-Industry-Code-List-with-Crosswalk.xlsx',
+    sheet='2022 Census Ind Code List ',  # the trailing space is in the published sheet name
+    parse=partial(parse_census_ind, vintage=2022),
+    validate=partial(validate_census_ind, vintage=2022),
+    requires=('naics_2022',),
+  ),
+  Build(
+    name='census_ind_2022_to_naics_2022',
+    url=None,
+    parse=partial(expand_census_ind, vintage=2022),
+    validate=partial(validate_census_ind_expansion, vintage=2022),
+    requires=('census_ind_2022', 'naics_2022'),
+  ),
+  Build(
+    name='census_ind_2017',
+    url='https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2017-industry-code-list-with-crosswalk.xlsx',
+    sheet='2017 Census Industry Code List',
+    parse=partial(parse_census_ind, vintage=2017),
+    validate=partial(validate_census_ind, vintage=2017),
+    requires=('naics_2017',),
+  ),
+  Build(
+    name='census_ind_2017_to_naics_2017',
+    url=None,
+    parse=partial(expand_census_ind, vintage=2017),
+    validate=partial(validate_census_ind_expansion, vintage=2017),
+    requires=('census_ind_2017', 'naics_2017'),
+  ),
 ]
 
 # (concordance, code column in it, structure file it must resolve against, leaf level there)
@@ -849,6 +1070,8 @@ REFERENTIAL_PAIRS = [
   ('naics_2012_to_2017', 'naics_2017', 'naics_2017', 6),
   ('soc_2010_to_2018', 'soc_2010', 'soc_2010', 'detailed'),
   ('soc_2010_to_2018', 'soc_2018', 'soc_2018', 'detailed'),
+  ('census_ind_2022_to_naics_2022', 'naics_2022', 'naics_2022', 6),
+  ('census_ind_2017_to_naics_2017', 'naics_2017', 'naics_2017', 6),
 ]
 
 

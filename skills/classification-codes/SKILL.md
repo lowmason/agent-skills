@@ -20,12 +20,13 @@ metadata:
   version: "0.2"
 ---
 
-# Classification Codes (NAICS & SOC)
+# Classification Codes (NAICS, SOC & the Census industry and occupation lists)
 
 ## What this is
 
 The authoritative local copy of the U.S. industry (NAICS) and occupation (SOC) classification
-systems, plus the official vintage concordances, as tidy greppable CSVs under `data/`. This
+systems, plus the official vintage concordances and the Census industry and occupation code
+lists of the household surveys, as tidy greppable CSVs under `data/`. This
 SKILL.md carries the structural semantics and the query recipes; the codes themselves live only
 in the data files, and how the systems are governed and revised lives in
 `references/revision-process.md`.
@@ -55,6 +56,10 @@ committed `sources/` cache with no network. Never guess a code instead.
 | `data/census_occ_2018_to_soc_2018.csv` | 867 | `census_occ_2018, census_title_2018, soc_2018, soc_title_2018, via` — derived, one row per detailed SOC |
 | `data/census_occ_2010.csv` | 540 | same as 2018 |
 | `data/census_occ_2010_to_soc_2010.csv` | 840 | same as 2018 |
+| `data/census_ind_2022.csv` | 266 | `census_ind, title, naics_cell` — the Census list as published |
+| `data/census_ind_2022_to_naics_2022.csv` | 1,650 | `census_ind_2022, census_title_2022, naics_2022, naics_title_2022, via` — derived, one row per (Census code, six-digit NAICS code) claim |
+| `data/census_ind_2017.csv` | 271 | same as 2022 |
+| `data/census_ind_2017_to_naics_2017.csv` | 1,729 | same as 2022 |
 
 `level` is 2–6 for NAICS and `major | minor | broad | detailed` for SOC. `trilateral` marks the
 Census superscript-T rows. `change_indicator` is Census's own marker for what changed at that
@@ -65,8 +70,14 @@ from code multiplicities: `1:1` (unchanged or clean recode), `1:m` (split), `m:1
 per code and `soc_level` says what it is: a `detailed` code, a whole `broad` or `minor` group, a
 `remainder` pattern such as `15-124X` (everything under that prefix no other Census code
 claims), or `none`. The `_to_soc_` files resolve that into detailed SOC codes; `via` records the
-rule that produced each row. `MANIFEST.md` records the source URL, sha256, and retrieval time
-behind every file; `sources/` holds the exact source bytes.
+rule that produced each row. In the Census industry lists `naics_cell` is the NAICS reference
+Census publishes per code, stored as published (trimmed): NAICS prefixes of 2 to 6 digits,
+`pt.`, `Pts.` or `Part of` before the prefixes the code holds only part of, and `exc.` before the
+prefixes carved out of it. The `_to_naics_` files resolve it into six-digit NAICS codes, and
+`via` is `exact` (a six-digit item), `prefix` (every six-digit code under a shorter item), or
+`partial` (the Census code holds part of that code; see *NAICS semantics*). `MANIFEST.md`
+records the source URL, sha256, and retrieval time behind every file; `sources/` holds the
+exact source bytes.
 
 ## How to query
 
@@ -82,6 +93,7 @@ grep -E '^561320,' data/naics_2022.csv          # code -> title
 grep -iE 'temporary help' data/naics_2022.csv    # title -> code
 grep -E '^15-1252,' data/soc_2018.csv            # SOC lookup
 grep -E '^454110,' data/naics_2017_to_2022.csv   # where did a 2017 code go (42 rows, all m:m)
+grep -E '^0770,' data/census_ind_2022.csv        # Census industry code -> title, NAICS cell
 ```
 
 Membership and hierarchy — load, then use the materialized columns, never string surgery:
@@ -152,6 +164,29 @@ join through SOC — `census_occ_2010_to_soc_2010` → `soc_2010_to_2018` (route
 - `999999` / "unclassified" appears in QCEW and admin data but is not part of the standard.
   PSP-style microdata carries NAICS assigned at client onboarding — codes go stale and vintages
   mix within a single panel month. Never assume a panel is single-vintage.
+- **Census industry codes are the household-survey aggregation of NAICS**, not NAICS. ACS, CPS,
+  and SIPP code people to 4-digit Census industry codes (`0170` Crop production; leading zeros
+  are load-bearing). Each list derives from one NAICS vintage and expands against it: the 2017
+  list (271 codes) against NAICS 2017, the 2022 list (266 codes) against NAICS 2022. The build
+  checks that every prefix a list names exists in its vintage and that the expansion claims all
+  1,057 and 1,012 six-digit codes. (The 2017 sheet's own note says 270 codes.)
+- A `partial` row means the Census code holds part of that NAICS code. Shared pieces: `921150`
+  tribal governments is split between `9370` and `9470`. Catch-alls: the "Not specified" codes
+  (`0480`, `0690`, `1290`, `2990`, `3990`, `4590`, `5790`/`5791`), `0590` electric and gas
+  combinations, and `3291`'s `Part of 333` hold part of codes that a specific Census code claims
+  whole, so they get a `partial` row beside that claim.
+- A six-digit code carries at most one `exact` or `prefix` claim, plus any number of `partial`
+  ones; the build stops on a second non-partial claim. Inside one Census code a `prefix` item
+  beats its own `Part of` item. To map each NAICS code to one Census code, keep
+  `via != 'partial'`: only `921150` and `928110` have no such row, in both vintages. `exc.`
+  carves a code out: `1270` `3118 exc. 311811` leaves retail bakeries to `1190`.
+- `928110` National Security: the 2022 list gives `9590` and the seven military codes
+  `pt. 92811`, while the 2017 list gives the military codes `928110` and `9590` the prefix `928`.
+  So that both vintages read alike, the build counts those eight 2017 claims on `928110` as
+  `partial` (`CENSUS_IND_PARTIAL_OVERRIDES` in `scripts/build.py`). `9590`'s 2017 claim on
+  `928120` stays `prefix`.
+- One code maps to nothing in both lists: `9920` unemployed, last worked 5 years ago or earlier
+  or never worked. It stays in the list and has no expansion rows. The military codes are mapped.
 
 ## SOC semantics
 
@@ -256,8 +291,10 @@ split/merge title markers, Census heading rows carrying code ranges), and hard-f
 structural drift (sector/major-group counts, hierarchy closure, nesting that contradicts the
 code pattern, duplicate codes, unknown change markers, trilateral six-digit rows, crosswalk
 markers that disagree with `link_type`, concordance referential integrity, a Census list that
-does not partition detailed SOC). The `census_occ_*_to_soc_*` files are derived from the list
-and the matching SOC structure, so they have no source URL of their own. A failed download
+does not partition detailed SOC, a Census industry cell in an unknown shape or naming a NAICS
+prefix its vintage lacks, two exact or prefix claims on one six-digit NAICS code). The
+`census_occ_*_to_soc_*` and `census_ind_*_to_naics_*` files are derived from the list and the
+matching SOC or NAICS structure, so they have no source URL of their own. A failed download
 skips that artifact and records the reason in `MANIFEST.md` so the rest still builds.
 
 **bls.gov admits scripts only with a contact email in the User-Agent** (an Akamai "Access
