@@ -384,7 +384,10 @@ LISTING = ('classification-codes', 'geographic-codes', 'bls-data-context', 'writ
 
 
 def stream_lines(calls=(), errors=(), extra=(), result=None, init_tools=('Read', 'Glob', 'Grep', 'Skill'),
-                 skills=LISTING, no_results=()) -> list[str]:
+                 skills=LISTING, no_results=(), results=None) -> list[str]:
+    '''A synthetic stream. results[number] = (content, tool_use_result) gives a call's tool result the shape of a
+    real one: the tool_result block's `content` (a string or a list of text blocks), and the user record's
+    `tool_use_result` (for Grep and Glob: `filenames`, and for Grep also `content`), or None for no such field.'''
     init = {'type': 'system', 'subtype': 'init', 'tools': list(init_tools)}
     if skills is not None:
         init['skills'] = list(skills)
@@ -394,8 +397,14 @@ def stream_lines(calls=(), errors=(), extra=(), result=None, init_tools=('Read',
         lines.append(json.dumps({'type': 'assistant', 'message': {'content': [use]}}))
         if number in no_results:
             continue
-        done = {'type': 'tool_result', 'tool_use_id': f't{number}', 'content': 'ok', 'is_error': number in errors}
-        lines.append(json.dumps({'type': 'user', 'message': {'content': [done]}}))
+        content, structured = (results or {}).get(number, ('ok', None))
+        done = {'tool_use_id': f't{number}', 'type': 'tool_result', 'content': content}
+        if number in errors:
+            done['is_error'] = True
+        record = {'type': 'user', 'message': {'role': 'user', 'content': [done]}, 'parent_tool_use_id': None}
+        if structured is not None:
+            record['tool_use_result'] = structured
+        lines.append(json.dumps(record))
     lines += list(extra)
     if result is not False:
         lines.append(json.dumps(result or RESULT))
@@ -404,7 +413,7 @@ def stream_lines(calls=(), errors=(), extra=(), result=None, init_tools=('Read',
 
 def write_rep(runs: Path, tscratch: Path, prompt: str = 'P1', arm: str = 'old', model: str = SONNET, n: int = 1,
               calls=(), errors=(), extra=(), result=None, skills=LISTING, init_tools=('Read', 'Glob', 'Grep', 'Skill'),
-              summary: dict | None = None, lines: list[str] | None = None, no_results=()) -> Path:
+              summary: dict | None = None, lines: list[str] | None = None, no_results=(), results=None) -> Path:
     rep = runs / prompt / arm / model / f'rep{n}'
     rep.mkdir(parents=True)
     base = {'prompt': prompt, 'arm': arm, 'model': model, 'rep': n, 'rep_dir': TREP_DIR, 'final_message': 'Done.',
@@ -413,7 +422,7 @@ def write_rep(runs: Path, tscratch: Path, prompt: str = 'P1', arm: str = 'old', 
     stream = tscratch / prompt / arm / model / f'rep{n}.jsonl'
     stream.parent.mkdir(parents=True, exist_ok=True)
     if lines is None:
-        lines = stream_lines(calls, errors, extra, result, init_tools, skills, no_results)
+        lines = stream_lines(calls, errors, extra, result, init_tools, skills, no_results, results)
     stream.write_text(''.join(line + '\n' for line in lines))
     return rep
 
@@ -518,6 +527,115 @@ def test_rule_5_keeps_a_refused_read_and_a_call_with_no_result(world):
     assert not any(reason.startswith('rule 5') for reason in audit.void_reasons(rep))
     rep = write_rep(*world, n=2, calls=[('Read', {'file_path': f'/work/{PLAN}'})], no_results=(1,))
     assert not any(reason.startswith('rule 5') for reason in audit.void_reasons(rep))
+
+
+def rule_5(rep: Path) -> list[str]:
+    return [reason for reason in audit.void_reasons(rep) if reason.startswith('rule 5')]
+
+
+def test_rule_5_voids_a_grep_whose_glob_names_a_quarantined_file(world):
+    rep = write_rep(*world, calls=[('Grep', {'pattern': 'PASS', 'path': f'{TREP_DIR}/repo', 'glob': '**/deferred_items.md'})])
+    assert rule_5(rep) == ['rule 5: call 1 Grep names a quarantined file']
+
+
+CHECKOUT = '/work/agent-skills'
+
+
+@pytest.fixture
+def checkout(world, monkeypatch) -> tuple[Path, Path]:
+    # The quarantined files sit in one checkout of this repository, at CHECKOUT.
+    monkeypatch.setattr(audit, 'checkouts', lambda: (CHECKOUT,))
+    return world
+
+
+@pytest.mark.parametrize(('tool', 'args'), [
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs'}),
+    ('Grep', {'pattern': 'P1', 'path': CHECKOUT}),
+    ('Grep', {'pattern': 'P1', 'path': '/'}),
+    ('Grep', {'pattern': 'PASS', 'path': f'{CHECKOUT}/specs', 'glob': '*.md'}),
+    ('Grep', {'pattern': 'P1', 'path': '/WORK/Agent-Skills/SPECS'}),
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs/baseline/../plans'}),
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs/baseline/'}),
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs/plans/completed'}),
+    ('Glob', {'pattern': '*.md', 'path': f'{CHECKOUT}/specs/plans'}),
+    ('Glob', {'pattern': f'{CHECKOUT}/specs/**/*.md'}),
+    ('Glob', {'pattern': 'specs/**', 'path': CHECKOUT}),
+    ('Glob', {'pattern': '**/*', 'path': '/work'}),
+])
+def test_rule_5_voids_a_search_rooted_at_a_folder_that_holds_a_quarantined_file(checkout, tool, args):
+    rep = write_rep(*checkout, calls=[(tool, args)])
+    assert rule_5(rep) == [f'rule 5: call 1 {tool} searches a folder that holds a quarantined file']
+
+
+@pytest.mark.parametrize(('tool', 'args'), [
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/skills'}),
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/spec'}),
+    ('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs/plans/completed/110-other-plan.md'}),
+    ('Grep', {'pattern': 'P1', 'path': '/work/other-repo/specs'}),
+    ('Grep', {'pattern': 'P1'}),
+    ('Grep', {'pattern': 'P1', 'path': 'specs'}),
+    ('Glob', {'pattern': 'skills/**/*.md', 'path': CHECKOUT}),
+    ('Glob', {'pattern': '**/*.md'}),
+    ('Glob', {'pattern': f'{CHECKOUT}/skills/**'}),
+    ('Read', {'file_path': f'{CHECKOUT}/specs'}),
+])
+def test_rule_5_keeps_a_search_rooted_at_a_folder_that_holds_no_quarantined_file(checkout, tool, args):
+    rep = write_rep(*checkout, calls=[(tool, args)])
+    assert rule_5(rep) == []
+
+
+def test_rule_5_keeps_a_refused_search_of_a_folder_that_holds_a_quarantined_file(checkout):
+    rep = write_rep(*checkout, calls=[('Grep', {'pattern': 'P1', 'path': f'{CHECKOUT}/specs'})], errors=(1,))
+    assert rule_5(rep) == []
+
+
+def test_the_default_checkouts_hold_this_repository_and_each_git_worktree(world):
+    listed = subprocess.run(['git', '-C', str(KIT), 'worktree', 'list', '--porcelain'], capture_output=True, text=True)
+    worktrees = {line[len('worktree '):].lower() for line in listed.stdout.splitlines() if line.startswith('worktree ')}
+    assert str(REPO_ROOT).lower() in audit.checkouts() and worktrees <= set(audit.checkouts())
+    rep = write_rep(*world, calls=[('Grep', {'pattern': 'P1', 'path': f'{REPO_ROOT}/specs'})])
+    assert rule_5(rep) == ['rule 5: call 1 Grep searches a folder that holds a quarantined file']
+    rep = write_rep(*world, n=2, calls=[('Grep', {'pattern': 'P1', 'path': f'{REPO_ROOT}/skills'})])
+    assert rule_5(rep) == []
+
+
+def test_each_checkout_is_matched_in_every_spelling():
+    assert audit.spellings('/Users/Someone/Repo') == {'/users/someone/repo', '/system/volumes/data/users/someone/repo'}
+    assert audit.spellings('/private/tmp/repo') == {'/private/tmp/repo', '/tmp/repo'}
+    assert audit.spellings('/tmp/repo') == {'/tmp/repo', '/private/tmp/repo'}
+    assert audit.spellings('/opt/Repo') == {'/opt/repo'}
+
+
+FOUND = f'{CHECKOUT}/specs/plans/111-codes-and-bls-reference-skills.md'
+
+
+@pytest.mark.parametrize(('tool', 'content', 'structured'), [
+    ('Grep', f'Found 1 file\n{FOUND}', {'mode': 'files_with_matches', 'numFiles': 1, 'filenames': [FOUND]}),
+    ('Grep', 'Found 1 file\n/elsewhere/specs/deferred_items.md', None),
+    ('Grep', 'ok', {'mode': 'files_with_matches', 'numFiles': 1, 'filenames': ['/x/red-baseline-codes-description.md']}),
+    ('Grep', 'ok', {'mode': 'content', 'numFiles': 0, 'filenames': [], 'content': 'specs/DEFERRED_ITEMS.md:3: x'}),
+    ('Grep', [{'type': 'text', 'text': '/x/specs/baseline/red-baseline-codes-description/kit/audit.py'}], None),
+    ('Glob', f'{FOUND}', {'filenames': [FOUND], 'durationMs': 3, 'numFiles': 1, 'truncated': False}),
+    ('Glob', 'ok', {'filenames': ['/x/deferred_items.md'], 'durationMs': 3, 'numFiles': 1, 'truncated': False}),
+])
+def test_rule_5_voids_a_clean_search_whose_result_names_a_quarantined_file(world, tool, content, structured):
+    rep = write_rep(*world, calls=[(tool, {'pattern': '**/*.md', 'path': f'{TREP_DIR}/repo'})],
+                    results={1: (content, structured)})
+    assert rule_5(rep) == [f'rule 5: call 1 {tool} found a quarantined file']
+
+
+def test_rule_5_keeps_a_result_that_names_no_quarantined_file_a_refused_one_and_a_read(world):
+    clean = ('Found 1 file\n/x/specs/deferred_items.txt', {'filenames': ['/x/README.md'], 'numFiles': 1})
+    rep = write_rep(*world, calls=[('Grep', {'pattern': 'x', 'path': f'{TREP_DIR}/repo'})], results={1: clean})
+    assert rule_5(rep) == []
+    refused = (f'Path {FOUND} is outside the working directory', None)
+    rep = write_rep(*world, n=2, calls=[('Glob', {'pattern': '*.md', 'path': f'{TREP_DIR}/repo'})], errors=(1,),
+                    results={1: refused})
+    assert rule_5(rep) == []
+    # A Read result is file text, which may mention the backlog by name without being it.
+    text = ('See specs/deferred_items.md for the backlog.', {'type': 'text', 'file': {'filePath': 'README.md'}})
+    rep = write_rep(*world, n=3, calls=[('Read', {'file_path': f'{TREP_DIR}/repo/README.md'})], results={1: text})
+    assert rule_5(rep) == []
 
 
 @pytest.mark.parametrize(('result', 'reason'), [
@@ -885,6 +1003,10 @@ def test_the_case_names_the_skill_the_listing_and_the_quarantine():
     assert cases.MODELS == (OPUS, SONNET) and cases.ARMS == ('old', 'new') and cases.REPS_PER_CELL == 3
     assert cases.QUARANTINE == ('111-codes-and-bls-reference-skills', 'red-baseline-codes-description',
                                 'deferred_items.md')
+    assert cases.QUARANTINED_PATHS == ('specs/plans/111-codes-and-bls-reference-skills.md',
+                                       'specs/plans/completed/111-codes-and-bls-reference-skills.md',
+                                       'specs/baseline/red-baseline-codes-description',
+                                       'specs/baseline/red-baseline-codes-description.md', 'specs/deferred_items.md')
 
 
 def test_the_trigger_fixture_is_a_neutral_project_beside_the_listing():

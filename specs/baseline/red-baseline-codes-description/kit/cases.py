@@ -18,3 +18,9 @@ REPS_PER_CELL = 3
 # Rule 5: a rep that reads one of these is void (audit.quarantine_hits). They name this plan, the kit and its
 # write-up (red-baseline-codes-description covers both) and the backlog, matched in any case.
 QUARANTINE = ('111-codes-and-bls-reference-skills', 'red-baseline-codes-description', 'deferred_items.md')
+# Where those files sit in a checkout of this repository. A search rooted at a folder that holds one of them is a
+# rule 5 hit. The plan is listed at both places it lives: specs/plans/ now, specs/plans/completed/ once retired.
+QUARANTINED_PATHS = ('specs/plans/111-codes-and-bls-reference-skills.md',
+                     'specs/plans/completed/111-codes-and-bls-reference-skills.md',
+                     'specs/baseline/red-baseline-codes-description',
+                     'specs/baseline/red-baseline-codes-description.md', 'specs/deferred_items.md')

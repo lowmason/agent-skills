@@ -150,6 +150,29 @@ def peer_check(records: list[dict]) -> list[str]:
     return found
 
 
+def result_texts(records: list[dict]) -> dict[str, str]:
+    '''Each tool result's text, by tool_use_id: the tool_result block's content (a string, or a list of blocks),
+    and the user record's tool_use_result (Grep and Glob put their filenames there), as JSON.'''
+    found = {}
+    for record in records:
+        content = (record.get('message') or {}).get('content') if record.get('type') == 'user' else None
+        for item in content if isinstance(content, list) else []:
+            if not (isinstance(item, dict) and item.get('type') == 'tool_result'):
+                continue
+            body = item.get('content')
+            if isinstance(body, str):
+                parts = [body]
+            elif isinstance(body, list):
+                parts = [json.dumps(block, ensure_ascii=False) for block in body]
+            else:
+                parts = []
+            if record.get('tool_use_result') is not None:
+                parts.append(json.dumps(record['tool_use_result'], ensure_ascii=False))
+            key = item.get('tool_use_id')
+            found[key] = '\n'.join(([found[key]] if key in found else []) + parts)
+    return found
+
+
 def read_records(records: list[dict]) -> dict:
     init, result, calls, texts, results = None, None, [], [], {}
     for record in records:

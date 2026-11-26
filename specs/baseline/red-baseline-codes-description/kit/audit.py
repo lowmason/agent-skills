@@ -24,15 +24,25 @@ The VOID reasons, as the write-up registers them:
 - rule 3: `credential_expires_at` still in summary.json or in the saved stream;
 - rule 4: an entry of summary.json's peer_check, or, in the saved stream, a `result_index` above 0 (or one that
   is not an integer) or an `origin` whose `kind` is `peer` (rep_tools.peer_check);
-- rule 5: a Read, Grep or Glob call whose file_path or path (or a Glob pattern) names a file of
-  cases.QUARANTINE, in any case, and whose tool result came back without an error. A refused call, or one
-  with no result, read nothing;
+- rule 5 (quarantine_hits), for a Read, Grep or Glob call whose tool result came back without an error (a
+  refused call, or one with no result, read nothing), in any case:
+  - it names a quarantined file (cases.QUARANTINE): a Read's file_path, a Grep's path or glob, or a Glob's
+    path or pattern;
+  - it is a Grep or Glob whose search root holds a quarantined file in a checkout of this repository
+    (cases.QUARANTINED_PATHS under each of checkouts()), such as the repository root, specs/ or /. The root is
+    the call's path (default the rep's repo/), joined to a Glob pattern's literal part;
+  - it is a Grep or Glob whose result names a quarantined file: the tool_result block's content or the user
+    record's tool_use_result (its filenames, and a Grep's content). A Read's result is file text, which may
+    mention the backlog by name without being it, so it is not read;
 - an error result: a result subtype other than success, or is_error true. The subtypes error_max_turns and
   error_max_budget_usd are a normal end for a trigger rep (plan 107's reading), not an error result;
 - a listing (the init record's skills) that lacks a name of cases.REQUIRED_LISTING.
 '''
+import functools
 import json
 import os
+import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -41,10 +51,16 @@ import cases  # noqa: E402
 import rep_tools  # noqa: E402
 import triggers  # noqa: E402
 
+KIT = Path(__file__).resolve().parent
 DEFAULT_SCRATCH = '.cache/agent-skills/scratch/plan111/triggers'
 CROSS_SESSION_TOOLS = ('ListAgents', 'SendMessage', 'PushNotification', 'RemoteTrigger')
 TRIGGER_TOOLS = ('Read', 'Glob', 'Grep', 'Skill')
 SEARCH_TOOLS = ('Read', 'Grep', 'Glob')
+# The inputs of each search tool that can name a quarantined file. A Grep's pattern matches file text, not a path.
+NAME_KEYS = {'Read': ('file_path',), 'Grep': ('path', 'glob'), 'Glob': ('path', 'pattern')}
+FOLDER_TOOLS = ('Grep', 'Glob')
+WILDCARD = re.compile(r'[*?\[{]')
+HOME_VAR = re.compile(r'^\$\{?HOME\}?')
 BUDGET = 'error_max_budget_usd'
 MAX_TURNS = 'error_max_turns'
 NORMAL_ENDS = (BUDGET, MAX_TURNS)
@@ -83,21 +99,92 @@ def stream_audit(path: Path) -> dict:
         'calls': rep_tools.read_records(records)['calls'], 'result': results[0] if results else None,
         'listing': triggers.listing(records),
     })
+    texts = rep_tools.result_texts(records)
+    for call in found['calls']:
+        call['result_text'] = texts.get(call['id'], '')
     return found
 
 
-def quarantine_hits(calls: list[dict]) -> list[str]:
-    '''Rule 5: each Read, Grep or Glob call that names a quarantined file and whose result came back clean.'''
+def spellings(root: str) -> set[str]:
+    '''A folder in lowercase, in each spelling that names it on this machine's volume.'''
+    low = root.lower().rstrip('/') or '/'
+    found = {low}
+    if low.startswith('/users/'):
+        found.add('/system/volumes/data' + low)
+    if low.startswith('/private/tmp/'):
+        found.add(low[len('/private'):])
+    elif low.startswith('/tmp/'):
+        found.add('/private' + low)
+    return found
+
+
+@functools.lru_cache(maxsize=None)
+def checkouts() -> tuple[str, ...]:
+    '''Every checkout of this repository (`git worktree list`, and the one that holds this kit), in every spelling.'''
+    listed = subprocess.run(['git', '-C', str(KIT), 'worktree', 'list', '--porcelain'], capture_output=True, text=True)
+    roots = [line[len('worktree '):] for line in listed.stdout.splitlines() if line.startswith('worktree ')]
+    roots.append(str(KIT.parents[3]))
+    found = set()
+    for root in roots:
+        found |= spellings(root) | spellings(os.path.realpath(root))
+    return tuple(sorted(found))
+
+
+def holds_a_quarantined_file(root: str) -> bool:
+    '''True when the folder root (resolved, lowercase) is, or holds, a quarantined file of a checkout.'''
+    base = root.rstrip('/')
+    return any(location == root or location.startswith(base + '/')
+               for checkout in checkouts() for location in (f'{checkout}/{rel}'.lower() for rel in cases.QUARANTINED_PATHS))
+
+
+def resolved(path: str, rep_dir: str, base: str | None = None) -> str:
+    '''A call's path, absolute, normalized and lowercase. `~` and $HOME are the rep's own HOME, and a relative path
+    is joined to base (default the rep's repo/, its working directory).'''
+    if HOME_VAR.match(path):
+        path = f'{rep_dir}/home' + HOME_VAR.sub('', path)
+    elif path == '~' or path.startswith('~/'):
+        path = f'{rep_dir}/home' + path[1:]
+    elif not path.startswith('/'):
+        path = f'{base or rep_dir + "/repo"}/{path}'
+    return os.path.normpath(path).lower()
+
+
+def literal_part(pattern: str) -> str:
+    '''A Glob pattern up to the last `/` before its first wildcard, or the whole pattern when it has none.'''
+    first = WILDCARD.search(pattern)
+    if first is None:
+        return pattern
+    head = pattern[:first.start()]
+    return head[:head.rfind('/') + 1]
+
+
+def search_root(name: str, args: dict, rep_dir: str) -> str:
+    '''The folder a Grep or Glob call searches: its path (default the rep's repo/), joined to a Glob pattern's
+    literal part.'''
+    path = args.get('path')
+    root = resolved(path, rep_dir) if isinstance(path, str) and path else resolved('.', rep_dir)
+    pattern = args.get('pattern')
+    if name == 'Glob' and isinstance(pattern, str) and literal_part(pattern):
+        return resolved(literal_part(pattern), rep_dir, root)
+    return root
+
+
+def quarantine_hits(calls: list[dict], rep_dir: str) -> list[str]:
+    '''Rule 5: each clean Read, Grep or Glob call that names, searches or finds a quarantined file (one reason each).'''
     names = [name.lower() for name in cases.QUARANTINE]
     found = []
     for number, call in enumerate(calls, 1):
-        if call.get('name') not in SEARCH_TOOLS or call.get('is_error') is not False:
+        tool = call.get('name')
+        if tool not in SEARCH_TOOLS or call.get('is_error') is not False:
             continue
         args = call.get('input') or {}
-        keys = ('file_path', 'path', 'pattern') if call['name'] == 'Glob' else ('file_path', 'path')
-        paths = [args[key].lower() for key in keys if isinstance(args.get(key), str)]
+        paths = [args[key].lower() for key in NAME_KEYS[tool] if isinstance(args.get(key), str)]
         if any(name in path for name in names for path in paths):
-            found.append(f'call {number} {call["name"]} names a quarantined file')
+            found.append(f'call {number} {tool} names a quarantined file')
+        elif tool in FOLDER_TOOLS and holds_a_quarantined_file(search_root(tool, args, rep_dir)):
+            found.append(f'call {number} {tool} searches a folder that holds a quarantined file')
+        elif tool in FOLDER_TOOLS and any(name in (call.get('result_text') or '').lower() for name in names):
+            found.append(f'call {number} {tool} found a quarantined file')
     return found
 
 
@@ -148,7 +235,7 @@ def audit_rep(rep: Path) -> dict:
     if summary is not None and isinstance(summary.get('peer_check'), list):
         void += [f'rule 4: {reason} (before the scrub)' for reason in summary['peer_check']]
     void += [f'rule 4: {reason}' for reason in stream['peer_check']]
-    void += [f'rule 5: {hit}' for hit in quarantine_hits(stream['calls'])]
+    void += [f'rule 5: {hit}' for hit in quarantine_hits(stream['calls'], (summary or {}).get('rep_dir') or '/nonexistent-rep')]
     if stream['results']:
         ended = run_end_void(stream['result'])
         if ended:

@@ -157,12 +157,23 @@ How the kit reads the rules:
   A record with no `result_index` counts as 0. A `result_index` that is not a JSON integer (a string, a float
   such as 1.5 or 0.0, or null), or is a boolean, cannot be compared with 0, so it voids the rep too (plan 103's
   reading). An integer voids only above 0.
-- **Rule 5.** No rep can reach these files: the rep's folder holds only the fixture project and the
-  `skills/` archive, and rule 2 fences reads to `repo/`. So the audit checks the rep's calls. A rep is void when
-  a `Read`, `Grep` or `Glob` call's `file_path` or `path`, or a `Glob` pattern, holds
-  `111-codes-and-bls-reference-skills`, `red-baseline-codes-description` or `deferred_items.md`, in any case,
-  and its tool result came back without an error. A refused call, or a call with no result, read nothing, so it
-  does not void the rep. A `Grep` content pattern is not a path and is not checked.
+- **Rule 5.** No rep should reach these files: the rep's folder holds only the fixture project and the
+  `skills/` archive, and rule 2 fences reads to `repo/`. So the audit checks the rep's calls. It counts only a
+  `Read`, `Grep` or `Glob` call whose tool result came back without an error. A refused call, or a call with no
+  result, read nothing, so it does not void the rep. Such a call voids the rep in any of three ways, matched in
+  any case:
+  - It names a quarantined file: `111-codes-and-bls-reference-skills`, `red-baseline-codes-description` or
+    `deferred_items.md` in a `Read`'s `file_path`, a `Grep`'s `path` or `glob`, or a `Glob`'s `path` or
+    `pattern`. A `Grep` content pattern is not a path and is not checked.
+  - It is a `Grep` or `Glob` whose search root holds a quarantined file in a checkout of this repository. The
+    checkouts are every entry of `git worktree list`, in each spelling of the path. The files are the plan (at
+    `specs/plans/` and at `specs/plans/completed/`), the kit folder, this write-up and
+    `specs/deferred_items.md`. So a search of the repository root, of `specs/` or of `/` voids the rep, and a
+    search of `skills/` does not. The root is the call's `path` (default the rep's `repo/`), joined to a `Glob`
+    pattern's literal part. `~` is the rep's own HOME.
+  - It is a `Grep` or `Glob` whose result names a quarantined file. The result is the `tool_result` block's
+    content and the user record's `tool_use_result` (its `filenames`, and a `Grep`'s `content`). A `Read`'s
+    result is file text, which can mention the backlog by name without being it, so it is not read.
 - **No other VOID reason.** Plan 107's path audit, Glob limits and Bash audit void nothing here. Rule 2's deny
   list and read fence refuse those calls instead. Plan 107's record (Task 6, Limit 1) showed that its
   path-audit VOID dropped reps that had loaded the skill. The audit prints a cross-session tool or another
