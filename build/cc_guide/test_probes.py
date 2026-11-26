@@ -589,8 +589,10 @@ def test_the_payload_probe_logs_each_dispatch_through_both_matchers(tmp_path):
     assert json.loads((run_dir / 'payloads.json').read_text()) == expected
 
 
-def bad_payload(cwd):
-    (cwd / 'payloads' / 'any' / 'payload.bad').write_text('not json\n', encoding='utf-8')
+def bad_payload(folder):
+    def write(cwd):
+        (cwd / 'payloads' / folder / 'payload.bad').write_text('not json\n', encoding='utf-8')
+    return write
 
 
 def empty_payload(cwd):
@@ -601,7 +603,8 @@ def empty_payload(cwd):
 @pytest.mark.parametrize('side, outcome, finding', [
     (fire_payload_hooks(*PAYLOADS), PASS, 'dispatches reach PreToolUse as Agent, with no model when unset; '
                                           'claude-code-guide served claude-haiku-5-5, as the haiku control was'),
-    (bad_payload, ERROR, 'JSONDecodeError: '),
+    (bad_payload('any'), ERROR, 'JSONDecodeError: '),
+    (bad_payload('agent'), ERROR, 'JSONDecodeError: '),
     # An empty payload is not JSON either, and hooks that never fired leave empty logs, not a broken file.
     (empty_payload, ERROR, 'JSONDecodeError: '),
     (lambda cwd: None, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),

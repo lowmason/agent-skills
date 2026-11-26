@@ -22,7 +22,6 @@ WITHOUT_BASH_TOOLS = frozenset({'Read'}) | GREP_GLOB
 SUPPORTED_PLATFORMS = ('darwin', 'linux')
 STOP_LOG = ['false', 'true', 'true']
 STOP_EXITS = [2, 2, 0]
-DISPATCH_TOOLS = ('Agent', 'Task')  # the subagent tool's name, and its older one
 HAIKU_AGENTS = ('Explore', 'test-runner')
 REVIEWER, REVIEWER_EFFORT = 'code-reviewer', 'xhigh'
 PIN_AGENTS = (*HAIKU_AGENTS, REVIEWER)
@@ -30,10 +29,11 @@ PIN_AGENTS = (*HAIKU_AGENTS, REVIEWER)
 # decide() take the tool's name, decide() reads tool_input's model and subagent_type, and it lets a model-less call
 # through for the built-ins in its BUILTIN_PINNED. test_probe_checks.py holds these to the hook's own constants.
 GUARDED_TOOL = 'Agent'  # the hook's AGENT_TOOL
+DISPATCH_TOOLS = (GUARDED_TOOL, 'Task')  # the subagent tool's name, and its older one
 HAIKU_BUILTINS = ('claude-code-guide',)  # the hook's BUILTIN_PINNED: plan 63 saw each run on Haiku with no model passed
 CONTROL_AGENT, CONTROL_MODEL = 'general-purpose', 'haiku'  # dispatched beside them, passing its model
 PAYLOAD_AGENTS = (CONTROL_AGENT, *HAIKU_BUILTINS)
-ANY_MATCHER, GUARD_MATCHER = '*', 'Agent'  # the two logging hooks; the second is hooks/README.md's install matcher
+ANY_MATCHER, GUARD_MATCHER = '*', GUARDED_TOOL  # the two logging hooks; the second is hooks/README.md's install matcher
 PAYLOAD_LOGS = {'any': ANY_MATCHER, 'agent': GUARD_MATCHER}  # each hook's log folder -> its matcher
 SYNTHETIC = '<synthetic>'  # the model Claude Code records on a message it made itself, such as an API error
 GUARD_MARKER = 'readonly-agent-guard:'
@@ -282,43 +282,51 @@ def check_dispatched(events: list[dict], payloads: list[dict]) -> Verdict | None
     return None
 
 
-def first_by_type(payloads: list[dict], matcher: str) -> dict[str, dict]:
-    '''The first payload of each subagent type that the hook with this matcher logged.'''
-    found: dict[str, dict] = {}
+def by_type(payloads: list[dict], matcher: str) -> dict[str | None, list[dict]]:
+    '''Each subagent type's payloads that the hook with this matcher logged, in order.'''
+    found: dict[str | None, list[dict]] = {}
     for p in payloads:
         if p.get('matcher') == matcher:
-            found.setdefault(p.get('subagent_type'), p)
+            found.setdefault(p.get('subagent_type'), []).append(p)
     return found
 
 
 def check_payloads(payloads: list[dict]) -> Verdict | None:
     '''The payload half of agent-payload: a verdict when the payloads decide
     one, else None. A dispatch that reaches PreToolUse under another tool
-    name, or that the Agent matcher misses, never reaches the guard. A
-    control payload without its model, or a model on a dispatch sent with
-    none, changes what decide() reads. check_parent has already shown that
-    the parent sent those models.'''
-    seen = first_by_type(payloads, ANY_MATCHER)
-    renamed = sorted({str(p.get('tool_name')) for p in seen.values()} - {GUARDED_TOOL})
+    name, or that the Agent matcher misses, never reaches the guard. Two
+    payloads of one type with different models, under one matcher, leave no
+    payload to read: ERROR. The model checks read the Agent matcher's
+    payloads, the ones the guard gets. A control payload without a model,
+    or a model on a dispatch sent with none, changes what decide() reads.
+    check_parent has already shown that the parent sent those models.'''
+    seen = by_type(payloads, ANY_MATCHER)
+    renamed = sorted({str(p.get('tool_name')) for group in seen.values() for p in group} - {GUARDED_TOOL})
     if renamed:
         return Verdict(DIVERGES, f"a subagent dispatch reaches PreToolUse as {', '.join(renamed)}, not {GUARDED_TOOL}")
     for agent in PAYLOAD_AGENTS:
         if agent not in seen:
             return Verdict(ERROR, f'no PreToolUse payload dispatches {agent}')
-    matched = first_by_type(payloads, GUARD_MATCHER)
+    matched = by_type(payloads, GUARD_MATCHER)
     missed = [agent for agent in PAYLOAD_AGENTS if agent not in matched]
     if missed:
         return Verdict(DIVERGES, f"the {GUARD_MATCHER} matcher did not fire for {', '.join(missed)}")
-    control = seen[CONTROL_AGENT]
-    if control.get('model') != CONTROL_MODEL:
+    for matcher, groups in ((ANY_MATCHER, seen), (GUARD_MATCHER, matched)):
+        for agent in PAYLOAD_AGENTS:
+            models = {p.get('model') for p in groups[agent]}
+            if len(models) > 1:
+                return Verdict(ERROR, f'the {matcher} hook logged {len(groups[agent])} {agent} payloads with '
+                                      f"different models ({', '.join(sorted(map(str, models)))}), so none is first")
+    control = matched[CONTROL_AGENT][0]
+    if not control.get('model'):
         keys = ', '.join(control.get('input_keys') or [])
         return Verdict(DIVERGES, f"the {CONTROL_AGENT} dispatch passed model {CONTROL_MODEL!r}, but its payload holds "
                                  f"model {control.get('model')!r} (tool_input keys: {keys})")
     for agent in HAIKU_BUILTINS:
-        if seen[agent].get('model'):
+        if matched[agent][0].get('model'):
             return Verdict(DIVERGES, f"a dispatch sent with no model ({agent}) arrives with model "
-                                     f"{seen[agent]['model']!r}, so the guard would pass a model-less dispatch of "
-                                     'any type')
+                                     f"{matched[agent][0]['model']!r}, so the guard would pass a model-less dispatch "
+                                     'of any type')
     return None
 
 
@@ -380,7 +388,7 @@ def assess_agent_payload(events: list[dict] | None, payload_file: dict) -> Verdi
     for agent in HAIKU_BUILTINS:
         if session in served[agent]:
             wrong.append(f'{agent} was served the session model {session}')
-        elif served[agent] != served[CONTROL_AGENT]:
+        elif not served[agent] <= served[CONTROL_AGENT]:
             wrong.append(f"{agent} was served {', '.join(sorted(served[agent]))}, not the {control} the "
                          f'{CONTROL_MODEL} control was served')
     if wrong:

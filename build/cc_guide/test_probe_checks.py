@@ -234,6 +234,36 @@ def test_agent_payload(events, payloads, verdict):
     assert pc.assess_agent_payload(events, saved(payloads)) == verdict
 
 
+def test_two_payloads_of_one_type_with_different_inputs_are_error():
+    payloads = [*payload_log(), {**payload_log()[0], 'model': None}]
+    verdict = pc.check_payloads(payloads)
+    assert verdict.outcome == ERROR and 'general-purpose' in verdict.finding
+
+
+def test_a_control_model_normalised_to_a_full_id_passes():
+    payloads = payload_log({pc.CONTROL_AGENT: {'model': 'claude-haiku-5-5'}})
+    assert pc.check_payloads(payloads) is None
+
+
+def test_the_model_checks_read_the_agent_matcher_payload():
+    '''The guard installs on the Agent matcher, so its payload decides.'''
+    payloads = [p if p['matcher'] == pc.ANY_MATCHER or p['subagent_type'] != pc.CONTROL_AGENT
+                else {**p, 'model': None} for p in payload_log()]
+    verdict = pc.check_payloads(payloads)
+    assert verdict.outcome == DIVERGES and verdict.finding.startswith('the general-purpose dispatch passed model')
+    builtin = [p if p['matcher'] == pc.ANY_MATCHER or p['subagent_type'] != 'claude-code-guide'
+               else {**p, 'model': 'inherit'} for p in payload_log()]
+    assert pc.check_payloads(builtin).outcome == DIVERGES
+
+
+def test_a_control_served_two_haiku_ids_still_matches_a_builtin_served_one():
+    served = {pc.CONTROL_AGENT: 'claude-haiku-5-5', 'claude-code-guide': 'claude-haiku-5-5'}
+    events = payload_run(served)
+    extra = assistant({'type': 'text', 'text': 'OK'}, parent='toolu_0', model='claude-haiku-4-5')
+    events = [*events[:-1], extra, events[-1]]
+    assert pc.assess_agent_payload(events, saved(payload_log())).outcome == PASS
+
+
 def test_trim_block_keeps_a_dispatch_model():
     block = tool_use('toolu_1', 'Agent', subagent_type='general-purpose', model='haiku', prompt='x')
     assert pc._trim_block(block)['input'] == {'subagent_type': 'general-purpose', 'model': 'haiku'}
@@ -402,7 +432,7 @@ def test_the_payload_probe_checks_what_the_dispatch_guard_reads():
     spec = importlib.util.spec_from_file_location('dispatch_model_guard', GUARD)
     guard = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(guard)
-    assert guard.AGENT_TOOL == pc.GUARDED_TOOL == pc.GUARD_MATCHER
+    assert pc.DISPATCH_TOOLS[0] == pc.GUARDED_TOOL == pc.GUARD_MATCHER == guard.AGENT_TOOL
     assert guard.BUILTIN_PINNED == frozenset(pc.HAIKU_BUILTINS)
 
 
