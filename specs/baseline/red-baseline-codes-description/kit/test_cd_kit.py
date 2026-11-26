@@ -261,8 +261,14 @@ def test_runner_refuses_bad_arguments(trig, what):
     kwargs = {'arm': {'arm': 'control'}, 'prompt': {'prompt': 'P9'}, 'model': {'model': 'claude-haiku-5-5'},
               'ref': {'ref': 'no-such-ref'}, 'first': {'first': 'x'}, 'order': {'first': 2, 'last': 1},
               'out': {'out': trig.tmp / 'out' / 'P1' / 'new' / SONNET}}[what]
+    # Each refusal names its own reason, so a later check that also stops the run cannot stand in for it.
+    reason = {'arm': 'arm control is not old, new or pilot', 'prompt': 'P9 is not a trigger prompt id',
+              'model': 'model claude-haiku-5-5 is not', 'ref': 'no-such-ref names no commit',
+              'first': 'first and last must be positive integers', 'order': 'need 1 <= first <= last',
+              'out': f'does not end in P1/old/{SONNET}'}[what]
     done = trig.run(**kwargs)
     assert done.returncode == 2, done.stdout + done.stderr
+    assert reason in done.stdout + done.stderr
     assert trig.calls() == []
 
 
