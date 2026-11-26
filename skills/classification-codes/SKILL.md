@@ -82,9 +82,10 @@ retrieval time behind every file; `sources/` holds the exact source bytes.
 ## How to query
 
 **Codes are strings, always.** NAICS prefix logic dies on integers, and the adjacent Census
-occupation codes carry leading zeros. In Polars, force them:
+occupation and industry codes carry leading zeros. In Polars, force them:
 `schema_overrides={'code': pl.Utf8, 'parent_code': pl.Utf8, 'sector_code': pl.Utf8}` (and the
-`naics_*` columns of the concordances).
+`naics_*` columns of the concordances, `census_ind` in the Census industry lists, and
+`census_ind_<v>` and `naics_<v>` in the `_to_naics_` files).
 
 Point lookups — grep, don't load:
 
