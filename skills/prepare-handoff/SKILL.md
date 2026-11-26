@@ -110,7 +110,7 @@ gemini -m <model> -i "$(cat <path>)"
 ```
 
 You may recommend a model, with a reason drawn from the receiving work; never
-assume a default. `/model` saves a default for later sessions, while `--model`
+assume a default. A typed `/model` saves a default for later sessions, while `--model`
 applies to the one session only.
 
 ## Common mistakes

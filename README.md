@@ -194,7 +194,7 @@ are Python and need no `jq`. To block, a hook uses **exit 2**, which feeds stder
 as `uv-guard.sh` does. Or it prints a JSON decision on stdout: a deny, as the guards do, or a
 block, as `ruff-check.sh` does. Exit 1 only logs, unless the hook sets
 `"onFailure": "block"` (2.1.295+). That setting has no effect on a `Stop` hook such as
-`ruff-check.sh`. A shell-form `PreToolUse` or `PermissionRequest` command hook on Windows without
+`ruff-check.sh`. A shell-form `PreToolUse`, `PermissionRequest` or `PreSkillShellCommand` command hook on Windows without
 Git Bash (2.1.299+) also blocks when it fails, whether or not it sets `shell` to powershell
 (2.1.309+). An exec-form hook still fails open.
 
