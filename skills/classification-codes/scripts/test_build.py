@@ -700,9 +700,11 @@ IND_ROWS = [
 IND_2017_MILITARY = {'9590': '928', '9670': '928110', '9680': '928110'}
 
 
-def census_ind_raw(vintage: int = 2022, cells: dict[str, str] | None = None) -> pl.DataFrame:
+def census_ind_raw(
+  vintage: int = 2022, cells: dict[str, str] | None = None, body: list[tuple] | None = None,
+) -> pl.DataFrame:
   '''The code-list sheet with the vintage's own header wording; cells replaces the NAICS cell of
-  the named Census codes.'''
+  the named Census codes, and body replaces IND_ROWS.'''
   cells = cells or {}
   code_header = '2022 Census Industry Code' if vintage == 2022 else f'{vintage} Census Code'
   rows = [
@@ -711,7 +713,7 @@ def census_ind_raw(vintage: int = 2022, cells: dict[str, str] | None = None) -> 
     [None, f'Industry {vintage} Description', None, code_header, f'{vintage} NAICS Code'],
     [None, f'The {vintage} census industry code list has 266 codes including 7 military codes. '],
   ]
-  rows.extend([col0, col1, None, code, cells.get(code, cell)] for col0, col1, code, cell in IND_ROWS)
+  rows.extend([col0, col1, None, code, cells.get(code, cell)] for col0, col1, code, cell in body or IND_ROWS)
   return raw_sheet(rows)
 
 
@@ -803,6 +805,14 @@ def test_parse_naics_cell_rejects_unknown_shapes(cell):
     build.parse_naics_cell(cell)
 
 
+@pytest.mark.parametrize(('cell', 'expected'), [
+  ('Pt. 92811', part('92811')),
+  ('part of 21', part('21')),
+])
+def test_parse_naics_cell_partial_marker_spellings(cell, expected):
+  assert build.parse_naics_cell(cell) == expected
+
+
 def test_parse_census_ind_list_as_published(naics_for_ind):
   frame = build.parse_census_ind(census_ind_raw(), vintage=2022, naics_2022=naics_for_ind)
   assert frame.columns == ['census_ind', 'title', 'naics_cell']
@@ -831,6 +841,29 @@ def test_parse_census_ind_rejects_repeated_code_with_different_cells(naics_for_i
   )
   with pytest.raises(ValueError, match='0770'):
     build.parse_census_ind(raw, vintage=2022, naics_2022=naics_for_ind)
+
+
+@pytest.mark.parametrize('second_cell', ['236', None])
+def test_parse_census_ind_rejects_repeated_code_with_and_without_a_cell(naics_for_ind, second_cell):
+  raw = census_ind_raw().with_columns(
+    pl.when(pl.col('column_1').str.starts_with('Construction (')).then(pl.lit(second_cell, dtype=pl.Utf8))
+    .otherwise(pl.col('column_4')).alias('column_4')
+  )
+  with pytest.raises(ValueError, match='0770'):
+    build.parse_census_ind(raw, vintage=2022, naics_2022=naics_for_ind)
+
+
+def test_parse_census_ind_sorts_codes(naics_for_ind):
+  # The sheet lists utilities (05xx-06xx) after transportation; the file is in code order.
+  body = [row for row in IND_ROWS if row[2] != '0480'] + [(None, 'Not specified type of mining', '0480', 'Part of 21')]
+  frame = build.parse_census_ind(census_ind_raw(body=body), vintage=2022, naics_2022=naics_for_ind)
+  assert frame['census_ind'].to_list()[:4] == ['0370', '0380', '0480', '0490']
+
+
+def test_parse_census_ind_trims_cells(naics_for_ind):
+  frame = build.parse_census_ind(census_ind_raw(cells={'0380': '2121 ', '0480': ' Part of 21 '}), vintage=2022, naics_2022=naics_for_ind)
+  cells = dict(frame.select('census_ind', 'naics_cell').iter_rows())
+  assert cells['0380'] == '2121' and cells['0480'] == 'Part of 21'
 
 
 def test_parse_census_ind_reads_the_2017_header(naics_for_ind):
@@ -892,6 +925,12 @@ def test_expand_census_ind_applies_exclusions(naics_for_ind):
   assert pairs[('1270', '311812')] == 'prefix' and pairs[('1270', '311830')] == 'prefix'
   assert ('1270', '311811') not in pairs           # carved out by 'exc. 311811'
   assert pairs[('1190', '311811')] == 'exact'      # another code's exclusion leaves its claim alone
+
+
+def test_expand_census_ind_applies_every_exclusion_in_a_cell(naics_for_ind):
+  pairs = ind_pairs(expand_ind(naics_for_ind, cells={'1270': '3118 exc. 311811, 311830', '0370': '211 exc. 21113'}))
+  assert {naics for census, naics in pairs if census == '1270'} == {'311812'}   # both carve-outs apply
+  assert {naics for census, naics in pairs if census == '0370'} == {'211120'}   # a five-digit carve-out
 
 
 def test_expand_census_ind_exclusions_apply_to_partial_items(naics_for_ind):
