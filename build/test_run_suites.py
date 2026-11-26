@@ -82,6 +82,9 @@ def test_the_fixture_registry_is_valid():
      "suite 2 (b): duplicate dir 'x'"),
     ("title = 'suites'\n" + ONE + "with = ['pytest']\n", "unknown top-level key 'title'"),
     ('', 'no [[suite]] tables'),
+    (ONE + "with = ['pytest', '--index-url=x']\n", "suite 1 (a): 'with' entries must not start with '-'"),
+    (ONE + "with = ['pytest']\nextras = ['-e.']\n", "suite 1 (a): 'extras' entries must not start with '-'"),
+    (ONE + "with = ['pytest']\npythons = ['-p']\n", "suite 1 (a): 'pythons' entries must not start with '-'"),
 ])
 def test_validate_refuses(text, problem):
     assert problem in problems(text)
@@ -145,6 +148,16 @@ def test_container_compares_path_parts_not_string_prefixes():
     build = rs.Suite('build', 'build', ('pytest',))
     other = rs.Suite('other', 'build_extra', ('pytest',))
     assert rs.container(other, [build, other]) is None
+
+
+def test_all_runs_an_inner_suite_the_outer_one_skips():
+    outer = rs.Suite('outer', 'tools', ('pytest',))
+    inner = rs.Suite('tools-build', 'tools/build', ('pytest',))
+    assert rs.container(inner, [outer, inner]) is None
+
+
+def test_norecurse_is_pytests_default(request):
+    assert set(rs.NORECURSE) == set(request.config.getini('norecursedirs'))
 
 
 # --- --check: the registry and its coverage ---
@@ -229,10 +242,27 @@ def test_check_flags_suites_out_of_name_order(tmp_path):
     assert findings(root) == ["build/suites.toml: suites are not sorted by name: 'outer' comes after 'zulu'"]
 
 
-def test_check_fails_closed_outside_a_git_repository(tmp_path):
+def test_check_flags_a_test_directory_that_pytest_skips(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'skills/alpha/scripts/build/test_y.py': ''})
+    assert findings(root) == ["skills/alpha/scripts/build: holds pytest files, but pytest skips 'build' "
+                              'below skills/alpha/scripts, so no suite collects it']
+
+
+def test_a_suite_dir_named_like_a_skipped_folder_is_collected(tmp_path):
+    registry = "[[suite]]\nname = 'build'\ndir = 'build'\nwith = ['pytest']\n"
+    root = git_repo(tmp_path, {'build/suites.toml': registry, 'build/test_b.py': ''})
+    assert findings(root) == []
+
+
+def test_check_fails_closed_outside_a_git_repository(tmp_path, monkeypatch):
+    monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
+    monkeypatch.setenv('LC_ALL', 'C')
     (tmp_path / 'build').mkdir()
     (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
-    assert findings(tmp_path) == ['build/suites.toml: git ls-files failed, so the test directories are unknown']
+    [finding] = findings(tmp_path)
+    assert finding.startswith('build/suites.toml: git ls-files failed (')
+    assert 'not a git repository' in finding
+    assert finding.endswith('), so the test directories are unknown')
 
 
 # --- the command line ---
@@ -288,6 +318,13 @@ def test_extras_and_pytest_args_reach_the_run(repo):
     assert fake.argvs == [('uv', 'run', '--python', DEV, '--exclude-newer', V.cutoff, '--with', 'pytest',
                            '--with', 'polars==9.9.9', '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q',
                            '-k', 'x')]
+
+
+def test_an_option_between_suite_names_applies_to_all(repo):
+    fake = FakeRuns()
+    assert rs.main(['alpha', '--extras', 'outer'], root=repo, run_one=fake, pins=PINS) == 0
+    assert fake.labels == [f'alpha ({DEV})', f'outer ({DEV})']
+    assert '--with' in fake.argvs[0] and 'arviz>=1.0' in fake.argvs[0]
 
 
 def test_the_options_build_the_pins_from_the_repos_file(repo):
