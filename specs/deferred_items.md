@@ -1557,6 +1557,7 @@ all 20 named a type.
       `test_check.py`: the audit-on-failed-fetch test asserts `audit` is present but not
       that `blocks`, `changelog` and `probes` are absent. Size: plan. Done when: each
       gap has a test, or the owner records it as not needed.
+      → planned 2026-11-26: specs/plans/109-cc-guide-fetch-notice-and-probes.md
 
 ## 50-superpowers-upstream-fixes — 2026-10-18
 - [x] find-polluter.sh still ends on its all-clear when the pollution exists before the
@@ -3071,6 +3072,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       check that fails partway leaves `latest/` as it was, a test in `build/cc_guide/test_check.py`
       pins it, and the spec's R6.3 and R6.4 state the whole-directory swap.
       → progress 2026-11-17 (owner ruling): approve the staged swap. `live_docs` writes `latest/` into a staged folder and swaps it in at once, a test in `build/cc_guide/test_check.py` pins it, and the spec's R6.3 and R6.4 change to match.
+      → planned 2026-11-26: specs/plans/109-cc-guide-fetch-notice-and-probes.md
 
 ## /deferred quick-fix pass (no plan; lowmason/agent-skills#73) — 2026-10-19
 - [x] Rule on three guide-coverage questions that the 2026-10-19 verify runs left in the
@@ -3271,6 +3273,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       ignored SIGTERM was gone within 1 s, and its `sleep` child died too, so SIGKILL follows
       at once, probably to the process group. `build/cc_guide/notice.sh` traps HUP, INT and
       TERM, so its TERM path is the one that runs. The plan must run more than one rep for (a).
+      → planned 2026-11-26: specs/plans/109-cc-guide-fetch-notice-and-probes.md
 - [x] Rule on the owner's-call rows of the second 2026-10-20 verify run (packets
       `~/.cache/agent-skills/cc-guide/packets/20261020T150226-verify/{overview,skills,subagents,rules,hooks,models}`;
       `cli.py settle <packet>` re-prints each row). 20 omissions (C rows), among them: a skill
@@ -4254,6 +4257,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       replay cases. See `specs/plans/completed/69-agent-payload-probe.md` (D6). Size: plan. Done when: a parent
       that skips the requested model gives ERROR, not DIVERGES, with a replay case that proves it, and the
       empty-log ERROR names the stage that dropped the payloads.
+      → planned 2026-11-26: specs/plans/109-cc-guide-fetch-notice-and-probes.md
 - [ ] Review Minors from plan 69's final review (code, triaged defer). `first_by_type` in
       `build/cc_guide/probe_checks.py` takes the first payload of a type, but `collect_payload` in
       `build/cc_guide/probes.py` sorts the payload files by a random `mktemp` suffix, so "first" is arbitrary
@@ -4269,6 +4273,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/plans/completed/69-agent-payload-probe.md` (D8). Size: quick-fix. Revisit if: a real run gives a
       false DIVERGES or ERROR that traces to one of these, or the first item of this section lands (then fix
       these in the same change).
+      → planned 2026-11-26: specs/plans/109-cc-guide-fetch-notice-and-probes.md
 
 ## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
 - [x] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
