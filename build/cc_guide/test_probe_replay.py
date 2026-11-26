@@ -137,6 +137,15 @@ def without_digit(measures):
     return {kind: measure for kind, measure in measures.items() if kind != 'digit'}
 
 
+def sightings_with(rep: int, agent: str, **seen) -> dict[str, str]:
+    '''The recorded explore-override sightings.json with `seen` replacing fields of `agent`'s sightings in rep `rep`,
+    counted from 1.'''
+    probe = probes.PROBE_RUNS['explore-override']
+    saved = json.loads((FIXTURES / probe.fixtures['sightings.json']).read_text(encoding='utf-8'))
+    saved[rep - 1]['seen'][agent].update(seen)
+    return {'sightings.json': json.dumps(saved)}
+
+
 # The register's window, which compaction-cut reads; the first case keeps one character fewer.
 CUT_WINDOW = probes.register_window()
 
@@ -198,6 +207,12 @@ CUT_WINDOW = probes.register_window()
      'no re-attached copy of cut-probe-digit after the compact boundary'),
     ('compaction-cut', lambda: edited('compaction-cut', 'cut.jsonl', drop('compact_boundary')), ERROR,
      'the /compact run emitted no compact_boundary event'),
+    # explore-override's cases pin their findings: a valid rep where the override got a git-status snapshot, and a
+    # rep that proves nothing, since the control missed the CLAUDE.md canary.
+    ('explore-override', lambda: sightings_with(2, 'Explore', git_status=True), DIVERGES,
+     'rep 2: the Explore override got a git-status snapshot'),
+    ('explore-override', lambda: sightings_with(3, 'canary-control', claude_md=False), ERROR,
+     'rep 3: the control missed the CLAUDE.md canary'),
 ])
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())
