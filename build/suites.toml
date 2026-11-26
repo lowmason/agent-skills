@@ -65,6 +65,12 @@ with = ['pytest', 'polars']
 notes = ['Build tests (fixtures are in-memory frames, so no workbook reader is needed).']
 
 [[suite]]
+name = 'codes-description-kit'
+dir = 'specs/baseline/red-baseline-codes-description/kit'
+with = ['pytest']
+notes = ['Plan 111 trigger-test kit: the trigger runner (stub claude, no model), rep_tools.py, audit.py, triggers.py, trigger_prompts.py, cases.py and the fixture. bash, git and uv required.']
+
+[[suite]]
 name = 'completion-triage-guard-kit'
 dir = 'specs/baseline/red-baseline-completion-triage/guard-kit'
 with = ['pytest']
