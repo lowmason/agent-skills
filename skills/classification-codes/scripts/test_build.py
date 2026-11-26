@@ -12,6 +12,11 @@ sources/ is populated.
 
 from __future__ import annotations
 
+import hashlib
+import re
+import urllib.request
+from pathlib import Path
+
 import polars as pl
 import pytest
 
@@ -671,3 +676,134 @@ def test_fetch_uses_cached_bls_copy_without_contact_email(tmp_path, monkeypatch)
   cached.write_bytes(b'not really a workbook')
   path, sha256, _retrieved = build.fetch('https://www.bls.gov/soc/2018/soc_structure_2018.xlsx', tmp_path, offline=False, refresh=False)
   assert path == cached and len(sha256) == 64
+
+
+# --------------------------------------------------------------------------------------------
+# Validator bands
+# --------------------------------------------------------------------------------------------
+
+
+def rows_frame(height: int) -> pl.DataFrame:
+  return pl.DataFrame({'code': [str(index) for index in range(height)]})
+
+
+@pytest.mark.parametrize(('height', 'flagged'), [(799, True), (800, False), (2000, False), (2001, True)])
+def test_validate_naics_concordance_row_band(height, flagged):
+  problems = build.validate_naics_concordance(rows_frame(height), 2017, 2022)
+  if flagged:
+    assert len(problems) == 1 and 'outside the plausible 800-2000 band' in problems[0]
+  else:
+    assert problems == []
+
+
+@pytest.mark.parametrize(('height', 'flagged'), [(699, True), (700, False), (1600, False), (1601, True)])
+def test_validate_soc_crosswalk_row_band(height, flagged):
+  problems = build.validate_soc_crosswalk(rows_frame(height), 2010, 2018)
+  if flagged:
+    assert len(problems) == 1 and 'outside the plausible 700-1600 band' in problems[0]
+  else:
+    assert problems == []
+
+
+def census_occ_frame(height: int, soc_level: str = 'detailed') -> pl.DataFrame:
+  return pl.DataFrame({
+    'census_occ': [f'{index:04d}' for index in range(height)],
+    'soc_level': [soc_level] * height,
+  })
+
+
+def test_validate_census_occ_flags_band_duplicates_and_levels():
+  assert build.validate_census_occ(census_occ_frame(450), 2018) == []
+  band = build.validate_census_occ(census_occ_frame(449), 2018)
+  assert len(band) == 1 and 'outside the plausible 450-700 band' in band[0]
+
+  duplicated = census_occ_frame(450).with_columns(
+    pl.when(pl.col('census_occ') == '0001').then(pl.lit('0000')).otherwise(pl.col('census_occ')).alias('census_occ')
+  )
+  problems = build.validate_census_occ(duplicated, 2018)
+  assert len(problems) == 1 and '2 duplicated Census codes' in problems[0]
+
+  odd_level = census_occ_frame(450).with_columns(
+    pl.when(pl.col('census_occ') == '0000').then(pl.lit('group')).otherwise(pl.col('soc_level')).alias('soc_level')
+  )
+  problems = build.validate_census_occ(odd_level, 2018)
+  assert len(problems) == 1 and 'outside' in problems[0]
+
+
+# --------------------------------------------------------------------------------------------
+# Offline fetch
+# --------------------------------------------------------------------------------------------
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+TEST_URL = 'https://www.census.gov/naics/2022NAICS/2022_NAICS_Structure.xlsx'
+
+
+def test_fetch_offline_without_cache_raises(tmp_path):
+  with pytest.raises(FileNotFoundError, match='--offline set but'):
+    build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+
+
+def test_fetch_offline_uses_cache_without_network(tmp_path, monkeypatch):
+  payload = b'cached workbook bytes'
+  cached = tmp_path / build.source_filename(TEST_URL)
+  cached.write_bytes(payload)
+
+  def refuse(*args, **kwargs):
+    raise AssertionError('offline fetch must not touch the network')
+
+  monkeypatch.setattr(urllib.request, 'urlopen', refuse)
+  path, sha256, _retrieved = build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+  assert path == cached
+  assert sha256 == hashlib.sha256(payload).hexdigest()
+
+
+# --------------------------------------------------------------------------------------------
+# Documented counts match the committed data
+# --------------------------------------------------------------------------------------------
+
+
+def table_counts(skill_md: str) -> dict[str, int]:
+  '''The first number in the `rows` cell of each `data/*.csv` row of the `## Files` table.'''
+  counts = {}
+  for line in skill_md.split('## Files', 1)[1].splitlines():
+    cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+    match = re.fullmatch(r'`(data/[^`]+\.csv)`', cells[0]) if cells else None
+    if match is None or len(cells) < 2:
+      continue
+    counts[match.group(1)] = int(re.match(r'[\d,]+', cells[1]).group().replace(',', ''))
+  return counts
+
+
+def csv_height(relative: str) -> int:
+  return pl.read_csv(SKILL_DIR / relative, infer_schema=False).height
+
+
+def test_skill_table_counts_match_data():
+  skill_md = (SKILL_DIR / 'SKILL.md').read_text()
+  counts = table_counts(skill_md)
+  assert counts, 'no data/*.csv rows found in the SKILL.md Files table'
+  for relative, documented in counts.items():
+    actual = csv_height(relative)
+    assert documented == actual, f'SKILL.md {relative}: documents {documented} rows, file has {actual}'
+  for relative, label, level in [
+    ('data/naics_2022.csv', 'six-digit', '6'),
+    ('data/naics_2017.csv', 'six-digit', '6'),
+    ('data/naics_2012.csv', 'six-digit', '6'),
+    ('data/soc_2018.csv', 'detailed', 'detailed'),
+    ('data/soc_2010.csv', 'detailed', 'detailed'),
+  ]:
+    row = next(line for line in skill_md.splitlines() if f'`{relative}`' in line)
+    documented = int(re.search(rf'\(([\d,]+) {label}\)', row).group(1).replace(',', ''))
+    actual = pl.read_csv(SKILL_DIR / relative, infer_schema=False).filter(pl.col('level') == level).height
+    assert documented == actual, f'SKILL.md {relative}: documents {documented} {label}, file has {actual}'
+
+
+def test_manifest_rows_match_data():
+  checked = 0
+  for line in (SKILL_DIR / 'MANIFEST.md').read_text().splitlines():
+    cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+    if len(cells) > 1 and re.fullmatch(r'data/[^ ]+\.csv', cells[0]):
+      actual = csv_height(cells[0])
+      assert int(cells[1]) == actual, f'MANIFEST.md {cells[0]}: lists {cells[1]} rows, file has {actual}'
+      checked += 1
+  assert checked
