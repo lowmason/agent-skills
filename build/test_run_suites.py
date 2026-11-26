@@ -12,7 +12,7 @@ import pytest
 
 import run_suites as rs
 import versions
-from git_listing import git_env
+from git_listing import git_env, kept_paths
 
 V = versions.load()   # the dev interpreter and the cutoff come from the file, never from a literal here
 DEV = V.dev_python
@@ -51,10 +51,12 @@ pythons = ['dev', '/usr/bin/python3']
 
 @pytest.fixture(autouse=True)
 def isolated_git(tmp_path, monkeypatch):
-    '''Keep every git call below tmp_path, and read no user or system git config.'''
+    '''Keep every git call below tmp_path, and read no user or system git config or default
+    excludes file ($XDG_CONFIG_HOME/git/ignore, else $HOME/.config/git/ignore).'''
     monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
     monkeypatch.setenv('GIT_CONFIG_GLOBAL', os.devnull)
     monkeypatch.setenv('GIT_CONFIG_NOSYSTEM', '1')
+    monkeypatch.setenv('XDG_CONFIG_HOME', str(tmp_path / 'no-xdg'))
 
 
 ONE = "[[suite]]\nname = 'a'\ndir = 'x'\n"  # a suite table without its `with` line
@@ -242,6 +244,15 @@ def test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree(tmp_pat
     subprocess.run(['git', 'add', '.'], cwd=root, env=git_env(), check=True)
     (root / 'skills' / 'beta' / 'scripts' / 'test_b.py').unlink()
     assert findings(root) == []
+
+
+def test_the_git_isolation_hides_the_users_default_excludes(tmp_path, monkeypatch):
+    home = tmp_path / 'home'
+    (home / '.config' / 'git').mkdir(parents=True)
+    (home / '.config' / 'git' / 'ignore').write_text('build/\n')
+    monkeypatch.setenv('HOME', str(home))   # git reads $HOME/.config/git/ignore only while XDG_CONFIG_HOME is unset or empty
+    root = git_repo(tmp_path / 'repo', {'build/test_b.py': ''})
+    assert kept_paths(root) == ['build/test_b.py']
 
 
 def test_check_skips_a_tracked_file_deleted_from_the_work_tree(tmp_path):
