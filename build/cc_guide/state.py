@@ -3,6 +3,7 @@ configuration), baseline.json (tool state) and PROBES.md, read from the
 working tree or a commit (drift spec R2, R6.1, Layout).'''
 import fnmatch
 import json
+import os
 import re
 import subprocess
 import tomllib
@@ -470,13 +471,31 @@ def default_cache() -> Path:
     return Path.home() / '.cache' / 'agent-skills' / 'cc-guide'
 
 
+LATEST = 'latest'             # the link naming the current generation (plan 109, D3)
+GENERATION_PREFIX = 'latest.'  # each fetch's generation folder: latest.<suffix>/ holding docs/ and fetch.json
+
+
+def latest_dir(cache: Path) -> Path:
+    '''The current generation folder, read from the latest link once, so a
+    caller that reads fetch.json and pages under one result reads one fetch,
+    even when a check swaps the link meanwhile. A legacy real latest/ folder,
+    or a cache with no fetch yet, is cache/latest itself.'''
+    link = cache / LATEST
+    return cache / os.readlink(link) if link.is_symlink() else link
+
+
 def latest_docs(cache: Path) -> Path:
-    return cache / 'latest' / 'docs'
+    return latest_dir(cache) / 'docs'
+
+
+def fetch_record_in(root: Path) -> Path:
+    '''A generation's fetch time and changelog head, beside its docs/ (R6.4).'''
+    return root / 'fetch.json'
 
 
 def fetch_record(cache: Path) -> Path:
-    '''The last fetch's time and changelog head, beside latest/docs (R6.4).'''
-    return cache / 'latest' / 'fetch.json'
+    '''The last fetch's record, in the current generation.'''
+    return fetch_record_in(latest_dir(cache))
 
 
 def read_utf8(path: Path) -> str:
@@ -489,9 +508,15 @@ def read_utf8(path: Path) -> str:
 
 
 def read_fetch(cache: Path) -> dict | None:
-    '''The last fetch's record (R6.4), or None before the first fetch. A
-    record that does not parse, or names no changelog head, is a SetupError.'''
-    path = fetch_record(cache)
+    '''The last fetch's record (R6.4), from the current generation.'''
+    return read_fetch_at(latest_dir(cache))
+
+
+def read_fetch_at(root: Path) -> dict | None:
+    '''The fetch record of the generation at root, or None before the first
+    fetch. A record that does not parse, or names no changelog head, is a
+    SetupError.'''
+    path = fetch_record_in(root)
     if not path.is_file():
         return None
     try:

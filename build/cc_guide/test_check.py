@@ -3,6 +3,7 @@ the report with its citing files and stale backlog, and exit codes (drift
 spec R6, R12.3's row fixture).'''
 import http.client
 import json
+import os
 import urllib.error
 from datetime import date, datetime, timezone
 
@@ -13,7 +14,7 @@ import check
 import docs
 import state
 from cc_fixtures import (DOCS, ENV_PAGE, GUIDE_PATH, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
-                         fixture_snapshot, fixture_state, git, guide_text, isolated_home, write_tree)
+                         fixture_snapshot, fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
 
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 TERMS = state.group_terms(MANIFEST, guide_text())
@@ -300,7 +301,7 @@ def test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again(tmp_path,
     cache, log = tmp_path / 'cache', []
     narrow = state.parse_manifest(MANIFEST_TOML.replace("'env-vars', 'platform:pricing'", "'env-vars'"))
     check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
-    cached = state.latest_docs(cache) / 'platform_pricing.md'
+    cached = cache / state.LATEST / 'docs' / 'platform_pricing.md'  # through the link: the swap keeps gen 1
     assert cached.is_file()
     head_b = DOCS['changelog.md'].replace(
         '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
@@ -316,28 +317,127 @@ def test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again(tmp_path,
     assert got.pages['platform:pricing'] == 'Pricing text at head B.\n'
 
 
-def test_a_new_head_is_recorded_only_after_every_page_is_written(tmp_path, docs_dir):
+HEAD_903 = DOCS['changelog.md'].replace(
+    '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
+    '<Update label="2.1.902"')
+LOG_HEAD_ONLY = [MANIFEST.sources['changelog'], MANIFEST.sources['llms']]
+
+
+def snapshot_of(root):
+    '''Every file under root, by relative path, with its bytes.'''
+    return {p.relative_to(root).as_posix(): p.read_bytes() for p in root.rglob('*') if p.is_file()}
+
+
+def generations(cache):
+    return sorted(p.name for p in cache.iterdir() if p.name.startswith(state.GENERATION_PREFIX))
+
+
+def test_a_check_that_fails_partway_leaves_latest_as_it_was(tmp_path, docs_dir):
     '''Plan 49's final-review question O3: rebaseline --head trusts
-    fetch.json's head to name the pages beside it. So a run that dies while
-    writing the pages leaves the older head recorded, though a page already
-    holds the newer text, and the next run, seeing the changelog head differ,
-    refetches every page.'''
+    fetch.json's head to name the pages beside it. A run builds its pages in
+    a generation of its own, so one that dies partway leaves latest naming
+    the older pages and head, and leaves no folder behind. The next run,
+    seeing the changelog head differ, refetches every page.'''
     cache, log = tmp_path / 'cache', []
     check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
-    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace(
-        '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
-        '<Update label="2.1.902"'), 'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
-    blocked = state.latest_docs(cache) / 'env-vars.md'
-    blocked.unlink()
-    blocked.mkdir()  # the second mapped page: its write fails once tools.md, the first, is written
-    with pytest.raises(IsADirectoryError):
-        check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
-    assert 'runs alpha batches' in (state.latest_docs(cache) / 'tools.md').read_text()
+    before = state.latest_dir(cache)
+    files_before = snapshot_of(before)
+    write_tree(docs_dir, {'changelog.md': HEAD_903,
+                          'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    env_vars, good = docs.page_url('env-vars', MANIFEST.sources), serving(docs_dir)
+
+    def disk_full(url):
+        if url == env_vars:
+            raise OSError('disk full')  # not a FetchError, so it escapes live_docs
+        return good(url)
+    with pytest.raises(OSError, match='disk full'):
+        check.live_docs(MANIFEST, cache, disk_full, NOW)
+    assert state.latest_dir(cache) == before
+    assert snapshot_of(before) == files_before
     assert state.read_fetch(cache)['changelog_head'] == '2.1.902'
-    blocked.rmdir()
+    assert [p.name for p in cache.iterdir() if p.name.startswith(state.GENERATION_PREFIX)] == [before.name]
     check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
     assert len(log) == 2 + len(MANIFEST.pages())
     assert state.read_fetch(cache)['changelog_head'] == '2.1.903'
+    assert 'runs alpha batches' in (state.latest_docs(cache) / 'tools.md').read_text()
+
+
+def test_latest_is_a_symlink_to_a_generation_holding_docs_and_its_record(tmp_path, docs_dir):
+    '''D3: latest is a relative link to a generation folder in the cache,
+    which holds docs/ and fetch.json, so one os.replace swaps both at once.'''
+    cache = tmp_path / 'cache'
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    link = cache / state.LATEST
+    assert link.is_symlink() and not os.readlink(link).startswith('/')
+    assert state.fetch_record(cache).parent == state.latest_docs(cache).parent == state.latest_dir(cache)
+    assert state.latest_dir(cache) == cache / os.readlink(link)
+    assert os.readlink(link).startswith(state.GENERATION_PREFIX)
+    assert sorted(p.name for p in state.latest_docs(cache).iterdir()) == sorted(DOCS)
+    assert state.read_fetch(cache) == {'fetched_at': '2026-10-04T12:00:00+00:00', 'changelog_head': '2.1.902'}
+
+
+def test_an_unchanged_head_seeds_the_generation_from_the_current_one(tmp_path, docs_dir):
+    '''D4: at an unchanged head, the new generation starts as a copy of the
+    current one, so only the changelog and llms.txt are fetched again.'''
+    cache, log = tmp_path / 'cache', []
+    first_docs = check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    first, pages = state.latest_dir(cache), snapshot_of(state.latest_docs(cache))
+    got = check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert log == LOG_HEAD_ONLY
+    assert state.latest_dir(cache) != first
+    assert snapshot_of(state.latest_docs(cache)) == pages
+    assert got == first_docs
+
+
+def test_the_swap_keeps_the_generation_it_replaced(tmp_path, docs_dir):
+    '''A reader that resolved latest just before a swap can still read the
+    generation it resolved; older generations go once STAGING_GRACE old.'''
+    cache = tmp_path / 'cache'
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    first = state.latest_dir(cache)
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    second = state.latest_dir(cache)
+    for old in (first, second):
+        os.utime(old, (0, 0))  # older than STAGING_GRACE
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    third = state.latest_dir(cache)
+    assert not first.exists()
+    assert second.is_dir() and third not in (first, second)
+    assert generations(cache) == sorted([second.name, third.name])
+
+
+def test_pruning_spares_a_young_staging_folder(tmp_path, docs_dir):
+    '''A generation folder younger than STAGING_GRACE may be another
+    check's staging folder, so it stays; one at least STAGING_GRACE old goes,
+    unless kept. Folders without the prefix, such as release snapshots, and
+    the latest link itself always stay.'''
+    cache, now = tmp_path / 'cache', NOW.timestamp()
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    current = state.latest_dir(cache)
+    ages = {current: 10 * check.STAGING_GRACE, cache / 'latest.young': check.STAGING_GRACE - 1,
+            cache / 'latest.edge': check.STAGING_GRACE, cache / 'latest.old': 10 * check.STAGING_GRACE,
+            cache / '2.1.900': 10 * check.STAGING_GRACE}
+    for folder, age in ages.items():
+        write_tree(folder, {'docs/tools.md': DOCS['tools.md']})
+        os.utime(folder, (now - age, now - age))
+    check.prune_generations(cache, {current}, now)
+    assert sorted(p.name for p in cache.iterdir()) == sorted(['2.1.900', state.LATEST, current.name, 'latest.young'])
+    assert state.latest_dir(cache) == current
+
+
+def test_a_legacy_latest_folder_is_migrated_to_a_generation(tmp_path, docs_dir):
+    '''Caches written before plan 109 hold latest/ as a real folder. The
+    first swap renames it aside as the generation it replaced.'''
+    cache, log = tmp_path / 'cache', []
+    prime_cache(cache, docs_dir, legacy=True)  # a real latest/ folder, as caches before plan 109 hold
+    legacy = snapshot_of(cache / state.LATEST)
+    check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert (cache / state.LATEST).is_symlink()
+    # the head was unchanged, so the pages were seeded: the fetch log holds changelog and llms only
+    assert log == LOG_HEAD_ONLY
+    current = state.latest_dir(cache)
+    (aside,) = [cache / name for name in generations(cache) if name != current.name]
+    assert snapshot_of(aside) == legacy
 
 
 def test_a_corrupt_fetch_record_is_a_setup_error(tmp_path, docs_dir):
@@ -531,8 +631,8 @@ def test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cach
     repo = drift_repo(tmp_path / 'repo', docs_dir)
     cache = tmp_path / 'cache'
 
-    def written():
-        return sorted(p.relative_to(cache).as_posix() for p in cache.rglob('*') if p.is_file())
+    def written():  # rglob does not follow the latest link, so it lists the link and its generation
+        return sorted(p.relative_to(cache).as_posix() for p in cache.rglob('*') if p.is_file() or p.is_symlink())
     _, report, path = run_check(repo, cache, docs_dir)
     baseline_sha = report['hashes']['baseline']
     assert path == cache / 'reports' / f'{baseline_sha[:12]}.json'
@@ -542,9 +642,10 @@ def test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cach
     assert written() == [f'reports/{baseline_sha[:12]}.json']
     run_check(repo, cache, fetch=serving(docs_dir))
     assert git(repo, 'status', '--porcelain') == ''
-    assert written() == ['latest/docs/changelog.md', 'latest/docs/env-vars.md', 'latest/docs/events.md',
-                         'latest/docs/llms.txt', 'latest/docs/platform_pricing.md', 'latest/docs/tools.md',
-                         'latest/fetch.json', f'reports/{baseline_sha[:12]}.json']
+    gen = os.readlink(cache / state.LATEST)
+    assert written() == [state.LATEST, f'{gen}/docs/changelog.md', f'{gen}/docs/env-vars.md', f'{gen}/docs/events.md',
+                         f'{gen}/docs/llms.txt', f'{gen}/docs/platform_pricing.md', f'{gen}/docs/tools.md',
+                         f'{gen}/fetch.json', f'reports/{baseline_sha[:12]}.json']
 
 
 def test_llms_slugs_added_and_removed_since_the_baseline_are_listed(tmp_path, docs_dir):
