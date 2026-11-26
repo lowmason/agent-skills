@@ -2290,6 +2290,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       sentence at the boundary section (`SKILL.md:228-234`) pointing at the Census page.
       Size: design. Done when: the owner picks a path and it lands.
       → progress 2026-11-17 (owner ruling): bundle path. Mirror the OCC pattern in `scripts/build.py` with `census_ind_2017`, `census_ind_2022` and a NAICS expansion, and update the file table and recipes (a plan, and the description change needs a micro-test).
+      → planned 2026-11-26: specs/plans/111-codes-and-bls-reference-skills.md
 - [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
       rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
       bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census
@@ -2315,6 +2316,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → progress 2026-11-15 (skill restore): plan 53 ran and retired on 2026-10-20, before the
       archive, so there is nothing left to sequence around. The line anchors above still hold
       on 2026-11-15.
+      → planned 2026-11-26: specs/plans/111-codes-and-bls-reference-skills.md
 - [ ] Clean up bls-data-context's OEWS reference and research residue (audit-3-10-26 B4,
       found 2026-10-03; parts (8) to (10) of the audit_1_3_26 P2-tier item in this section).
       The three parts left that item when the skill was archived on 2026-10-27, before the
@@ -2329,6 +2331,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the owner has picked the keepers, they are fixed, and the rest are recorded here as
       dropped.
       → progress 2026-11-17 (owner ruling): keepers are (8), (9) and (10), all three. (8) Rewrite `references/oews.md` from a downloader build-spec into a reference with panel, vintage and series-ID anatomy. (9) Remove the research-session residue at `qcew.md:5`, `cps.md:547` and `oews.md:45`. (10) LAUS gets a selector row in `SKILL.md`, or leaves the description (a description change needs a micro-test).
+      → planned 2026-11-26: specs/plans/111-codes-and-bls-reference-skills.md
 - [x] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
       only grows (audit-3-10-26 B1 and B6, found 2026-10-03; re-verified 2026-10-18 — no
       commit has touched `skills/writing-plans/references/deferred-backlog.md`,
