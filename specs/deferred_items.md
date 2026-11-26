@@ -6473,7 +6473,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       placement (`specs/plans/completed/108-writing-skills-improvements.md`, Open for plan review item 5), and the
       owner chose on 2026-11-25 to file a watch item. Size: quick-fix. Revisit if: a graded rep or a real run shows
       an agent that stopped at micro-test step 2 because its guard run had no failing control.
-- [ ] **Fix the subagent offer in the RED step at `SKILL.md:315` (plan 108, final review).** Line 315 of
+- [x] **Fix the subagent offer in the RED step at `SKILL.md:315` (plan 108, final review).** Line 315 of
       `skills/writing-skills/SKILL.md` reads "Run pressure scenario with subagent WITHOUT the skill. Document exact
       behavior:". A subagent of the working session inherits the user's instruction files, so it leaks context.
       This is the leak that plan 108's step 1 fix removed from micro-test step 1, and case F3 showed it: 3 of 5
@@ -6482,6 +6482,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       13). Size: quick-fix. Done when: line 315 no longer offers a subagent as the control, or says that it leaks
       context and must be isolated as `references/micro-tests.md` says, run RED first or under an owner waiver,
       with the `SKILL.md` body at or below 19,700 characters.
+      → done 2026-11-26 (owner waiver, no RED run): the RED step now reads "Run pressure scenario WITHOUT the skill, in a fresh session isolated as references/micro-tests.md says (a subagent of your session inherits your instruction files)" and offers no subagent as the control. The owner waived the RED run because the line reuses the isolation pointer that case F3 tested for micro-test step 1 (plan 108, Task 4). The body is 19,608 characters.
 - [ ] **Cut repeated text from the body (first found in specs/completed/writing-skills-improvements.md, 2026-11-22;
       spec item 16, held under Q6; plan 108, Open for plan review item 14).** Item 16 of that spec proposes a cut of
       about 1,200 characters from `skills/writing-skills/SKILL.md`. The cycle is stated seven times (`SKILL.md:21`,

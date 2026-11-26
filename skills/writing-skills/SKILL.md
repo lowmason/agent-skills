@@ -312,7 +312,9 @@ Follow the TDD cycle:
 
 ### RED: Write Failing Test (Baseline)
 
-Run pressure scenario with subagent WITHOUT the skill. Document exact behavior:
+Run pressure scenario WITHOUT the skill, in a fresh session isolated as
+[references/micro-tests.md](references/micro-tests.md) says (a subagent of your
+session inherits your instruction files). Document exact behavior:
 - What choices did they make?
 - What rationalizations did they use (verbatim)?
 - Which pressures triggered violations?
