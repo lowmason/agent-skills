@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Files: tasks edit only `skills/classification-codes/**`, `skills/geographic-codes/scripts/**`, `skills/geographic-codes/SKILL.md`, `skills/bls-data-context/**`, the kit folder `specs/baseline/red-baseline-codes-description/` and its write-up `specs/baseline/red-baseline-codes-description.md`, `build/suites.toml` (this lane's entries), `NOTICE` (the classification-codes paragraph), root `README.md` (the classification-codes lines) and `specs/deferred_items.md` (these three items). Any other file needs your human partner's yes first.
+- Files: tasks edit only `skills/classification-codes/**`, `skills/geographic-codes/scripts/**`, `skills/geographic-codes/SKILL.md`, `skills/bls-data-context/**`, the kit folder `specs/baseline/red-baseline-codes-description/` and its write-up `specs/baseline/red-baseline-codes-description.md`, `build/suites.toml` (this lane's entries), `NOTICE` (the classification-codes paragraph), root `README.md` (the classification-codes lines) and `specs/deferred_items.md` (these three items). The completion protocol's own edits (plan markup, retirement to `specs/plans/completed/`, `specs/history.md`, `→ done` notes in `specs/deferred_items.md`) are allowed too. Any other file needs your human partner's yes first.
 - Python style: single quotes, method-style Polars expressions, named constants for bands. Keep each file's indentation: `skills/classification-codes/scripts/*.py` use 2 spaces, `skills/geographic-codes/scripts/*.py` use 4.
 - Codes are strings everywhere. Census IND codes are four digits, zero-filled.
 - Downloads: no network fetch of any source file without your human partner's yes in the session, naming the file, source and size. `BLS_CONTACT_EMAIL` is exported only after the same kind of yes, and only to read the bls.gov pages Task 5 lists.
@@ -35,6 +35,8 @@
 - **D2** (owner, brief, 2026-11-26): the IND item goes straight to a plan, with no brainstorming. The 2026-11-17 ruling settles the path (bundle) and the outputs. The expansion rules and row bands are flagged defaults below. Applied in: Task 2.
 - **Settled by the source, not a default:** the Census page (`census.gov/topics/employment/industry-occupation/guidance/code-lists.html`, read 2026-11-26) heads each list "Derived from the 2017 NAICS" and "Derived from the 2022 NAICS". So `census_ind_2017` expands against `naics_2017`, and `census_ind_2022` against `naics_2022`.
 - **D3** (owner, plan review, 2026-11-26): defaults F1 to F7 below approved as drafted: shared partial claims for IND (F5), the description change with its trigger test (F2, F4), a LAUS selector row (F3), tests first (F1), the 230-320 band (F6) and no IND crosswalk (F7). Applied in: Tasks 1 to 5.
+- **D4** (owner, plan review, 2026-11-26): the trigger test's spend is approved, and its cap rises from $25 to $35 so the stop rule does not end the 108 reps early. Applied in: Task 3 Step 3.
+- **D5** (owner, plan review, 2026-11-26): errata found by the execution-brief review are fixed in the plan before execution: the kit copy list, the geographic workbook name, Task 2 Step 7's checks and mtime reset, and the completion protocol's files. Applied in: Global Constraints, Tasks 1 to 3.
 
 ### Defaults approved at plan review (D3)
 
@@ -63,7 +65,7 @@
 
 - [ ] **Step 2: Write the offline-fetch tests (part b)**
 
-classification-codes: `test_fetch_offline_without_cache_raises` (`offline=True`, empty `tmp_path` → `FileNotFoundError` matching `--offline set but`), and `test_fetch_offline_uses_cache_without_network` (cached file present; `urllib.request.urlopen` monkeypatched to raise; returns the cached path and its sha256). geographic-codes: the same two tests against its `fetch`, a third for the `filename` override, and `test_read_sheet_returns_all_utf8` on the committed `sources/list1_2023.xlsx` (every dtype is `pl.Utf8`; some row contains `CBSA Code`).
+classification-codes: `test_fetch_offline_without_cache_raises` (`offline=True`, empty `tmp_path` → `FileNotFoundError` matching `--offline set but`), and `test_fetch_offline_uses_cache_without_network` (cached file present; `urllib.request.urlopen` monkeypatched to raise; returns the cached path and its sha256). geographic-codes: the same two tests against its `fetch`, a third for the `filename` override, and `test_read_sheet_returns_all_utf8` on the committed `sources/2023_list1_2023.xlsx` (every dtype is `pl.Utf8`; some row contains `CBSA Code`).
 
 - [ ] **Step 3: Write the count tests (part c)**
 
@@ -113,7 +115,7 @@ Ask your human partner for a yes to download two files from `www2.census.gov/pro
 
 - [ ] **Step 2: Inspect and record the layout**
 
-With `read_sheet`, list each workbook's sheet names, the code-list sheet's header row, and every distinct shape of the NAICS cell (replace digits with `9`, count each shape). Record the sheet names, headers, shape counts, the code count of each list and any unmapped codes in the task report. If a code count is outside F6's band, or a shape does not fit F5's three kinds, stop and ask before writing tests.
+With `read_sheet`, run under the pinned stack that `uv run python build/run_suites.py --list geographic-codes` prints (it has `fastexcel`; the classification-codes suite does not), list each workbook's sheet names, the code-list sheet's header row, and every distinct shape of the NAICS cell (replace digits with `9`, count each shape). Record the sheet names, headers, shape counts, the code count of each list and any unmapped codes in the task report. If a code count is outside F6's band, or a shape does not fit F5's three kinds, stop and ask before writing tests.
 
 - [ ] **Step 3: Write the failing tests**
 
@@ -135,8 +137,9 @@ Expected: all pass, the registry tests included.
 
 - [ ] **Step 7: Build from the cache**
 
+First reset the mtimes of the ten sourced files: `manifest_records` reads `retrieved` from each source file's mtime (`build.py:928`), and a checkout sets every mtime to the checkout time. For each `sources/` file with a url row in `MANIFEST.md`, run `touch -d <retrieved with +00:00 replaced by Z> <file>` (BSD `touch` rejects `+00:00` and reads a zoneless time as local). Do this after any checkout or stash, which reset mtimes.
 Run: `uv run skills/classification-codes/scripts/build.py --offline`
-Expected: exit 0, `All validations passed; MANIFEST.md updated.`, four new `data/census_ind_*` files, and every existing CSV unchanged (`git diff --stat skills/classification-codes/data/` lists only the new files).
+Expected: exit 0, `All validations passed; MANIFEST.md updated.`; `git diff --stat skills/classification-codes/data/` prints nothing (every existing CSV unchanged); `git status --short skills/classification-codes/data/` lists only the four new `census_ind_*` files; `git diff skills/classification-codes/MANIFEST.md` changes only the `Generated` line and adds the four `census_ind_*` rows.
 
 - [ ] **Step 8: Document the bundle**
 
@@ -157,7 +160,7 @@ git commit -m "feat(classification-codes): bundle the 2017 and 2022 Census indus
 ### Task 3: Trigger-test kit and registered rules
 
 **Files:**
-- Create: `specs/baseline/red-baseline-codes-description/kit/` (copied and adapted from `specs/baseline/red-baseline-writing-skills-tests/kit/`: `common.sh`, `run_trigger_reps.sh`, `triggers.py`, `audit.py`, `rep_tools.py`, `isolation_probe.txt`, `fixtures/trigger/`, and a new `trigger_prompts.py`), with a no-model test file `test_cd_kit.py`
+- Create: `specs/baseline/red-baseline-codes-description/kit/` (copied and adapted from `specs/baseline/red-baseline-writing-skills-tests/kit/`: `common.sh`, `run_trigger_reps.sh`, `triggers.py`, `audit.py`, `rep_tools.py`, `cases.py` and `kit_identity.py` (imported by `audit.py:60` and `rep_tools.py:56`), `isolation_probe.txt`, `fixtures/trigger/`, and a new `trigger_prompts.py`), with a no-model test file `test_cd_kit.py`
 - Create: `specs/baseline/red-baseline-codes-description.md`
 - Modify: `build/suites.toml` (one entry, `codes-description-kit`)
 
@@ -168,7 +171,7 @@ git commit -m "feat(classification-codes): bundle the 2017 and 2022 Census indus
 
 Changes from plan 107's trigger kit: no competitor plugin skills (the neighbors are this repository's `geographic-codes` and `bls-data-context`, which `git archive <ref> skills/` already lists); one condition, `full`; the skill under test is `classification-codes`. Keep these rules, stated in the write-up:
 1. Each rep gets its own new folder outside every repository, with its own HOME and scratch folder.
-2. The deny list holds `Bash`, `Read(~/**)`, `ListAgents`, `SendMessage`, `PushNotification` and `RemoteTrigger`, and the settings set `blockReadsOutsideWorkingDirectories`. The runner starts each rep with a single `claude -p` call per rep, not a shell `for` loop that shares one HOME.
+2. The deny list holds `Bash`, `Read(~/**)`, `ListAgents`, `SendMessage`, `PushNotification` and `RemoteTrigger`, and the settings set `blockReadsOutsideWorkingDirectories`. The runner starts each rep with a single `claude -p` call per rep, not a shell `for` loop that shares one HOME. The copied `common.sh` lacks the `Bash` deny entry and `blockReadsOutsideWorkingDirectories`, so add both. The runner drops plan 107's `<condition>` argument.
 3. The runner removes `credential_expires_at` from every saved `.json` and `.jsonl` file. A rep is VOID if the key is still there.
 4. A rep is VOID if any record has `result_index` > 0 or an `origin` whose `kind` is `peer`. The runner scrubs `origin` objects from saved records after that check.
 5. Quarantine: no rep may read this plan, the kit, the write-up or `specs/deferred_items.md`. A rep that does is VOID.
@@ -209,7 +212,7 @@ description: >
   Codes and titles come from data/, never from model memory.
 ```
 
-Register in the write-up, before any rep: 3 reps per cell (9 prompts × 2 arms × 2 models = 108 reps). A rep loads when `triggers.py loads` finds a `Skill` call for `classification-codes`. PASS, on each model: `new` loads on P1 + P2 ≥ `old` loads there, `new` loads on P1–P5 ≥ `old` loads there, and `new` loads on N1–N4 ≤ `old` loads there. FAIL otherwise. VOID: rules 3 to 5 of Step 1, an error result, or a listing that lacks `classification-codes`, `geographic-codes` or `bls-data-context`. A void rep is rerun once. Spend cap $25 at $0.25 per rep; stop when the running total plus the next batch's reps × $0.25 would pass it.
+Register in the write-up, before any rep: 3 reps per cell (9 prompts × 2 arms × 2 models = 108 reps). A rep loads when `triggers.py loads` finds a `Skill` call for `classification-codes`. PASS, on each model: `new` loads on P1 + P2 ≥ `old` loads there, `new` loads on P1–P5 ≥ `old` loads there, and `new` loads on N1–N4 ≤ `old` loads there. FAIL otherwise. VOID: rules 3 to 5 of Step 1, an error result, or a listing that lacks `classification-codes`, `geographic-codes` or `bls-data-context`. A void rep is rerun once. Spend cap $35 at $0.25 per rep (108 reps are $27 at worst case, plus the probe, two pilots and void reruns); stop when the running total plus the next batch's reps × $0.25 would pass it.
 
 - [ ] **Step 4: Test the kit without a model**
 
