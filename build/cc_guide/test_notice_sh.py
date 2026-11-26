@@ -88,13 +88,33 @@ def test_show_prints_nothing_before_any_check_or_when_nothing_is_due(tmp_path, s
     quiet(sh(tmp_path, 'show', shell=shell))
     notice.write_notice(cache_of(tmp_path), None)
     quiet(sh(tmp_path, 'show', shell=shell))
+    # the quiet runs read this cache path: a real notice written to it is shown
+    notice.write_notice(cache_of(tmp_path), 'cc-guide · same path → /cc-guide')
+    assert shown(sh(tmp_path, 'show', shell=shell)) == 'cc-guide · same path → /cc-guide'
 
 
-def test_show_still_prints_when_it_cannot_record_the_day(tmp_path):
+@pytest.mark.parametrize('shell', SHELLS)
+def test_show_still_prints_when_it_cannot_record_the_day(tmp_path, shell):
     cache = cache_of(tmp_path)
     notice.write_notice(cache, 'cc-guide · stuck → /cc-guide')
     (cache / 'notice-shown').mkdir()
-    assert shown(sh(tmp_path, 'show')) == 'cc-guide · stuck → /cc-guide'
+    assert shown(sh(tmp_path, 'show', shell=shell)) == 'cc-guide · stuck → /cc-guide'
+
+
+@pytest.mark.parametrize('shell', SHELLS)
+def test_show_reads_the_digest_before_the_notice(tmp_path, shell):
+    '''A notice replaced between the two reads is shown once more and never skipped (notice.sh show).'''
+    notice.write_notice(cache_of(tmp_path), 'cc-guide · order → /cc-guide')
+    stubs = tmp_path / 'stubs'
+    stubs.mkdir()
+    log = tmp_path / 'cat.log'
+    log.touch()
+    stub = stubs / 'cat'
+    stub.write_text(f'#!/bin/sh\nprintf \'%s\\n\' "$1" >> {log}\nexec /bin/cat "$@"\n')
+    stub.chmod(0o755)
+    assert shown(sh(tmp_path, 'show', shell=shell, env={'PATH': f'{stubs}:{LAUNCHD_PATH}'})) == 'cc-guide · order → /cc-guide'
+    reads = [Path(line).name for line in log.read_text().splitlines() if Path(line).name in (notice.DIGEST, notice.NOTICE)]
+    assert reads == [notice.DIGEST, notice.NOTICE]
 
 
 @pytest.mark.parametrize('shell', SHELLS)
@@ -113,6 +133,7 @@ def test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache(tmp_pat
     calls = log.read_text().split('--\n')[:-1]
     assert len(calls) == 1, 'notice-shown is replaced by exactly one mv'
     args = calls[0].splitlines()
+    assert args[0] == '-f'
     assert args[-1] == str(cache / 'notice-shown')
     temp = Path(args[-2])
     assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
@@ -121,11 +142,15 @@ def test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache(tmp_pat
     assert not [path for path in cache.iterdir() if path.suffix == '.tmp']
 
 
-def test_show_without_home_and_an_unknown_subcommand_both_exit_zero(tmp_path):
-    quiet(subprocess.run(['/bin/sh', str(SCRIPT), 'show'], env={'PATH': LAUNCHD_PATH}, cwd=tmp_path,
+@pytest.mark.parametrize('shell', SHELLS)
+def test_show_without_home_and_an_unknown_subcommand_both_exit_zero(tmp_path, shell):
+    notice.write_notice(cache_of(tmp_path), 'cc-guide · home only → /cc-guide')
+    quiet(subprocess.run([shell, str(SCRIPT), 'show'], env={'PATH': LAUNCHD_PATH}, cwd=tmp_path,
                          capture_output=True, text=True, timeout=60))
-    proc = sh(tmp_path, 'bogus')
+    proc = sh(tmp_path, 'bogus', shell=shell)
     assert (proc.returncode, proc.stdout) == (0, '')
+    # the run with no HOME was quiet because it read another cache, not because nothing was due
+    assert shown(sh(tmp_path, 'show', shell=shell)) == 'cc-guide · home only → /cc-guide'
 
 
 NO_UV = 'the drift check cannot run: no uv on PATH, in ~/.local/bin or in /opt/homebrew/bin'
@@ -415,7 +440,8 @@ def test_refresh_runs_the_check_without_the_callers_git_variables(fake_uv):
     assert (home / 'uv-git-env').read_text() == ''
 
 
-def test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache(fake_uv, tmp_path):
+@pytest.mark.parametrize('shell', SHELLS)
+def test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache(fake_uv, tmp_path, shell):
     '''refresh replaces unfinished by mv -f of a hidden temp file in the cache (the file contract).'''
     home, env = fake_uv
     cache = cache_of(home)
@@ -427,10 +453,11 @@ def test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache(fake_u
     stub.write_text(f'#!/bin/sh\n{{ printf \'%s\\n\' "$@"; echo --; }} >> {log}\nexec /bin/mv "$@"\n')
     stub.chmod(0o755)
     path = env['PATH']
-    quiet(sh(home, 'refresh', env={**env, 'PATH': f'{stubs}:{path}', 'FAKE_UV': 'fail'}))
+    quiet(sh(home, 'refresh', shell=shell, env={**env, 'PATH': f'{stubs}:{path}', 'FAKE_UV': 'fail'}))
     calls = [call.splitlines() for call in log.read_text().split('--\n')[:-1]]
     onto = [args for args in calls if args[-1] == str(cache / 'unfinished')]
     assert len(onto) == 1, 'unfinished is replaced by exactly one mv'
+    assert onto[0][0] == '-f'
     temp = Path(onto[0][-2])
     assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
     assert (cache / 'unfinished').read_text() == '1\n'
