@@ -96,3 +96,12 @@ def test_kept_paths_decodes_with_fsdecode(tmp_path, monkeypatch):
     monkeypatch.setattr(git_listing, 'git_env', dict)
     monkeypatch.setattr(subprocess, 'run', lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout=listing))
     assert kept_paths(tmp_path) == ['a.md', os.fsdecode(b'caf\xe9.md')]
+
+
+def test_kept_paths_ignores_a_foreign_index_that_tracks_other_files(tmp_path, monkeypatch):
+    root = make_repo(tmp_path / 'repo', {'a.md': 'a'})
+    other = make_repo(tmp_path / 'other', {'z.md': 'z'})
+    run_git(other, 'add', 'z.md')
+    monkeypatch.setenv('GIT_DIR', str(other / '.git'))
+    monkeypatch.setenv('GIT_INDEX_FILE', str(other / '.git' / 'index'))
+    assert kept_paths(root) == ['a.md']

@@ -204,6 +204,13 @@ def test_check_ignores_gitignored_trees(tmp_path):
     assert findings(root) == []
 
 
+def test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'skills/beta/scripts/test_b.py': ''})
+    subprocess.run(['git', 'add', '.'], cwd=root, env=git_env(), check=True)
+    (root / 'skills' / 'beta' / 'scripts' / 'test_b.py').unlink()
+    assert findings(root) == []
+
+
 def test_check_ignores_archived_skills(tmp_path):
     root = git_repo(tmp_path, {**COVERED, 'archive/skills/beta/scripts/test_b.py': ''})
     assert findings(root) == []

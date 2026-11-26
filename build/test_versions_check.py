@@ -238,6 +238,14 @@ def test_live_files_are_the_listed_files_and_directories_that_git_keeps(tmp_path
     assert got == ['.claude/skills/c/SKILL.md', 'CLAUDE.md', 'build/a.py', 'hooks/h.sh', 'skills/s/SKILL.md']
 
 
+def test_live_files_leave_out_a_tracked_file_deleted_from_the_working_tree(tmp_path):
+    git(tmp_path, 'init', '-q')
+    skill_tree(tmp_path, {'skills/s/SKILL.md': 'x', 'skills/s/gone.md': 'x'})
+    git(tmp_path, 'add', 'skills')
+    (tmp_path / 'skills' / 's' / 'gone.md').unlink()
+    assert [str(p.relative_to(tmp_path)) for p in vc.live_files(tmp_path)] == ['skills/s/SKILL.md']
+
+
 def test_live_files_leave_out_data_fixtures_and_license_files(tmp_path):
     git(tmp_path, 'init', '-q')
     skill_tree(tmp_path, {'skills/s/data/d.md': 'x', 'skills/s/scripts/fixtures/f.md': 'x', 'skills/s/LICENSE': 'x',
