@@ -721,6 +721,16 @@ def never_dispatched(agent):
     return [events[0], assistant(*sent), *events[2:]]
 
 
+def leaked_into(agent, canary):
+    '''explore_run's events with `canary` in the prompt of the parent's call of `agent` alone; the other call says
+    only "Follow your instructions."'''
+    events = explore_run()
+    for block in events[1]['message']['content']:
+        if block['input']['subagent_type'] == agent:
+            block['input']['prompt'] += f' The word is {CANARIES[canary]}.'
+    return events
+
+
 NO_SIGHTING = {'mark': False, 'claude_md': False, 'git_status': False}
 
 
@@ -745,6 +755,9 @@ NO_SIGHTING = {'mark': False, 'claude_md': False, 'git_status': False}
     (never_dispatched(CONTROL), sighting(control=NO_SIGHTING)),
     (explore_run()[:-1], sighting(broken='no result event')),
     (None, sighting(NO_SIGHTING, NO_SIGHTING, broken='no stream-json events')),
+    # A canary in one of the two Agent calls leaks, whichever call it is.
+    (leaked_into(CONTROL, 'claude_md'), sighting(leaked=True)),
+    (leaked_into(EXPLORE, 'git_status'), sighting(leaked=True)),
 ])
 def test_explore_sightings_reads_marks_canaries_and_leaks_from_the_raw_stream(events, expected):
     assert pc.explore_sightings(events, CANARIES) == expected

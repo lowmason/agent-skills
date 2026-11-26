@@ -2,7 +2,9 @@
 '''The probe assertions (drift spec R10.2, R10.5): pure functions over a probe
 run's raw stream-json events and the side files the run leaves, each giving
 an outcome and a one-line finding. They read event fields, never the model's
-prose. Tests replay them against streams recorded from our own probe runs
+prose, with one exception: the explore-override probe reads the canary tokens
+and marks that each subagent echoes from its own context, never free prose.
+Tests replay them against streams recorded from our own probe runs
 (R12.6), cut down and scrubbed by scrub_events before they are committed.
 
 PASS means the behaviour matches the guide. DIVERGES means it does not.
