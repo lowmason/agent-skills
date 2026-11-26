@@ -89,3 +89,10 @@ def test_the_module_imports_only_the_standard_library():
             names.add(node.module.split('.')[0])
     assert names
     assert names <= sys.stdlib_module_names
+
+
+def test_kept_paths_decodes_with_fsdecode(tmp_path, monkeypatch):
+    listing = b'a.md\0caf\xe9.md\0'
+    monkeypatch.setattr(git_listing, 'git_env', dict)
+    monkeypatch.setattr(subprocess, 'run', lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout=listing))
+    assert kept_paths(tmp_path) == ['a.md', os.fsdecode(b'caf\xe9.md')]
