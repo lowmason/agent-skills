@@ -39,6 +39,7 @@ from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
 
 import versions
+from git_listing import GitError, kept_paths
 
 REPO = Path(__file__).resolve().parent.parent
 REGISTRY = 'build/suites.toml'  # relative to the repo root
@@ -175,24 +176,13 @@ def container(suite: Suite, suites: Sequence[Suite]) -> Suite | None:
                  if other.dir != suite.dir and path.is_relative_to(other.dir)), None)
 
 
-def git_env() -> dict[str, str]:
-    '''os.environ without git's repo-local variables, as check_conformance.git_env:
-    a hook may export GIT_DIR or GIT_INDEX_FILE for another repository.'''
-    local = subprocess.run(['git', 'rev-parse', '--local-env-vars'],
-                           capture_output=True, text=True, check=True).stdout.split()
-    return {name: value for name, value in os.environ.items() if name not in local}
-
-
 def pytest_dirs(root: Path) -> set[str] | None:
     '''The directories that hold a pytest file, among the files git keeps under root
     (tracked, or untracked and not ignored) outside ARCHIVE; None when git fails.'''
     try:
-        listing = subprocess.run(
-            ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-            cwd=root, env=git_env(), capture_output=True, check=True).stdout
-    except (OSError, subprocess.CalledProcessError):
+        paths = kept_paths(root)
+    except GitError:
         return None
-    paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
     # --cached also lists tracked files deleted from the working tree.
     return {str(PurePosixPath(p).parent) for p in paths
             if any(fnmatchcase(PurePosixPath(p).name, pattern) for pattern in TEST_FILE_PATTERNS)

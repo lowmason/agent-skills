@@ -13,12 +13,11 @@ the file's value. History passes only when its phrase is a key of HISTORICAL. Th
 names that the file lists.
 '''
 import re
-import subprocess
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 import versions
-from run_suites import git_env
+from git_listing import kept_paths
 from versions import Versions, compare, normalize, version_tuple
 
 # Keyed by the literal phrase, not by file and line, so a prose edit does not break an entry.
@@ -44,9 +43,7 @@ def skipped(path: Path) -> bool:
 
 def live_files(root: Path) -> list[Path]:
     '''The tracked and untracked-but-not-ignored files that the interpreter-literal rule reads.'''
-    listing = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-                             cwd=root, env=git_env(), capture_output=True, check=True).stdout
-    paths = [entry.decode() for entry in listing.split(b'\0') if entry]
+    paths = kept_paths(root)
     return [root / p for p in paths
             if (p in LIVE_FILES or p.startswith(LIVE_DIRS)) and (root / p).is_file() and not skipped(Path(p))]
 

@@ -30,6 +30,7 @@ import yaml
 
 from check_frontmatter import READONLY_HEADING, split_tools
 from fences import fenced_lines, iter_code_blocks
+from git_listing import GitError, git_env, git_reason, kept_paths
 
 # The guide's anchor grammar is cc_guide/guide.py's (drift R1.1). Drift R12.1
 # bars only cc_guide importing from build/, so the lint reads it from there.
@@ -256,32 +257,13 @@ class Finding(NamedTuple):
     waivable: bool = True
 
 
-def git_env() -> dict[str, str]:
-    '''os.environ without git's repo-local variables, as install.py's git_env:
-    a hook or shell may export GIT_DIR or GIT_INDEX_FILE for another repo.'''
-    local = subprocess.run(['git', 'rev-parse', '--local-env-vars'],
-                           capture_output=True, text=True, check=True).stdout.split()
-    return {name: value for name, value in os.environ.items() if name not in local}
-
-
-def git_reason(exc: Exception) -> str:
-    '''git's own words when it ran and failed (stderr is bytes there), else the
-    exception's text.'''
-    if isinstance(exc, subprocess.CalledProcessError) and exc.stderr:
-        return os.fsdecode(exc.stderr).strip()
-    return str(exc)
-
-
 def kept_files(root: Path) -> list[str]:
     '''Repo-relative POSIX paths of the files git keeps under root: tracked, or
     untracked and not ignored, as install.py's kept_files lists them (R2.3).'''
     try:
-        listing = subprocess.run(
-            ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-            cwd=root, env=git_env(), capture_output=True, check=True).stdout
-    except (OSError, subprocess.CalledProcessError) as exc:
-        raise SetupError(f'cannot list the files git keeps under {root} ({git_reason(exc)})') from None
-    paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
+        paths = kept_paths(root)
+    except GitError as exc:
+        raise SetupError(f'cannot list the files git keeps under {root} ({exc})') from None
     # --cached also lists tracked files deleted from the working tree.
     return sorted(p for p in paths if (root / p).exists() or (root / p).is_symlink())
 

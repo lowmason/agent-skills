@@ -74,6 +74,7 @@ gate's pinned stack, `bump` re-pins by one joint resolve, `drift` resolves with 
 `run_suites.py --check` is a commit lint: it fails when a directory that holds
 pytest files outside `../archive/` is not registered, so a new suite adds its `[[suite]]` entry in
 the same change.
+`git_listing.py` holds the stdlib-only git helpers (`git_env`, `git_reason`, the kept-files listing) that `run_suites.py`, `check_conformance.py` and `versions_check.py` share; `install.py` keeps its own copy, since it runs standalone.
 
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
 `conformance.toml` is the register `check_conformance.py` reads. The rest is

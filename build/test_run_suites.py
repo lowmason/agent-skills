@@ -10,6 +10,7 @@ import pytest
 
 import run_suites as rs
 import versions
+from git_listing import git_env
 
 V = versions.load()   # the dev interpreter and the cutoff come from the file, never from a literal here
 DEV = V.dev_python
@@ -162,7 +163,7 @@ def git_repo(root, files):
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text)
-    subprocess.run(['git', 'init', '-q'], cwd=root, env=rs.git_env(), check=True)
+    subprocess.run(['git', 'init', '-q'], cwd=root, env=git_env(), check=True)
     return root
 
 

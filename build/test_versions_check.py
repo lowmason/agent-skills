@@ -10,7 +10,7 @@ import pytest
 
 import versions
 import versions_check as vc
-from run_suites import git_env
+from git_listing import git_env
 
 TOML = '''\
 [python]
