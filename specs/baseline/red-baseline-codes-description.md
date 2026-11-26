@@ -29,7 +29,7 @@ When Task 3 ran, `claude --version` printed `2.1.323 (Claude Code)`. Task 4 reco
 | `audit.py` | plan 107's | Trigger reps only. The path audit, the Glob limits, the Bash audit, the reference reads and the R3 tree check are cut. Rules 3, 4 and 5 and the listing check are as below. |
 | `triggers.py` | plan 107's | The skill under test is `classification-codes`. `judge()` applies the PASS rule below. |
 | `trigger_prompts.py` | new | The nine prompts and the groups `SHOULD_LOAD`, `IND` and `NEAR_MISS`. |
-| `cases.py` | plan 107's name | The skill under test, the listing names, the arms, the models, the reps per cell and the quarantined names. Plan 107's audit imported `cases.py`, so the name and the import stay. |
+| `cases.py` | plan 107's name | The skill under test, the listing names, the arms, the models, the reps per cell, the quarantined names and their paths in a checkout. Plan 107's audit imported `cases.py`, so the name and the import stay. |
 | `kit_identity.py` | plan 107's | Unchanged except its first docstring line. |
 | `isolation_probe.txt` | plan 107's | Unchanged, byte for byte. |
 | `fixtures/trigger/repo/README.md` | new | The rep's project: a neutral README with no codes words. |
