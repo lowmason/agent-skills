@@ -166,7 +166,7 @@ def shown(cache):
     return json.loads((cache / notice.NOTICE).read_text())['systemMessage']
 
 
-def test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record(world, capsys):
+def test_check_hook_prints_nothing_and_leaves_the_notice_and_the_record(world, capsys):
     repo, cache, docs = world
     assert hook(cache, '--run', 'r1', '--docs', str(docs)) == 1
     assert capsys.readouterr() == ('', '')
@@ -177,6 +177,52 @@ def test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record(world, 
     assert capsys.readouterr() == ('', '')
     assert (cache / notice.NOTICE).read_text() == ''
     assert git(repo, 'status', '--porcelain') == ''
+
+
+def test_check_hook_turns_a_failed_fetch_into_the_error_notice(world, capsys):
+    '''A FetchError is an exit 2 report, not a raised error: after_check, not
+    hook_failure, writes the notice and carries the last good check over.'''
+    _, cache, _ = world
+    url = test_check.MANIFEST.sources['changelog']
+    earlier = HOOK_NOW - timedelta(days=3)
+    notice.record_check(cache, 0, earlier, 'r0')
+
+    def fetch(requested):
+        raise check.FetchError(f'{requested}: timed out')
+    assert cli.main(['--cache', str(cache), 'check', '--hook', '--run', 'r1'],
+                    today=date(2026, 9, 27), now=HOOK_NOW, fetch=fetch) == 2
+    assert capsys.readouterr() == ('', '')
+    assert shown(cache).startswith('cc-guide · check failed: ')
+    assert url in shown(cache)
+    record = notice.read_last_check(cache)
+    assert (record['run'], record['exit'], record['ok_epoch']) == ('r1', 2, int(earlier.timestamp()))
+
+
+def test_check_hook_with_no_cache_writes_nothing_and_prints_nothing(isolated_home, monkeypatch, capsys):
+    def no_cache():
+        raise RuntimeError('no home')
+    monkeypatch.setattr(cli, 'default_cache', no_cache)
+    assert cli.main(['check', '--hook', '--run', 'r1']) == 2
+    assert capsys.readouterr() == ('', '')
+    assert not any(isolated_home.rglob('*'))
+
+
+@pytest.mark.parametrize('failure', [
+    pytest.param(state.SetupError('no manifest'), id='setup-error'),
+    pytest.param(RuntimeError('boom'), id='crash'),
+])
+def test_check_hook_failure_that_cannot_write_is_silent(world, monkeypatch, capsys, failure):
+    _, cache, docs = world
+
+    def fail(*args, **kwargs):
+        raise failure
+
+    def unwritable(*args, **kwargs):
+        raise OSError('read-only cache')
+    monkeypatch.setattr(cli, 'check', fail)
+    monkeypatch.setattr(notice, 'after_failure', unwritable)
+    assert hook(cache, '--run', 'r1', '--docs', str(docs)) == 2
+    assert capsys.readouterr() == ('', '')
 
 
 def test_check_reports_each_stamped_guide_and_the_hook_names_one_behind_its_cli(world, capsys):
@@ -256,28 +302,47 @@ def test_check_hook_writes_only_its_cache_files(world):
     assert git(repo, 'status', '--porcelain') == ''
 
 
+def no_manifest_repo(tmp_path, monkeypatch):
+    '''cli pointed at a repo with a guide and no manifest: a real setup error.'''
+    repo = fixture_repo(tmp_path / 'repo', {GUIDE_PATH: guide_text()})
+    monkeypatch.setattr(cli, 'REPO', repo)
+
+
+def crash(monkeypatch):
+    def fail(*args, **kwargs):
+        raise RuntimeError('boom')
+    monkeypatch.setattr(cli, 'check', fail)
+
+
 @pytest.mark.parametrize('failure, code', [
     pytest.param(None, 1, id='normal-exit'),
-    pytest.param(state.SetupError('no manifest'), 2, id='setup-error'),
-    pytest.param(RuntimeError('boom'), 2, id='crash'),
+    pytest.param(no_manifest_repo, 2, id='setup-error'),
+    pytest.param(crash, 2, id='crash'),
 ])
-def test_check_hook_renames_the_record_into_place_after_the_notice_and_its_digest(world, monkeypatch, failure, code):
+def test_check_hook_renames_the_record_into_place_after_the_notice_and_its_digest(
+        tmp_path, docs_dir, monkeypatch, failure, code):
     '''The handshake: last-check.json is written last of all, on every exit.'''
-    _, cache, docs = world
-    if failure is not None:
-        def fail(*args, **kwargs):
-            raise failure
-        monkeypatch.setattr(cli, 'check', fail)
+    cache = tmp_path / 'cache'
+    if failure is None:
+        monkeypatch.setattr(cli, 'REPO', drift_repo(tmp_path / 'repo', docs_dir))
+        prime_cache(cache, docs_dir)
+    elif failure is crash:
+        monkeypatch.setattr(cli, 'REPO', drift_repo(tmp_path / 'repo', docs_dir))
+        crash(monkeypatch)
+    else:
+        failure(tmp_path, monkeypatch)
     order = []
     real = notice.os.replace  # the global os module: other renames land here too
 
     def replace(src, dst):
-        order.append(Path(dst).name)
+        order.append((Path(dst).parent, Path(dst).name))
         real(src, dst)
     monkeypatch.setattr(notice.os, 'replace', replace)
-    assert hook(cache, '--run', 'r1', '--docs', str(docs)) == code
+    assert hook(cache, '--run', 'r1', '--docs', str(docs_dir)) == code
     written = (notice.NOTICE, notice.DIGEST, notice.LAST_CHECK)
-    assert [name for name in order if name in written] == list(written)
+    assert [entry for entry in order if entry[1] in written] == [(cache, name) for name in written]
+    if failure is no_manifest_repo:
+        assert f'{state.MANIFEST}: not found in main' in shown(cache)
 
 
 def history_repo(tmp_path, monkeypatch):

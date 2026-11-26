@@ -747,6 +747,7 @@ def test_a_failed_fetch_still_runs_the_audit_due_rule(tmp_path, docs_dir):
     code, report, path = run_check(repo, tmp_path / 'cache', today=date(2026, 10, 4),
                                    fetch=serving(docs_dir, fail={MANIFEST.sources['changelog']}))
     assert (code, report['due']['audit']['due'], report['due']['audit']['group']) == (2, True, 'alpha')
+    assert set(report['due']) == {'lint', 'audit'}
     assert 'audit: alpha due from 2026-10-02, due' in check.summary(report, path)
 
 
