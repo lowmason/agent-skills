@@ -1,18 +1,17 @@
 ---
 name: classification-codes
 description: >
-  Use when a task touches NAICS, SOC, or Census occupation codes — mapping a code to its title
-  or a title to its code, listing a sector's or major group's members, converting between
-  vintages (NAICS 2012↔2017↔2022, SOC 2010↔2018, Census OCC 2010↔2018), joining datasets coded
-  in different vintages, a series break at a classification revision, or explaining how
-  industries and occupations are defined, created, and revised (ECPC / SOCPC, NAICS 2027, SOC
-  2028). Consult BEFORE answering any code↔title question, before joining on an industry or
-  occupation code, and before treating a code as meaning the same thing in two vintages.
-  Trigger on: NAICS, SOC, O*NET, ACS / CPS OCC variable, sector, subsector, industry group,
-  six-digit code, occupation code, major group, detailed occupation, concordance, crosswalk,
-  trilateral, change indicator, unclassified / 999999, "what industry is X", "what does code X
-  mean", "is code X still valid", "when is the next revision". Codes and titles come from
-  data/, never from model memory.
+  Use when a task touches NAICS, SOC, or Census industry (IND) or occupation (OCC) codes — mapping a
+  code to its title or a title to its code, listing a sector's or major group's members, converting
+  between vintages (NAICS 2012↔2017↔2022, SOC 2010↔2018, Census OCC 2010↔2018), joining datasets
+  coded in different vintages, a series break at a revision, or explaining how
+  industries and occupations are defined and revised (ECPC / SOCPC, NAICS 2027, SOC 2028). Consult
+  BEFORE answering any code↔title question, joining on an industry or occupation code, or treating a
+  code as the same thing in two vintages. Trigger on: NAICS, SOC, O*NET, ACS / CPS IND or OCC
+  variable, sector, subsector, industry group, six-digit code, occupation code, major group, detailed
+  occupation, concordance, crosswalk, trilateral, change indicator, unclassified / 999999, "what
+  industry is X", "what does code X mean", "is code X still valid", "when is the next revision".
+  Codes and titles come from data/, never from model memory.
 license: MIT
 compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
