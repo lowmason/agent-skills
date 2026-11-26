@@ -102,7 +102,9 @@ These are the six rules of plan 111's Task 3 Step 1. The kit applies each one.
 
 1. Each rep gets its own new folder outside every repository, with its own HOME and scratch folder. The kit:
    `CD_TROOT/rep<N>/` with `home/` and `tmp/`, made new for each rep. The runner refuses a root that holds
-   anything, or a root inside a git repository.
+   anything, or a root inside a git repository. The rep's `repo/` is a git repository of its own: a new
+   one-commit copy of the fixture project, kept from plan 107's design. It is the rep's project, not a
+   repository that holds the rep folder.
 2. The deny list holds `Bash`, `Read(~/**)`, `ListAgents`, `SendMessage`, `PushNotification` and
    `RemoteTrigger`, and the settings set `blockReadsOutsideWorkingDirectories`. The runner starts each rep
    with a single `claude -p` call, in that rep's own folder and HOME, not a shell `for` loop that shares one
@@ -192,7 +194,12 @@ Task 3 cannot check these without a model, so Task 4 Step 1 checks them before a
    skills sit in the rep's HOME, outside its working directory, under a `Read(~/**)` deny. A pilot or the
    probe must show that the `Skill` tool still works there: a `Skill` call whose tool result is not an error.
    If no `Skill` call succeeds, the setup cannot measure loads. Stop and ask.
-3. A leak or a failed check stops Task 4.
+3. A pilot that loads a skill must show no rule 4 finding in `audit.py`. Plan 102's probe saw a clean rep end
+   with a task-notification result at `result_index` 2, after its own subagent handed back
+   (`specs/history.md`). One skill in `skills/` (`tech-debt`) runs in a forked context, so a rep that loads it
+   could end the same way. Rule 4 stays as registered. If a pilot is void on `result_index` and its stream
+   shows a task notification, stop and ask before any scored rep.
+4. A leak or a failed check stops Task 4.
 
 ## Deviations from plan 107's kit
 
