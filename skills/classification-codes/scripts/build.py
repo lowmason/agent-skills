@@ -790,9 +790,9 @@ def parse_census_ind(raw: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> p
 
   Heading rows carry code ranges ("0170-0490") and are dropped. Codes are zero-filled strings. A
   code listed on two rows (0770, 7570) keeps its first row's title, which a sector heading
-  carries in the first column; the rows must agree on the NAICS cell. naics_cell is stored as
-  published (trimmed), and every prefix in it must reach a six-digit code of the NAICS vintage
-  the list derives from.
+  carries in the first column; the rows must agree on the NAICS cell. naics_cell is stored
+  verbatim, trailing spaces included (parse_naics_cell trims when it reads it), and every prefix
+  in it must reach a six-digit code of the NAICS vintage the list derives from.
   '''
   naics = deps[f'naics_{vintage}']
   body = frame_below_header(raw, [str(vintage), 'census', 'naics'])
@@ -804,7 +804,7 @@ def parse_census_ind(raw: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> p
     .select(
       census_ind=code_expr(census_col),
       title=pl.coalesce(title_expr(title_col), title_expr(body.columns[0])),
-      naics_cell=title_expr(naics_col),
+      naics_cell=pl.col(naics_col).cast(pl.Utf8),
     )
     .filter(pl.col('census_ind').str.contains(CENSUS_IND_RE))
     .with_columns(census_ind=pl.col('census_ind').str.zfill(4))

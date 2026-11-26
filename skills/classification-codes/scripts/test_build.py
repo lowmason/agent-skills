@@ -860,10 +860,18 @@ def test_parse_census_ind_sorts_codes(naics_for_ind):
   assert frame['census_ind'].to_list()[:4] == ['0370', '0380', '0480', '0490']
 
 
-def test_parse_census_ind_trims_cells(naics_for_ind):
-  frame = build.parse_census_ind(census_ind_raw(cells={'0380': '2121 ', '0480': ' Part of 21 '}), vintage=2022, naics_2022=naics_for_ind)
-  cells = dict(frame.select('census_ind', 'naics_cell').iter_rows())
-  assert cells['0380'] == '2121' and cells['0480'] == 'Part of 21'
+def test_parse_census_ind_keeps_cells_verbatim(naics_for_ind, tmp_path):
+  # The 2017 and 2022 lists publish 'Part of 22 ', '5111 exc. 51111 ' and '4851, ..., 4859 '.
+  cells = {'0380': '2121 ', '0480': ' Part of 21 '}
+  frame = build.parse_census_ind(census_ind_raw(cells=cells), vintage=2022, naics_2022=naics_for_ind)
+  stored = dict(frame.select('census_ind', 'naics_cell').iter_rows())
+  assert stored['0380'] == '2121 ' and stored['0480'] == ' Part of 21 '
+  frame.write_csv(tmp_path / 'census_ind_2022.csv')
+  assert '\n0380,Coal mining,2121 \n' in (tmp_path / 'census_ind_2022.csv').read_text()
+  from_disk = pl.read_csv(tmp_path / 'census_ind_2022.csv', infer_schema=False)
+  assert from_disk.filter(pl.col('census_ind').eq('0380'))['naics_cell'].item() == '2121 '
+  pairs = ind_pairs(build.expand_census_ind(vintage=2022, census_ind_2022=from_disk, naics_2022=naics_for_ind))
+  assert pairs[('0380', '212114')] == 'prefix' and pairs[('0480', '212114')] == 'partial'   # the expansion reads them
 
 
 def test_parse_census_ind_reads_the_2017_header(naics_for_ind):

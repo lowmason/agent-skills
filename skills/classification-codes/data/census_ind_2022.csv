@@ -16,7 +16,7 @@ census_ind,title,naics_cell
 0590,"Electric and gas, and other combinations","Pts. 2211, 2212"
 0670,"Water supply and irrigation systems, and steam and air-conditioning supply","22131, 22133"
 0680,Sewage treatment facilities,22132
-0690,Not specified utilities,Part of 22
+0690,Not specified utilities,Part of 22 
 0770,Construction,23
 1070,"Animal food, grain and oilseed milling","3111, 3112"
 1080,Sugar and confectionery products,3113
@@ -153,7 +153,7 @@ census_ind,title,naics_cell
 6080,Rail transportation,482
 6090,Water transportation,483
 6170,Truck transportation,484
-6180,"Transit and ground passenger transportation, except taxi and limousine service","4851, 4852, 4854, 4855, 4859"
+6180,"Transit and ground passenger transportation, except taxi and limousine service","4851, 4852, 4854, 4855, 4859 "
 6190,Taxi and limousine service,4853
 6270,Pipeline transportation,486
 6280,Scenic and sightseeing transportation,487
@@ -162,7 +162,7 @@ census_ind,title,naics_cell
 6380,Couriers and messengers,492
 6390,Warehousing and storage,493
 6471,Newspaper publishers,51311
-6481,"Periodical, book, and directory and mailing list, and other publishers",5131 exc. 51311
+6481,"Periodical, book, and directory and mailing list, and other publishers",5131 exc. 51311 
 6490,Software publishers,5132
 6570,Motion pictures and video industries,5121
 6590,Sound recording industries,5122

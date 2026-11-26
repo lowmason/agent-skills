@@ -1,6 +1,6 @@
 # classification-codes data manifest
 
-Generated 2026-11-26T19:14:19+00:00 by scripts/build.py.
+Generated 2026-11-26T19:26:58+00:00 by scripts/build.py.
 sources/ holds the exact bytes each CSV was built from — commit it; Census and BLS overwrite
 files in place, so an unarchived source vintage is unrecoverable. `retrieved` is the time the
 cached source file was written.

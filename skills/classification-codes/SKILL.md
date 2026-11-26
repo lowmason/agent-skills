@@ -71,13 +71,13 @@ per code and `soc_level` says what it is: a `detailed` code, a whole `broad` or 
 `remainder` pattern such as `15-124X` (everything under that prefix no other Census code
 claims), or `none`. The `_to_soc_` files resolve that into detailed SOC codes; `via` records the
 rule that produced each row. In the Census industry lists `naics_cell` is the NAICS reference
-Census publishes per code, stored as published (trimmed): NAICS prefixes of 2 to 6 digits,
-`pt.`, `Pts.` or `Part of` before the prefixes the code holds only part of, and `exc.` before the
-prefixes carved out of it. The `_to_naics_` files resolve it into six-digit NAICS codes, and
-`via` is `exact` (a six-digit item), `prefix` (every six-digit code under a shorter item), or
-`partial` (the Census code holds part of that code; see *NAICS semantics*). `MANIFEST.md`
-records the source URL, sha256, and retrieval time behind every file; `sources/` holds the
-exact source bytes.
+Census publishes per code, stored verbatim (three cells per list end in a space, so anchor a
+grep on the code, not the cell end): NAICS prefixes of 2 to 6 digits, `pt.`, `Pts.` or `Part of`
+before the prefixes the code holds only part of, and `exc.` before the prefixes carved out of it.
+The `_to_naics_` files resolve it into six-digit NAICS codes, and `via` is `exact` (a six-digit
+item), `prefix` (every six-digit code under a shorter item), or `partial` (the Census code holds
+part of that code; see *NAICS semantics*). `MANIFEST.md` records the source URL, sha256, and
+retrieval time behind every file; `sources/` holds the exact source bytes.
 
 ## How to query
 
