@@ -248,6 +248,35 @@ def test_check_flags_a_test_directory_that_pytest_skips(tmp_path):
                               'below skills/alpha/scripts, so no suite collects it']
 
 
+def one_suite_registry(*dirs):
+    return ''.join(f"[[suite]]\nname = 's{i}'\ndir = '{d}'\nwith = ['pytest']\n\n" for i, d in enumerate(dirs))
+
+
+@pytest.mark.parametrize('rel, part, below', [
+    ('skills/alpha/scripts/build/deep/test_y.py', 'build', 'skills/alpha/scripts'),
+    ('skills/alpha/scripts/.hidden/test_y.py', '.hidden', 'skills/alpha/scripts'),
+    ('skills/alpha/scripts/pkg.egg/test_y.py', 'pkg.egg', 'skills/alpha/scripts'),
+])
+def test_check_flags_a_skipped_part_that_is_not_last_or_matches_a_pattern(tmp_path, rel, part, below):
+    root = git_repo(tmp_path, {**COVERED, rel: ''})
+    assert findings(root) == [f'{rel.rsplit("/", 1)[0]}: holds pytest files, but pytest skips {part!r} '
+                              f'below {below}, so no suite collects it']
+
+
+def test_a_directory_is_covered_when_one_of_its_suites_does_not_skip_it(tmp_path):
+    registry = one_suite_registry('tools', 'tools/build')
+    root = git_repo(tmp_path, {'build/suites.toml': registry, 'tools/build/x/test_y.py': ''})
+    assert findings(root) == []
+
+
+def test_a_skipped_directory_is_reported_with_its_deepest_suite(tmp_path):
+    registry = one_suite_registry('tools', 'tools/.hid/inner')
+    root = git_repo(tmp_path, {'build/suites.toml': registry, 'tools/test_t.py': '',
+                               'tools/.hid/inner/test_i.py': '', 'tools/.hid/inner/build/test_y.py': ''})
+    assert findings(root) == ["tools/.hid/inner/build: holds pytest files, but pytest skips 'build' "
+                              'below tools/.hid/inner, so no suite collects it']
+
+
 def test_a_suite_dir_named_like_a_skipped_folder_is_collected(tmp_path):
     registry = "[[suite]]\nname = 'build'\ndir = 'build'\nwith = ['pytest']\n"
     root = git_repo(tmp_path, {'build/suites.toml': registry, 'build/test_b.py': ''})
