@@ -198,7 +198,7 @@ Closes the test-gaps item. These tests are written against correct code, so they
   - `test_a_malformed_registry_exits_2_for_a_run_and_1_for_check`: `build/suites.toml` reads `name = [`. `main(['alpha'])` returns `2` and `main(['--check'])` returns `1`, both with `build/suites.toml: cannot read` on stderr.
   - In `build/test_commit_lints.py::test_unregistered_suite_is_refused`, one line before the file is planted: assert that no `dir` in the clone's `build/suites.toml` contains `tools/scan`.
 
-  > Deviation: Task 2 had already added `test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree` and a `no [[suite]] tables` case, so the overlap stays. The final review found the autouse fixture still read the default git excludes file, so commit 22f342a adds `XDG_CONFIG_HOME` to it and one test (+1, outside the plan). The same gap in `clean_env` of `build/test_commit_lints.py` is deferred, because the plan caps that file.
+  > Deviation: Task 2 had already added `test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree` and a `no [[suite]] tables` case, so the overlap stays. The final review found the autouse fixture still read the default git excludes file, so commit 22f342a adds `XDG_CONFIG_HOME` to it and one test (+1, outside the plan). The same gap in `clean_env` of `build/test_commit_lints.py` is deferred, because the plan caps that file. → item: specs/deferred_items.md § 110-build-runner-and-ci-kit-suites
 
 - [x] **Step 2: Apply each named mutant by hand, run the suite, and see the test go red; then revert it**
 
