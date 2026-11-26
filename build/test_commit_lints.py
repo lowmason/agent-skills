@@ -359,6 +359,14 @@ def test_drift_workflow_reports_to_the_summary_and_changes_nothing():
     assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
 
 
+def test_versions_drift_fetches_full_history_and_keeps_tmp_off_slash_tmp():
+    steps = [step for job in drift_workflow()['jobs'].values() for step in job['steps']]
+    checkouts = [step for step in steps if step.get('uses', '').startswith('actions/checkout@')]
+    assert checkouts and all(step['with']['fetch-depth'] == 0 for step in checkouts)
+    drifts = [step for step in steps if 'build/versions.py drift' in step.get('run', '')]
+    assert drifts and all(step['env']['TMPDIR'] == '${{ runner.temp }}' for step in drifts)
+
+
 def test_guide_drift_workflow_checks_the_checkout_and_changes_nothing():
     '''The weekly guide check reads the checked-out tree, so it needs no local
     main branch, and it fails the job when check reports something due. Only

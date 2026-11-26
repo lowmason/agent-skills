@@ -21,9 +21,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The kit suites run `git archive` on old commits, so the job needs the full history.
+          fetch-depth: 0
           persist-credentials: false
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - name: Report drift
+        # The kit suites' path rules expect a temp folder outside /tmp, as on macOS.
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: |
           set -o pipefail
           uv run python build/versions.py drift | tee -a "$GITHUB_STEP_SUMMARY"
