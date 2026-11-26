@@ -8,6 +8,9 @@ follow-ups 45 and 51, in `specs/plans/completed/`. Retired here by plan 58, the 
 `baseline.json` through `baseline add`, a removed section leaves through `baseline drop`, and the history tests
 read the guide at `18b4a71` (R1.1, R2.6, R5, R7, R11.1, R12.2, R12.3).
 
+**Amended 2026-11-26** by plan 109 (`specs/plans/109-cc-guide-fetch-notice-and-probes.md`): `check` writes each
+fetch into its own generation folder and swaps the `latest` symlink to it at once (Layout, R6.3, R6.4).
+
 **Earlier status: DESIGN APPROVED (2026-10-03).** The owner reviewed the merged
 spec and approved it as written, including the merge-time choices neither
 session's approvals had covered: the stage order, the `build/` test
@@ -266,7 +269,8 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 - `.claude/settings.json` gains the hook pair (R9).
 - `~/.cache/agent-skills/cc-guide/`, never inside a checkout, holds:
   - `2.1.288/`: the bootstrap snapshot, never written;
-  - `latest/docs/`: the last fetch;
+  - `latest`: a symlink to the last finished fetch's generation folder, `latest.<suffix>/`, which holds `docs/`
+    and `fetch.json`; the swap keeps the generation it replaced (owner, plan 109, 2026-11-17);
   - `<release>/docs/`: the snapshots `baseline rebaseline` takes. Those
     taken before about 14:00 on 2026-10-20 hold the MDX export, which R3.2
     rewrites (owner, 2026-10-20);
@@ -643,20 +647,22 @@ offline against a local directory, for tests and for R11.4.
 R6.2 **Lint first.** `check` runs `lint` against the same inputs. A failure is
 due immediately (R6.7).
 
-R6.3 **Fetch gate.** Fetch `changelog.md` and `llms.txt` on every run. When
-the changelog head matches the last fetch's, fetch only mapped pages missing
-from `latest/docs/`; otherwise refetch every mapped page and delete the cached
-pages this manifest does not map, since `fetch.json` records one head for the
-whole cache and a page left behind would vouch for old text when a later run,
-on another ref's manifest, maps it again. Compare (R6.5) and
+R6.3 **Fetch gate.** Fetch `changelog.md` and `llms.txt` on every run. When the changelog head matches the last fetch's, the new
+generation (R6.4) starts as a copy of the current one and only the mapped pages it lacks are fetched; otherwise
+it starts empty and every mapped page is fetched, so a page this manifest does not map stays behind with the old
+generation. `fetch.json` records one head for a whole generation, and a page carried over from an older head
+would vouch for old text when a later run, on another ref's manifest, maps it again (owner, plan 109, 2026-11-17). Compare (R6.5) and
 the due rules (R6.7) always run: a guide or manifest edit changes the
 selection, and a changelog batch or an audit comes due by elapsed time alone.
 
 R6.4 **Fetch.** Parallel GETs, a 30-second timeout, one retry, and a
-User-Agent that names the tool and carries no personal data. Pages are written
-to `~/.cache/agent-skills/cc-guide/latest/docs/`, overwriting, with the fetch
-time and changelog head recorded beside them after the last page, so a
-recorded head names a finished fetch. Every session and checkout shares this
+User-Agent that names the tool and carries no personal data. Each run writes its pages, `changelog.md`, `llms.txt` and `fetch.json` (the fetch time and changelog head) into a
+new generation folder, `~/.cache/agent-skills/cc-guide/latest.<suffix>/`, then swaps the `latest` symlink to it
+with one rename. So `latest/` always names one finished fetch, and a run that fails partway leaves it as it was. A
+page whose fetch fails is left out of the new generation and is fetched again by the next run. The swap keeps the
+generation it replaced, for a reader that resolved the link before it, and removes older generations and
+abandoned staging folders once they are an hour old. A reader that needs the head and the pages together
+resolves the link once and reads both from that generation (owner, plan 109, 2026-11-17). Every session and checkout shares this
 `latest/` (Decision 10), and the last fetch wins: of the commands that read
 it, only `rebaseline` turns the docs text it reads into baseline state, so
 it is pinned to a packet's head (R7), as `audited` is through `--to` (owner,
