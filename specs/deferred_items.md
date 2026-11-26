@@ -331,14 +331,6 @@
       account default, and to implement a written plan on Sonnet-class at half the price; the
       `TODO(owner)` comment is gone. `build/cc_guide/conformance.toml`'s settings comment no
       longer excepts the bullet, and the drift spec's Out of scope list notes it is settled.
-- [x] The provenance of `skills/writing-skills/anthropic-best-practices.md` (conformance
-      spec, Out of scope): the file reads like an Anthropic docs page, and NOTICE does not
-      attribute it. Size: design. Done when: the owner records the file's source and NOTICE
-      matches, or the file is replaced.
-      → done 2026-10-11 (/deferred quick fix): the owner chose replacement. The file came
-      in with the superpowers vendoring (2f283ae) and reproduced Anthropic's "Skill
-      authoring best practices" page; it is removed, writing-skills line 25 links to the
-      live page, and NOTICE's superpowers changes list records the removal.
 - [x] A distilled `references/` file for writing-skills (conformance spec Decision 10).
       Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
       Out-of-scope item; R1.7's body-length warning).
@@ -449,31 +441,6 @@
       → progress 2026-11-17 (owner ruling): kit-owned skills folder. The kit points the skill path (or `HOME`) at a folder that holds the shipped skills, so the reviewer subagents that the skill dispatches read the text under test. The VOID rules stay as they are.
       → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
       → done 2026-11-18 (plan 100): each arm has 5 valid reps on the shipped skills and a verdict: `v1` PASS (1 of 5 failing), `b2` PASS (0 of 5), `c4a-neg` PASS (1 of 5, after the owner voided r289, D5). The `v1` and `c4a-neg` passes depend on scorer readings that the owner accepted at the completion gate. Record: `specs/baseline/red-baseline-handoff-rerun.md`.
-- [x] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
-      you just finished is never planned past") says "do not plan, brainstorm or
-      name it", yet step 3a requires the Handoff bullets and the stamp to name the
-      later stages; the same verb is at `skills/subagent-driven-development/SKILL.md`
-      (roadmap-stage paragraph) and `skills/executing-plans/SKILL.md` Step 6, from
-      spec R7.2. The paragraph also gives no path for a session that has already
-      merged. Suggested rewording: "route to it" for "name it", a note that step
-      3a's bullets and stamp still name the stages they feed, and "if already
-      merged, run the protocol on the merged branch now". Size: quick-fix. Done
-      when: reworded in all three files and a `p5a` run (5 reps plus `c5a-neg`) on
-      the new text passes.
-      → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the 500-line trim
-      below and the subagent-driven-development half of the compaction-cut item above.
-      → done in plan 46 (2026-10-15): reworded in all three files (975cb02); on kit k-46,
-      `p5a` 0 of 5 failing and `c5a-neg` 0 of 5 failing, no voids. The F-next call was
-      reading-sensitive and the owner ruled it stands (plan 46's Gate result).
-- [x] `skills/subagent-driven-development/SKILL.md` sits at exactly 500 of its
-      500-line maximum, with a long unwrapped description line; any edit there has
-      to be net-zero. Trim the file (or move a section to `references/`) before its
-      next content change. Size: quick-fix. Revisit if: the next edit to that file
-      needs a line (done when it is back under 490 lines).
-      → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the roadmap-stage
-      rewording above and the subagent-driven-development half of the compaction-cut item.
-      → done in plan 46 (2026-10-15): the When to Use graph moved to
-      `references/advantages.md`; the file is 484 lines, under 490.
 - [x] `skills/derive-roadmap/SKILL.md` §5 (the resume) has two gaps found in
       review. "Each stage stamped COMPLETE since the last resume" has no marker for
       the last resume (suggested: each stamped stage whose Handoff no entry yet
@@ -498,15 +465,6 @@
       records the run. A scorer subagent scored it, as the kit's protocol says. The controller
       typed the launch command into the owner's terminal, which `changes.log` discloses. No rep
       wrote NO FINDINGS, because the brief carries planted defects.
-- [x] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
-      listed home is a deviation line in the subagent-driven-development ledger,
-      which is gitignored (`.gitignore`) and deleted at completion; the wording is
-      spec R4.3's (`specs/completed/handoff-briefs.md`). Size: quick-fix. Done
-      when: the spec and the skill both read "amend it, and commit where the home
-      is tracked".
-      → done 2026-10-11 (/deferred quick fix): both now read "Amend it, and commit
-      where the home is tracked"; the retired spec's R4.3 row carries the
-      `(owner, 2026-10-11)` tag.
 
 ## 41-commit-lints-hook-and-ci — 2026-10-12
 - [x] Make the `commit-lints` CI check required, or record that CI is advisory (plan 41
@@ -1418,7 +1376,7 @@ authored. In 16 of the 20 reps (10 of 10 for writing-skills, 6 of 10 for prepare
 model said an omitted `subagent_type` would create a fork, which the 2.1.302 docs contradict;
 all 20 named a type.
 
-- [ ] Name a non-fork type in writing-skills' Micro-Test step 1 once a fork is seen there
+- [x] Name a non-fork type in writing-skills' Micro-Test step 1 once a fork is seen there
       (`skills/writing-skills/SKILL.md:596`): "a raw API call, or a single-shot subagent if
       you don't have API access" leaves the type to the dispatcher. Owner ruling: defer on the
       micro-test result. Control 0/5 fork and treatment 0/5 fork (all 10 reps named
@@ -1429,6 +1387,7 @@ all 20 named a type.
       backlog for its other reasons; no restamp. Not tested: Sonnet, or a live
       Agent call whose type the model is not asked about. Size: quick-fix. Revisit if: a
       session or a micro-test rep is seen picking the fork.
+      → retired 2026-11-26: the premise is gone. fb48a03 replaced the subagent fallback in Micro-Test step 1 with "a raw API call, or a fresh session isolated as micro-tests.md says" (`skills/writing-skills/SKILL.md:338`), so the step no longer leaves a subagent type to the dispatcher.
 - [ ] Name a fresh, non-fork type for prepare-handoff's reviewers once a fork is seen there
       (`skills/prepare-handoff/SKILL.md:78-79`, step 3): "dispatch the reviewers in parallel
       as read-only subagents, with no model pinned" names no type, and a forked cold reader
@@ -5585,7 +5544,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       bare skill names. Size: quick-fix. Done when: a `/cc-guide` pass adds the fact, with its docs source, to
       `skills.progressive-disclosure`.
       → done 2026-11-15 (/deferred quick fix): `skills.progressive-disclosure` now says that in a terminal or VS Code session Claude Code doesn't attach the files that `@` references name in the body of a skill synced from claude.ai, and that those references reach Claude as literal text (2.1.228+), while a cloud or Cowork session handles them as a local skill does. The `/cc-guide` skills-group verify confirmed both sentences, against skills.md:318 and skills.md:316 of the 2.1.325 docs, and the section was accepted and advanced to 2.1.325.
-- [ ] `build/cc_guide/packets.py` `files()` copies only the citing file into a `/cc-guide files` packet (plan 92
+- [x] `build/cc_guide/packets.py` `files()` copies only the citing file into a `/cc-guide files` packet (plan 92
       completion notes). Drift rule R4.1 says a SKILL.md citation also covers the Markdown files that the skill
       loads on demand. So the packet for `skills/writing-skills/SKILL.md` leaves out its seven on-demand files.
       Size: plan. Done when: a files packet for a SKILL.md citation holds each Markdown file that the skill loads
@@ -5594,6 +5553,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): Part B and its tests landed, so a files packet copies the Markdown files that a skill's citation covers, and settle reads rows on them and holds a skill whose covered files moved. E3's fresh `/cc-guide files` pass, run in its own session after the merge, closes this item and the one on the files packet. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md.
       → progress 2026-11-22 (E3 pass): the live run of Part B is the same run as the item in section `cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17`. Read its note for the counts. Close both together after `skills/writing-skills` and `skills/brainstorming` have run.
+      → retired 2026-11-26: the done-when is met. Plan 102's Part B makes a files packet copy the Markdown files that a skill's citation covers, with tests in `build/cc_guide/`. Both live runs that this item waited for are done: `skills/writing-skills` in plan 105 (2026-11-23) and `skills/brainstorming` in a one-skill files pass on 2026-11-23 (14 rows, 0 contradictions). That pass made no commit, because its `baseline cite` changed no byte. The owner confirmed it at the 2026-11-26 `/deferred` pass.
 - [x] The micro-test kit's isolation pilot never asks about user identity (plan 92, Task 4 review).
       `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` addresses the owner by
       surname. The pilot's six answers were all NO, because `kit/isolation_probe.txt` has no identity question.
@@ -6074,7 +6034,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `manifest.toml`.
 
 ## deferred-2026-11-17 (no plan; /deferred pass, branch claude/deferred-a35864) — 2026-11-17
-- [ ] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
+- [x] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
       the weekly `versions-drift` job's log).** Since at least 2026-11-02, each scheduled run reports
       `suite runs failed: build (3.13)` beside the 3.15 failures that the open item on the weekly `drift` job
       covers (section `66-package-versions — 2026-10-27`). `test_file_names_are_compared_case_sensitively` and
@@ -6088,6 +6048,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       or tests that state the platform difference. Size: quick-fix. Done when: both tests pass on a
       case-sensitive file system, and the weekly job's 3.13 pass no longer lists `build` as failed.
       → progress 2026-11-17 (/deferred quick fix): fixed in `7642a19` and `f05293c`. The case suffix now comes from `differs_only_in_case` in `build/check_links.py`, which reads the directory listings, not `path.exists()`, and needs one name to differ in case. A case-sensitive APFS disk image reproduced the 2 CI failures first, and `test_check_links.py` passed 14 of 14 there at `7642a19` and passes 15 of 15 on this Mac at `f05293c`. The weekly job reads `main`, so the item stays open until its first 3.13 pass after the merge, by the owner's ruling at the branch's Step 4b review.
+      → retired 2026-11-26: the done-when is met. The weekly job's 3.13 pass in run 45125177458 (2026-11-23) no longer lists `build` as failed. It lists three kit suites instead, a new failure → item: deferred-2026-11-26-parallel (no plan; /deferred pass, branch claude/deferred-task-parallelization-414a9a) — 2026-11-26
 - [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-17 read
       danyuchn/asd-ste100-skill through `70736273` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
@@ -6170,7 +6131,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-22 (plan 103): line 379 of finishing-a-development-branch and line 74 of using-git-worktrees are fixed and micro-tested (Tasks 2 and 3), the NOTICE bullet is in and `baseline cite` has stamped both files (Task 4). At the completion gate the owner also had line 379's 30-day sentence tied to the archive (rules/pr-lifecycle.md step 3 and the NOTICE bullet too). The guide's own line 255 still carries the old "kept worktree" wording → item: 103-worktree-skills-cc-guide-fixes — 2026-11-22
 
 ## cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17
-- [ ] Make a files packet show the verifier the Markdown that a `SKILL.md` citation covers (owner ruling
+- [x] Make a files packet show the verifier the Markdown that a `SKILL.md` citation covers (owner ruling
       2026-11-17, files pass). Spec R4.1 (`specs/completed/claude-code-drift-automation-spec.md`) says a skill's
       `SKILL.md` citation covers the Markdown files it loads on demand, in `references/` or beside it, and that
       those files carry no citation of their own. `files()` in `build/cc_guide/packets.py` copies only the citing
@@ -6186,6 +6147,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → progress 2026-11-19 (plan 102): Part B and its tests landed, so a files packet copies the Markdown files that a skill's citation covers, and settle reads rows on them and holds a skill whose covered files moved. E3's fresh `/cc-guide files` pass, run in its own session after the merge, closes this item and the one on `packets.py` `files()`. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md.
       → progress 2026-11-22 (E3 pass, `/cc-guide files`, branch claude/cc-guide-files-e3-62cb58): the live run of Part B ran over 17 of the 19 citing skills. By owner ruling it left out `skills/writing-skills` (plan 105 re-verifies it after its layout move) and `skills/brainstorming` (a one-skill pass after plan 106 merges), so this item stays open until both have run. Each packet held the skill's covered Markdown files. Of 239 rows, 58 sat on covered files. 2 of those 58 contradicted the guide: `skills/prepare-handoff/references/fact-checker.md:15` (fixed in this pass) and `skills/subagent-driven-development/references/model-selection.md:13` (held, filed under `cc-guide-files-pass-e3`). 7 were not covered. The item's own example now works: `skills/executing-plans/SKILL.md` gets rows on `references/final-review.md`. Whole pass: 210 consistent, 5 contradicting (1 fixed, 3 held in 2 skills, 1 the standing `description-when-only` deviation), 24 not covered (22 ruled no action, 2 filed as items).
       → progress 2026-11-23 (plan 105): `/cc-guide files skills/writing-skills/SKILL.md` ran after the layout move. Of 58 rows, 51 are consistent, 2 contradict (the standing `description-when-only` deviation), 5 are not covered (owner ruling 2026-11-23: no action) and 0 are unverified. Only `skills/brainstorming` is left, so this item stays open.
+      → retired 2026-11-26: the done-when is met. Files packets copy each covered Markdown file (plan 102, Part B, with tests in `build/cc_guide/`), and every skill that the 2026-11-22 note names has had a fresh files verify: 17 skills in the E3 pass, `skills/writing-skills` in plan 105, and `skills/brainstorming` in a one-skill pass on 2026-11-23. That pass made no commit, because its `baseline cite` changed no byte. The owner confirmed it at the 2026-11-26 `/deferred` pass.
 
 ## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.
@@ -6495,3 +6457,23 @@ review and the Plan Completion gate (2026-10-27) add the others.
       and to revisit item 16 when the free room runs out. A cut needs a guard run with pressure scenarios, not a
       waiver. Size: plan. Revisit if: an edit to `skills/writing-skills/SKILL.md` would take the body past 19,700
       characters, the `compaction-window` limit of `build/check_conformance.py`.
+
+## deferred-2026-11-26-parallel (no plan; /deferred pass, branch claude/deferred-task-parallelization-414a9a) — 2026-11-26
+- [ ] **Three kit suites fail in the weekly `versions-drift` job (found by the 2026-11-26 `/deferred` pass in the log of
+      run 45125177458, 2026-11-23).** The job's suite pass reports `suite runs failed: cc-guide-verifier-recall-kit (3.13),
+      completion-triage-guard-kit (3.13), handoff-rerun-kit (3.13)`, and its 3.15 pass lists the same three. Plans 100
+      and 102 registered these suites in `build/suites.toml` on 2026-11-18, so this run is the first that ran them. The
+      log shows four causes. (a) Most failures in `test_rerun_runner.py` (handoff-rerun and completion-triage guard
+      kits) stop on `fatal: not a tree object: <sha>` for commits such as `92f6a379` and `d778c3e5`. The
+      `actions/checkout` step in `.github/workflows/versions-drift.yml` sets no `fetch-depth`, so the clone is shallow
+      and holds no older commit. (b) `test_rerun_extract.py::test_real_home_spellings_void[upper]` fails in both of those
+      kits. It looks like the Linux case problem that the `build` suite had (section `deferred-2026-11-17 (no plan;
+      /deferred pass, branch claude/deferred-a35864) — 2026-11-17`). (c) In the verifier-recall kit,
+      `test_vr_grade.py::test_v2_maps_both_tmp_aliases_to_private_tmp` expects macOS's `/private/tmp` alias, which a
+      Linux runner does not have. (d) `test_rerun_runner.py::test_unstripped_field_fails_the_rep` fails with
+      `assert 2 == 4`, for no cause the log shows. All four were read from the log and not reproduced. The kits are
+      frozen, so a fix inside a kit needs a new freeze or a platform condition in the test, while (a) may need only a
+      full checkout. The 3.15 pass already failed for the reason in the item on the weekly `drift` job (section
+      `66-package-versions — 2026-10-27`), so the job was red before these suites joined, and this failure went unseen.
+      Size: plan (lane 3 of the 2026-11-26 pass, with the `build/run_suites.py` items). Done when: the weekly job's
+      3.13 pass lists none of the three kit suites as failed.

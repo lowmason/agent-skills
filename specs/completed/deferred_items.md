@@ -2114,6 +2114,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       → retired 2026-10-05 (/deferred): a pointer with no action of its own; the drift
       spec is live and its Stage 1 merged (add1995, plans/completed/38-…), so its stages
       and their own deferred items track keeping the guide current.
+- [x] The provenance of `skills/writing-skills/anthropic-best-practices.md` (conformance
+      spec, Out of scope): the file reads like an Anthropic docs page, and NOTICE does not
+      attribute it. Size: design. Done when: the owner records the file's source and NOTICE
+      matches, or the file is replaced.
+      → done 2026-10-11 (/deferred quick fix): the owner chose replacement. The file came
+      in with the superpowers vendoring (2f283ae) and reproduced Anthropic's "Skill
+      authoring best practices" page; it is removed, writing-skills line 25 links to the
+      live page, and NOTICE's superpowers changes list records the removal.
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
 - [x] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
@@ -2384,6 +2392,42 @@ declined as YAGNI (zero instances in a one-page wiki).
       key set. Size: quick-fix. Done when: a citation-shaped line and a README or
       INSTALL.md that name a manual-only skill yield no finding, with a test for each.
       → done 2026-10-08 (/deferred quick fix)
+
+## 40-handoff-briefs — 2026-10-11
+- [x] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
+      you just finished is never planned past") says "do not plan, brainstorm or
+      name it", yet step 3a requires the Handoff bullets and the stamp to name the
+      later stages; the same verb is at `skills/subagent-driven-development/SKILL.md`
+      (roadmap-stage paragraph) and `skills/executing-plans/SKILL.md` Step 6, from
+      spec R7.2. The paragraph also gives no path for a session that has already
+      merged. Suggested rewording: "route to it" for "name it", a note that step
+      3a's bullets and stamp still name the stages they feed, and "if already
+      merged, run the protocol on the merged branch now". Size: quick-fix. Done
+      when: reworded in all three files and a `p5a` run (5 reps plus `c5a-neg`) on
+      the new text passes.
+      → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the 500-line trim
+      below and the subagent-driven-development half of the compaction-cut item above.
+      → done in plan 46 (2026-10-15): reworded in all three files (975cb02); on kit k-46,
+      `p5a` 0 of 5 failing and `c5a-neg` 0 of 5 failing, no voids. The F-next call was
+      reading-sensitive and the owner ruled it stands (plan 46's Gate result).
+- [x] `skills/subagent-driven-development/SKILL.md` sits at exactly 500 of its
+      500-line maximum, with a long unwrapped description line; any edit there has
+      to be net-zero. Trim the file (or move a section to `references/`) before its
+      next content change. Size: quick-fix. Revisit if: the next edit to that file
+      needs a line (done when it is back under 490 lines).
+      → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the roadmap-stage
+      rewording above and the subagent-driven-development half of the compaction-cut item.
+      → done in plan 46 (2026-10-15): the When to Use graph moved to
+      `references/advantages.md`; the file is 484 lines, under 490.
+- [x] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
+      listed home is a deviation line in the subagent-driven-development ledger,
+      which is gitignored (`.gitignore`) and deleted at completion; the wording is
+      spec R4.3's (`specs/completed/handoff-briefs.md`). Size: quick-fix. Done
+      when: the spec and the skill both read "amend it, and commit where the home
+      is tracked".
+      → done 2026-10-11 (/deferred quick fix): both now read "Amend it, and commit
+      where the home is tracked"; the retired spec's R4.3 row carries the
+      `(owner, 2026-10-11)` tag.
 
 ## Aged-backlog acknowledgements (to 2026-10-12) — 2026-10-12
 - 2026-09-08 — finished `feat/snippet-gate-repo-wide` with 1 item aged >45d,
