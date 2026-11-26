@@ -20,6 +20,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 import tomllib
 import uuid
 from datetime import date, datetime
@@ -595,6 +596,95 @@ def assess_explore(read: Read) -> Verdict:
     return probe_checks.assess_explore_override(json.loads(read('sightings.json') or '[]'))
 
 
+# async-teardown: an async SessionStart hook that logs `start <pid>`, then the name of each TEARDOWN_SIGNALS signal
+# it gets, and keeps running, since each trap only logs. `sleep 1 & wait $!` lets a trap run at once, not once a sleep
+# ends, and the loop ends by itself within TEARDOWN_LIFETIME seconds, so the hook never runs unbounded. It writes
+# nothing to stdout or stderr, so a pipe that claude closes cannot end it with SIGPIPE.
+TEARDOWN_WAIT = probe_checks.TEARDOWN_WAIT  # seconds collect_teardown waits for the hook to go
+TEARDOWN_POLL = 0.1  # seconds between two looks for the hook
+TEARDOWN_LIFETIME = 120  # seconds the hook runs at most: its loop's one-second sleeps
+TEARDOWN_TURNS = 1
+TEARDOWN_LOG = 'teardown.log'
+TEARDOWN_TRAP = '''trap 'printf "{name}\\n" >> "$log"' {name}'''
+TEARDOWN_HOOK = '\n'.join(['#!/bin/sh', 'log=$1', 'echo "start $$" >> "$log"',
+                           *(TEARDOWN_TRAP.format(name=name) for name in probe_checks.TEARDOWN_SIGNALS),
+                           'n=0', f'while [ "$n" -lt {TEARDOWN_LIFETIME} ]; do', '    sleep 1 & wait $!',
+                           '    n=$((n + 1))', 'done', ''])
+
+
+def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
+    '''async-teardown registers its hook in the scratch directory's
+    project settings as an async SessionStart command hook on the startup
+    matcher, as .claude/settings.json registers notice.sh's refresh, and
+    asks for hook events in the stream, where claude -p may finalize the
+    hook as cancelled. The reply takes one turn, so the hook is still
+    running when the run ends.'''
+    hook = scratch / 'teardown-hook.sh'
+    hook.write_text(TEARDOWN_HOOK, encoding='utf-8')
+    hook.chmod(0o755)
+    command = f'{shlex.quote(str(hook))} {shlex.quote(str(scratch / TEARDOWN_LOG))}'
+    settings = {'hooks': {'SessionStart': [{'matcher': 'startup',
+                                            'hooks': [{'type': 'command', 'command': command, 'async': True}]}]}}
+    (scratch / '.claude').mkdir()
+    (scratch / '.claude' / 'settings.json').write_text(json.dumps(settings, indent=1) + '\n', encoding='utf-8')
+    argv = claude_args(claude, 'Reply with the word OK.', turns=TEARDOWN_TURNS, sources='project', mode='default',
+                       extra=('--include-hook-events',))
+    return [Invocation('teardown', argv, {}, PROBE_TIMEOUT)]
+
+
+def read_lines(path: Path) -> list[str]:
+    return path.read_text(encoding='utf-8').splitlines() if path.is_file() else []
+
+
+def running(pid: int) -> bool:
+    '''Whether a process has the pid. PermissionError means one does,
+    though not one this user may signal.'''
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def hook_pids(lines: list[str]) -> list[int]:
+    '''The pid on each start line of the hook's log, less those os.kill
+    must never get: 0, which is the caller's own process group, 1, which is
+    init, and this process.'''
+    found = [int(m.group(1)) for m in map(probe_checks.TEARDOWN_START_RE.fullmatch, lines) if m]
+    return [pid for pid in found if pid > 1 and pid != os.getpid()]
+
+
+def collect_teardown(scratch: Path, run_dir: Path) -> None:
+    '''The hook's log as teardown.log, with gone or alive added: whether
+    each pid on its start lines was gone within TEARDOWN_WAIT seconds of
+    claude -p's end. Each one still there after the wait, or when the wait
+    is cut short, gets SIGKILL, which no trap catches, so the hook never
+    outlives the probe. The log is read again after the wait, so a signal
+    the hook logs late still counts. A log with no start line is copied as
+    it is, and an absent one as empty: the assessment reads either as
+    ERROR.'''
+    log = scratch / TEARDOWN_LOG
+    pids, end = hook_pids(read_lines(log)), []
+    try:
+        deadline = time.monotonic() + TEARDOWN_WAIT
+        while any(map(running, pids)) and time.monotonic() < deadline:
+            time.sleep(TEARDOWN_POLL)
+        if pids:
+            end = [probe_checks.TEARDOWN_ALIVE if any(map(running, pids)) else probe_checks.TEARDOWN_GONE]
+    finally:
+        for pid in filter(running, pids):
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.kill(pid, signal.SIGKILL)
+    (run_dir / TEARDOWN_LOG).write_text(''.join(f'{line}\n' for line in [*read_lines(log), *end]), encoding='utf-8')
+
+
+def assess_teardown(read: Read) -> Verdict:
+    return probe_checks.assess_async_teardown(stream_of(read('teardown.jsonl')),
+                                              (read(TEARDOWN_LOG) or '').splitlines())
+
+
 PROBE_RUNS = {
     'guard-liveness': Probe(prepare_guard, collect_guard, assess_guard,
                             {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)}),
@@ -610,6 +700,8 @@ PROBE_RUNS = {
     'compaction-cut': CUT_PROBE,
     'explore-override': Probe(prepare_explore, collect_explore, assess_explore,
                               {'sightings.json': 'explore-override.sightings.json'}),
+    'async-teardown': Probe(prepare_teardown, collect_teardown, assess_teardown,
+                            {'teardown.jsonl': 'async-teardown.jsonl', 'teardown.log': 'async-teardown.log'}),
 }
 
 

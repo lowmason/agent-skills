@@ -4,6 +4,7 @@ Code 2.1.303, 2026-10-20), and the fixture scrubber (drift spec R10.2,
 R10.5, R12.6).'''
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -761,6 +762,96 @@ NO_SIGHTING = {'mark': False, 'claude_md': False, 'git_status': False}
 ])
 def test_explore_sightings_reads_marks_canaries_and_leaks_from_the_raw_stream(events, expected):
     assert pc.explore_sightings(events, CANARIES) == expected
+
+
+TEARDOWN_PASS = 'the async SessionStart hook got TERM first at teardown and was gone within 5 s'
+TEARDOWN_HUP = 'the async SessionStart hook got HUP first at teardown and was gone within 5 s'
+NO_SIGNAL = 'the async SessionStart hook got none of TERM, HUP, INT at teardown'
+NO_TRAP = ", so notice.sh's trap never runs"
+NOTICE_SH = Path(__file__).resolve().with_name('notice.sh')
+
+
+def hook_response(event, outcome):
+    return {'type': 'system', 'subtype': 'hook_response', 'hook_event': event, 'hook_name': f'{event}:startup',
+            'outcome': outcome}
+
+
+def teardown_run(*outcomes, event='SessionStart'):
+    return [init(), *[hook_response(event, o) for o in outcomes], assistant({'type': 'text', 'text': 'OK'}), result()]
+
+
+def test_async_teardown_passes_on_term_then_gone():
+    assert pc.assess_async_teardown(teardown_run(), ['start 41', 'TERM', 'gone']) == (PASS, TEARDOWN_PASS)
+
+
+@pytest.mark.parametrize('log, finding', [
+    # Another signal first.
+    (['start 41', 'HUP', 'gone'], TEARDOWN_HUP),
+    # No catchable signal, so notice.sh's trap never runs.
+    (['start 41', 'gone'], f'{NO_SIGNAL} and was gone within 5 s{NO_TRAP}'),
+    # The hook outlived teardown.
+    (['start 41', 'TERM', 'alive'],
+     'the async SessionStart hook got TERM first at teardown and was still running 5 s after claude -p ended'),
+])
+def test_async_teardown_diverges(log, finding):
+    assert pc.assess_async_teardown(teardown_run(), log) == (DIVERGES, finding)
+
+
+def test_async_teardown_is_error_when_the_hook_never_started():
+    assert pc.assess_async_teardown(teardown_run(), []) == (ERROR, 'the async SessionStart hook never started')
+
+
+def test_async_teardown_reads_a_cancelled_hook_response_when_the_stream_has_one():
+    log = ['start 41', 'TERM', 'gone']
+    assert pc.assess_async_teardown(teardown_run('cancelled'), log) == (PASS, TEARDOWN_PASS)
+    assert pc.assess_async_teardown(teardown_run('success'), log) == (
+        DIVERGES, f"{TEARDOWN_PASS}; the stream's SessionStart hook_response reads success, not cancelled")
+    assert pc.assess_async_teardown(teardown_run(), log) == (PASS, TEARDOWN_PASS)
+
+
+@pytest.mark.parametrize('log, verdict', [
+    # TERM first decides, whatever comes after it; any other signal first diverges.
+    (['start 41', 'TERM', 'HUP', 'INT', 'gone'], (PASS, TEARDOWN_PASS)),
+    (['start 41', 'HUP', 'TERM', 'gone'], (DIVERGES, TEARDOWN_HUP)),
+    (['start 41', 'INT', 'gone'],
+     (DIVERGES, 'the async SessionStart hook got INT first at teardown and was gone within 5 s')),
+    # No signal and still running: the finding names both.
+    (['start 41', 'alive'], (DIVERGES, f'{NO_SIGNAL} and was still running 5 s after claude -p ended{NO_TRAP}')),
+])
+def test_async_teardown_reads_the_first_signal_and_how_the_hook_ended(log, verdict):
+    assert pc.assess_async_teardown(teardown_run(), log) == verdict
+
+
+@pytest.mark.parametrize('log, finding', [
+    (['gone'], 'the async SessionStart hook never started'),
+    (['TERM', 'gone'], 'the async SessionStart hook never started'),
+    (['start', 'TERM', 'gone'], 'the async SessionStart hook never started'),
+    (['start 41'], 'the teardown log does not end in gone or alive'),
+    (['start 41', 'TERM'], 'the teardown log does not end in gone or alive'),
+    # A second start line means the hook ran twice, so its signals cannot be told apart.
+    (['start 41', 'start 42', 'TERM', 'gone'], "the teardown log holds 'start 42' between its start line and its end"),
+])
+def test_async_teardown_is_error_on_a_log_of_another_shape(log, finding):
+    assert pc.assess_async_teardown(teardown_run(), log) == (ERROR, finding)
+
+
+def test_async_teardown_reads_every_session_start_hook_response_and_no_other():
+    log = ['start 41', 'TERM', 'gone']
+    assert pc.assess_async_teardown(teardown_run('success', event='Stop'), log) == (PASS, TEARDOWN_PASS)
+    assert pc.assess_async_teardown(teardown_run('cancelled', 'success'), log) == (
+        DIVERGES, f"{TEARDOWN_PASS}; the stream's SessionStart hook_response reads success, not cancelled")
+
+
+@pytest.mark.parametrize('events, why', [(None, 'no stream-json events'), (teardown_run()[:-1], 'no result event')])
+def test_async_teardown_is_error_when_the_run_broke(events, why):
+    assert pc.assess_async_teardown(events, ['start 41', 'TERM', 'gone']) == (ERROR, why)
+
+
+def test_the_teardown_signals_are_the_ones_notice_sh_traps():
+    assert pc.TEARDOWN_SIGNALS == ('TERM', 'HUP', 'INT')
+    traps = re.findall(r"^\s*trap '[^']*' ([A-Z ]+?)\s*(?:#.*)?$", NOTICE_SH.read_text(encoding='utf-8'), re.MULTILINE)
+    signals = [set(t.split()) for t in traps if t.strip() != 'EXIT']
+    assert signals and all(s == set(pc.TEARDOWN_SIGNALS) for s in signals)
 
 
 def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():

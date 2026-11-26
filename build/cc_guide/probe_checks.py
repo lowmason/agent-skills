@@ -655,6 +655,50 @@ def assess_explore_override(sightings: list[dict]) -> Verdict:
                          f'{EXPLORE_REPS} reps; the control got both')
 
 
+# async-teardown: an async SessionStart hook still running when claude -p ends, registered as notice.sh's refresh is.
+# The refresh traps HUP, INT and TERM, so the signal claude sends such a hook first decides whether that trap runs
+# (owner ruling on the G7 gap, 2026-10-20; Stage 5 probe candidate (b)). PASS encodes what 2.1.304 showed: TERM
+# first, and the hook gone soon after.
+TEARDOWN_SIGNALS = ('TERM', 'HUP', 'INT')  # the probe hook's traps, each of which only logs its name
+TEARDOWN_FIRST = 'TERM'
+TEARDOWN_WAIT = 5  # seconds probes.collect_teardown waits for the hook to go once claude -p has ended
+TEARDOWN_START_RE = re.compile(r'start ([0-9]+)')  # the hook's first log line, with its pid
+TEARDOWN_GONE, TEARDOWN_ALIVE = 'gone', 'alive'  # the line collect_teardown adds after its wait
+CANCELLED = 'cancelled'  # the outcome claude -p finalizes such a hook with (guide, hooks.pitfalls)
+NO_TRAP_RUNS = ", so notice.sh's trap never runs"  # a hook that got none of TEARDOWN_SIGNALS
+
+
+def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
+    '''async-teardown: the hook's log holds its start line, then each
+    signal it got, in order, then gone or alive. PASS when TERM came first
+    and the hook was gone within TEARDOWN_WAIT seconds, and no SessionStart
+    hook_response in the stream has an outcome other than cancelled; a
+    stream with none is no finding. A broken run, a log with no start line,
+    and a log that holds another line or does not end in gone or alive are
+    ERROR.'''
+    why = broken(events)
+    if why:
+        return Verdict(ERROR, why)
+    if not log or not TEARDOWN_START_RE.fullmatch(log[0]):
+        return Verdict(ERROR, 'the async SessionStart hook never started')
+    if log[-1] not in (TEARDOWN_GONE, TEARDOWN_ALIVE):
+        return Verdict(ERROR, 'the teardown log does not end in gone or alive')
+    signals, gone = log[1:-1], log[-1] == TEARDOWN_GONE
+    stray = next((line for line in signals if line not in TEARDOWN_SIGNALS), None)
+    if stray is not None:
+        return Verdict(ERROR, f'the teardown log holds {stray!r} between its start line and its end')
+    got = f'got {signals[0]} first' if signals else f"got none of {', '.join(TEARDOWN_SIGNALS)}"
+    end = f'was gone within {TEARDOWN_WAIT} s' if gone else f'was still running {TEARDOWN_WAIT} s after claude -p ended'
+    shown = f"the async SessionStart hook {got} at teardown and {end}{'' if signals else NO_TRAP_RUNS}"
+    other = [e.get('outcome') for e in events if e.get('type') == 'system' and e.get('subtype') == 'hook_response'
+             and e.get('hook_event') == 'SessionStart' and e.get('outcome') != CANCELLED]
+    if other:
+        shown += f"; the stream's SessionStart hook_response reads {' and '.join(map(str, other))}, not {CANCELLED}"
+    if signals[:1] == [TEARDOWN_FIRST] and gone and not other:
+        return Verdict(PASS, shown)
+    return Verdict(DIVERGES, shown)
+
+
 def _trim_block(block: dict) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
