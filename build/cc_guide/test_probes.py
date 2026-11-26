@@ -701,6 +701,24 @@ def test_the_explore_probe_reads_its_run_like_a_live_one(tmp_path, monkeypatch):
                                               for suffix in ('.argv.json', '.err', '.jsonl'))])
 
 
+def test_the_explore_probe_backs_its_sections_and_its_fixture_replays_like_the_run(tmp_path, monkeypatch):
+    '''The registry entry the owner chose (plan 109, D10), and the one fixture save_fixtures writes, which the
+    replay reads as the run was read. A run with no sightings.json is ERROR, never a pass.'''
+    manifest = state.parse_manifest((REPO / state.MANIFEST).read_text(encoding='utf-8'))
+    assert manifest.probes['explore-override'] == (['subagents.isolation', 'subagents.models'], ['agents/explore.md'])
+    monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: '0a1b2c3d')
+    unmarked = tpc.explore_run(control=[tpc.text(tpc.answer('canary-control', mark=False))])
+    fake = FakeRuns({'explore-1': stream(*tpc.explore_run()), 'explore-2': stream(*tpc.explore_run()),
+                     'explore-3': stream(*unmarked)})
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    verdict = probes.run_probe('explore-override', 'claude', REPO, run_dir, fake)
+    assert verdict == (ERROR, 'rep 3: canary-control did not give its mark CANARY-CONTROL')
+    assert probes.save_fixtures(run_dir, 'explore-override', dest) == [dest / 'explore-override.sightings.json']
+    probe = probes.PROBE_RUNS['explore-override']
+    assert probe.assess(probes.reader(dest, probe.fixtures)) == verdict
+    assert probe.assess(lambda name: None) == (ERROR, 'expected 3 reps, found 0')
+
+
 def test_the_explore_probe_reads_each_rep_from_its_own_stream(tmp_path, monkeypatch):
     '''A rep whose stream diverges is named by its number, and a missing stream is a broken rep, not a pass.'''
     monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: '0a1b2c3d')
