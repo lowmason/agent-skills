@@ -3,7 +3,9 @@
 The run tests inject a fake run function, so no test starts uv; the --check tests
 build throwaway git repositories.
 '''
+import os
 import subprocess
+import sys
 import tomllib
 
 import pytest
@@ -45,6 +47,16 @@ dir = 'tools/inner'
 with = ['pytest']
 pythons = ['dev', '/usr/bin/python3']
 '''
+
+
+@pytest.fixture(autouse=True)
+def isolated_git(tmp_path, monkeypatch):
+    '''Keep every git call below tmp_path, and read no user or system git config.'''
+    monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
+    monkeypatch.setenv('GIT_CONFIG_GLOBAL', os.devnull)
+    monkeypatch.setenv('GIT_CONFIG_NOSYSTEM', '1')
+
+
 ONE = "[[suite]]\nname = 'a'\ndir = 'x'\n"  # a suite table without its `with` line
 
 
@@ -85,6 +97,14 @@ def test_the_fixture_registry_is_valid():
     (ONE + "with = ['pytest', '--index-url=x']\n", "suite 1 (a): 'with' entries must not start with '-'"),
     (ONE + "with = ['pytest']\nextras = ['-e.']\n", "suite 1 (a): 'extras' entries must not start with '-'"),
     (ONE + "with = ['pytest']\npythons = ['-p']\n", "suite 1 (a): 'pythons' entries must not start with '-'"),
+    ("suite = 'x'\n", 'no [[suite]] tables'),
+    ('suite = [1]\n', 'suite 1: not a table'),
+    ("[[suite]]\nname = 'a'\ndir = '/abs'\nwith = ['pytest']\n",
+     "suite 1 (a): 'dir' must be a normalised path below the repo root"),
+    ("[[suite]]\nname = 1\ndir = 'x'\nwith = ['pytest']\n", "suite 1: 'name' must be a non-empty string"),
+    ("[[suite]]\nname = 'a'\ndir = 1\nwith = ['pytest']\n", "suite 1 (a): 'dir' must be a non-empty string"),
+    (ONE + "with = ['pytest']\nextras = [1]\n", "suite 1 (a): 'extras' must be a list of non-empty strings"),
+    (ONE + "with = ['pytest']\npythons = [1]\n", "suite 1 (a): 'pythons' must be a list of non-empty strings"),
 ])
 def test_validate_refuses(text, problem):
     assert problem in problems(text)
@@ -224,6 +244,17 @@ def test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree(tmp_pat
     assert findings(root) == []
 
 
+def test_check_skips_a_tracked_file_deleted_from_the_work_tree(tmp_path):
+    files = {rel: text for rel, text in COVERED.items() if not rel.startswith('skills/alpha/')}
+    root = git_repo(tmp_path, {**files, 'skills/alpha/scripts/test_a.py': ''})
+    git = ['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com']
+    subprocess.run([*git, 'add', '.'], cwd=root, env=git_env(), check=True)
+    subprocess.run([*git, 'commit', '-q', '-m', 'seed'], cwd=root, env=git_env(), check=True)
+    (root / 'skills' / 'alpha' / 'scripts' / 'test_a.py').unlink()
+    (root / 'skills' / 'alpha' / 'scripts' / 'tool.py').write_text('')
+    assert findings(root) == ['build/suites.toml: alpha: skills/alpha/scripts holds no pytest file']
+
+
 def test_check_ignores_archived_skills(tmp_path):
     root = git_repo(tmp_path, {**COVERED, 'archive/skills/beta/scripts/test_b.py': ''})
     assert findings(root) == []
@@ -341,6 +372,22 @@ def test_the_notes_follow_the_first_header(repo, capsys):
     assert capsys.readouterr().out.splitlines()[:2] == [f'== alpha ({DEV})', 'note: Reads a pilot wiki, else skips.']
 
 
+class PrintingRuns(FakeRuns):
+    def __call__(self, root, run):
+        print(f'run {run.label}')
+        return super().__call__(root, run)
+
+
+def test_notes_print_once_after_the_first_header_and_before_the_run(repo, capsys):
+    (repo / 'build' / 'suites.toml').write_text(
+        "[[suite]]\nname = 'alpha'\ndir = 'x'\nwith = ['pytest']\n"
+        "pythons = ['dev', '/usr/bin/python3']\nnotes = ['n1']\n")
+    rs.main(['alpha'], root=repo, run_one=PrintingRuns(), pins=PINS)
+    assert capsys.readouterr().out.splitlines() == [
+        f'== alpha ({DEV})', 'note: n1', f'run alpha ({DEV})',
+        '== alpha (/usr/bin/python3)', 'run alpha (/usr/bin/python3)', 'suite runs passed']
+
+
 def test_extras_and_pytest_args_reach_the_run(repo):
     fake = FakeRuns()
     rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake, pins=PINS)
@@ -403,6 +450,26 @@ def test_list_prints_commands_extras_and_notes_and_runs_nothing(repo, capsys):
     ]
 
 
+def test_list_with_extras_shows_the_extras_deps(repo, capsys):
+    rs.main(['--list', 'alpha', '--extras'], root=repo, run_one=FakeRuns(), pins=PINS)
+    assert ('  cd skills/alpha/scripts && uv run --python ' + DEV + f' --exclude-newer {V.cutoff} --with pytest '
+            "--with polars==9.9.9 --with 'arviz>=1.0' python -m pytest -q") in capsys.readouterr().out.splitlines()
+
+
+def test_list_with_pytest_args_appends_them(repo, capsys):
+    rs.main(['--list', 'outer', '--', '-k', 'a and b'], root=repo, run_one=FakeRuns(), pins=PINS)
+    assert capsys.readouterr().out.splitlines() == [
+        'outer: tools',
+        f"  cd tools && uv run --python {DEV} --exclude-newer {V.cutoff} --with pytest python -m pytest -q "
+        "-k 'a and b'"]
+
+
+def test_list_with_no_names_lists_every_suite_in_file_order(repo, capsys):
+    rs.main(['--list'], root=repo, run_one=FakeRuns(), pins=PINS)
+    heads = [line for line in capsys.readouterr().out.splitlines() if not line.startswith('  ')]
+    assert heads == ['alpha: skills/alpha/scripts', 'outer: tools', 'tools-inner: tools/inner']
+
+
 def test_an_unknown_suite_exits_2(repo, capsys):
     assert rs.main(['nope'], root=repo, run_one=FakeRuns()) == 2
     assert 'unknown suite: nope' in capsys.readouterr().err
@@ -447,6 +514,23 @@ def test_a_run_that_cannot_start_fails(tmp_path, capsys):
     [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)), PINS)
     assert rs.run_subprocess(tmp_path, run) == 1
     assert f'ghost ({DEV}): cannot start' in capsys.readouterr().err
+
+
+def test_run_subprocess_runs_in_the_suite_dir_with_this_environment(tmp_path, monkeypatch, capfd):
+    (tmp_path / 'sub').mkdir()
+    monkeypatch.setenv('LANE3_PROBE', 'seen')
+    code = "import os, sys; print(os.getcwd()); print(os.environ['LANE3_PROBE']); sys.exit(3)"
+    run = rs.Run(rs.Suite('probe', 'sub', ('pytest',)), DEV, (sys.executable, '-c', code))
+    assert rs.run_subprocess(tmp_path, run) == 3
+    assert capfd.readouterr().out.splitlines() == [str((tmp_path / 'sub').resolve()), 'seen']
+
+
+def test_a_malformed_registry_exits_2_for_a_run_and_1_for_check(repo, capsys):
+    (repo / 'build' / 'suites.toml').write_text('name = [')
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns()) == 2
+    assert 'build/suites.toml: cannot read' in capsys.readouterr().err
+    assert rs.main(['--check'], root=repo) == 1
+    assert 'build/suites.toml: cannot read' in capsys.readouterr().err
 
 
 # --- the real registry ---

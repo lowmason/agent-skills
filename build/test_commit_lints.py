@@ -186,6 +186,7 @@ def test_late_critical_section_is_refused(clone):
 def test_unregistered_suite_is_refused(clone):
     '''The ninth lint keeps build/suites.toml complete: a first test file in a
     directory that no suite contains needs a [[suite]] entry before it can be committed.'''
+    assert 'tools/scan' not in (clone / 'build' / 'suites.toml').read_text()
     test = clone / 'tools' / 'scan' / 'test_scan.py'
     test.parent.mkdir(parents=True)
     test.write_text('def test_scan():\n    assert True\n')
