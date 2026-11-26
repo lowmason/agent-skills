@@ -147,6 +147,21 @@ def sightings_with(rep: int, agent: str, **seen) -> dict[str, str]:
 
 
 # The register's window, which compaction-cut reads; the first case keeps one character fewer.
+def teardown_log_with(old: str, new: str) -> dict[str, str]:
+    '''The recorded async-teardown log with each `old` line replaced by `new`.'''
+    probe = probes.PROBE_RUNS['async-teardown']
+    lines = (FIXTURES / probe.fixtures['teardown.log']).read_text(encoding='utf-8').splitlines()
+    return {'teardown.log': ''.join(f'{new if line == old else line}\n' for line in lines)}
+
+
+def outcome(value: str):
+    def edit(event):
+        if event.get('subtype') == 'hook_response':
+            event['outcome'] = value
+        return event
+    return edit
+
+
 CUT_WINDOW = probes.register_window()
 
 
@@ -213,6 +228,14 @@ CUT_WINDOW = probes.register_window()
      'rep 2: the Explore override got a git-status snapshot'),
     ('explore-override', lambda: sightings_with(3, 'canary-control', claude_md=False), ERROR,
      'rep 3: the control missed the CLAUDE.md canary'),
+    # async-teardown's cases pin their findings: another signal first, a hook that never started, and the recorded
+    # SessionStart hook_response finalized as something other than cancelled.
+    ('async-teardown', lambda: teardown_log_with('TERM', 'HUP'), DIVERGES,
+     'the async SessionStart hook got HUP first at teardown and was gone within 5 s'),
+    ('async-teardown', lambda: {'teardown.log': ''}, ERROR, 'the async SessionStart hook never started'),
+    ('async-teardown', lambda: edited('async-teardown', 'teardown.jsonl', outcome('success')), DIVERGES,
+     "the async SessionStart hook got TERM first at teardown and was gone within 5 s; the stream's SessionStart "
+     'hook_response reads success, not cancelled'),
 ])
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())
