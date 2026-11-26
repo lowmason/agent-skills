@@ -105,7 +105,7 @@ Closes the share item and the fourth-copy item. No behavior changes, except that
 
 - [ ] **Step 7: Run the affected suites**
 
-  Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_git_listing.py test_run_suites.py test_check_conformance.py test_versions_check.py test_versions.py`
+  Run: `uv run python build/run_suites.py build -- test_git_listing.py test_run_suites.py test_check_conformance.py test_versions_check.py test_versions.py`
   Expected: all pass. The counts change only by the +7 of Step 1.
 
 - [ ] **Step 8: Commit**
@@ -196,10 +196,10 @@ Closes the test-gaps item. These tests are written against correct code, so they
   Run, per mutant: `cd build && uv run --with pytest python -m pytest -q test_run_suites.py -k <test>`
   Expected: FAIL with the mutant applied, PASS once it is reverted. `git diff build/run_suites.py` is empty at the end.
 
-- [ ] **Step 3: Run both suites**
+- [ ] **Step 3: Run the whole `build` suite**
 
-  Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_run_suites.py test_commit_lints.py`
-  Expected: all pass. `test_commit_lints.py` takes about 15 s.
+  Run: `uv run python build/run_suites.py build`
+  Expected: `suite runs passed`. This whole `build` suite includes `test_commit_lints.py` (about 15 s) and the +29 tests of Tasks 1 to 3 (7, 8 and 14).
 
 - [ ] **Step 4: Commit**
 
