@@ -37,6 +37,10 @@
 ## Decisions
 
 - **D1** (owner, brief, 2026-11-26): this plan covers exactly the five items above. The kit item is its own task (Task 4), so the owner can drop it at plan review. Tasks avoid lane 1's and lane 2's files. Applied in: Global Constraints, Task 4.
+- **D2** (owner, plan review, 2026-11-26): kit causes (b) and (c) are fixed by `TMPDIR: ${{ runner.temp }}` on the drift step, with no frozen kit edits. Every suite in the drift job gets that temp folder. A platform condition in the kits' tests stays the fallback, behind the owner gate. Applied in: Task 4.
+- **D3** (owner, plan review, 2026-11-26): hardening (a) becomes a new `--check` finding, matched only below the containing suite's `dir`, and `container()` follows the same rule. Applied in: Task 2.
+- **D4** (owner, plan review, 2026-11-26): the order is the shared module, the hardening, the test gaps, then the workflow. Applied in: Tasks 1 to 4.
+- **D5** (owner, plan review, 2026-11-26): the kit item's Done is read from a dispatched run of the branch's workflow before the merge, then confirmed by one dispatch on `main` after the merge. Applied in: Task 4, Task 5.
 
 ## Planning findings
 
@@ -46,13 +50,6 @@ Reproduced on 2026-11-26 from `main` at `4449060`, in throwaway clones under `/t
 - **Kit causes (b) and (c) are one cause, and it is not letter case.** The kit item's guess for (b) was a Linux case problem. The cause is `/tmp`. On Linux, pytest's `tmp_path` is under a real `/tmp`. (b): `extract.spelled()` maps only a lower-case `/tmp` to `/private/tmp`, so `classify('/TMP/…/REAL/.ssh', …)` with a real home under `/tmp` returns `None` (checked by a direct call). (c): the kit's autouse fixture sets `HOME` under `tmp_path`. `grade.resolve('~/a')` maps `/tmp/…` to `/private/tmp/…`, while the expected value from `Path.resolve()` keeps `/tmp` (the log's diff at `test_vr_grade.py:1057`). On macOS, `tmp_path` is under `/private/var/folders`, so neither test can fail. With `TMPDIR` set to the runner's temp folder, `tmp_path` leaves `/tmp` on Linux too. All three kits pass with a temp root under `$HOME` (the analog of `$RUNNER_TEMP`, under `/home/runner`).
 - **The test-gaps item's last point is out of date.** `test_unregistered_suite_is_refused` (`build/test_commit_lints.py:186`) now plants its file in `tools/scan`, not in `skills/tech-debt/scripts`. The risk is the same, so Task 3 adds the precondition for `tools/scan`.
 - **No test folder is hidden today.** Checked against pytest 9.2.0's default `norecursedirs`, no registered suite has a test folder below a skipped name, and no suite sets its own `norecursedirs`.
-
-## Plan review asks
-
-1. **Kit fix (b) and (c).** Recommended: `TMPDIR: ${{ runner.temp }}` on the drift step (Task 4), no kit edits. It changes the temp folder of every suite in the drift job, not only the kits. Fallback, an owner gate: a platform condition in `test_rerun_extract.py` of the two rerun kits (`upper` form) and in `test_vr_grade.py` (line 1057), with no new freeze.
-2. **Hardening (a).** Recommended: a new `--check` finding for a test folder under a skipped name, matched only below the containing suite's `dir` (Task 2). The other option is a docstring note only.
-3. **Order.** Recommended, from the brief: the shared module first (Task 1), then the hardening (Task 2), then the test gaps (Task 3), then the workflow (Task 4).
-4. **Kit item's Done check.** Recommended: a dispatched run of the branch's workflow before the merge (`gh workflow run versions-drift.yml --ref <branch>`) as the evidence for the tick, then one dispatch on `main` after the execution PR merges, as confirmation (Task 5). The brief's default was the post-merge dispatch only.
 
 ---
 

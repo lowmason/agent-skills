@@ -2866,6 +2866,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `run_suites.py` would import it. `install.py` can stay standalone. Size: plan. Revisit
       if: a fourth copy appears, or `check_conformance.py` changes its git helpers.
       → triggered 2026-10-31: plan 66 (Task 9) added a fourth copy of the `git ls-files --cached --others --exclude-standard -z` listing at `build/versions_check.py:47`. The item for that copy is in section `66-package-versions — 2026-10-27`.
+      → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
 - [x] Replace the commit-lint count "nine" with count-free wording (final review of plan
       55). The count is written in four places: `CLAUDE.md:77`, `build/CLAUDE.md:23`,
       `build/run_commit_lints.sh:2` and `build/githooks/pre-commit:2`. A tenth lint needs
@@ -2890,6 +2891,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       out-of-order pair, is unexplained. (f) The module docstring says "From any directory
       in the repo" beside root-relative paths. Size: plan. Done when: each part is fixed or
       declined in writing.
+      → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
 - [ ] Close the test gaps in `build/test_run_suites.py` (task reviews and final review of
       plan 55). A mutation check on 2026-10-18 deleted the `is_file()` guard, which skips
       tracked files that were removed from the working tree. All 51 tests stayed green.
@@ -2909,6 +2911,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       breaks loudly if that directory ever gets a registered suite, so add a precondition
       assert. New tests move the plan's test counts, so write a small plan first. Size:
       plan. Done when: each gap has a test or is declined in writing.
+      → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
 
 ## 56-diagnostics-harness-verdicts — 2026-10-19
 
@@ -4231,6 +4234,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       earlier item "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py`
       and `install.py` each carry" (plan 55). Size: plan. Done when: that item is done and
       `versions_check.py` imports the shared helper.
+      → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
 
 ## 69-agent-payload-probe — 2026-10-28
 - [ ] The `agent-payload` probe cannot tell a parent session that disobeyed its prompt from real drift
@@ -6477,3 +6481,4 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `66-package-versions — 2026-10-27`), so the job was red before these suites joined, and this failure went unseen.
       Size: plan (lane 3 of the 2026-11-26 pass, with the `build/run_suites.py` items). Done when: the weekly job's
       3.13 pass lists none of the three kit suites as failed.
+      → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
