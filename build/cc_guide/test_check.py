@@ -4,7 +4,9 @@ spec R6, R12.3's row fixture).'''
 import http.client
 import json
 import os
+import pathlib
 import shutil
+import time
 import urllib.error
 from datetime import date, datetime, timezone
 
@@ -405,6 +407,44 @@ def test_the_swap_keeps_the_generation_it_replaced(tmp_path, docs_dir):
     assert not first.exists()
     assert second.is_dir() and third not in (first, second)
     assert generations(cache) == sorted([second.name, third.name])
+
+
+def test_the_swap_never_leaves_latest_missing(tmp_path, docs_dir, monkeypatch):
+    '''D3: the swap makes the new link under a temp name and moves it onto
+    latest by one os.replace, so when the new link is made, latest still
+    names the previous generation, and a reader never finds no record.'''
+    cache = tmp_path / 'cache'
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    before = state.latest_dir(cache)
+    real, seen = pathlib.Path.symlink_to, []
+
+    def spy(self, target, *args, **kwargs):
+        seen.append((state.latest_dir(cache), (cache / state.LATEST).exists(), state.read_fetch(cache)))
+        return real(self, target, *args, **kwargs)
+    monkeypatch.setattr(pathlib.Path, 'symlink_to', spy)
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert seen == [(before, True, state.read_fetch_at(before))]
+    assert state.latest_dir(cache) != before
+
+
+def test_a_live_swap_prunes_on_the_wall_clock(tmp_path, docs_dir):
+    '''The swap prunes against time.time(), the clock folder mtimes use: a
+    fresh generation folder, which may be another check's staging folder,
+    stays, and one 2 * STAGING_GRACE old goes unless the swap replaced it.'''
+    cache = tmp_path / 'cache'
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    first = state.latest_dir(cache)
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    second = state.latest_dir(cache)
+    stamp = time.time() - 2 * check.STAGING_GRACE
+    for old in (first, second):
+        os.utime(old, (stamp, stamp))
+    other = cache / f'{state.GENERATION_PREFIX}other'
+    write_tree(other, {'docs/tools.md': DOCS['tools.md']})
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert not first.exists()
+    assert second.is_dir() and other.is_dir()
+    assert generations(cache) == sorted([second.name, other.name, state.latest_dir(cache).name])
 
 
 def test_pruning_spares_a_young_staging_folder(tmp_path, docs_dir):
