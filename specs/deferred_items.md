@@ -2860,7 +2860,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       suites out of the root `CLAUDE.md`. The other commands stay in its Commands block. See
       specs/completed/test-suite-registry.md. Size: design. Revisit if: `CLAUDE.md` nears
       its 200-line limit again.
-- [ ] Share the git helpers that `build/run_suites.py`, `build/check_conformance.py` and
+- [x] Share the git helpers that `build/run_suites.py`, `build/check_conformance.py` and
       `install.py` each carry as a separate copy (final review of plan 55). The owner ruled
       that the copy stands, because the plan mandated it. `git_env()` removes git's
       repo-local variables from the environment. It and the `git ls-files --cached --others
@@ -2871,6 +2871,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       if: a fourth copy appears, or `check_conformance.py` changes its git helpers.
       → triggered 2026-10-31: plan 66 (Task 9) added a fourth copy of the `git ls-files --cached --others --exclude-standard -z` listing at `build/versions_check.py:47`. The item for that copy is in section `66-package-versions — 2026-10-27`.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
+      → done 2026-11-26 (plan 110): `build/git_listing.py` holds `git_env`, `git_reason` and the kept-files listing; `run_suites.py`, `check_conformance.py` and `versions_check.py` import it, and `install.py` keeps its own copy.
 - [x] Replace the commit-lint count "nine" with count-free wording (final review of plan
       55). The count is written in four places: `CLAUDE.md:77`, `build/CLAUDE.md:23`,
       `build/run_commit_lints.sh:2` and `build/githooks/pre-commit:2`. A tenth lint needs
@@ -2878,7 +2879,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       asked. Each place can say "the commit lints" instead. Size: quick-fix. Revisit if: a
       tenth lint is added. Make the wording count-free in that change. → done in plan 66 (D15:
       CLAUDE.md, build/CLAUDE.md, run_commit_lints.sh and the hook now say "the commit lints")
-- [ ] Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the
+- [x] Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the
       tree today. (a) `--check` counts any test file under a registered suite directory.
       Pytest's default `norecursedirs` skips some directory names while it recurses: `.*`,
       `build`, `dist`, `node_modules`, `venv`, `*.egg`, `_darcs`, `CVS` and `{arch}`. A file
@@ -2896,7 +2897,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       in the repo" beside root-relative paths. Size: plan. Done when: each part is fixed or
       declined in writing.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
-- [ ] Close the test gaps in `build/test_run_suites.py` (task reviews and final review of
+      → done 2026-11-26 (plan 110): parts (a) to (f) are fixed (commit 2ebb308 and its survivor tests); (a) is a new `--check` finding matched only below the containing suite's `dir`.
+- [x] Close the test gaps in `build/test_run_suites.py` (task reviews and final review of
       plan 55). A mutation check on 2026-10-18 deleted the `is_file()` guard, which skips
       tracked files that were removed from the working tree. All 51 tests stayed green.
       Deleting `--cached` is caught by `test_the_real_registry_passes_check`. These cases
@@ -2916,6 +2918,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       assert. New tests move the plan's test counts, so write a small plan first. Size:
       plan. Done when: each gap has a test or is declined in writing.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
+      → done 2026-11-26 (plan 110): 14 new tests plus the `tools/scan` precondition in `test_unregistered_suite_is_refused` (554e60b); commit 22f342a also keeps the default git excludes file out of the fixtures.
 
 ## 56-diagnostics-harness-verdicts — 2026-10-19
 
@@ -4234,13 +4237,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `build/versions.py`, and it now says `'3.N'` where it said `'3.13'`. The `Polars 1.42`
       reason says "the pinned Polars", and a new test fails when any `HISTORICAL` reason names
       a pinned, cited or dev version. Each new test failed first.
-- [ ] A fourth copy of the git file listing now exists (plan 66, Task 9): `build/versions_check.py`
+- [x] A fourth copy of the git file listing now exists (plan 66, Task 9): `build/versions_check.py`
       runs `git ls-files --cached --others --exclude-standard -z`, as `build/run_suites.py`,
       `build/check_conformance.py` and `install.py` do. This fires the Revisit trigger of the
       earlier item "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py`
       and `install.py` each carry" (plan 55). Size: plan. Done when: that item is done and
       `versions_check.py` imports the shared helper.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
+      → done 2026-11-26 (plan 110): `versions_check.py` imports the shared `git_listing.kept_paths`.
 
 ## 69-agent-payload-probe — 2026-10-28
 - [ ] The `agent-payload` probe cannot tell a parent session that disobeyed its prompt from real drift
@@ -6471,7 +6475,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       characters, the `compaction-window` limit of `build/check_conformance.py`.
 
 ## deferred-2026-11-26-parallel (no plan; /deferred pass, branch claude/deferred-task-parallelization-414a9a) — 2026-11-26
-- [ ] **Three kit suites fail in the weekly `versions-drift` job (found by the 2026-11-26 `/deferred` pass in the log of
+- [x] **Three kit suites fail in the weekly `versions-drift` job (found by the 2026-11-26 `/deferred` pass in the log of
       run 45125177458, 2026-11-23).** The job's suite pass reports `suite runs failed: cc-guide-verifier-recall-kit (3.13),
       completion-triage-guard-kit (3.13), handoff-rerun-kit (3.13)`, and its 3.15 pass lists the same three. Plans 100
       and 102 registered these suites in `build/suites.toml` on 2026-11-18, so this run is the first that ran them. The
@@ -6490,3 +6494,19 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan (lane 3 of the 2026-11-26 pass, with the `build/run_suites.py` items). Done when: the weekly job's
       3.13 pass lists none of the three kit suites as failed.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
+      → done 2026-11-26 (plan 110): the workflow now sets `fetch-depth: 0` and `TMPDIR: /var/tmp`. The branch run 45885612117 printed `suite runs passed` for its 3.13 pass. The owner changed D2 from `runner.temp`, which broke three writing-skills kits. The `main` run after the merge is in the completion report.
+
+## 110-build-runner-and-ci-kit-suites — 2026-11-26
+- [ ] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
+      `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_NOSYSTEM`, but git still reads `$XDG_CONFIG_HOME/git/ignore` (else
+      `$HOME/.config/git/ignore`). A developer whose file lists `build/` or `skills/` could see lint-clone tests
+      fail. Plan 110 fixed the same gap in `build/test_run_suites.py` (22f342a) and capped this file at one line and
+      one test, so the owner deferred it (final review, 2026-11-26). Add `XDG_CONFIG_HOME` to a missing folder, as
+      that fixture does. Size: quick-fix. Done when: `clean_env` sets `XDG_CONFIG_HOME` and a test shows the
+      excludes file is not read.
+- [ ] `build/run_suites.py --check` counts a test file by its path, not by what pytest collects. When a suite's only
+      test files sit under a folder it skips (for example `tools` with tests only in `tools/build/`) and a nested
+      suite collects them, `--check` stays clean but `--all` fails on the outer suite with pytest exit 5. It
+      predates plan 110, whose decision D3 limited the new finding to test folders, and the failure is loud (final
+      review, owner ruled defer, 2026-11-26). Size: quick-fix. Revisit if: a registry gets a suite whose tests all
+      sit under a folder it skips, or a `--all` run reports pytest exit 5 for a registered suite.

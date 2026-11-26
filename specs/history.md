@@ -837,3 +837,29 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "**Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers" (deferred by 107-writing-skills-improvements).
+
+## 110-build-runner-and-ci-kit-suites — 2026-11-26
+Plan: specs/plans/completed/110-build-runner-and-ci-kit-suites.md · Spec: none
+
+Differences from the design:
+- Ruling: the extra test in build/test_versions_check.py (and its mutant 14) goes; the Global Constraint "(one import line)" for that file outranks the task's mutant step — the is_file filter in live_files is untouched by the task — if wrong, one pre-existing filter is covered only by existing tests.
+- Ruling: the extra tests in build/test_run_suites.py and the +2 in test_git_listing.py stay — both files are in the plan's set with no line limit — if wrong, a little extra test code.
+- Ruling: Task 3 concern 3 (dropping only the `  extras:` print line in list_suites is not caught by the new --list tests) stays out — an existing test (test_list_prints_commands_extras_and_notes...) covers it — if wrong, one print line is covered once, not twice.
+- Ruling: Task 3 concerns 1 and 2 (overlap with Task 2 tests) stay — distinct branches, harmless redundancy — if wrong, a little extra test code.
+- Ruling: owner 2026-11-26 (kit gate, Task 5 Step 1): branch run 45878724846 cleared the three target kits on 3.13 but TMPDIR=${{ runner.temp }} (/home/runner/work/_temp) makes the three writing-skills kits fail (their path rewrite maps /home/runner to /home/$USER); owner chose TMPDIR=/var/tmp instead of D2's runner.temp — if wrong, the writing-skills kits keep failing on 3.13 or /var/tmp breaks another kit.
+- Deviation: the Plan Completion Protocol may also edit the plan markup, `specs/history.md`, the move to `specs/plans/completed/` and the `→ done` notes in `specs/deferred_items.md`, as plan 111 states (owner default, handoff brief 2026-11-26). Source: plan, header.
+- Deviation (Task 1): the file holds +9 tests, not +7: the implementer added `test_kept_paths_decodes_with_fsdecode` and `test_kept_paths_ignores_a_foreign_index_that_tracks_other_files`. The plan test `test_kept_paths_ignores_a_foreign_git_dir` passes even without `env=git_env()` (an empty foreign index), so its mutant-step line reads `Strengthened:` and names the second test. Source: plan, Task 1.
+- Deviation (Task 1): the implementer also removed the now-unused `import subprocess` from `build/versions_check.py`. The one extra test in `build/test_versions_check.py` was dropped at review, since the Global Constraints allow one import line there. Source: plan, Task 1.
+- Deviation (Task 2): the implementer added 12 tests, not 8, after the mutant screen found four survivors (skipped-part shapes). Two of them pass on the revert by design, with `Keeps:` lines. Source: plan, Task 2.
+- Deviation (Task 3): Task 2 had already added `test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree` and a `no [[suite]] tables` case, so the overlap stays. The final review found the autouse fixture still read the default git excludes file, so commit 22f342a adds `XDG_CONFIG_HOME` to it and one test (+1, outside the plan). The same gap in `clean_env` of `build/test_commit_lints.py` is deferred, because the plan caps that file. → item: specs/deferred_items.md § 110-build-runner-and-ci-kit-suites. Source: plan, Task 3.
+- Deviation (Task 4): the controller pushed and dispatched after the task review, not the implementer. Branch run 45878724846 showed that `TMPDIR: ${{ runner.temp }}` fixed the three target kits but broke `writing-skills-guard-run-kit`, `writing-skills-layout-kit` and `writing-skills-tests-kit` on 3.13 (their `/home/runner` to `/home/$USER` rewrite). Owner ruling, 2026-11-26: use `TMPDIR: /var/tmp` (commit 5d6b975). Run 45885612117 on that commit: the 3.13 pass printed `suite runs passed`, and the 3.15 pass lists only `track-model-experiments` (missing cp315 wheels). This changes D2. Source: plan, Task 4.
+- Deviation (Task 5): read from run 45885612117 (the second branch run, at 5d6b975), after the owner gate on the first run. Its 3.13 pass printed `suite runs passed`. Source: plan, Task 5.
+- Deviation (Task 5): a post-merge step. The retired plan cannot tick it. The run id and result go in the completion report. Source: plan, Task 5.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 110-build-runner-and-ci-kit-suites.
+
+Closed earlier deferred items:
+- "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py` and" (deferred by 55-test-suite-registry).
+- "Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the" (deferred by 55-test-suite-registry).
+- "Close the test gaps in `build/test_run_suites.py` (task reviews and final review of" (deferred by 55-test-suite-registry).
+- "A fourth copy of the git file listing now exists (plan 66, Task 9): `build/versions_check.py`" (deferred by 66-package-versions).
+- "**Three kit suites fail in the weekly `versions-drift` job (found by the 2026-11-26 `/deferred` pass in the log of" (deferred by deferred-2026-11-26-parallel).

@@ -186,6 +186,7 @@ def test_late_critical_section_is_refused(clone):
 def test_unregistered_suite_is_refused(clone):
     '''The ninth lint keeps build/suites.toml complete: a first test file in a
     directory that no suite contains needs a [[suite]] entry before it can be committed.'''
+    assert 'tools/scan' not in (clone / 'build' / 'suites.toml').read_text()
     test = clone / 'tools' / 'scan' / 'test_scan.py'
     test.parent.mkdir(parents=True)
     test.write_text('def test_scan():\n    assert True\n')
@@ -356,6 +357,14 @@ def test_drift_workflow_reports_to_the_summary_and_changes_nothing():
     assert any('build/versions.py drift' in run and 'GITHUB_STEP_SUMMARY' in run and 'pipefail' in run
                for run in runs), runs
     assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
+
+
+def test_versions_drift_fetches_full_history_and_keeps_tmp_off_slash_tmp():
+    steps = [step for job in drift_workflow()['jobs'].values() for step in job['steps']]
+    checkouts = [step for step in steps if step.get('uses', '').startswith('actions/checkout@')]
+    assert checkouts and all(step['with']['fetch-depth'] == 0 for step in checkouts)
+    drifts = [step for step in steps if 'build/versions.py drift' in step.get('run', '')]
+    assert drifts and all(step['env']['TMPDIR'] == '/var/tmp' for step in drifts)
 
 
 def test_guide_drift_workflow_checks_the_checkout_and_changes_nothing():
