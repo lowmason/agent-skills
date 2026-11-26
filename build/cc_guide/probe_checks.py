@@ -34,6 +34,7 @@ HAIKU_BUILTINS = ('claude-code-guide',)  # the hook's BUILTIN_PINNED: plan 63 sa
 CONTROL_AGENT, CONTROL_MODEL = 'general-purpose', 'haiku'  # dispatched beside them, passing its model
 PAYLOAD_AGENTS = (CONTROL_AGENT, *HAIKU_BUILTINS)
 ANY_MATCHER, GUARD_MATCHER = '*', 'Agent'  # the two logging hooks; the second is hooks/README.md's install matcher
+PAYLOAD_LOGS = {'any': ANY_MATCHER, 'agent': GUARD_MATCHER}  # each hook's log folder -> its matcher
 SYNTHETIC = '<synthetic>'  # the model Claude Code records on a message it made itself, such as an API error
 GUARD_MARKER = 'readonly-agent-guard:'
 # hooks/probe-readonly-guard.sh's three checks: the command each asks for, and
@@ -150,15 +151,25 @@ def assess_stop_continuation(events: list[dict] | None, log: list[str]) -> Verdi
     return Verdict(PASS, shown)
 
 
+def dispatch_blocks(events: list[dict]) -> list[dict]:
+    '''The main session's subagent calls, as tool_use blocks in stream order.'''
+    return [block for e in events if e.get('type') == 'assistant' and not e.get('parent_tool_use_id')
+            for block in (e.get('message') or {}).get('content') or []
+            if block.get('type') == 'tool_use' and block.get('name') in DISPATCH_TOOLS]
+
+
 def dispatches(events: list[dict]) -> dict[str, str]:
     '''The main session's subagent calls: tool-use id -> subagent type.'''
-    out = {}
-    for e in events:
-        if e.get('type') != 'assistant' or e.get('parent_tool_use_id'):
-            continue
-        for block in (e.get('message') or {}).get('content') or []:
-            if block.get('type') == 'tool_use' and block.get('name') in DISPATCH_TOOLS:
-                out[block.get('id')] = (block.get('input') or {}).get('subagent_type')
+    return {block.get('id'): (block.get('input') or {}).get('subagent_type') for block in dispatch_blocks(events)}
+
+
+def requested_models(events: list[dict]) -> dict[str, list[str | None]]:
+    '''The main session's subagent calls: subagent type -> the model input of
+    each call of that type, None for a call that passes none, in stream order.'''
+    out: dict[str, list[str | None]] = {}
+    for block in dispatch_blocks(events):
+        given = block.get('input') or {}
+        out.setdefault(given.get('subagent_type'), []).append(given.get('model'))
     return out
 
 
@@ -225,6 +236,38 @@ def trim_payload(payload, matcher: str) -> dict | None:
             'subagent_type': tool_input['subagent_type'], 'model': tool_input.get('model')}
 
 
+def payload_file(raw: dict[str, list[str]]) -> dict:
+    '''payloads.json, from each log folder's raw lines, one payload a line:
+    how many payloads each hook logged, and the main session's dispatches
+    cut by trim_payload, by matcher and then subagent type. The counts tell
+    hooks that logged nothing from payloads that trim_payload dropped. A
+    line that is not JSON raises ValueError.'''
+    kept = [p for folder, lines in raw.items()
+            for p in (trim_payload(json.loads(line), PAYLOAD_LOGS[folder]) for line in lines) if p is not None]
+    kept.sort(key=lambda p: (p['matcher'], str(p['subagent_type'])))
+    return {'logged': {folder: len(lines) for folder, lines in raw.items()}, 'payloads': kept}
+
+
+def check_parent(events: list[dict]) -> Verdict | None:
+    '''ERROR when the parent session did not send what probes.PAYLOAD_PROMPT
+    asks: the control with model CONTROL_MODEL, each built-in in
+    HAIKU_BUILTINS with no model, and each type once. A payload then holds
+    the parent's choice, not Claude Code's, so the payload checks would
+    report the parent as drift. None when the parent obeyed.'''
+    sent = requested_models(events)
+    for agent in PAYLOAD_AGENTS:
+        models = sent.get(agent, [])
+        if len(models) > 1:
+            return Verdict(ERROR, f'the parent session dispatched {agent} {len(models)} times, but its prompt '
+                                  'asks for one dispatch of each type')
+        wanted = CONTROL_MODEL if agent == CONTROL_AGENT else None
+        if models and models[0] != wanted:
+            got = 'no model' if models[0] is None else f'model {models[0]!r}'
+            asked = 'no model' if wanted is None else f'model {wanted!r}'
+            return Verdict(ERROR, f'the parent session sent {agent} with {got}, but its prompt asks for {asked}')
+    return None
+
+
 def first_by_type(payloads: list[dict], matcher: str) -> dict[str, dict]:
     '''The first payload of each subagent type that the hook with this matcher logged.'''
     found: dict[str, dict] = {}
@@ -239,9 +282,8 @@ def check_payloads(payloads: list[dict]) -> Verdict | None:
     one, else None. A dispatch that reaches PreToolUse under another tool
     name, or that the Agent matcher misses, never reaches the guard. A
     control payload without its model, or a model on a dispatch sent with
-    none, changes what decide() reads.'''
-    if not payloads:
-        return Verdict(ERROR, 'the PreToolUse hooks logged no subagent dispatch')
+    none, changes what decide() reads. check_parent has already shown that
+    the parent sent those models.'''
     seen = first_by_type(payloads, ANY_MATCHER)
     renamed = sorted({str(p.get('tool_name')) for p in seen.values()} - {GUARDED_TOOL})
     if renamed:
@@ -266,12 +308,16 @@ def check_payloads(payloads: list[dict]) -> Verdict | None:
     return None
 
 
-def assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Verdict:
+def assess_agent_payload(events: list[dict] | None, payload_file: dict) -> Verdict:
     '''agent-payload: hooks/dispatch-model-guard.py's inputs stay as plan 63
-    saw them on Claude Code 2.1.304. `payloads` holds the main session's
-    dispatch payloads, cut by trim_payload, from two PreToolUse hooks: one
-    matches every tool, the other matches Agent as the guard's install
-    does. check_payloads reads them first, so a renamed tool is named
+    saw them on Claude Code 2.1.304. `payload_file` is payloads.json:
+    `logged` counts the payloads each of two PreToolUse hooks logged, one
+    matching every tool, the other matching Agent as the guard's install
+    does, and `payloads` holds the main session's dispatch payloads among
+    them, cut by trim_payload. check_parent reads the stream's Agent calls
+    first, so a parent that did not send what its prompt asks is ERROR, not
+    drift. An empty `payloads` is ERROR, named by whether the hooks logged
+    anything. check_payloads reads them next, so a renamed tool is named
     before any message is looked for. Then each subagent's model is read
     from its forwarded messages. The control, which passes model haiku,
     must not be served the session model (the init event's), or a pin
@@ -284,6 +330,16 @@ def assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Ver
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
+    verdict = check_parent(events)
+    if verdict:
+        return verdict
+    payloads = payload_file.get('payloads') or []
+    if not payloads:
+        logged = sum((payload_file.get('logged') or {}).values())
+        if logged:
+            return Verdict(ERROR, f'the PreToolUse hooks logged {logged} payloads, and trim_payload kept none of '
+                                  'them (a renamed subagent_type, a moved tool_input, or payloads that carry agent_id)')
+        return Verdict(ERROR, 'the PreToolUse hooks logged no subagent dispatch')
     verdict = check_payloads(payloads)
     if verdict:
         return verdict
@@ -487,7 +543,7 @@ def assess_compaction_cut(compact: list[dict] | None, cut: dict[str, dict] | Non
 def _trim_block(block: dict) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
-        kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'command')}
+        kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'model', 'command')}
         name = block.get('name')
         if isinstance(name, str) and name.startswith(MCP_PREFIX):
             name = MCP_MARK  # a call to an MCP tool names a server the recording machine has installed

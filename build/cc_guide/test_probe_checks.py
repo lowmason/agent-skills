@@ -168,12 +168,23 @@ def payload_log(changes=None):
     return log
 
 
-def payload_run(served=None):
+def saved(payloads, logged=None):
+    '''payloads.json as collect_payload writes it: by default each hook
+    logged one payload for each trimmed payload of its matcher.'''
+    counts = {'any': sum(p['matcher'] == pc.ANY_MATCHER for p in payloads),
+              'agent': sum(p['matcher'] == pc.GUARD_MATCHER for p in payloads)}
+    return {'logged': counts if logged is None else logged, 'payloads': payloads}
+
+
+def payload_run(served=None, requested=None):
     '''A parent on Sonnet that dispatches the haiku control and each pinned
-    built-in in one message, each forwarding one message from the model
-    given for it.'''
+    built-in in one message, as PAYLOAD_PROMPT asks, each forwarding one
+    message from the model given for it. requested maps an agent type to
+    the model its dispatch passes instead; None passes no model.'''
     served = {agent: 'claude-haiku-5-5' for agent in pc.PAYLOAD_AGENTS} | (served or {})
-    sent = [tool_use(f'toolu_{n}', 'Agent', subagent_type=agent, prompt='p')
+    requested = {pc.CONTROL_AGENT: pc.CONTROL_MODEL} | (requested or {})
+    sent = [tool_use(f'toolu_{n}', 'Agent', subagent_type=agent, prompt='p',
+                     **({'model': requested[agent]} if requested.get(agent) else {}))
             for n, agent in enumerate(pc.PAYLOAD_AGENTS)]
     forwarded = [assistant({'type': 'text', 'text': 'OK'}, parent=f'toolu_{n}', model=served[agent])
                  for n, agent in enumerate(pc.PAYLOAD_AGENTS)]
@@ -220,7 +231,38 @@ def payload_run(served=None):
                 'served')),
 ])
 def test_agent_payload(events, payloads, verdict):
-    assert pc.assess_agent_payload(events, payloads) == verdict
+    assert pc.assess_agent_payload(events, saved(payloads)) == verdict
+
+
+def test_trim_block_keeps_a_dispatch_model():
+    block = tool_use('toolu_1', 'Agent', subagent_type='general-purpose', model='haiku', prompt='x')
+    assert pc._trim_block(block)['input'] == {'subagent_type': 'general-purpose', 'model': 'haiku'}
+
+
+def test_a_parent_that_skips_the_control_model_is_error_not_diverges():
+    '''A payload shows what the parent sent, so a control sent with no model
+    is the parent's doing, not drift.'''
+    payloads = payload_log({pc.CONTROL_AGENT: {'model': None,
+                                               'input_keys': ['description', 'prompt', 'subagent_type']}})
+    verdict = pc.assess_agent_payload(payload_run(requested={pc.CONTROL_AGENT: None}), saved(payloads))
+    assert verdict.outcome == ERROR
+    assert verdict.finding.startswith('the parent session sent general-purpose with no model')
+
+
+def test_a_parent_that_gives_a_builtin_a_model_is_error():
+    payloads = payload_log({'claude-code-guide': {'model': 'sonnet',
+                                                  'input_keys': ['description', 'model', 'prompt', 'subagent_type']}})
+    verdict = pc.assess_agent_payload(payload_run(requested={'claude-code-guide': 'sonnet'}), saved(payloads))
+    assert verdict.outcome == ERROR
+    assert verdict.finding.startswith("the parent session sent claude-code-guide with model 'sonnet'")
+
+
+def test_an_empty_trimmed_log_names_the_stage_that_dropped_it():
+    dropped = pc.assess_agent_payload(payload_run(), {'logged': {'any': 2, 'agent': 2}, 'payloads': []})
+    assert dropped == (ERROR, 'the PreToolUse hooks logged 4 payloads, and trim_payload kept none of them (a '
+                              'renamed subagent_type, a moved tool_input, or payloads that carry agent_id)')
+    nothing = pc.assess_agent_payload(payload_run(), {'logged': {'any': 0, 'agent': 0}, 'payloads': []})
+    assert nothing == (ERROR, 'the PreToolUse hooks logged no subagent dispatch')
 
 
 def test_trim_payload_keeps_a_main_session_dispatch_and_drops_the_rest():

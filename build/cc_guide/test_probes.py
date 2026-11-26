@@ -6,6 +6,7 @@ import contextlib
 import json
 import os
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -545,8 +546,8 @@ def fire_payload_hooks(*payloads):
 def payload_stream() -> str:
     '''A parent on Sonnet that dispatches the haiku control and
     claude-code-guide in one message, each forwarding one Haiku message.'''
-    sent = [{'type': 'tool_use', 'id': f't{n}', 'name': 'Agent', 'input': {'subagent_type': agent}}
-            for n, agent in enumerate(('general-purpose', 'claude-code-guide'))]
+    sent = [{'type': 'tool_use', 'id': f't{n}', 'name': 'Agent', 'input': {'subagent_type': agent, **given}}
+            for n, (agent, given) in enumerate((('general-purpose', {'model': 'haiku'}), ('claude-code-guide', {})))]
     parent = {'type': 'assistant', 'parent_tool_use_id': None,
               'message': {'model': 'claude-sonnet-5-5', 'content': sent}}
     forwarded = [{'type': 'assistant', 'parent_tool_use_id': f't{n}',
@@ -557,7 +558,9 @@ def payload_stream() -> str:
 def test_the_payload_probe_logs_each_dispatch_through_both_matchers(tmp_path):
     '''Project settings only, two logging hooks, one file a payload, since
     the hooks and the two dispatches can run at once; collect keeps each
-    hook's raw log beside the trimmed payloads.json.'''
+    hook's raw log beside payloads.json, which counts each log's payloads
+    before trimming, and rebuild_payloads writes it again from the raw logs
+    alone.'''
     (inv,) = probes.prepare_payload(tmp_path, 'claude', REPO)
     settings = json.loads((tmp_path / '.claude' / 'settings.json').read_text())
     assert [g['matcher'] for g in settings['hooks']['PreToolUse']] == ['*', 'Agent']
@@ -574,9 +577,14 @@ def test_the_payload_probe_logs_each_dispatch_through_both_matchers(tmp_path):
     run_dir = tmp_path / 'run'
     run_dir.mkdir()
     probes.collect_payload(tmp_path, run_dir)
-    assert json.loads((run_dir / 'payloads.json').read_text()) == TRIMMED
+    expected = {'logged': {'any': 4, 'agent': 3}, 'payloads': TRIMMED}
+    assert json.loads((run_dir / 'payloads.json').read_text()) == expected
     assert len((run_dir / 'payloads-any.raw.jsonl').read_text().splitlines()) == 4
     assert len((run_dir / 'payloads-agent.raw.jsonl').read_text().splitlines()) == 3
+    shutil.rmtree(tmp_path / 'payloads')
+    (run_dir / 'payloads.json').unlink()
+    probes.rebuild_payloads(run_dir)
+    assert json.loads((run_dir / 'payloads.json').read_text()) == expected
 
 
 def bad_payload(cwd):

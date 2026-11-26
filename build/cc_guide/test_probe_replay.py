@@ -81,10 +81,24 @@ def unmarked(event):
 
 
 def payloads_with(edit) -> dict[str, str]:
-    '''The recorded payload log with `edit` applied to each payload; an edit that returns None drops the payload.'''
+    '''The recorded payloads.json with `edit` applied to each payload; an edit that returns None drops the payload.
+    The logged counts stay as recorded.'''
     probe = probes.PROBE_RUNS['agent-payload']
     saved = json.loads((FIXTURES / probe.fixtures['payloads.json']).read_text(encoding='utf-8'))
-    return {'payloads.json': json.dumps([p for p in (edit(dict(q)) for q in saved) if p is not None])}
+    kept = [p for p in (edit(dict(q)) for q in saved['payloads']) if p is not None]
+    return {'payloads.json': json.dumps({**saved, 'payloads': kept})}
+
+
+def requesting(agent: str, model: str | None):
+    '''An edit that makes the parent's dispatch of `agent` pass `model`, or no model for None.'''
+    def edit(event):
+        if event.get('type') == 'assistant' and not event.get('parent_tool_use_id'):
+            for block in event['message']['content']:
+                if block.get('type') == 'tool_use' and block['input'].get('subagent_type') == agent:
+                    block['input'].pop('model', None)
+                    block['input'].update({'model': model} if model else {})
+        return event
+    return edit
 
 
 def served_by(agent: str, model: str) -> dict[str, str]:
@@ -146,7 +160,16 @@ CUT_WINDOW = probes.register_window()
     ('agent-payload', lambda: served_by('general-purpose', 'claude-sonnet-5-5'), ERROR,
      'the general-purpose control with model haiku was served the session model claude-sonnet-5-5, so a pin '
      'cannot be told from it'),
-    ('agent-payload', lambda: {'payloads.json': '[]'}, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    ('agent-payload', lambda: {'payloads.json': json.dumps({'logged': {'any': 0, 'agent': 0}, 'payloads': []})},
+     ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    ('agent-payload', lambda: payloads_with(lambda p: None), ERROR,
+     'the PreToolUse hooks logged 4 payloads, and trim_payload kept none of them (a renamed subagent_type, a moved '
+     'tool_input, or payloads that carry agent_id)'),
+    # A parent that does not send what its prompt asks is ERROR, never drift: the payloads would show its choice.
+    ('agent-payload', lambda: edited('agent-payload', 'dispatch.jsonl', requesting('general-purpose', None)), ERROR,
+     "the parent session sent general-purpose with no model, but its prompt asks for model 'haiku'"),
+    ('agent-payload', lambda: edited('agent-payload', 'dispatch.jsonl', requesting('claude-code-guide', 'sonnet')),
+     ERROR, "the parent session sent claude-code-guide with model 'sonnet', but its prompt asks for no model"),
     # compaction-cut's cases pin their findings too. The recorded run, a header of 159 characters, kept more than the window.
     ('compaction-cut', lambda: cut_measures(keeping(CUT_WINDOW - 1)), DIVERGES,
      f'compaction keeps {CUT_WINDOW - 1} body characters of the prose probe skill (by characters; 159 characters '

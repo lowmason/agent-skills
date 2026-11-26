@@ -350,7 +350,6 @@ def assess_pins(read: Read) -> Verdict:
 # Each PreToolUse payload goes to a file of its own in the folder the hook is
 # given, since the two hooks, and two dispatches in one message, can run at once.
 PAYLOAD_HOOK = '#!/usr/bin/env bash\ncat > "$(mktemp "$1/payload.XXXXXX")"\n'
-PAYLOAD_LOGS = {'any': probe_checks.ANY_MATCHER, 'agent': probe_checks.GUARD_MATCHER}  # log folder -> matcher
 PAYLOAD_PROMPT = ('In one message, call the Agent tool twice: (1) subagent_type "general-purpose" with model "haiku" '
                   'and prompt "Reply with the word OK and nothing else. Use no tools."; (2) subagent_type '
                   '"claude-code-guide", passing no model, with prompt "Reply with the word OK and nothing else. Use '
@@ -368,7 +367,7 @@ def prepare_payload(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
     hook.write_text(PAYLOAD_HOOK, encoding='utf-8')
     hook.chmod(0o755)
     groups = []
-    for folder, matcher in PAYLOAD_LOGS.items():
+    for folder, matcher in probe_checks.PAYLOAD_LOGS.items():
         log = scratch / 'payloads' / folder
         log.mkdir(parents=True)
         command = f'{shlex.quote(str(hook))} {shlex.quote(str(log))}'
@@ -383,24 +382,33 @@ def prepare_payload(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
 
 
 def collect_payload(scratch: Path, run_dir: Path) -> None:
-    '''Each hook's log, raw, as payloads-<folder>.raw.jsonl, to read by
-    hand, and the main session's dispatches cut by trim_payload as
-    payloads.json, the one file the assessment and its fixture read. A
-    payload that is not JSON raises ValueError, which run_probe reports as
-    ERROR.'''
-    kept = []
-    for folder, matcher in PAYLOAD_LOGS.items():
+    '''Each hook's log, raw, as payloads-<folder>.raw.jsonl, one payload a
+    line, to read by hand, then payloads.json from those copies
+    (rebuild_payloads).'''
+    for folder in probe_checks.PAYLOAD_LOGS:
         texts = [path.read_text(encoding='utf-8').strip()
                  for path in sorted((scratch / 'payloads' / folder).glob('payload.*'))]
         (run_dir / f'payloads-{folder}.raw.jsonl').write_text(''.join(f'{t}\n' for t in texts), encoding='utf-8')
-        kept += [p for p in (probe_checks.trim_payload(json.loads(t), matcher) for t in texts) if p is not None]
-    kept.sort(key=lambda p: (p['matcher'], str(p['subagent_type'])))
-    (run_dir / 'payloads.json').write_text(json.dumps(kept, indent=1) + '\n', encoding='utf-8')
+    rebuild_payloads(run_dir)
+
+
+def rebuild_payloads(run_dir: Path) -> None:
+    '''payloads.json, the one file the assessment and its fixture read,
+    from run_dir's payloads-<folder>.raw.jsonl alone, so a past run's raw
+    logs can be read again under a changed trim. Each line is one payload,
+    an empty one included. A payload that is not JSON raises ValueError,
+    which run_probe reports as ERROR.'''
+    raw = {}
+    for folder in probe_checks.PAYLOAD_LOGS:
+        text = (run_dir / f'payloads-{folder}.raw.jsonl').read_text(encoding='utf-8')
+        raw[folder] = text.removesuffix('\n').split('\n') if text else []
+    (run_dir / 'payloads.json').write_text(json.dumps(probe_checks.payload_file(raw), indent=1) + '\n',
+                                           encoding='utf-8')
 
 
 def assess_payload(read: Read) -> Verdict:
     return probe_checks.assess_agent_payload(stream_of(read('dispatch.jsonl')),
-                                             json.loads(read('payloads.json') or '[]'))
+                                             json.loads(read('payloads.json') or '{}'))
 
 
 PAYLOAD_PROBE = Probe(prepare_payload, collect_payload, assess_payload,
