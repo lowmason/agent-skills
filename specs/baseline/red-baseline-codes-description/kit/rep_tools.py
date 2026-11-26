@@ -19,10 +19,10 @@ summarize reads one rep's raw stream and writes <dest>/summary.json.
   strings, and str.splitlines() would cut a record there. A blank line is skipped. Any other line that is
   not strict UTF-8, not JSON, or JSON that is not an object, is a kit error: a skipped line could hide a peer
   `origin`. The summary still holds what was read.
-- Rule 4 runs first, on the raw records. `peer_check` lists each record that holds a `result_index` other
-  than 0, or an `origin` whose `kind` is `peer`, at any depth. A `result_index` that is not a whole number,
-  or is a boolean, cannot be shown to be 0, so it is listed too. A record with no `result_index` counts as 0.
-  The list holds reason strings only, never an origin's text.
+- Rule 4 runs first, on the raw records. `peer_check` lists each record that holds a `result_index` above 0,
+  or an `origin` whose `kind` is `peer`, at any depth. A `result_index` that is not an integer, or is a
+  boolean, cannot be compared with 0, so it is listed too. A record with no `result_index` counts as 0. The
+  list holds reason strings only, never an origin's text.
 - Then the raw stream is rewritten with both keys stripped. summary.json is written with both keys
   stripped, the real home as `<REAL-HOME>` (a rep's `~` is its own HOME), the rep's TMPDIR as `$TMPDIR`, and
   the user's identity forms as tokens (kit_identity.py).
@@ -132,17 +132,18 @@ def values_of(record, key: str) -> list:
     return found
 
 
-def is_zero_index(value) -> bool:
-    '''True only for a whole number 0. A boolean, a string or a fraction cannot be shown to be 0.'''
-    return isinstance(value, int) and not isinstance(value, bool) and value == 0
+def index_voids(value) -> bool:
+    '''True for a result_index above 0, and for one that is not an integer (a boolean, a string, a float
+    or null), which cannot be compared with 0.'''
+    return isinstance(value, bool) or not isinstance(value, int) or value > 0
 
 
 def peer_check(records: list[dict]) -> list[str]:
-    '''Rule 4 on records: a reason for each record with a result_index other than 0 or a peer origin.'''
+    '''Rule 4 on records: a reason for each record with a result_index above 0 or a peer origin.'''
     found = []
     for number, record in enumerate(records, 1):
         for value in values_of(record, RESULT_INDEX):
-            if not is_zero_index(value):
+            if index_voids(value):
                 found.append(f'record {number}: {RESULT_INDEX} {json.dumps(value)[:40]}')
         if any(isinstance(origin, dict) and origin.get('kind') == PEER for origin in values_of(record, ORIGIN)):
             found.append(f'record {number}: a peer origin')

@@ -152,8 +152,9 @@ How the kit reads the rules:
 - **Rule 4.** `rep_tools.py summarize` checks the raw stream before the strip and writes its findings to
   `summary.json` as `peer_check`. These are reason strings only, never the origin's text. The audit voids a rep
   for each entry there, and it checks the saved stream again. The check looks at every depth of every record.
-  A record with no `result_index` counts as 0. A `result_index` that is not a whole number, or is a boolean,
-  cannot be shown to be 0, so it voids the rep too (plan 103's reading).
+  A record with no `result_index` counts as 0. A `result_index` that is not a JSON integer (a string, a float
+  such as 1.5 or 0.0, or null), or is a boolean, cannot be compared with 0, so it voids the rep too (plan 103's
+  reading). An integer voids only above 0.
 - **Rule 5.** No rep can reach these files: the rep's folder holds only the fixture project and the
   `skills/` archive, and rule 2 fences reads to `repo/`. So the audit checks the rep's calls. A rep is void when
   a `Read`, `Grep` or `Glob` call's `file_path` or `path`, or a `Glob` pattern, holds
@@ -207,5 +208,5 @@ Task 3 cannot check these without a model, so Task 4 Step 1 checks them before a
    with the case runner's flags (`probe_tools.sh`), which this kit does not copy.
 5. `tally` refuses an arm folder other than `old` and `new` and a model folder other than the two models.
    Plan 107's `tally` refused only an unknown prompt folder.
-6. The kit errors, the whole-number reading of `result_index` and the rule 5 reading are stated in the VOID
+6. The kit errors, the integer reading of `result_index` and the rule 5 reading are stated in the VOID
    rule. The plan's Step 3 lists rules 3 to 5, an error result and the listing check.

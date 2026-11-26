@@ -22,8 +22,8 @@ The VOID reasons, as the write-up registers them:
   not a JSON object, no result record, or a second one. A rep that cannot be read whole cannot show rules 3
   to 5 or its result;
 - rule 3: `credential_expires_at` still in summary.json or in the saved stream;
-- rule 4: an entry of summary.json's peer_check, or, in the saved stream, a `result_index` other than 0 or an
-  `origin` whose `kind` is `peer` (rep_tools.peer_check);
+- rule 4: an entry of summary.json's peer_check, or, in the saved stream, a `result_index` above 0 (or one that
+  is not an integer) or an `origin` whose `kind` is `peer` (rep_tools.peer_check);
 - rule 5: a Read, Grep or Glob call whose file_path or path (or a Glob pattern) names a file of
   cases.QUARANTINE, in any case, and whose tool result came back without an error. A refused call, or one
   with no result, read nothing;

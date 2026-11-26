@@ -435,14 +435,15 @@ def test_rule_3_voids_a_credential_field_left_in_the_summary_or_the_stream(world
     assert [r for r in audit.void_reasons(other) if r.startswith('rule 3')] == [f'rule 3: {FIELD} left in rep2.jsonl']
 
 
-@pytest.mark.parametrize('value', [1, 2, '1', '0', True, 1.5, None])
+@pytest.mark.parametrize('value', [1, 2, '1', '0', True, False, 1.5, 0.0, None])
 def test_rule_4_voids_a_result_index_that_is_not_0(world, value):
     rep = write_rep(*world, result={**RESULT, 'result_index': value})
     assert any(reason.startswith('rule 4') and 'result_index' in reason for reason in audit.void_reasons(rep))
 
 
-@pytest.mark.parametrize('result', [{**RESULT, 'result_index': 0}, {k: v for k, v in RESULT.items() if k != 'result_index'}])
-def test_rule_4_keeps_a_result_index_of_0_or_none_given(world, result):
+@pytest.mark.parametrize('result', [{**RESULT, 'result_index': 0}, {**RESULT, 'result_index': -1},
+                                    {k: v for k, v in RESULT.items() if k != 'result_index'}])
+def test_rule_4_keeps_a_whole_result_index_of_0_or_below_or_none_given(world, result):
     rep = write_rep(*world, result=result)
     assert audit.void_reasons(rep) == []
 
@@ -542,6 +543,11 @@ def test_the_listing_check_matches_names_exactly_and_reads_both_shapes(world):
     assert 'listing lacks classification-codes, geographic-codes, bls-data-context' in audit.void_reasons(rep)
     rep = write_rep(*world, n=3, skills=[{'name': name} for name in LISTED])
     assert audit.void_reasons(rep) == []
+
+
+def test_a_stream_with_no_init_record_lists_nothing_and_voids(world):
+    rep = write_rep(*world, lines=[json.dumps(RESULT)])
+    assert 'listing lacks classification-codes, geographic-codes, bls-data-context' in audit.void_reasons(rep)
 
 
 @pytest.mark.parametrize(('kwargs', 'reason'), [
