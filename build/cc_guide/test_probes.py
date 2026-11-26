@@ -880,7 +880,7 @@ def test_collect_teardown_kills_the_hook_when_its_wait_is_cut_short(tmp_path, mo
         assert proc.wait(timeout=5) == -signal.SIGKILL
 
 
-@pytest.mark.parametrize('line', ['start 0', 'start 1', f'start {os.getpid()}'])
+@pytest.mark.parametrize('line', ['start 0', 'start 1', f'start {os.getpid()}'], ids=['pid 0', 'pid 1', 'own pid'])
 def test_collect_teardown_never_signals_a_group_init_or_itself(tmp_path, monkeypatch, line):
     '''os.kill on pid 0 signals the probe's own process group; 1 is init. Such a start line is no start.'''
     sent = []
