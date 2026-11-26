@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations @2.1.325 -->
+<!-- cc-guide: skills.locations @2.1.332 -->
 # CLAUDE.md
 
 This file is the canonical maintainer guide for Claude Code, Codex, and Antigravity CLI (`agy`, Gemini CLI's successor) when working in this repository. `AGENTS.md` points Codex here and `GEMINI.md` includes it for `agy`.
