@@ -160,3 +160,18 @@ Ten reps ran in two waves of the audit packet, five in each arm. The first wave 
 | The three next-kit items | Plan 100 (D1) | No note from this plan. |
 
 **Next step.** After the plan merges, run E3's `/cc-guide files` pass on each citing skill whose covered files state Claude Code facts. It runs in its own session and alone, under the machinery rule. Gate A needs a decision of its own: a new round with a different changed arm needs the owner's word, and so does closing I4. The kit and its freezes stay in the cache for that round. Before it runs, the sheets and reports must stop showing the arm: settle's `listed items:` line and the `none` rows differ by arm, and the kit README (line 209) still says no sheet names an arm. That README is a frozen file, so the fix needs the owner's word and a new freeze.
+
+## Kit changes after freeze 3 (/deferred pass, 2026-11-27)
+
+Two kit files changed after freeze 3, so a new round must freeze the kit again before any rep runs. No reported
+result changes: all 26 reps exited 0 within their timeouts, and no stream holds a non-JSON line.
+
+- `kit/run.py` `stop_group` now sends SIGKILL to the rep's process group after the parent exits. Before, a child that
+  ignored SIGTERM outlived a parent that ended on it. The no-model test
+  `test_stop_group_kills_a_child_that_outlives_its_parent` failed before the fix.
+- `kit/grade.py` reads `stream.jsonl` through its own `stream_events`, which returns None for a line that is no JSON
+  object, so V6 reads "the stream does not parse". `probe_checks.parse_stream` skipped such a line. A blank line still
+  does not count. The tests `test_v6_voids_a_stream_with_a_line_that_is_no_json_object` (a text line, and JSON that is
+  no object) failed before the fix, and `test_v6_passes_a_stream_whose_only_odd_line_is_blank` guards the blank line.
+
+The kit README was not edited.

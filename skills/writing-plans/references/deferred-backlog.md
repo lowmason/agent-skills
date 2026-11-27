@@ -249,7 +249,12 @@ the human's, and runs only under `/deferred`.
    with plan and date. Lead with the `deferred_stats.py` summary line. Rank
    within **Plan** and **Design** with one-line reasoning, aged items first
    (an item with `first found in <doc>, <date>` ranks by that date);
-   leave the rest flat. Then stop and wait for the user's selection.
+   leave the rest flat. What comes next depends on who ran the steps:
+   - Under `/deferred`, stop and wait for the user's selection.
+   - At plan completion (writing-plans Plan Completion Protocol, step 4),
+     present the proposal in the completion batch and go on to protocol
+     step 5. Do not wait for a selection. The user acts on it later, under
+     `/deferred`.
 5. **Human-invoked only, under `/deferred`.** Act on what the user selects,
    per disposition — see that command for the tick forms and for the note
    each disposition writes (the Item notes table above lists the forms).

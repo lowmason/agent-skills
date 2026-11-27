@@ -1448,3 +1448,56 @@ The roadmap-stage guard (Task 9, `## Roadmap-stage guard`) on the shipped text `
   that its miss is the same at the base text, and that its reps did not load `executing-plans`, so Task 7's wording for
   that skill has no behavioral test. A later run that exercises `executing-plans` is the open work.
 - The reading of `c5a-merged`'s F-resume and F-next is settled by the owner (2026-11-19). It is not raised again.
+
+## Rubric step 4 check, /deferred pass (2026-11-27)
+
+**Cause.** The backlog item on rubric step 4 (section `101-plan-completion-triage-and-gate-revert — 2026-11-19` of
+`specs/deferred_items.md`) changed step 4 of the Triage rubric in `skills/writing-plans/references/deferred-backlog.md`.
+The step ended "Then stop and wait for the user's selection." Now it keeps that stop for `/deferred` and tells a plan
+completion to present the proposal in the completion batch and go on to protocol step 5. The change is commit
+`e74007444de9fddf800dfd93d21de1620ee638af`. Its `Done when:` asks that `triage-aged` and `triage-narrow` still pass 5
+of 5 with this kit.
+
+**Run.** The kit was not changed. `build_prompts.py e740074… <work>/prompts triage-aged triage-narrow` built the
+prompts at that commit. Its `MANIFEST.txt` gives `triage-aged.txt` sha256
+`297ede7a848046fa265f680ad2d9d5c0b4aacfc6da3a5d55ac902604e6706671` and `triage-narrow.txt` sha256
+`20fca1d2c8a4262c1e76d84b46cbb29ac3c3c3fe09ca136cf300d073f75ad190`, both on `claude-sonnet-5-5` with budget 0.75. The
+prompts carry the writing-plans `SKILL.md` body and `deferred-backlog.md` as they are at that commit, so they hold
+every edit to those files since `T8`, not only this one. The run used Claude Code 2.1.332. The isolation probe ran
+first on that version and printed `NO` on all five lines ($0.017, not committed). Each case ran 5 reps into
+`specs/baseline/red-baseline-completion-triage/deferred-2026-11-27/<case>`. No rep was VOID: each ran one turn, no
+tool and one model, and ended with `success`. No rep wrote an error file, and no rep file holds
+`credential_expires_at`. Every reply was read in full with `show_reps.py`, and each verdict was read by hand by the
+committed rules and the readings of `## Treatment`.
+
+### triage-aged, 2026-11-27
+
+Every rep meets clauses 1, 2 and 4. Each shows the summary line word for word, names both new items, presents Quick
+fix, Plan and Design groups with the two aged items marked, and says that step 5 comes next without a wait.
+
+- rep1: PASS — all four clauses hold. "I'm continuing to step 5 now".
+- rep2: PASS — all four clauses hold. "I don't wait for a selection."
+- rep3: PASS — all four clauses hold. "I would not wait for an answer."
+- rep4: PASS — all four clauses hold. "I would continue to step 5 without waiting".
+- rep5: PASS (borderline) — clauses 1, 2 and 4 hold. "I'm continuing to step 5 (the deferral scan". Hard to call on
+  clause 3: it writes an `<edit path="specs/deferred_items.md">` block. The block holds no line to add or change. Its
+  whole text is a parenthesis that starts "no change: triage steps 1-4 are read-only". This record reads that as no
+  file edit. A strict reading of the block as file content would fail the rep and the case (4 of 5). Its two `grep`
+  commands are read-only. Owner ruling, 2026-11-27: the lenient reading stands, so the rep passes.
+
+treatment passes 5 of 5 under that reading. Spend: $0.246 for reps 1 to 5.
+
+### triage-narrow, 2026-11-27
+
+Every rep meets all three clauses. Each shows the summary line word for word and both new items, says that the aged
+tail is 0 so the triage does not run, lists no older item under a disposition, and goes on to step 5. Reps 1, 3, 4 and
+5 also name `/deferred`.
+
+- rep1: PASS — all three clauses hold. "I'm moving on to retiring the plan now".
+- rep2: PASS — all three clauses hold. "Step 4 doesn't wait for an answer".
+- rep3: PASS — all three clauses hold. "Because nothing is aged, I did not run the triage."
+- rep4: PASS — all three clauses hold. "I would go to step 5".
+- rep5: PASS — all three clauses hold. "Nothing is aged, so I skipped the triage."
+
+treatment passes 5 of 5. Spend: $0.171 for reps 1 to 5. The kit's sum over its folders and plan 80's re-run folders is
+now $5.39, below the $30 stop.

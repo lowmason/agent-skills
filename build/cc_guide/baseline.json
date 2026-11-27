@@ -203,7 +203,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:deca94d7078c968fdc2963ed595a9d56c8d3e95aa0536b3e59b3794b3e0dfa4d"
+   "text_hash": "sha256:35e288e591cf41a503eff47f76bbf9b46d091e78340df7fc10f3da182a30097d"
   },
   "rules.overview": {
    "checked": {
@@ -414,12 +414,12 @@
     "release": "2.1.332",
     "date": "2026-11-25"
    },
-   "changed": "2.1.332",
+   "changed": "2.1.332.1",
    "audited": {
     "release": "2.1.296",
     "date": "2026-10-13"
    },
-   "text_hash": "sha256:0e7b0a8ae44e3b51bbf54e2dad95ebd445f8c95024d991382e28d84a8eb7c89a"
+   "text_hash": "sha256:4a68865041affde6bbf959d24e64b74d8bc16e77364507bf07282df6279b5129"
   },
   "lean.mcp": {
    "checked": {

@@ -530,10 +530,19 @@ def load_jsonl(path: Path) -> tuple[list[dict], int]:
     return records, bad
 
 
+def stream_events(path: Path) -> list[dict] | None:
+    '''The stream's events, or None when a line does not parse (V6): unlike
+    probe_checks.parse_stream, a line that is no JSON object is not skipped,
+    since run.py writes the CLI's stderr to its own file. A blank line does
+    not count.'''
+    events, bad = load_jsonl(path)
+    return None if bad else events
+
+
 def evidence(rid: str) -> Evidence:
     folder = results_dir(rid)
     stream = folder / 'stream.jsonl'
-    events = probe_checks.parse_stream(stream.read_text(encoding='utf-8', errors='replace')) if stream.is_file() else None
+    events = stream_events(stream) if stream.is_file() else None
     session = next((e.get('session_id') for e in events or [] if probe_checks.is_init(e)), None)
     if not (isinstance(session, str) and run.SESSION_RE.fullmatch(session)):
         session = None

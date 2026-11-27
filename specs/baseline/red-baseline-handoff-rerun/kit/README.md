@@ -52,6 +52,8 @@ The rep's `HOME` has no `CLAUDE.md`, no `settings.json`, no rules and no `.zshen
 
 It has a minimal `.gitconfig` that sets only `user.name` (`Pondworks Rep`) and `user.email` (`rep@pondworks.invalid`). Nothing else comes from any real git config. Plan 40's reps committed with the owner's global identity. A rep with no identity gets git's guessed identity and its warnings, and that could change what the rep does. The controller ruled for this file.
 
+The runner's own git calls, which build the rep's repo and its origin, run with the real `HOME`. Since 2026-11-27 the runner sets the placeholder through `GIT_AUTHOR_*` and `GIT_COMMITTER_*`, as plan 101's guard kit does, and `test_no_real_git_identity_reaches_a_rep_repo` checks every reflog entry. This has a limit for the reps that ran before that date, which are all of plan 100's reps: the runner then set no identity, so the `origin/HEAD` and `origin/main` reflogs of each parked rep repo hold the account's identity, and a rep could read it with `git reflog`. The parked reps sit outside the repository, and no committed file holds that identity.
+
 Before the first turn, the runner checks the template's `HEAD`, its refs and its status. It also checks that the hash of the rep's kit folders equals the hash of `KIT_COMMIT`'s copy. The hash is `shasum -a 256` over the sorted file list and the contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
 
 ## Results layout
