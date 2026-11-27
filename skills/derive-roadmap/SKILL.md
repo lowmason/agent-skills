@@ -198,7 +198,10 @@ shipped:
   routing in it; route only after the answer. A `Consumes` is unmet when a
   Handoff or stamp shows its input missing or not built, or when the stage
   that is to produce it is unticked. Otherwise it counts as met, and the
-  receiving session checks it.
+  receiving session checks it. Each item marked `suggested, not approved` (a
+  provisional file, `references/roadmap-format.md`, Ranked list) joins the same
+  question, to approve with a rank or to decline. When nothing else is open,
+  these items open the Ask by themselves.
 - **Commit** the amendments, and whatever your partner approved at the Ask,
   on the current branch before the handoff, so the
   fresh session reads them. Context for a later stage that cannot be
@@ -211,13 +214,17 @@ not empty, do not go to §6 for that track. Read the findings file that the
 that stage found and its measured cost. Then, inside the ONE question of the
 Ask, put a re-ranking of the list and your proposed next stage (one item to
 promote), or stopping the track. A promoted item becomes a stage entry only
-after the answer. When your partner stops the track, only that track's
-remaining items park, one deferred item each, under the Parking rule below.
-The roadmap stays live: it moves only through §6, or when your partner parks
-the whole roadmap.
+after the answer. An item marked `suggested, not approved` is not yet an
+outcome, and a list that holds only such items is still waiting. Before the
+answer such an item is never promoted or counted. The question asks your
+partner to approve and rank each one, or decline it, and only then proposes
+the next stage, so one answer settles both. When your partner stops the track,
+only that track's remaining items park, one deferred item each, under the
+Parking rule below. The roadmap stays live: it moves only through §6, or when
+your partner parks the whole roadmap.
 
-Then hand off the next stage (§4). With every stage ticked and no Ranked list
-waiting, go to §6.
+Then, once no item marked `suggested, not approved` is open, hand off the next
+stage (§4). With every stage ticked and no Ranked list waiting, go to §6.
 
 **Parking is a first-class exit.** When your partner parks the roadmap, its
 remaining unticked stages and the items of every Ranked list append to
@@ -239,9 +246,12 @@ Retirement is gated behind a conformance audit of the ACCUMULATED system:
 re-run the gap rubric over every numbered requirement, with evidence per
 verdict (implementing stage/plan, Deviation notes, deferred_items entries).
 In a new-project roadmap, run it over the Outcomes list in place of spec
-requirements. When its `Source` is a spec, also list each numbered spec
-requirement that no outcome's `Spec` cell cites, as unmet. Ranked-list items
-your partner never promoted have parked (§5).
+requirements. When its `Source` is a spec, also run the rubric over each
+numbered spec requirement that no outcome's `Spec` cell cites. It is met only
+on the rubric's own evidence, a path:line or a test name, and the verdict names
+the stage plan that built it. A stage stamp names no requirement, so a stamp
+alone is not evidence. With no evidence, the requirement is unmet. Ranked-list
+items your partner never promoted have parked (§5).
 
 Unmet requirements exit exactly two ways: a new stage (roadmap stays live),
 or conscious deferral with a written why.
