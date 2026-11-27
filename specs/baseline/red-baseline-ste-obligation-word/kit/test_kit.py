@@ -348,6 +348,8 @@ def test_flag_ids_stay_unique_after_a_voided_rep_leaves_a_gap(tmp_path):
     rows = kit.read_tsv(reg, kit.REGISTRY_FIELDS)
     gone = min(first, key=first.get)
     kit.write_tsv(reg, kit.REGISTRY_FIELDS, [{**r, 'status': 'V3: test'} if r['rep'] == gone else r for r in rows])
+    # The rebuilt sheet drops the voided rep's row, which leaves a gap below the largest id.
+    assert run_kit(env, 'flags').returncode == 0
     assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '3', '--jobs', '1').returncode == 0
     reps = [r['rep'] for r in kit.read_tsv(reg, kit.REGISTRY_FIELDS) if r['status'] == 'good']
     write_judge(tmp_path, 'control', 'agent-instruction', 'claude-opus-5-5', dict.fromkeys(reps, True))
