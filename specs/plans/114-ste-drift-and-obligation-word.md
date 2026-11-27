@@ -62,15 +62,15 @@
 
 Known facts from planning (2026-11-27, `gh api` compare `70736273...d714e536`): two commits. `65c8ab6e` (#72, Anton, `v-anton`, 2026-11-20) changes only `scripts/ste-lint.py` (+77/−1): it adds `_fill`, `_wrapped_findings`, fills autolink ranges after `_gfm_autolinks` in both main-pass call sites, and adds self-test cases. `d714e536` (#73, Iztok Oder, `ioder`, 2026-11-24) adds `"version": "0.4.0"` to `.claude-plugin/plugin.json`, which the skill does not adapt. No `SKILL.md`, `references/` or LICENSE file changed. prithivrajmu HEAD is still `cf9787b6`. Upstream blob at `d714e536`: sha `0b48290f765aafba6f97f410a4a317141f6786d2`, 192,330 bytes. Vendored blob now: `44c62334`.
 
-- [ ] **Step 1: Ask the owner.** In the executing session's conversation, ask whether to download and re-vendor `scripts/ste-lint.py` from danyuchn/asd-ste100-skill at `d714e536`, 192,330 bytes. Say that the self-test was not run before the ask (memory `classifier-blocks-downloaded-script-run`). On a no, skip Steps 2 to 7, record the review only, and note it as a deviation.
-- [ ] **Step 2: Write two failing tests in `test_ste_lint.py`.** `test_bare_url_semicolon_is_not_prose`: linting `See https://x.io/a;b for it.` gives no `semicolon` finding, and `See https://x.io/a; then go.` gives one at column 19. `test_wrapped_phrasal_verb_is_found`: linting `Next we spin\nup the server.` gives exactly one `phrasal-verb` finding, at line 1, column 9. Update the pinned-bytes test to blob `0b48290f765aafba6f97f410a4a317141f6786d2`.
-- [ ] **Step 3: Run the suite on the `70736273` copy.** Run: `uv run python build/run_suites.py write-with-asd-ste100`. Expected: the two new tests and the pin test FAIL, all others pass.
-- [ ] **Step 4: Download into a new empty folder** (`mktemp -d`), outside the repo, with `gh api 'repos/danyuchn/asd-ste100-skill/contents/scripts/ste-lint.py?ref=d714e536' -H 'Accept: application/vnd.github.raw'`. Check: `git hash-object` prints `0b48290f765aafba6f97f410a4a317141f6786d2` and `wc -c` prints 192330. Copy it over the vendored file, then check `git ls-files -s` still shows mode 100644.
-- [ ] **Step 5: Run the suite.** Same command as Step 3. The suite runs the self-test under the dev Python and `/usr/bin/python3` 3.9.6. Expected: all pass, no skip.
-- [ ] **Step 6: Recheck [105], [106], [120] and [121].** Run each item's own reproduction (in its item text) on the `70736273` copy (`git show HEAD:<path>`, saved to a temp folder) and on the new copy. Also run, for [121], a span that opens on line 1 and holds autolink-like text such as `https://x.io/a` and a `;` on line 2 before its closing backtick, and, for [106], a single-quoted multi-line `description:` with `It can''t have failed.` split across the line break. An item counts as fixed only if its named function changed in the diff and its reproduction now gives the correct result. Write the four results, with the commands and outputs, under `## Execution notes` in this plan, with [120]'s new line numbers for its cited code.
-- [ ] **Step 7: Record the linter's counts** on `skills/write-with-asd-ste100/SKILL.md` and `rules/write-with-asd-ste100.md` before (planning: SKILL.md 2 violations, 1 hard, 1339 words) and after the re-vendor, under `## Execution notes`.
-- [ ] **Step 8: Update `NOTICE` and both sources files.** Move the linter pin to `d714e536` (2026-11-24, retrieved 2026-11-27). Credit Anton (https://github.com/v-anton) for pull request #72 (bare URLs skipped, phrases that a line break splits found). Add 2026-11-27 to NOTICE's list of reviews. Keep the adapted-text pin `3944283c` and prithivrajmu's pin. Run `uv run python build/check_provenance.py`: PASS, and `cmp` the two sources files: same.
-- [ ] **Step 9: Commit** `chore(write-with-asd-ste100): re-vendor ste-lint.py at d714e536`, after `build/run_commit_lints.sh` passes.
+- [x] **Step 1: Ask the owner.** In the executing session's conversation, ask whether to download and re-vendor `scripts/ste-lint.py` from danyuchn/asd-ste100-skill at `d714e536`, 192,330 bytes. Say that the self-test was not run before the ask (memory `classifier-blocks-downloaded-script-run`). On a no, skip Steps 2 to 7, record the review only, and note it as a deviation.
+- [x] **Step 2: Write two failing tests in `test_ste_lint.py`.** `test_bare_url_semicolon_is_not_prose`: linting `See https://x.io/a;b for it.` gives no `semicolon` finding, and `See https://x.io/a; then go.` gives one at column 19. `test_wrapped_phrasal_verb_is_found`: linting `Next we spin\nup the server.` gives exactly one `phrasal-verb` finding, at line 1, column 9. Update the pinned-bytes test to blob `0b48290f765aafba6f97f410a4a317141f6786d2`.
+- [x] **Step 3: Run the suite on the `70736273` copy.** Run: `uv run python build/run_suites.py write-with-asd-ste100`. Expected: the two new tests and the pin test FAIL, all others pass.
+- [x] **Step 4: Download into a new empty folder** (`mktemp -d`), outside the repo, with `gh api 'repos/danyuchn/asd-ste100-skill/contents/scripts/ste-lint.py?ref=d714e536' -H 'Accept: application/vnd.github.raw'`. Check: `git hash-object` prints `0b48290f765aafba6f97f410a4a317141f6786d2` and `wc -c` prints 192330. Copy it over the vendored file, then check `git ls-files -s` still shows mode 100644.
+- [x] **Step 5: Run the suite.** Same command as Step 3. The suite runs the self-test under the dev Python and `/usr/bin/python3` 3.9.6. Expected: all pass, no skip.
+- [x] **Step 6: Recheck [105], [106], [120] and [121].** Run each item's own reproduction (in its item text) on the `70736273` copy (`git show HEAD:<path>`, saved to a temp folder) and on the new copy. Also run, for [121], a span that opens on line 1 and holds autolink-like text such as `https://x.io/a` and a `;` on line 2 before its closing backtick, and, for [106], a single-quoted multi-line `description:` with `It can''t have failed.` split across the line break. An item counts as fixed only if its named function changed in the diff and its reproduction now gives the correct result. Write the four results, with the commands and outputs, under `## Execution notes` in this plan, with [120]'s new line numbers for its cited code.
+- [x] **Step 7: Record the linter's counts** on `skills/write-with-asd-ste100/SKILL.md` and `rules/write-with-asd-ste100.md` before (planning: SKILL.md 2 violations, 1 hard, 1339 words) and after the re-vendor, under `## Execution notes`.
+- [x] **Step 8: Update `NOTICE` and both sources files.** Move the linter pin to `d714e536` (2026-11-24, retrieved 2026-11-27). Credit Anton (https://github.com/v-anton) for pull request #72 (bare URLs skipped, phrases that a line break splits found). Add 2026-11-27 to NOTICE's list of reviews. Keep the adapted-text pin `3944283c` and prithivrajmu's pin. Run `uv run python build/check_provenance.py`: PASS, and `cmp` the two sources files: same.
+- [x] **Step 9: Commit** `chore(write-with-asd-ste100): re-vendor ste-lint.py at d714e536`, after `build/run_commit_lints.sh` passes.
 
 ### Task 2: Build the kit and register its rules
 
@@ -152,7 +152,20 @@ Case set:
 
 ## Execution notes
 
-None yet.
+**Task 1 (2026-11-27).** The owner said yes to the re-vendor in the executing conversation. The download's blob is `0b48290f765aafba6f97f410a4a317141f6786d2`, 192,330 bytes, mode 100644, SHA-256 `66c454b9…`. `test_bare_url_semicolon_is_not_prose` and `test_wrapped_phrasal_verb_is_found` failed on the `70736273` copy (2 failed, 13 passed) and pass on the new copy (15 passed, with the self-test under 3.13 and `/usr/bin/python3` 3.9.6, no skip).
+
+Recheck, each reproduction run with `python3 -I ste-lint.py --json` on the `70736273` copy and on the `d714e536` copy. `(rule, line, col)` findings:
+
+| Item | Reproduction | `70736273` | `d714e536` | Diff touches the named path? |
+|---|---|---|---|---|
+| [105] | front matter opening with `  # metadata; note` before `name:` | exit 1, `semicolon` 2:13 | the same | no: `_front_matter` (now line 1829) unchanged |
+| [106] | `description: 'It can''t have failed.'` | `present-perfect` 3:25 | the same | no: `_front_matter`, `_scalar_pieces` (now 1794) unchanged |
+| [106] | the same, single-quoted across a line break | `present-perfect` 4:10 | the same | no: `_wrapped_findings` adds no finding |
+| [120] | list-item fence with no close, indented code, blank, `Outside; prose.` | no finding | the same | no: the fence code moved from 1977-1980 to 2024-2027, unchanged |
+| [121] | `See`, backtick, `word` / `code;`, backslash, backtick, ` end.` | exit 1, `semicolon` 2:5 | the same | no: `_run_in_autolink` (246) and the span scan (271-276) unchanged |
+| [121] | the same span closed by a backtick inside `<https://x.io/`>` | exit 1, `semicolon` 2:5 | the same | no: #72 fills autolink ranges after `_gfm_autolinks`, but the span close is decided before that |
+
+Upstream fixed none of the four. Linter counts, `70736273` and `d714e536` alike: `SKILL.md` 2 violations (1 hard), 1339 words. `rules/write-with-asd-ste100.md` 2 violations (1 hard), 272 words.
 
 ## Completion notes for the protocol
 
