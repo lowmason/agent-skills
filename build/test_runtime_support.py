@@ -1104,3 +1104,60 @@ def test_check_scans_exactly_the_directories_the_installer_writes_into(
   )
   written = {str(item.destination.parent.relative_to(tmp_path)) for item in items}
   assert written == set(install.RUNTIME_DIRECTORIES[runtime])
+
+
+POINTER = '# license: MIT. Adapted from upstream. Full text: LICENSE-x (beside this file).'
+
+
+def pointed_source(tmp_path):
+  source = tmp_path / 'lead.md'
+  source.write_text(
+    f'---\nname: lead\ndescription: Leads.\ntools: Read\n{POINTER}\n# cc-guide: x @1\n---\nbody\n'
+  )
+  return source
+
+
+def test_codex_agent_adapter_carries_the_license_pointer(tmp_path):
+  rendered = load_sync_module().render_codex_agent(pointed_source(tmp_path))
+  assert rendered.splitlines()[1] == POINTER
+  assert tomllib.loads(rendered)['developer_instructions'] == 'body\n'
+
+
+def test_gemini_agent_adapter_carries_the_license_pointer(tmp_path):
+  sync = load_sync_module()
+  rendered = sync.render_gemini_agent(pointed_source(tmp_path))
+  head, _, body = rendered.partition('\n---\n\n')
+  assert POINTER in head.splitlines() and body == 'body\n'
+  adapter = tmp_path / 'adapter.md'
+  adapter.write_text(rendered)
+  assert 'license' not in sync.read_frontmatter(adapter)[0]
+
+
+def test_agent_adapter_without_a_pointer_has_none(tmp_path):
+  sync = load_sync_module()
+  source = tmp_path / 'plain.md'
+  source.write_text('---\nname: plain\ndescription: Plain.\ntools: Read\n---\nbody\n')
+  assert sync.license_pointers(source) == []
+  assert '# license:' not in sync.render_codex_agent(source)
+  assert '# license:' not in sync.render_gemini_agent(source)
+
+
+def test_license_pointer_names_upstream_holder_and_file():
+  for name in ('code-reviewer', 'task-reviewer'):
+    (line,) = load_sync_module().license_pointers(REPO / 'agents' / f'{name}.md')
+    assert 'https://github.com/obra/superpowers' in line
+    assert 'Jesse Vincent' in line and 'LICENSE-superpowers' in line
+
+
+def test_license_pointer_stays_out_of_the_model_input():
+  sync = load_sync_module()
+  for name in ('code-reviewer', 'task-reviewer'):
+    (line,) = sync.license_pointers(REPO / 'agents' / f'{name}.md')
+    canonical = REPO / 'agents' / f'{name}.md'
+    gemini = REPO / 'runtimes' / 'gemini' / 'agents' / f'{name}.md'
+    codex = REPO / 'runtimes' / 'codex' / 'agents' / f'{name}.toml'
+    assert '# license:' not in sync.read_frontmatter(canonical)[1]
+    assert '# license:' not in sync.read_frontmatter(gemini)[1]
+    assert '# license:' not in tomllib.loads(codex.read_text())['developer_instructions']
+    for path in (canonical, gemini, codex):
+      assert line in path.read_text().splitlines()
