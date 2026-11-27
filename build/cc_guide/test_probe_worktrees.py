@@ -65,6 +65,7 @@ def test_prepare_builds_the_four_repos_and_their_invocations(built):
         assert (scratch / inv.cwd).is_dir()
         assert inv.argv[0] == CLAUDE
         assert (inv.env, inv.timeout, inv.suffix) == (ENV, probe_process.PROBE_TIMEOUT, '.jsonl')
+        assert inv.drop_prefixes == ('GIT_',)  # a caller's GIT_DIR must not aim the run's git at its own repo
         argv = inv.argv
         assert argv[argv.index('--max-turns') + 1] == '20'
         assert argv[argv.index('--setting-sources') + 1] == 'project'

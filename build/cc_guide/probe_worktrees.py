@@ -19,8 +19,8 @@ assertions, which read the runs' raw streams.
 The guide's fifth fact, that a desktop app session in a worktree was not
 isolated, stays a hand check: claude -p cannot start a desktop session.
 
-The setup git reads no global or system config and none of the caller's
-GIT_ variables, so the owner's signing, hooks or default branch cannot change
+The setup git and the four runs read no global or system config and none of
+the caller's GIT_ variables, so the owner's signing, hooks or default branch cannot change
 the repos. Each run loads project settings only, and no scratch repo has
 any, so a worktree.baseRef in the owner's user settings cannot decide fact 4.'''
 import json
@@ -46,6 +46,7 @@ GONE, GONE_ORIGIN = 'gone', 'gone-origin.git'
 NO_GLOBAL_GIT = {'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1'}
 GIT_IDENTITY = ('-c', 'user.name=probe', '-c', 'user.email=probe@example.invalid', '-c', 'commit.gpgsign=false')
 RUN_ENV = {'CLAUDE_CODE_DISABLE_ADVISOR_TOOL': '1', **NO_GLOBAL_GIT}
+DROPPED_ENV = ('GIT_',)  # a caller's GIT_DIR or GIT_WORK_TREE would aim the runs' git at its own repository
 ALLOW = ('Bash', 'ExitWorktree', 'EnterWorktree', 'ToolSearch')
 PREAMBLE = ('Do these steps in order. Run each command with the Bash tool, one call for each command, exactly as '
             'written, and do not retry a command in another form. If the {tool} tool is not loaded, load it with '
@@ -148,7 +149,7 @@ def prepare_worktrees(scratch: Path, claude: str, repo: Path) -> list[Invocation
                                          mode='default', allow=ALLOW,
                                          extra=('--strict-mcp-config',
                                                 *(('--worktree', WORKTREE_NAME) if name == 'isolation' else ()))),
-                       RUN_ENV, PROBE_TIMEOUT, cwd=cwds[name])
+                       RUN_ENV, PROBE_TIMEOUT, cwd=cwds[name], drop_prefixes=DROPPED_ENV)
             for name in WT_PARTS]
 
 

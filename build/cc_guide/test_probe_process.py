@@ -43,6 +43,27 @@ def test_a_run_keeps_an_inherited_alias_remap(tmp_path, monkeypatch):
 
 
 
+def test_a_run_drops_inherited_names_with_a_dropped_prefix_but_keeps_what_it_adds(tmp_path, monkeypatch):
+    '''A git hook exports GIT_DIR for its own repo, so a worktree run that inherits it could aim git at the
+    caller's repository. A run with drop_prefixes goes without every inherited name that starts with one, and
+    still gets the names its invocation adds.'''
+    monkeypatch.setenv('GIT_DIR', str(tmp_path / 'elsewhere.git'))
+    monkeypatch.setenv('GIT_CONFIG_GLOBAL', 'inherited')
+    echo = executable(tmp_path / 'echo', '#!/bin/sh\nprintf "%s %s" "${GIT_DIR-unset}" "${GIT_CONFIG_GLOBAL-unset}"\n')
+    inv = probe_process.Invocation('echo', [str(echo)], {'GIT_CONFIG_GLOBAL': 'added'}, 30, drop_prefixes=('GIT_',))
+    assert probe_process.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
+    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'unset added'
+
+
+def test_a_run_without_drop_prefixes_keeps_its_inherited_names(tmp_path, monkeypatch):
+    monkeypatch.setenv('GIT_DIR', 'kept')
+    echo = executable(tmp_path / 'echo', '#!/bin/sh\nprintf "%s" "${GIT_DIR-unset}"\n')
+    inv = probe_process.Invocation('echo', [str(echo)], {}, 30)
+    assert inv.drop_prefixes == ()
+    assert probe_process.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
+    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'kept'
+
+
 def test_execute_runs_an_invocation_from_its_cwd(tmp_path):
     '''An invocation's cwd is relative to the directory execute is given, so one probe can run in several
     scratch repos.'''
@@ -55,7 +76,7 @@ def test_execute_runs_an_invocation_from_its_cwd(tmp_path):
 
 def test_an_invocation_runs_from_the_scratch_folder_by_default(tmp_path):
     inv = probe_process.Invocation('here', ['pwd'], {}, 30)
-    assert inv.cwd == '.' and inv._fields[-1] == 'sweep'
+    assert inv.cwd == '.' and inv._fields[-1] == 'drop_prefixes'
     assert probe_process.execute(inv, tmp_path, tmp_path / 'here.out', tmp_path / 'here.err') == 0
     printed = (tmp_path / 'here.out').read_text(encoding='utf-8').strip()
     assert os.path.realpath(printed) == os.path.realpath(tmp_path)

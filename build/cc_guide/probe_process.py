@@ -43,6 +43,7 @@ class Invocation(NamedTuple):
     suffix: str = '.jsonl'
     cwd: str = '.'        # the folder it runs in, relative to the scratch directory execute is given
     sweep: bool = True    # after a normal exit, SIGKILL whatever the run left in its process group
+    drop_prefixes: tuple[str, ...] = ()  # inherited names starting with one of these are dropped before env is added
 
 
 # Runs one invocation from a directory, writing its stdout and stderr to the
@@ -84,11 +85,12 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     or a stop ends everything it started, such as the claude under Gate B's
     bash: the group gets no terminal signal of its own. A stop signal while
     the run starts is held until `proc` is bound, so it cannot orphan it.
-    The run inherits the caller's environment less SCRUBBED_ENV, then
-    takes what the invocation adds, and runs from its cwd under `cwd`. After a normal exit, a run with sweep
+    The run inherits the caller's environment less SCRUBBED_ENV and less
+    each name starting with one of drop_prefixes, then takes what the
+    invocation adds, and runs from its cwd under `cwd`. After a normal exit, a run with sweep
     set has its group swept with SIGKILL, so a background child it left
     behind does not outlive the probe.'''
-    env = inherited_env() | inv.env
+    env = {name: value for name, value in inherited_env().items() if not name.startswith(inv.drop_prefixes)} | inv.env
     with out.open('wb') as stdout, err.open('wb') as stderr:
         proc = None
         try:
