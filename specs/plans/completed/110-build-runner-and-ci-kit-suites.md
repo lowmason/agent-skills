@@ -1,5 +1,7 @@
 # Build Runner, Shared Git Module and CI Kit Suites Implementation Plan
 
+**Status: COMPLETE (2026-11-26)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** One stdlib-only git module replaces the git helper copies in `build/`, `build/run_suites.py` gets the plan 55 hardening and its missing tests, and the weekly `versions-drift` job stops failing the three kit suites on its 3.13 pass.
@@ -14,6 +16,8 @@
 - section `deferred-2026-11-26-parallel`: "**Three kit suites fail in the weekly `versions-drift` job…**" (the kit item).
 
 ## Global Constraints
+
+> Deviation: the Plan Completion Protocol may also edit the plan markup, `specs/history.md`, the move to `specs/plans/completed/` and the `→ done` notes in `specs/deferred_items.md`, as plan 111 states (owner default, handoff brief 2026-11-26).
 
 - `build/run_suites.py` and `build/git_listing.py` import only the standard library (and `run_suites.py` its sibling `versions`). The runner is the commit lint's entry point, and `check_conformance.py` imports pyyaml.
 - Module and test basenames stay unique across `build/`, `build/cc_guide/` included (`build/CLAUDE.md`, last line): `git_listing.py`, `test_git_listing.py`.
@@ -70,7 +74,7 @@ Closes the share item and the fourth-copy item. No behavior changes, except that
 - The callers keep their filters: `check_conformance.kept_files` keeps `exists() or is_symlink()`, sorts, and raises `SetupError(f'cannot list the files git keeps under {root} ({exc})')`. `run_suites.pytest_dirs` keeps `is_file()` and still returns `None` on `GitError` (Task 2 changes that). `versions_check.live_files` keeps `is_file()` and its other filters, and lets `GitError` propagate.
 - `check_conformance` imports `git_env` and `git_reason` from the module, so `cc.git_env` and `cc.git_reason` stay importable.
 
-- [ ] **Step 1: Write the failing tests in `build/test_git_listing.py`** (+7)
+- [x] **Step 1: Write the failing tests in `build/test_git_listing.py`** (+7)
   - `test_git_env_drops_repo_local_variables`: with `GIT_DIR`, `GIT_INDEX_FILE` and `LANE3_KEEP` set, `git_env()` has `LANE3_KEEP` and neither git variable.
   - `test_git_reason_prefers_gits_stderr`: `CalledProcessError(128, ['git'], stderr=b'fatal: x\n')` gives `'fatal: x'`. `OSError('no git')` gives `'no git'`.
   - `test_kept_paths_lists_tracked_untracked_and_deleted_but_not_ignored`: a repo with tracked `a.md`, tracked-then-deleted `gone.md`, untracked `b.md` and ignored `c.log` (`.gitignore`: `*.log`). `sorted(kept_paths(root)) == ['.gitignore', 'a.md', 'b.md', 'gone.md']`.
@@ -81,31 +85,35 @@ Closes the share item and the fourth-copy item. No behavior changes, except that
 
   Every test that runs git sets `GIT_CONFIG_GLOBAL=os.devnull` and `GIT_CONFIG_NOSYSTEM=1`, through a module-level autouse fixture.
 
-- [ ] **Step 2: Run them and see them fail**
+  > Deviation: the file holds +9 tests, not +7: the implementer added `test_kept_paths_decodes_with_fsdecode` and `test_kept_paths_ignores_a_foreign_index_that_tracks_other_files`. The plan test `test_kept_paths_ignores_a_foreign_git_dir` passes even without `env=git_env()` (an empty foreign index), so its mutant-step line reads `Strengthened:` and names the second test.
+
+- [x] **Step 2: Run them and see them fail**
 
   Run: `cd build && uv run --with pytest python -m pytest -q test_git_listing.py`
   Expected: collection error, `ModuleNotFoundError: No module named 'git_listing'`.
 
-- [ ] **Step 3: Create `build/git_listing.py`** with the Interfaces above. Its docstring says who imports it, and that `install.py` keeps its own copy because it runs standalone.
+- [x] **Step 3: Create `build/git_listing.py`** with the Interfaces above. Its docstring says who imports it, and that `install.py` keeps its own copy because it runs standalone.
 
-- [ ] **Step 4: Run the new tests**
+- [x] **Step 4: Run the new tests**
 
   Run: `cd build && uv run --with pytest python -m pytest -q test_git_listing.py`
   Expected: `7 passed`.
 
-- [ ] **Step 5: Re-point the three callers and two test imports.** In `check_conformance.py`, `run_suites.py` and `versions_check.py`, replace each copy with the module, as Interfaces says. In `test_versions_check.py:13` and `test_run_suites.py:165`, take `git_env` from `git_listing`. Add one sentence to `build/CLAUDE.md`, after the `suites.toml` paragraph: "`git_listing.py` holds the stdlib-only git helpers (`git_env`, `git_reason`, the kept-files listing) that `run_suites.py`, `check_conformance.py` and `versions_check.py` share; `install.py` keeps its own copy, since it runs standalone."
+- [x] **Step 5: Re-point the three callers and two test imports.** In `check_conformance.py`, `run_suites.py` and `versions_check.py`, replace each copy with the module, as Interfaces says. In `test_versions_check.py:13` and `test_run_suites.py:165`, take `git_env` from `git_listing`. Add one sentence to `build/CLAUDE.md`, after the `suites.toml` paragraph: "`git_listing.py` holds the stdlib-only git helpers (`git_env`, `git_reason`, the kept-files listing) that `run_suites.py`, `check_conformance.py` and `versions_check.py` share; `install.py` keeps its own copy, since it runs standalone."
 
-- [ ] **Step 6: Confirm that no copy is left**
+  > Deviation: the implementer also removed the now-unused `import subprocess` from `build/versions_check.py`. The one extra test in `build/test_versions_check.py` was dropped at review, since the Global Constraints allow one import line there.
+
+- [x] **Step 6: Confirm that no copy is left**
 
   Run: `command grep -rn -e 'ls-files.*--cached' -e 'local-env-vars' build/*.py`
   Expected: only `build/git_listing.py` lines.
 
-- [ ] **Step 7: Run the affected suites**
+- [x] **Step 7: Run the affected suites**
 
   Run: `uv run python build/run_suites.py build -- test_git_listing.py test_run_suites.py test_check_conformance.py test_versions_check.py test_versions.py`
   Expected: all pass. The counts change only by the +7 of Step 1.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
   ```bash
   git add build/git_listing.py build/test_git_listing.py build/run_suites.py build/check_conformance.py build/versions_check.py build/test_versions_check.py build/test_run_suites.py build/CLAUDE.md
@@ -127,7 +135,7 @@ Closes the hardening item, parts (a) to (f).
   - `pytest_dirs(root: Path) -> set[str]`: as now, but raises `GitError` instead of returning `None`.
   - `EXIT_OK = 0`, `EXIT_FAILED = 1`, `EXIT_USAGE = 2`, used by every `return` of an exit status.
 
-- [ ] **Step 1: Write the failing tests** (+8, and one changed test)
+- [x] **Step 1: Write the failing tests** (+8, and one changed test)
   - (a) `test_check_flags_a_test_directory_that_pytest_skips`: `COVERED` plus `skills/alpha/scripts/build/test_y.py`. `findings(root) == ["skills/alpha/scripts/build: holds pytest files, but pytest skips 'build' below skills/alpha/scripts, so no suite collects it"]`.
   - (a) `test_a_suite_dir_named_like_a_skipped_folder_is_collected`: a registry with a suite `name = 'build'`, `dir = 'build'`, and the file `build/test_b.py`. `findings(root) == []`.
   - (a) `test_all_runs_an_inner_suite_the_outer_one_skips`: `container()` returns `None` for a suite with `dir = 'tools/build'` inside `tools`, so `--all` runs it.
@@ -136,32 +144,34 @@ Closes the hardening item, parts (a) to (f).
   - (c) `test_an_option_between_suite_names_applies_to_all`: `main(['alpha', '--extras', 'outer'], …)` runs `alpha` with `--with arviz>=1.0`, then `outer`.
   - (d) change `test_check_fails_closed_outside_a_git_repository`: with `GIT_CEILING_DIRECTORIES=tmp_path.parent` and `LC_ALL=C`, the one finding starts with `'build/suites.toml: git ls-files failed ('`, contains `'not a git repository'` and ends with `'), so the test directories are unknown'`.
 
-- [ ] **Step 2: Run them and see them fail**
+  > Deviation: the implementer added 12 tests, not 8, after the mutant screen found four survivors (skipped-part shapes). Two of them pass on the revert by design, with `Keeps:` lines.
+
+- [x] **Step 2: Run them and see them fail**
 
   Run: `cd build && uv run --with pytest python -m pytest -q test_run_suites.py`
   Expected: the new tests and the changed one fail. (c) fails with `SystemExit: 2` (argparse: "unrecognized arguments").
 
-- [ ] **Step 3: Implement (a) to (d) in `build/run_suites.py`**
+- [x] **Step 3: Implement (a) to (d) in `build/run_suites.py`**
   - (a) In `check()`, a found folder counts as covered only when some containing suite has `skipped_part(d, suite.dir) is None`. When every containing suite skips it, report it with the deepest containing suite (longest `dir`) and its skipped part, in the text of Step 1. `container()` also requires `skipped_part(suite.dir, other.dir) is None`. The `NORECURSE` comment says that no suite sets its own `norecursedirs` today.
   - (b) In `validate()`, refuse an entry of `with`, `extras` or `pythons` that starts with `-`.
   - (c) `parser.parse_intermixed_args(argv)`, in place of `parse_args`.
   - (d) `check()` catches `GitError` and reports `f'{REGISTRY}: git ls-files failed ({exc}), so the test directories are unknown'`.
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
   Run: `cd build && uv run --with pytest python -m pytest -q test_run_suites.py`
   Expected: all pass.
 
-- [ ] **Step 5: Implement (e) and (f)**, which no test drives
+- [x] **Step 5: Implement (e) and (f)**, which no test drives
   - (e) The three `EXIT_*` constants replace the bare exit literals. Add docstrings to `list_suites()` and `main()`. Add a comment on the `[:1]`: only the first out-of-order pair is reported, since one line is enough to point at the fix.
   - (f) The module docstring says "From the repo root:", not "From any directory in the repo:".
 
-- [ ] **Step 6: Run the runner's suites, its caller and the lint**
+- [x] **Step 6: Run the runner's suites, its caller and the lint**
 
   Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_run_suites.py test_versions.py test_versions_check.py && cd .. && uv run python build/run_suites.py --check && uv run python build/run_suites.py --list hooks`
   Expected: all pass, `suite registry ok`, and the `hooks` command line unchanged from before this task.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
   ```bash
   git add build/run_suites.py build/test_run_suites.py
@@ -178,7 +188,7 @@ Closes the test-gaps item. These tests are written against correct code, so they
 **Interfaces:**
 - Consumes: `rs.validate`, `rs.check`, `rs.main`, `rs.run_subprocess`, `rs.Run`, `rs.Suite` (unchanged names).
 
-- [ ] **Step 1: Write the tests** (+14)
+- [x] **Step 1: Write the tests** (+14)
   - An autouse fixture sets `GIT_CEILING_DIRECTORIES=str(tmp_path.parent)`, `GIT_CONFIG_GLOBAL=os.devnull` and `GIT_CONFIG_NOSYSTEM=1`, as `clean_env` in `build/test_commit_lints.py` does.
   - `test_check_skips_a_tracked_file_deleted_from_the_work_tree`: commit `skills/alpha/scripts/test_a.py`, delete it, and add `skills/alpha/scripts/tool.py`. `findings(root) == ['build/suites.toml: alpha: skills/alpha/scripts holds no pytest file']`. Mutant: delete the `is_file()` guard.
   - Seven new `test_validate_refuses` cases. `suite = 'x'` gives `'no [[suite]] tables'`. `suite = [1]` gives `'suite 1: not a table'`. `dir = '/abs'` gives `"suite 1 (a): 'dir' must be a normalised path below the repo root"`. `name = 1` gives `"suite 1: 'name' must be a non-empty string"`. `dir = 1` gives `"suite 1 (a): 'dir' must be a non-empty string"`. `extras = [1]` and `pythons = [1]` give `"suite 1 (a): '<key>' must be a list of non-empty strings"`. Mutant: delete each branch.
@@ -188,17 +198,19 @@ Closes the test-gaps item. These tests are written against correct code, so they
   - `test_a_malformed_registry_exits_2_for_a_run_and_1_for_check`: `build/suites.toml` reads `name = [`. `main(['alpha'])` returns `2` and `main(['--check'])` returns `1`, both with `build/suites.toml: cannot read` on stderr.
   - In `build/test_commit_lints.py::test_unregistered_suite_is_refused`, one line before the file is planted: assert that no `dir` in the clone's `build/suites.toml` contains `tools/scan`.
 
-- [ ] **Step 2: Apply each named mutant by hand, run the suite, and see the test go red; then revert it**
+  > Deviation: Task 2 had already added `test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree` and a `no [[suite]] tables` case, so the overlap stays. The final review found the autouse fixture still read the default git excludes file, so commit 22f342a adds `XDG_CONFIG_HOME` to it and one test (+1, outside the plan). The same gap in `clean_env` of `build/test_commit_lints.py` is deferred, because the plan caps that file. → item: specs/deferred_items.md § 110-build-runner-and-ci-kit-suites
+
+- [x] **Step 2: Apply each named mutant by hand, run the suite, and see the test go red; then revert it**
 
   Run, per mutant: `cd build && uv run --with pytest python -m pytest -q test_run_suites.py -k <test>`
   Expected: FAIL with the mutant applied, PASS once it is reverted. `git diff build/run_suites.py` is empty at the end.
 
-- [ ] **Step 3: Run the whole `build` suite**
+- [x] **Step 3: Run the whole `build` suite**
 
   Run: `uv run python build/run_suites.py build`
   Expected: `suite runs passed`. This whole `build` suite includes `test_commit_lints.py` (about 15 s) and the +29 tests of Tasks 1 to 3 (7, 8 and 14).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
   ```bash
   git add build/test_run_suites.py build/test_commit_lints.py
@@ -212,23 +224,23 @@ Closes the kit item, once Task 5 sees its Done.
 **Files:**
 - Modify: `.github/workflows/versions-drift.yml`, `build/test_commit_lints.py`
 
-- [ ] **Step 1: Write the failing test** (+1)
+- [x] **Step 1: Write the failing test** (+1)
 
   `test_versions_drift_fetches_full_history_and_keeps_tmp_off_slash_tmp`: in `drift_workflow()`, the `actions/checkout@` step has `with['fetch-depth'] == 0`, and the step whose `run` holds `build/versions.py drift` has `env['TMPDIR'] == '${{ runner.temp }}'`.
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
   Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k fetches_full_history`
   Expected: FAIL, a `KeyError` on `fetch-depth`.
 
-- [ ] **Step 3: Edit the workflow.** Add `fetch-depth: 0` under the checkout's `with`. Add `env: TMPDIR: ${{ runner.temp }}` to the `Report drift` step. Add a comment above each that names its cause: the kits `git archive` old commits, and the kits' path rules expect a temp folder outside `/tmp`, as on macOS.
+- [x] **Step 3: Edit the workflow.** Add `fetch-depth: 0` under the checkout's `with`. Add `env: TMPDIR: ${{ runner.temp }}` to the `Report drift` step. Add a comment above each that names its cause: the kits `git archive` old commits, and the kits' path rules expect a temp folder outside `/tmp`, as on macOS.
 
-- [ ] **Step 4: Run the workflow tests**
+- [x] **Step 4: Run the workflow tests**
 
   Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k workflow`
   Expected: all pass.
 
-- [ ] **Step 5: Commit, push the branch and dispatch the branch's workflow**
+- [x] **Step 5: Commit, push the branch and dispatch the branch's workflow**
 
   ```bash
   git add .github/workflows/versions-drift.yml build/test_commit_lints.py
@@ -239,12 +251,18 @@ Closes the kit item, once Task 5 sees its Done.
 
   Expected: the run starts. Its result is read in Task 5.
 
+  > Deviation: the controller pushed and dispatched after the task review, not the implementer. Branch run 45878724846 showed that `TMPDIR: ${{ runner.temp }}` fixed the three target kits but broke `writing-skills-guard-run-kit`, `writing-skills-layout-kit` and `writing-skills-tests-kit` on 3.13 (their `/home/runner` to `/home/$USER` rewrite). Owner ruling, 2026-11-26: use `TMPDIR: /var/tmp` (commit 5d6b975). Run 45885612117 on that commit: the 3.13 pass printed `suite runs passed`, and the 3.15 pass lists only `track-model-experiments` (missing cp315 wheels). This changes D2.
+
 ### Task 5: Check the kit item's Done
 
-- [ ] **Step 1: Read the branch run's 3.13 pass.** When the run from Task 4 ends, run `gh run view <id> --log | command grep -a 'suite runs failed'`.
+- [x] **Step 1: Read the branch run's 3.13 pass.** When the run from Task 4 ends, run `gh run view <id> --log | command grep -a 'suite runs failed'`.
   Expected: the 3.13 line names none of `cc-guide-verifier-recall-kit`, `completion-triage-guard-kit` or `handoff-rerun-kit`. The 3.15 pass may still fail on missing cp315 wheels (section `66-package-versions`). That is another item. If a kit suite still fails, stop and report the log lines. This is the owner gate on kit edits.
+
+  > Deviation: read from run 45885612117 (the second branch run, at 5d6b975), after the owner gate on the first run. Its 3.13 pass printed `suite runs passed`.
 
 - [ ] **Step 2: After the execution PR merges, dispatch once on `main`**
 
   Run: `gh workflow run versions-drift.yml --ref main`
   Expected: the same 3.13 result. Record the run id in the completion report.
+
+  > Deviation: a post-merge step. The retired plan cannot tick it. The run id and result go in the completion report.
