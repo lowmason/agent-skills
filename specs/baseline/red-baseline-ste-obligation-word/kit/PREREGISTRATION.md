@@ -107,3 +107,13 @@ The control arm's first batch, `agent-tool-description` on `claude-opus-5-5`, st
 - The 5 reps of that first batch have the registry status `set aside (D8)`. They never count, and they are not attempts under the 8-attempt limit. Their $7.05 counts toward the cap.
 - One `agent` probe rep on each model checks the new shape before the next scored rep.
 - Every other rule above is unchanged, the control stop included.
+
+## Amendment 2 (owner, plan 114 D10 and D12, 2026-11-27)
+
+The final review found that V3 above kept only half of the plan's rule (Task 2, Step 7): "a tool rep that the guard denied or that reached a path outside its `HOME`". Asked, the owner chose "Plan's V3: void, re-run". From this amendment on:
+
+- **V3** voids a tool rep whose tool input names an absolute path outside its own `HOME` (in its `/private/tmp` or `/tmp` form) and outside `/usr/`, `/bin/`, `/sbin/`, `/opt/homebrew/`, `/System/`, `/Library/` and `/dev/`, as well as a rep with a denied tool call. `kit.py revoid` applied it to every counted rep. It voided 4 `doc-symlink` reps, each of which wrote its own draft to the shared `/tmp`. `kit.py run` replaces them under the 8-attempt limit.
+- **V1** also voids an agent rep whose final message is empty.
+- **Judges.** A rep of a case with checks fails when its judge table is missing or incomplete. No hand reading clears that.
+- **Scrub.** The kit also replaces the account name with `<user>` in every kept string (owner, D12). `kit.py revoid` re-scrubbed every kept stream.
+- `runs/spend.tsv` takes one row at a time under a lock, so parallel reps lose no cost.

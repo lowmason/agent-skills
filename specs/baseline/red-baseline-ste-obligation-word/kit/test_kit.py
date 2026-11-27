@@ -142,6 +142,8 @@ def test_unread_flags_fail_the_tally_and_justified_flags_pass_it(tmp_path):
     env = kit_env(tmp_path, 'Consume the artifact.')
     assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
     assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--jobs', '5').returncode == 0
+    reps = [r['rep'] for r in kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)]
+    write_judge(tmp_path, 'control', 'agent-instruction', 'claude-opus-5-5', dict.fromkeys(reps, True))
     assert run_kit(env, 'flags').returncode == 0
     assert 'agent-instruction claude-opus-5-5 0/5 FAIL (obligation 0/5)' in run_kit(env, 'tally').stdout
     flags = tmp_path / 'runs' / 'flags.tsv'
@@ -165,6 +167,118 @@ def test_flag_ids_stay_unique_when_new_reps_add_flags(tmp_path):
     assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '2', '--jobs', '2').returncode == 0
     assert run_kit(env, 'flags').returncode == 0
     assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-sonnet-5-5', '--good', '2', '--jobs', '2').returncode == 0
+    for model in ('claude-opus-5-5', 'claude-sonnet-5-5'):
+        reps = [r['rep'] for r in kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS) if r['model'] == model]
+        write_judge(tmp_path, 'control', 'agent-instruction', model, dict.fromkeys(reps, True))
     assert run_kit(env, 'flags').returncode == 0
     ids = [r['flag'] for r in kit.read_tsv(tmp_path / 'runs' / 'flags.tsv', kit.FLAG_FIELDS)]
     assert len(ids) == 4 and len(set(ids)) == 4
+
+
+# ---- final-review fixes (plan 114, D10 and D12, Codex and code-reviewer findings) ----
+
+def bash_use(command: str) -> dict:
+    return {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'name': 'Bash', 'input': {'command': command}}]}}
+
+
+def test_v3_voids_a_tool_rep_that_writes_outside_its_home():
+    home = '/private/tmp/ste114/rabc123'
+    assert kit.void_reason(records({}, bash_use('cp docs/manual.md /tmp/rewritten.md')), 'Bash', home).startswith('V3')
+
+
+def test_v3_keeps_a_tool_rep_that_stays_in_its_home_or_uses_system_paths():
+    home = '/private/tmp/ste114/rabc123'
+    inside = bash_use(f'cd {home}/work/repo; /usr/bin/python3 {home}/skill/x.py 2>/dev/null')
+    assert kit.void_reason(records({}, inside), 'Bash', home) is None
+    tmp_form = bash_use('cat /tmp/ste114/rabc123/work/repo/docs/guide.md')
+    assert kit.void_reason(records({}, tmp_form), 'Bash', home) is None
+
+
+def test_scrub_redacts_the_account_name_in_values():
+    assert kit.scrub({'stdout': 'lrwxr-xr-x@ 1 alice  wheel  9 guide.md'}, user='alice') == \
+        {'stdout': 'lrwxr-xr-x@ 1 <user>  wheel  9 guide.md'}
+
+
+def test_an_agent_rep_with_an_empty_final_message_is_void():
+    recs = records({'result': ''})
+    assert kit.void_reason(recs, 'Read', final=True).startswith('V1')
+
+
+def test_parallel_spend_appends_lose_no_row(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    path = tmp_path / 'spend.tsv'
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(lambda n: kit.append_tsv(path, ('what', 'cost'), {'what': f'rep r{n}', 'cost': '0.01'}), range(40)))
+    assert len(kit.read_tsv(path, ('what', 'cost'))) == 40
+
+
+def test_a_case_with_checks_and_no_judge_file_fails_the_tally(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--jobs', '5').returncode == 0
+    assert run_kit(env, 'flags').returncode == 0
+    assert 'agent-instruction claude-opus-5-5 0/5 FAIL' in run_kit(env, 'tally').stdout
+
+
+def write_judge(tmp_path: Path, arm: str, case_id: str, model: str, passes: dict) -> None:
+    '''A judge file that passes every check of the listed reps, or fails check 1 where passes[rep] is False.'''
+    case = cases.BY_ID[case_id]
+    table = {rep: {str(n): {'pass': ok or n != 1, 'why': 'test'} for n in range(1, len(case.checks) + 1)}
+             for rep, ok in passes.items()}
+    target = tmp_path / 'runs' / 'judge' / kit.judge_file(arm, case_id, model).name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({'case': case_id, 'verdicts': table}), encoding='utf-8')
+
+
+def test_four_of_five_passes_the_bar_and_three_of_five_fails_it(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--jobs', '5').returncode == 0
+    reps = [r['rep'] for r in kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)]
+    write_judge(tmp_path, 'control', 'agent-instruction', 'claude-opus-5-5', {r: i != 0 for i, r in enumerate(reps)})
+    assert run_kit(env, 'flags').returncode == 0
+    flags = tmp_path / 'runs' / 'flags.tsv'
+    rows = kit.read_tsv(flags, kit.FLAG_FIELDS)
+    kit.write_tsv(flags, kit.FLAG_FIELDS, [{**r, 'verdict': 'count', 'reason': 'test'} for r in rows])
+    assert 'agent-instruction claude-opus-5-5 4/5 PASS' in run_kit(env, 'tally').stdout
+    write_judge(tmp_path, 'control', 'agent-instruction', 'claude-opus-5-5', {r: i > 1 for i, r in enumerate(reps)})
+    assert run_kit(env, 'flags').returncode == 0
+    rows = kit.read_tsv(flags, kit.FLAG_FIELDS)
+    kit.write_tsv(flags, kit.FLAG_FIELDS, [{**r, 'verdict': 'count', 'reason': 'test'} for r in rows])
+    assert 'agent-instruction claude-opus-5-5 3/5 FAIL' in run_kit(env, 'tally').stdout
+
+
+def test_a_document_rep_that_fails_its_mechanical_check_fails_the_tally(tmp_path):
+    env = kit_env(tmp_path, 'I rewrote the file.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'doc-symlink', 'claude-opus-5-5', '--jobs', '5').returncode == 0
+    assert run_kit(env, 'flags').returncode == 0
+    # The stub writes nothing, so no copy exists: every rep fails "copy written".
+    assert 'doc-symlink claude-opus-5-5 0/5 FAIL' in run_kit(env, 'tally').stdout
+
+
+def test_a_set_aside_row_never_counts(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    reg = tmp_path / 'runs' / 'registry.tsv'
+    kit.write_tsv(reg, kit.REGISTRY_FIELDS, [{'rep': 'rold', 'arm': 'control', 'case': 'agent-instruction',
+                                              'model': 'claude-opus-5-5', 'status': 'set aside (D8)', 'cost': '0'}])
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '2', '--jobs', '2').returncode == 0
+    rows = kit.read_tsv(reg, kit.REGISTRY_FIELDS)
+    assert len(rows) == 3 and sum(r['status'] == 'good' for r in rows) == 2
+
+
+def test_revoid_applies_the_current_void_rules_and_redacts_kept_streams(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '1', '--jobs', '1').returncode == 0
+    (row,) = kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)
+    kept = tmp_path / 'runs' / 'reps' / row['rep'] / 'stream.jsonl'
+    use = bash_use('cp a /tmp/out.md')
+    kept.write_text(kept.read_text(encoding='utf-8') + json.dumps(use) + '\n' +
+                    json.dumps({'type': 'user', 'note': f'owner {os.environ["USER"]} here'}) + '\n', encoding='utf-8')
+    done = run_kit(env, 'revoid')
+    assert done.returncode == 0, done.stderr
+    (row,) = kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)
+    assert row['status'].startswith('V3')
+    assert os.environ['USER'] not in kept.read_text(encoding='utf-8')

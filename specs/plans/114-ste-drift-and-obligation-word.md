@@ -48,6 +48,10 @@
 - **D7** (owner, plan review, 2026-11-27): approve as written, with D3 to D6 standing. Execute inline in the planning session (executing-plans). Applied in: all tasks.
 - **D8** (owner, execution, 2026-11-27): "Give agent reps Read". With `--tools ""`, 4 of 5 Opus 5.5 control reps wrote tool calls as text, and 2 ran to the output limit (about $3.40 each). Agent reps now get the Read tool, and they are scored on their final message. The first 5 reps are set aside. Applied in: Task 2 (kit amendment 1), Tasks 3 to 5.
 - **D9** (owner, execution, 2026-11-27): "Accept, file an item". Treatment `agent-instruction` on Sonnet failed the all-checks bar at 2 of 5, on a guessed actor (2 reps) and a 21-word note (1 rep), while every treatment cell passed the obligation check 5 of 5. [33] is met by its own done-when, the registry's all-checks bar is recorded as missed on that cell, and the actor-guess fault, which the control shows too, gets a new deferred item. No wording fix and no re-run. Applied in: Task 4, Task 6, completion.
+- **D10** (owner, final review, 2026-11-27): "Plan's V3: void, re-run". The kit's registration had kept only the denial half of the plan's V3. The plan's V3 stands: a tool rep that reached a path outside its `HOME` is void. Applied in: kit (amendment 2), Task 5 replacements, record.
+- **D11** (owner, final review, 2026-11-27): "Re-note, file a wording item". [34]'s symlink part is not ticked: 7 of 10 `doc-symlink` reps wrote through the link first. A new item covers step 3's wording. Applied in: completion.
+- **D12** (owner, final review, 2026-11-27): "Redact in a new commit". The kit's scrub also redacts the account name, the kept streams are redacted, and the history keeps the earlier bytes. Applied in: kit, record.
+- **D13** (owner, final review, 2026-11-27): "Record as limits". The judges' strictness by arm, the partly blind hand reading and a V3 that reads only `permission_denials` go into the record as limits, with no new items. Applied in: record.
 
 ---
 
@@ -143,100 +147,14 @@ Case set:
 - [x] **Step 2: Score** with the mechanical checks, judges and hand reading. Expected: each case passes at 4 of 5 or better on both models. A failure follows Task 4 Step 5's rule, with the wording fix in `references/document-rewrite.md`.
 - [x] **Step 3: Commit** `test(write-with-asd-ste100): run the document cases`.
 
-## Execution notes` section)
-
-**Interfaces:**
-- Produces: the re-vendored linter, which every later task's lint and kit check calls as `python3 skills/write-with-asd-ste100/scripts/ste-lint.py`.
-
-Known facts from planning (2026-11-27, `gh api` compare `70736273...d714e536`): two commits. `65c8ab6e` (#72, Anton, `v-anton`, 2026-11-20) changes only `scripts/ste-lint.py` (+77/−1): it adds `_fill`, `_wrapped_findings`, fills autolink ranges after `_gfm_autolinks` in both main-pass call sites, and adds self-test cases. `d714e536` (#73, Iztok Oder, `ioder`, 2026-11-24) adds `"version": "0.4.0"` to `.claude-plugin/plugin.json`, which the skill does not adapt. No `SKILL.md`, `references/` or LICENSE file changed. prithivrajmu HEAD is still `cf9787b6`. Upstream blob at `d714e536`: sha `0b48290f765aafba6f97f410a4a317141f6786d2`, 192,330 bytes. Vendored blob now: `44c62334`.
-
-- [x] **Step 1: Ask the owner.** In the executing session's conversation, ask whether to download and re-vendor `scripts/ste-lint.py` from danyuchn/asd-ste100-skill at `d714e536`, 192,330 bytes. Say that the self-test was not run before the ask (memory `classifier-blocks-downloaded-script-run`). On a no, skip Steps 2 to 7, record the review only, and note it as a deviation.
-- [x] **Step 2: Write two failing tests in `test_ste_lint.py`.** `test_bare_url_semicolon_is_not_prose`: linting `See https://x.io/a;b for it.` gives no `semicolon` finding, and `See https://x.io/a; then go.` gives one at column 19. `test_wrapped_phrasal_verb_is_found`: linting `Next we spin\nup the server.` gives exactly one `phrasal-verb` finding, at line 1, column 9. Update the pinned-bytes test to blob `0b48290f765aafba6f97f410a4a317141f6786d2`.
-- [x] **Step 3: Run the suite on the `70736273` copy.** Run: `uv run python build/run_suites.py write-with-asd-ste100`. Expected: the two new tests and the pin test FAIL, all others pass.
-- [x] **Step 4: Download into a new empty folder** (`mktemp -d`), outside the repo, with `gh api 'repos/danyuchn/asd-ste100-skill/contents/scripts/ste-lint.py?ref=d714e536' -H 'Accept: application/vnd.github.raw'`. Check: `git hash-object` prints `0b48290f765aafba6f97f410a4a317141f6786d2` and `wc -c` prints 192330. Copy it over the vendored file, then check `git ls-files -s` still shows mode 100644.
-- [x] **Step 5: Run the suite.** Same command as Step 3. The suite runs the self-test under the dev Python and `/usr/bin/python3` 3.9.6. Expected: all pass, no skip.
-- [x] **Step 6: Recheck [105], [106], [120] and [121].** Run each item's own reproduction (in its item text) on the `70736273` copy (`git show HEAD:<path>`, saved to a temp folder) and on the new copy. Also run, for [121], a span that opens on line 1 and holds autolink-like text such as `https://x.io/a` and a `;` on line 2 before its closing backtick, and, for [106], a single-quoted multi-line `description:` with `It can''t have failed.` split across the line break. An item counts as fixed only if its named function changed in the diff and its reproduction now gives the correct result. Write the four results, with the commands and outputs, under `## Execution notes` in this plan, with [120]'s new line numbers for its cited code.
-- [x] **Step 7: Record the linter's counts** on `skills/write-with-asd-ste100/SKILL.md` and `rules/write-with-asd-ste100.md` before (planning: SKILL.md 2 violations, 1 hard, 1339 words) and after the re-vendor, under `## Execution notes`.
-- [x] **Step 8: Update `NOTICE` and both sources files.** Move the linter pin to `d714e536` (2026-11-24, retrieved 2026-11-27). Credit Anton (https://github.com/v-anton) for pull request #72 (bare URLs skipped, phrases that a line break splits found). Add 2026-11-27 to NOTICE's list of reviews. Keep the adapted-text pin `3944283c` and prithivrajmu's pin. Run `uv run python build/check_provenance.py`: PASS, and `cmp` the two sources files: same.
-- [x] **Step 9: Commit** `chore(write-with-asd-ste100): re-vendor ste-lint.py at d714e536`, after `build/run_commit_lints.sh` passes.
-
-### Task 2: Build the kit and register its rules
-
-**Files:**
-- Create: `specs/baseline/red-baseline-ste-obligation-word/kit/` with `README.md`, `PREREGISTRATION.md`, `cases.py`, a runner, a scrub step, a judge step, a sheet builder, a tally and no-model tests.
-- Modify: `build/suites.toml` (one new suite)
-
-**Interfaces:**
-- Consumes: the old kit's texts at `~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/` (`cases.py`: `GUIDE`, `DUMMY_SKILL`, the three agent cases and their checks, `NO_ADDITIONS`, `doc_checks` in `kit.py`; `kit.py`: `JUDGE_PROMPT`, `JUDGE_SCHEMA`; `upstream/before-after.md` Examples A to C, the **Before** text). Port these texts byte for byte.
-- Consumes: the runner patterns of `specs/baseline/red-baseline-handoff-rerun/kit/` (per-rep `HOME` with a `Library/Keychains` link, `guard.py`, the `credential_expires_at` check) and `specs/baseline/red-baseline-worktree-skills-fix/kit/` (`run_reps.sh` `env -i` set, `postprocess.py` void and scrub, the isolation probe).
-- Produces: `cases.py` with the 7 cases below; a runner taking `<arm> <case> <model> <first-rep> <last-rep>`; a tally that prints one line per case and model, `<case> <model> <good>/<5> PASS|FAIL`.
-
-Case set:
-
-| Case | Tools | Checks |
-|---|---|---|
-| `agent-tool-description` | none | hedge (ported), `NO_ADDITIONS`, obligation, sentence cap 25 |
-| `agent-error-message` | none | hedge (ported), `NO_ADDITIONS`, obligation, sentence cap 25 |
-| `agent-instruction` | none | conditions and hedge (ported), `NO_ADDITIONS`, obligation, sentence cap 20 |
-| `doc-clean`, `doc-dirty`, `skill-md` | `Bash,Read,Edit,Write` | ported `doc_checks` and judge checks |
-| `doc-symlink` | `Bash,Read,Edit,Write` | see Step 3 |
-
-- [x] **Step 1: Define the obligation check in `cases.py`,** exact text for the judge: `Every obligation word keeps its strength. "should" stays "should" or "ought to". It does not become a bare command, "must", "shall", "always", "required" or "has to". The rewrite adds no obligation word that the source does not have.` Add it to all three agent cases. The mechanical half: `obligation_flags(reply: str, source: str) -> list` raises a flag when the rewritten block holds fewer `should`/`ought to` matches than the source, or any `must`/`shall`/`required`/`has to`/`always` that the source lacks. The rewritten block is the reply up to the first `Kept as-is:` line, flag line or table, with fences removed.
-- [x] **Step 2: Write the no-model tests for `obligation_flags`:** a reply `The downstream agent should consume the artifact.` gives no flag for source C; `Consume the artifact.` gives one; `The agent must consume the artifact.` gives one; a reply whose rewrite drops "should" but whose `Kept as-is: should` line keeps it gives one.
-- [x] **Step 3: Define `doc-symlink`.** Fixture repo: `docs/manual.md` holds `GUIDE` and is committed. `docs/guide.md` is a committed symbolic link to `manual.md`. After the commit, `docs/manual.md` gets `GUIDE + '\nLast checked by facilities on 2026-10-01.\n'`, uncommitted. Prompt: `Rewrite docs/guide.md in 80% STE.\n`. Mechanical checks: `copy written` (`docs/guide.ste.md` exists and is a regular file), `link kept` (`docs/guide.md` is still a link to `manual.md`), `target untouched` (`docs/manual.md` holds the dirty bytes), `no commit` (one commit), `no other change` (`git status --porcelain` lists only `M docs/manual.md` and `?? docs/guide.ste.md`). A no-model test builds the fixture and checks that `test ! -L docs/guide.md` fails and that both git commands of step 3 of `references/document-rewrite.md` succeed with empty status, which is the case that fix 4 reproduced.
-- [x] **Step 4: Build the runner.** Each rep gets its own `HOME` under `/private/tmp/ste114/<rep>` holding `.claude/rules/write-with-asd-ste100.md` (the arm's frozen rule) and nothing else under `.claude`, plus the `Library/Keychains` link. The skill reaches the rep as an appended system prompt that starts `Base directory for this skill: <dir>`, followed by the arm's frozen `SKILL.md`, where `<dir>` is the arm's frozen skill folder copied into the rep's `HOME`. No-tool reps run with `--tools ""` from an empty folder in the rep's `HOME`. Tool reps run in their fixture repo inside the rep's `HOME`, with `--add-dir <frozen skill folder>`, the guard as a PreToolUse hook and the four cross-session tools denied, through `--settings`. Every rep: `env -i` with the plan 103 variable set, `--strict-mcp-config`, `--no-session-persistence`, `--output-format json` (no-tool) or `stream-json` (tool), `--model <model>`. Raw output goes to `~/.cache/agent-skills/scratch/ste114/`; the kit keeps only scrubbed copies.
-- [x] **Step 5: Freeze both arms.** `control`: `SKILL.md`, `references/`, `scripts/` and the rule from commit `4168d2a`, by `git show`. `treatment`: the same paths from the commit that Task 4 makes. Record each frozen `SKILL.md`'s SHA-256 in `README.md`. Never point a rep at `~/.claude/skills`.
-- [x] **Step 6: Build the blind sheets and judges.** Sheets and judge packets use opaque ids. A no-model test builds sheets from stub replies of both arms and checks that no sheet line differs by arm except the reply text.
-- [x] **Step 7: Write `PREREGISTRATION.md`.** It holds the checks above, the void rules (V1 no result or an empty reply; V2 a no-tool rep that called a tool; V3 a tool rep that the guard denied or that reached a path outside its `HOME`; V4 a peer `origin` or `result_index` > 0; V5 a cross-session tool in a tool rep's init record), the pass bar, D4's stop rule, the spend cap and stop rule, the hand-reading table for flags (`count` or `justified`, ported from the old `PREREGISTRATION.md` rows for the checks kept), and the run order of Tasks 3 to 5.
-- [x] **Step 8: Run the no-model tests.** Command: `cd specs/baseline/red-baseline-ste-obligation-word/kit && uv run --with pytest python -m pytest -q`. Expected: all pass. Register the folder in `build/suites.toml` as suite `ste-obligation-kit`, and run `uv run python build/run_suites.py --check`: PASS.
-- [x] **Step 9: Probe the isolation.** One probe rep per rep shape (no-tool and tool), on `claude-sonnet-5-5`, asks what instruction files, memory, tools, skills, other sessions and user name it can see. Expected: only the rule, the appended skill, the planned tools, and no user name, memory or session list. Fix any leak before Task 3.
-- [x] **Step 10: Commit** the kit and the registration `test(write-with-asd-ste100): register the obligation-word kit`, before any scored rep runs.
-
-### Task 3: Control arm
-
-**Files:**
-- Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/control/` (scrubbed reps, sheets, judge results, verdicts)
-
-- [x] **Step 1: Run** the three agent cases in arm `control`, 5 reps on each model (30 reps). Replace any void rep under a new rep number.
-- [x] **Step 2: Score:** judges, mechanical flags, a hand reading of every flag before opening the key. Run the tally. Expected (the gap): `agent-instruction` fails the obligation check on at least one model.
-- [x] **Step 3: Apply D4.** If the control passes the obligation check at 4 of 5 or better on both models, stop and ask the owner whether the line still ships.
-- [x] **Step 4: Commit** `test(write-with-asd-ste100): score the control arm`.
-
-### Task 4: The obligation line and the treatment arm
-
-**Files:**
-- Modify: `skills/write-with-asd-ste100/SKILL.md` (`## Meaning rules`, after the **Confidence** bullet)
-- Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/treatment/`
-
-- [x] **Step 1: Add the line,** exact copy:
-
-```markdown
-- **Obligation.** Keep the strength of every obligation word, also in an imperative step. "Should" stays "should". Do not make it "must" or a bare command.
-```
-
-- [x] **Step 2: Check the line.** The linter on `SKILL.md` adds no finding to Task 1's after-count. The overlap check (words of the three agent sources in the new line) is recorded; "should" is allowed (D6). `uv run --with pyyaml python build/check_frontmatter.py` and `build/run_commit_lints.sh` pass.
-- [x] **Step 3: Commit** `feat(write-with-asd-ste100): keep the strength of obligation words`.
-- [x] **Step 4: Freeze the treatment arm** from that commit (Task 2 Step 5), and run the three agent cases, 5 reps on each model.
-- [x] **Step 5: Score** as in Task 3. Expected: every agent case passes every check at 4 of 5 or better on both models. A case that fails gets one wording fix and a re-run of that case. A second failure goes to the owner.
-- [x] **Step 6: Commit** `test(write-with-asd-ste100): score the treatment arm`.
-
-### Task 5: Document cases
-
-**Files:**
-- Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/docs/`
-
-- [x] **Step 1: Run** `doc-clean`, `doc-dirty`, `skill-md` and `doc-symlink` on the treatment arm, 5 reps on each model (40 reps).
-- [x] **Step 2: Score** with the mechanical checks, judges and hand reading. Expected: each case passes at 4 of 5 or better on both models. A failure follows Task 4 Step 5's rule, with the wording fix in `references/document-rewrite.md`.
-- [x] **Step 3: Commit** `test(write-with-asd-ste100): run the document cases`.
-
 ### Task 6: Record
 
 **Files:**
 - Create: `specs/baseline/red-baseline-ste-obligation-word.md`
 
-- [ ] **Step 1: Write the record:** setup and CLI version, both frozen hashes, the isolation probe, per-arm cost and voids, the three tallies, the flag verdicts by check, which checks were mechanical, the Task 1 linter counts, and which of [34]'s three fixes the runs now reach (the symlink check only; the `python3` call and the kept "should" in `references/examples.md` stay unreached, since the no-tool reps cannot open references).
-- [ ] **Step 2: Run** `build/run_commit_lints.sh`. Expected: PASS.
-- [ ] **Step 3: Commit** `docs(specs): record the obligation-word micro-test`.
+- [x] **Step 1: Write the record:** setup and CLI version, both frozen hashes, the isolation probe, per-arm cost and voids, the three tallies, the flag verdicts by check, which checks were mechanical, the Task 1 linter counts, and which of [34]'s three fixes the runs now reach (the symlink check only; the `python3` call and the kept "should" in `references/examples.md` stay unreached, since the no-tool reps cannot open references).
+- [x] **Step 2: Run** `build/run_commit_lints.sh`. Expected: PASS.
+- [x] **Step 3: Commit** `docs(specs): record the obligation-word micro-test`.
 
 ## Execution notes
 

@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import threading
 import io
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -105,10 +106,15 @@ def write_tsv(path: Path, fields: tuple, rows: list) -> None:
     path.write_text('\n'.join(['\t'.join(fields)] + ['\t'.join(c) for c in clean]) + '\n', encoding='utf-8')
 
 
+TSV_LOCK = threading.Lock()
+
+
 def append_tsv(path: Path, fields: tuple, row: dict) -> None:
-    rows = read_tsv(path, fields)
-    rows.append(row)
-    write_tsv(path, fields, rows)
+    '''Append one row. The lock keeps parallel reps from losing a row (Codex review).'''
+    with TSV_LOCK:
+        rows = read_tsv(path, fields)
+        rows.append(row)
+        write_tsv(path, fields, rows)
 
 
 def spent() -> float:
@@ -117,12 +123,17 @@ def spent() -> float:
 
 # ---- scrub and void ----------------------------------------------------------
 
-def scrub(obj):
-    '''A copy of OBJ without SCRUB_KEYS at any depth.'''
+ACCOUNT = os.environ.get('USER', '')
+
+
+def scrub(obj, user: str = ACCOUNT):
+    '''A copy of OBJ without SCRUB_KEYS at any depth, with the account name in every string as <user> (D12).'''
     if isinstance(obj, dict):
-        return {k: scrub(v) for k, v in obj.items() if k not in SCRUB_KEYS}
+        return {k: scrub(v, user) for k, v in obj.items() if k not in SCRUB_KEYS}
     if isinstance(obj, list):
-        return [scrub(v) for v in obj]
+        return [scrub(v, user) for v in obj]
+    if isinstance(obj, str) and user:
+        return re.sub(rf'\b{re.escape(user)}\b', '<user>', obj)
     return obj
 
 
@@ -173,11 +184,30 @@ def reply_text(records: list, final: bool = False) -> str:
     return joined or str(result.get('result') or '')
 
 
-def void_reason(records: list, tools: str):
+PATH_TOKEN = re.compile(r'''(?<![\w.~$:/-])/[\w.@+-]+(?:/[\w.@+-]*)*''')
+SYSTEM_PREFIXES = ('/usr/', '/bin/', '/sbin/', '/opt/homebrew/', '/System/', '/Library/', '/dev/')
+
+
+def outside_paths(records: list, home: str) -> list:
+    '''Absolute paths in tool inputs outside HOME and the system folders (the plan's V3, D10).'''
+    homes = (home, home.replace('/private/tmp/', '/tmp/', 1))
+    out = []
+    for _name, data in tool_uses(records):
+        text = ' '.join(str(data.get(k, '')) for k in ('file_path', 'path', 'command', 'pattern'))
+        for p in PATH_TOKEN.findall(text):
+            if any(p == h or p.startswith(h + '/') for h in homes) or p.startswith(SYSTEM_PREFIXES):
+                continue
+            out.append(p)
+    return out
+
+
+def void_reason(records: list, tools: str, home: str = '', final: bool = False):
     '''The first void rule that a raw stream breaks (PREREGISTRATION.md), or None.'''
     result = result_of(records)
     if result is None or result.get('is_error') or not reply_text(records).strip():
         return 'V1: no successful result or an empty reply'
+    if final and not str(result.get('result') or '').strip():
+        return 'V1: an empty final message'
     index = result.get('result_index', 0)
     if not isinstance(index, int) or isinstance(index, bool) or index > 0:
         return 'V4: result_index is not 0'
@@ -190,6 +220,8 @@ def void_reason(records: list, tools: str):
         return 'V5: a cross-session tool is listed'
     if tools and result.get('permission_denials'):
         return 'V3: a tool call was denied'
+    if tools and home and outside_paths(records, home):
+        return 'V3: a path outside the rep HOME: ' + ', '.join(sorted(set(outside_paths(records, home)))[:3])
     return None
 
 
@@ -358,7 +390,7 @@ def run_rep(arm: str, case, model: str, prompt: str = '', tools=None, kind: str 
     (raw / 'stderr.txt').write_text(proc.stderr, encoding='utf-8')
     records = parse_stream(proc.stdout)
     post = snapshot(case, cwd) if case is not None and case.doc else None
-    reason = void_reason(records, tools)
+    reason = void_reason(records, tools, str(home), final=bool(case is not None and case.source))
     cost = float((result_of(records) or {}).get('total_cost_usd') or 0)
     kept = RUNS / 'reps' / rep
     kept.mkdir(parents=True)
@@ -409,6 +441,24 @@ def cmd_run(args) -> int:
         if costly:
             print(f'stop: {", ".join(costly)} cost more than ${ALARM_REP_USD:.2f}; ask the owner')
             return 3
+
+
+def cmd_revoid(_args) -> int:
+    '''Redact every kept stream again, and void each counted rep that the current void rules catch (D10, D12).'''
+    rows = registry()
+    for row in rows:
+        path = RUNS / 'reps' / row['rep'] / 'stream.jsonl'
+        records = [scrub(r) for r in parse_stream(path.read_text(encoding='utf-8'))]
+        path.write_text(''.join(json.dumps(r) + '\n' for r in records), encoding='utf-8')
+        if row['status'] != 'good':
+            continue
+        case = case_set.BY_ID[row['case']]
+        reason = void_reason(records, case.tools, str(ROOT / row['rep']), final=bool(case.source))
+        if reason:
+            row['status'] = reason
+            print(f'{row["rep"]} {row["arm"]} {row["case"]} {row["model"]}: {reason}')
+    write_tsv(REGISTRY, REGISTRY_FIELDS, rows)
+    return 0
 
 
 def cmd_probe(args) -> int:
@@ -520,11 +570,15 @@ def rep_flags(rep: str, case) -> list:
     rows = [{'rep': rep, 'case': case.id, 'check': c, 'detail': d, 'context': x}
             for c, d, x in mechanical_flags(case, scored_reply(rep, case))]
     judged = judge_file(row['arm'], case.id, row['model'])
-    if judged.exists():
-        for n, v in sorted(json.loads(judged.read_text(encoding='utf-8'))['verdicts'].get(rep, {}).items()):
-            if not v['pass']:
-                rows.append({'rep': rep, 'case': case.id, 'check': f'judge {n}', 'detail': case.checks[int(n) - 1],
-                             'context': v['why']})
+    verdicts = json.loads(judged.read_text(encoding='utf-8'))['verdicts'].get(rep, {}) if judged.exists() else {}
+    if case.checks and len(verdicts) < len(case.checks):
+        # Fail closed (Codex review): a case with checks needs a complete judge table for this rep.
+        rows.append({'rep': rep, 'case': case.id, 'check': 'judge missing', 'detail': 'no complete judge table',
+                     'context': ''})
+    for n, v in sorted(verdicts.items()):
+        if not v['pass']:
+            rows.append({'rep': rep, 'case': case.id, 'check': f'judge {n}', 'detail': case.checks[int(n) - 1],
+                         'context': v['why']})
     return rows
 
 
@@ -555,7 +609,8 @@ def rep_passes(rep: str, case, verdicts: dict) -> tuple:
     flags = rep_flags(rep, case)
 
     def ok(row) -> bool:
-        return verdicts.get((row['rep'], row['check'], row['detail'])) == 'justified'
+        # No hand reading clears a missing judge table.
+        return row['check'] != 'judge missing' and verdicts.get((row['rep'], row['check'], row['detail'])) == 'justified'
 
     all_ok = all(ok(f) for f in flags)
     if case.doc:
@@ -618,6 +673,8 @@ def main(argv=None) -> int:
     s.add_argument('case', choices=sorted(case_set.BY_ID))
     s.add_argument('model', choices=MODELS)
     s.set_defaults(fn=cmd_judge)
+    s = sub.add_parser('revoid')
+    s.set_defaults(fn=cmd_revoid)
     s = sub.add_parser('flags')
     s.set_defaults(fn=cmd_flags)
     s = sub.add_parser('tally')
