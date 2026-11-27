@@ -70,6 +70,12 @@ def test_an_error_subtype_result_is_broken():
     assert pc.broken([init(), result(), init(), limit]) == 'a result event is an error (error_max_turns)'
 
 
+@pytest.mark.parametrize('subtype', ['success', 'error_during_execution'])
+def test_a_result_flagged_is_error_is_broken_whatever_its_subtype(subtype):
+    flagged = {'type': 'result', 'subtype': subtype, 'is_error': True}
+    assert pc.broken([init(), flagged]) == f'a result event is an error ({subtype})'
+
+
 def tools_run(*tools):
     return [init(tools), assistant({'type': 'text', 'text': 'OK'}), result()]
 
@@ -796,6 +802,22 @@ def test_a_hand_back_is_not_a_read_and_its_message_is_the_answer():
     assert pc.explore_void(rep) is None
 
 
+def test_each_hand_back_adds_its_message_to_what_the_agent_said():
+    first = tool_use('toolu_h1', 'SubagentHandback', message=MARKS[EXPLORE])
+    second = tool_use('toolu_h2', 'SubagentHandback', message=CANARIES['claude_md'])
+    rep = pc.explore_sightings(explore_run(explore=[first, second]), CANARIES)
+    assert rep['tool_calls'] == {EXPLORE: 0, CONTROL: 0}
+    assert rep['seen'][EXPLORE] == {'mark': True, 'claude_md': True, 'git_status': False}
+
+
+def test_the_control_may_hand_its_answer_back_too():
+    handback = tool_use('toolu_h', 'SubagentHandback', message=answer(CONTROL))
+    rep = pc.explore_sightings(explore_run(control=[handback]), CANARIES)
+    assert rep['tool_calls'] == {EXPLORE: 0, CONTROL: 0}
+    assert rep['seen'][CONTROL] == {'mark': True, 'claude_md': True, 'git_status': True}
+    assert pc.explore_void(rep) is None
+
+
 def test_a_hand_back_beside_a_read_still_counts_the_read():
     read = tool_use('toolu_r', 'Read', file_path='CLAUDE.md')
     handback = tool_use('toolu_h', 'SubagentHandback', message=answer(EXPLORE, git_status=False))
@@ -943,6 +965,12 @@ def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
 
 def test_the_mcp_token_stops_before_trailing_punctuation():
     assert pc.MCP_TOKEN_RE.sub(pc.MCP_MARK, 'mcp__s__t, mcp__u__v; mcp__w__x:') == '<mcp-tool>, <mcp-tool>; <mcp-tool>:'
+
+
+def test_the_mcp_token_keeps_the_hyphens_digits_and_dots_of_a_tool_name():
+    '''A real tool name, such as one from the Chrome server, has hyphens in its server part.'''
+    name = 'mcp__claude-in-chrome__tabs_context_mcp2.v1'
+    assert pc.MCP_TOKEN_RE.sub(pc.MCP_MARK, f'PreToolUse:{name}') == f'PreToolUse:{pc.MCP_MARK}'
 
 
 def test_scrub_events_redacts_a_private_value_with_a_quote_or_backslash():

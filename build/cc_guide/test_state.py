@@ -262,6 +262,15 @@ def test_probe_rows_skip_a_legend_table_and_reject_an_unknown_outcome():
         assert str(err.value) == f'{state.PROBES}: unreadable row {bad!r}'
 
 
+def test_probe_rows_are_read_from_a_log_table_that_follows_a_legend_table():
+    '''Each table opens on its own header: a legend above the log table does not decide how the log is read.'''
+    legend = ['| Outcome | Meaning |', '|---|---|', '| ERROR | the mechanism never fired |']
+    log = ['| Date | Version | Binary | Probe | Outcome | Finding | Flags |', '|---|---|---|---|---|---|---|',
+           '| 2026-10-10 | 2.1.290 | ~/bin/claude | agent-tools | DIVERGES | no Grep | |']
+    text = '\n'.join(['# Probe log', '', *legend, '', *log, ''])
+    assert state.parse_probes(text) == [state.ProbeRow(date(2026, 10, 10), '2.1.290', 'agent-tools', 'DIVERGES')]
+
+
 @pytest.mark.parametrize('split', ['', 'A note from a hand edit.', '<<<<<<< HEAD'])
 def test_a_log_row_cut_off_from_its_table_is_a_setup_error(split):
     '''A blank line, prose or a merge marker inside the log table ends the
