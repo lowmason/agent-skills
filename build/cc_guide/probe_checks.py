@@ -835,6 +835,13 @@ def other_exit(events: list[dict]) -> str | None:
     return str(ran[0].get('action')) if ran else None
 
 
+def entered_by_model(events: list[dict]) -> bool:
+    '''Whether an EnterWorktree call succeeded, in a run whose prompt asks for none: its worktree, not the one the
+    run reads, could decide what ExitWorktree did.'''
+    return any(call_failed(events, (tid, tool_result_text(events, tid))) is False
+               for _, tid, _ in positioned_calls(events, ENTER_TOOL))
+
+
 def split_around(events: list[dict], marks: list) -> tuple[tuple[str, str] | None, list, list]:
     '''The first of `marks` (positioned_calls) as (id, result text or None), or None, and the Bash calls before
     and after it.'''
@@ -896,14 +903,15 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
             'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
             'pwd_after': pwd_after(events, after, places),
             'locked_before': locked_before, 'kept_before': kept_before, 'kept_after': kept_after,
-            'locked_after': locked_after, 'other_exit': other_exit(events), 'steps': steps}
+            'locked_after': locked_after, 'other_exit': other_exit(events),
+            'entered_by_model': entered_by_model(events), 'steps': steps}
 
 
 def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
     exit_call, _, after = split_at_keep(events)
     refused = call_failed(events, exit_call)
     return {'exit_refused': refused, 'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
-            'other_exit': other_exit(events),
+            'other_exit': other_exit(events), 'entered_by_model': entered_by_model(events),
             'pwd_after': pwd_after(events, after, places)}
 
 
@@ -922,7 +930,8 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
     Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result: whether it ran, its
     result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both ExitWorktree runs,
     ExitWorktree is split_at_keep's call: the first keep call that succeeded or was refused with WT_NOOP_MARK, else the
-    first keep call, and other_exit is the action of the first ExitWorktree call with another action that succeeded.
+    first keep call, and other_exit is the action of the first ExitWorktree call with another action that succeeded;
+    entered_by_model, whether an EnterWorktree call there succeeded.
     exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK; kept_before and
     kept_after, whether the first WT_LIST result before or after ExitWorktree has the worktree's own block, None when
     that list never ran or its result is an error; locked_before and locked_after, whether that block has a WT_LOCKED
@@ -943,9 +952,8 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
 def worktree_errors(sightings: dict) -> list[str]:
     '''Why the runs prove nothing: a run broke, a step never ran, a step was refused without the isolation
     mark or an ExitWorktree without WT_NOOP_MARK (refused for another reason), an ExitWorktree with another
-    action than keep succeeded, the list before ExitWorktree did
-    not show the worktree, or a base run never
-    entered a worktree or logged no WT_PUSHED.'''
+    action than keep succeeded, the model entered a worktree in a run that asks for none, the list before
+    ExitWorktree did not show the worktree, or a base run never entered a worktree or logged no WT_PUSHED.'''
     errors = [f"{part}: the run broke: {sightings[part]['broken']}" for part in WT_PARTS if sightings[part]['broken']]
     if errors:
         return errors
@@ -964,6 +972,8 @@ def worktree_errors(sightings: dict) -> list[str]:
         ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
     errors += [f'{part}: {EXIT_TOOL} ran with action {sightings[part]["other_exit"]}, not {WT_KEEP}'
                for part in ('isolation', 'noop') if sightings[part]['other_exit'] is not None]
+    errors += [f'{part}: the model called {ENTER_TOOL}, which the prompt does not ask for'
+               for part in ('isolation', 'noop') if sightings[part]['entered_by_model']]
     if isolation['kept_before'] is False:
         errors.append(f'isolation: {WT_LIST} before {EXIT_TOOL} did not list the worktree, so its lock reading proves '
                       'nothing')

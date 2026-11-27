@@ -9,6 +9,7 @@
   "kept_after": true,
   "locked_after": false,
   "other_exit": null,
+  "entered_by_model": false,
   "steps": {
    "control": {
     "ran": true,
@@ -42,6 +43,7 @@
   "exit_refused": true,
   "exit_marked": true,
   "other_exit": null,
+  "entered_by_model": false,
   "pwd_after": "plain-worktree"
  },
  "base-no-remote": {

@@ -32,8 +32,8 @@ import probe_worktrees
 from check import due_probes
 from docs import version_key
 from probe_checks import Verdict
-from probe_process import (GIT_ROUTING, PROBE_TIMEOUT, Execute, Invocation, Probe, Read, claude_args, execute,
-                           inherited_env, inherited_remaps, term_as_exit)
+from probe_process import (GIT_ROUTING, PROBE_TIMEOUT, Execute, Invocation, Probe, Read, claude_args,
+                           environ_without, execute, inherited_env, inherited_remaps, term_as_exit)
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
@@ -802,7 +802,7 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
         return 0, ['probes: none due']
     lines, outcomes = [f'probes: {version} at {shown_path(claude)}'], []
     remaps = inherited_remaps()
-    with term_as_exit():
+    with term_as_exit(), environ_without(GIT_ROUTING):
         for pid in dict.fromkeys(chosen):
             run_dir = new_run_dir(cache / 'probes', f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}")
             verdict = run_probe(pid, str(claude), repo, run_dir, execute)

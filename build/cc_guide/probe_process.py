@@ -155,6 +155,22 @@ def held_signals():
 
 
 @contextlib.contextmanager
+def environ_without(prefixes: tuple[str, ...]):
+    '''Remove every os.environ name starting with one of `prefixes` for the block, then put back exactly the ones
+    that were there, removing any the block added, even on an exception or a stop. probes.run wraps every probe in
+    it with GIT_ROUTING, so no setup git and no child run reads a caller's GIT_DIR.'''
+    saved = {name: value for name, value in os.environ.items() if name.startswith(prefixes)}
+    for name in saved:
+        del os.environ[name]
+    try:
+        yield
+    finally:
+        for name in [name for name in os.environ if name.startswith(prefixes)]:
+            del os.environ[name]
+        os.environ.update(saved)
+
+
+@contextlib.contextmanager
 def term_as_exit():
     '''While probes run, SIGTERM (a stopped tool), SIGHUP (a closed
     terminal) and SIGQUIT raise SystemExit, so a stopped run still ends its

@@ -1276,6 +1276,59 @@ def test_an_inherited_git_dir_does_not_make_a_scratch_folder_read_as_inside_a_re
     assert not probes.inside_a_repo(tmp_path / 'scratch')
 
 
+GUARD_REGISTRY = '\n'.join(['[[probe]]', "id = 'guard-liveness'", "sections = ['beta.reference']", ''])
+
+
+def with_the_guard_probe(repo):
+    '''The test manifest with guard-liveness registered too, whose prepare runs git init in the scratch folder.'''
+    write_tree(repo, {state.MANIFEST: MANIFEST_TOML + REGISTRY + GUARD_REGISTRY})
+
+
+def a_repo_elsewhere(tmp_path):
+    other = tmp_path / 'other'
+    other.mkdir()
+    subprocess.run(['git', 'init', '-q'], cwd=other, check=True, capture_output=True)
+    return other, {p: p.read_bytes() for p in sorted((other / '.git').rglob('*')) if p.is_file()}
+
+
+def test_a_run_drops_inherited_git_names_for_prepare_and_execute_and_restores_them(repo, tmp_path, claude,
+                                                                                   monkeypatch):
+    '''F10: a git hook exports GIT_DIR and GIT_WORK_TREE for its own repository. While probes run, no GIT_ name is
+    in os.environ, so a probe's setup git (guard-liveness runs git init) and every child run use the scratch
+    repo; the prior environment comes back afterwards, less any GIT_ name the run added.'''
+    other, before = a_repo_elsewhere(tmp_path)
+    monkeypatch.setenv('GIT_DIR', str(other / '.git'))
+    monkeypatch.setenv('GIT_WORK_TREE', str(other))
+    seen = []
+
+    def fake(inv, cwd, out, err):
+        seen.append((sorted(n for n in os.environ if n.startswith('GIT_')),
+                     (cwd / '.git' / 'HEAD').is_file()))
+        os.environ['GIT_ADDED_BY_RUN'] = 'x'
+        out.write_text('', encoding='utf-8')
+        err.write_text('', encoding='utf-8')
+        return 0
+
+    with_the_guard_probe(repo)
+    run(repo, tmp_path, claude, fake, only=['guard-liveness'])
+    assert seen == [([], True)]
+    assert {p: p.read_bytes() for p in sorted((other / '.git').rglob('*')) if p.is_file()} == before
+    assert (os.environ['GIT_DIR'], os.environ['GIT_WORK_TREE']) == (str(other / '.git'), str(other))
+    assert 'GIT_ADDED_BY_RUN' not in os.environ
+
+
+def test_a_stopped_run_still_restores_the_inherited_git_names(repo, tmp_path, claude, monkeypatch):
+    monkeypatch.setenv('GIT_DIR', str(tmp_path / 'elsewhere.git'))
+
+    def stopped(inv, cwd, out, err):
+        raise KeyboardInterrupt
+
+    with_the_guard_probe(repo)
+    with pytest.raises(KeyboardInterrupt):
+        run(repo, tmp_path, claude, stopped, only=['guard-liveness'])
+    assert os.environ['GIT_DIR'] == str(tmp_path / 'elsewhere.git')
+
+
 def test_scratch_is_removed_after_an_error_and_after_a_timeout(tmp_path, monkeypatch):
     tmp = tmp_path / 'tmp'
     tmp.mkdir()

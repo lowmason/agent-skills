@@ -1298,11 +1298,12 @@ def test_the_recorded_shape_gives_these_sightings(tmp_path):
     base = {'broken': None, 'entered': True, 'has_pushed': True}
     assert pc.worktree_sightings(wt_streams(places), places) == {
         'isolation': {'broken': None, 'exited': True, 'exit_marked': False, 'pwd_after': 'main', 'locked_before': True,
-                      'kept_before': True, 'kept_after': True, 'other_exit': None, 'locked_after': False,
+                      'kept_before': True, 'kept_after': True, 'other_exit': None,
+                      'entered_by_model': False, 'locked_after': False,
                       'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
                                 'plain_subshell': ran, 'main_git_after': ran}},
         'noop': {'broken': None, 'exit_refused': True, 'exit_marked': True, 'other_exit': None,
-                 'pwd_after': 'plain-worktree'},
+                 'entered_by_model': False, 'pwd_after': 'plain-worktree'},
         'base-no-remote': {**base, 'has_unpushed': True}, 'base-failed-fetch': {**base, 'has_unpushed': False}}
 
 
@@ -1603,14 +1604,16 @@ def test_a_list_before_exit_worktree_without_the_worktree_is_an_error(tmp_path):
 
 def test_a_noop_no_op_keep_then_a_successful_keep_reads_the_no_op(tmp_path):
     '''Codex P2, round 2: the first keep call that succeeded or carries the No-op mark is the step, so a later
-    successful keep, after the model entered a worktree of its own, does not hide the No-op.'''
+    successful keep does not hide the No-op. Round 3 (F9, controller's ruling): the EnterWorktree the model made
+    in between makes the run ERROR, since the prompt does not ask for one.'''
     places = wt_places(tmp_path)
     events = wt_stream(WT_LOAD_EXIT, wt_exit(WT_NO_OP, True), wt_bash('pwd', places['plain-worktree']),
                        ('EnterWorktree', {'name': 'probe'}, 'Created worktree', None),
                        wt_exit(WT_EXITED.format(where=places['worktree'], main=places['plain-worktree']), None))
     sightings = pc.worktree_sightings(wt_streams(places, noop=events), places)
     assert (sightings['noop']['exit_refused'], sightings['noop']['exit_marked']) == (True, True)
-    assert pc.assess_worktree_isolation(sightings) == (PASS, WT_PASS)
+    assert pc.assess_worktree_isolation(sightings) == (
+        ERROR, 'noop: the model called EnterWorktree, which the prompt does not ask for')
 
 
 def test_an_unmarked_stray_keep_then_a_no_op_keep_reads_the_no_op(tmp_path):
@@ -1662,3 +1665,45 @@ def test_with_only_unmarked_refused_keep_calls_the_first_is_the_split(tmp_path):
     assert outcome == ERROR
     assert {'isolation: control never ran', 'isolation: ExitWorktree was refused without the No-op mark'} <= set(
         said.split('; '))
+
+
+WT_MODEL_ENTER = ('EnterWorktree', {'name': 'probe'}, 'Created worktree', None)
+
+
+@pytest.mark.parametrize('calls', [
+    # U,E,K,pwd: an unmarked refused keep, the model's EnterWorktree, a successful keep
+    lambda p: [WT_LOAD_EXIT, wt_exit(WT_NOT_LOADED, True), WT_MODEL_ENTER,
+               wt_exit(WT_EXITED.format(where=p['worktree'], main=p['plain-worktree'])),
+               wt_bash('pwd', p['plain-worktree'])],
+    # S,E,K,pwd: a successful keep first
+    lambda p: [WT_LOAD_EXIT, wt_exit(WT_EXITED.format(where=p['plain-worktree'], main=p['main'])), WT_MODEL_ENTER,
+               wt_exit(WT_EXITED.format(where=p['worktree'], main=p['plain-worktree'])),
+               wt_bash('pwd', p['plain-worktree'])],
+    # E,K,pwd
+    lambda p: [WT_MODEL_ENTER, WT_LOAD_EXIT, wt_exit(WT_EXITED.format(where=p['worktree'], main=p['plain-worktree'])),
+               wt_bash('pwd', p['plain-worktree'])],
+    # No-op, E, pwd, with no second keep
+    lambda p: [WT_LOAD_EXIT, wt_exit(WT_NO_OP, True), WT_MODEL_ENTER, wt_bash('pwd', p['plain-worktree'])],
+])
+def test_a_noop_run_where_the_model_entered_a_worktree_is_an_error(tmp_path, calls):
+    places = wt_places(tmp_path)
+    sightings = pc.worktree_sightings(wt_streams(places, noop=wt_stream(*calls(places))), places)
+    assert sightings['noop']['entered_by_model'] is True
+    outcome, said = pc.assess_worktree_isolation(sightings)
+    assert outcome == ERROR
+    assert 'noop: the model called EnterWorktree, which the prompt does not ask for' in said.split('; ')
+
+
+def test_an_isolation_run_where_the_model_entered_a_worktree_is_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(WT_MODEL_ENTER, *wt_isolation_calls(places))
+    outcome, said = wt_verdict(places, isolation=events)
+    assert outcome == ERROR
+    assert 'isolation: the model called EnterWorktree, which the prompt does not ask for' in said.split('; ')
+
+
+def test_a_refused_enter_worktree_in_a_noop_run_is_not_that_error(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(('EnterWorktree', {'name': 'probe'}, 'failed', True), WT_LOAD_EXIT, wt_exit(WT_NO_OP, True),
+                       wt_bash('pwd', places['plain-worktree']))
+    assert wt_verdict(places, noop=events) == (PASS, WT_PASS)
