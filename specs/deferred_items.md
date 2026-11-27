@@ -6547,12 +6547,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       sit under a folder it skips, or a `--all` run reports pytest exit 5 for a registered suite.
 
 ## 111-codes-and-bls-reference-skills — 2026-11-26
-- [ ] Put the Census industry (IND) counts in `skills/classification-codes/SKILL.md` prose under the count test
+- [x] Put the Census industry (IND) counts in `skills/classification-codes/SKILL.md` prose under the count test
       (final review of plan 111, owner ruled defer). The NAICS-semantics prose (`SKILL.md`, lines near 170-172)
       states 271 and 266 codes and 1,057 and 1,012 six-digit codes. Task 1's `test_skill_table_counts_match_data`
       covers the `## Files` table and the listed parenthetical counts only, so these numbers can drift after a
       rebuild with no test failing. They are correct today. Size: quick-fix. Done when: a count test in
       `skills/classification-codes/scripts/test_build.py` fails when one of these four numbers drifts.
+      → done 2026-11-27 (/deferred quick fix): `test_skill_census_ind_prose_counts_match_data` reads the four numbers from the prose and checks them against the IND list heights, the six-digit codes each expansion claims and the NAICS level-6 counts; it failed when 266 or 1,012 was changed by one.
 - [ ] Add a note to `skills/classification-codes/SKILL.md` on bridging Census IND 2017 codes to 2022 codes (final
       review of plan 111, owner ruled defer). The bundled 2022 workbook carries an IND crosswalk, and plan 111 (F7)
       kept it out of the data files. A join through `naics_2017_to_2022` is possible but is not described.

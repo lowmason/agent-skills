@@ -1271,6 +1271,25 @@ def test_skill_table_counts_match_data():
     assert documented == actual, f'SKILL.md {relative}: documents {documented} {label}, file has {actual}'
 
 
+def test_skill_census_ind_prose_counts_match_data():
+  # The NAICS-semantics prose states each Census IND list's code count and the
+  # six-digit codes its expansion claims; the Files-table test above misses them.
+  prose = ' '.join((SKILL_DIR / 'SKILL.md').read_text().split())
+  lists = re.search(r'the 2017 list \(([\d,]+) codes\) against NAICS 2017, '
+                    r'the 2022 list \(([\d,]+) codes\) against NAICS 2022', prose)
+  claimed = re.search(r'the expansion claims all ([\d,]+) and ([\d,]+) six-digit codes', prose)
+  assert lists and claimed, 'Census IND count sentences not found in SKILL.md'
+  for vintage, codes, six in [('2017', lists.group(1), claimed.group(1)),
+                              ('2022', lists.group(2), claimed.group(2))]:
+    actual_codes = csv_height(f'data/census_ind_{vintage}.csv')
+    assert int(codes.replace(',', '')) == actual_codes, f'SKILL.md IND {vintage}: states {codes} codes, file has {actual_codes}'
+    expansion = pl.read_csv(SKILL_DIR / f'data/census_ind_{vintage}_to_naics_{vintage}.csv', infer_schema=False)
+    actual_claimed = expansion.get_column(f'naics_{vintage}').n_unique()
+    actual_six = pl.read_csv(SKILL_DIR / f'data/naics_{vintage}.csv', infer_schema=False).filter(pl.col('level').eq('6')).height
+    assert int(six.replace(',', '')) == actual_claimed == actual_six, (
+      f'SKILL.md IND {vintage}: states {six} six-digit codes; the expansion claims {actual_claimed}, NAICS {vintage} has {actual_six}')
+
+
 def test_manifest_rows_match_data():
   checked = 0
   for line in (SKILL_DIR / 'MANIFEST.md').read_text().splitlines():
