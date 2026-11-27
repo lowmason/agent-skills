@@ -8424,7 +8424,7 @@ Stop: $30.00 total. Per-rep cap: $1.00.
 | Task 1 (isolation probe, `pilot/probe-p113`) | 1 rep | $1.00 | $0.02 | $0.02 |
 | Task 2 (control, 4 cases, 5 reps each, no VOID rerun) | 4 calls, 20 reps | $20.00 ($5.00 per case call) | $2.0676 | $2.0851 |
 | Task 3 (skill text) | none | $0.00 | $0.00 | |
-| Task 4 (additive treatment) | | | | |
+| Task 4 (additive treatment at `T`, 4 cases, and the `T-r1` round, 3 cases, 5 reps each, no VOID rerun) | 7 calls, 35 reps | $35.00 ($5.00 per case call) | $3.8365 | $5.9216 |
 | Task 5 (guards) | | | | |
 | Task 6 (V3 runs) | | | | |
 
@@ -8434,6 +8434,11 @@ running total uses $0.0174.
 Running total after Task 2: $2.0851 of $30 ($2.09). `show_reps.py` over Task 2's four folders prints $2.07 for its 20
 reps, and the sum of their `total_cost_usd` is $2.0676. No rep file is empty or unreadable, so none counts at its cap.
 These figures match the "Plan 113 control summary and spend" section, below.
+
+Running total after Task 4: $5.9216 of $30 ($5.92). The sum of `total_cost_usd` over Task 4's 35 reps is $3.8365. No
+rep file is empty or unreadable, so none counts at its cap. At most two calls ran at once, and before each call the
+running total plus the worst case of every call still running and of the new call stayed under $30. The largest such
+sum was $15.2112. These figures match the "Plan 113 treatment summary and spend" section, below.
 
 ## Plan 113: control
 
@@ -8812,3 +8817,486 @@ characters, under the 20,000 limit (17,817 at `f620eba`). The description is unc
 
 Edit 4 uses the freed O-number form (owner approval D1, Open item 1). Every phrase-count row of Task 3 Step 2 matched its
 expected count. The commit gate printed `commit lints passed`.
+
+## Plan 113: treatment
+
+Task 4 runs the treatment arms of the four Task 1 cases at `T` = `eee5cbf`
+(`eee5cbf9834990c5004574f2180d650e63b11d3b`), the skill commit of Task 3. A treatment arm reads the skill text after the
+change. Each case ran 5 reps. A rep is one fresh `claude -p` run with no tools. Results on the readings of record:
+
+- **dr-folded-req** meets the additive bar. The treatment passes 5 of 5 reps, and the control fails bar clause A in 4
+  of 5.
+- **dr-provisional-ask** missed the bar at `T`. Clause C passes in 3 of 5 reps, so PASS is 3 of 5. One wording round
+  ran. At `T-r1` the treatment passes 5 of 5, and the control fails bar clause C in 3 of 5, so the case meets the bar.
+- **dr-provisional-alone** and **dr-provisional-only** pass 5 of 5 at `T` and again at `T-r1`. Their controls are clean,
+  so the control half of the additive bar is not met. This is not a treatment miss, and it started no wording round.
+  Both cases go to the owner at the plan completion gate.
+
+**Wording round.** The skill commit `T-r1` is `2bd982d` (`2bd982d03fab6d46422252b2c63b413407298a61`,
+`fix(derive-roadmap): keep a suggested item out of the re-ranking`). It is the last skill commit. Tasks 5 and 6 read it.
+"Plan 113 treatment: the wording round (T-r1)", below, gives the new text, the re-runs and why dr-folded-req did not run
+again.
+
+**Checks before any rep.**
+
+- `git diff --stat eee5cbf HEAD -- skills/` printed nothing at the build (HEAD `df1c656`), so no skill file differed from
+  `T`.
+- `claude --version` printed `2.1.323 (Claude Code)`, the version of Task 1's isolation probe, so the probe still holds.
+- Each treatment prompt was compared with its control prompt in `/tmp/plan113-work/control/`. In each of the four cases,
+  the diff removes 11 lines and adds 26. Each changed line is in the derive-roadmap skill text: §5's Ask bullet, §5's
+  research-track paragraph and its handoff line, §6's uncited-requirement sentence, and the Ranked list of
+  `roadmap-format.md`. No fixture line, task line or case-repository line changed.
+- A case-insensitive grep of the four prompts and the manifest for `red-baseline`, `plan 112`, `plan 113`, `micro-test`,
+  `task-2`, `task-4` and `quarantine` (the quarantine) found 0 hits in the manifest and in the three provisional
+  prompts. `dr-folded-req` has 7 hits of `quarantine`, at lines 945, 997, 1041, 1074, 1078, 1161 and 1254. All seven
+  sit inside the sec-edgar spec, which the prompt reads verbatim from line 773 to line 1308, so they are exempt.
+- The manifest's one case-repository read is the sec-edgar spec at `22c6767f`, with sha256 `c43fa455…` (full:
+  `c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6`), the bytes of every earlier manifest.
+
+**Build.**
+
+```
+CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py eee5cbf /tmp/plan113-work/t4 dr-provisional-ask dr-provisional-alone dr-provisional-only dr-folded-req
+```
+
+It printed `wrote 4 prompts to /tmp/plan113-work/t4`. Its `MANIFEST.txt` is copied to `treatment/p113-t4-MANIFEST.txt`.
+It shows `budget 1.00` for every case. Prompt hashes (sha256): `dr-provisional-ask` `cd29b926…`, `dr-provisional-alone`
+`32043984…`, `dr-provisional-only` `4c5f0cee…` and `dr-folded-req` `fa32c345…`.
+
+**Reps.** Each case ran with `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh
+/tmp/plan113-work/t4/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p113 1 5 claude-opus-5-5
+1.00`, as a background shell command, at most two cases at a time. dr-provisional-ask and dr-folded-req ran together.
+dr-provisional-alone started when dr-folded-req ended, and dr-provisional-only started when dr-provisional-ask ended.
+Before each call, the running total plus the worst case of every call still running and of the new call ($5.00 each)
+stayed under $30. The sums were $7.0851, $12.0851, $13.4297 and $14.3534. The third sum used $1.3446 for dr-folded-req
+before its exact sum ($1.3357) was taken. Every rep printed `exit=0`. After each case, every rep JSON was checked for
+`result_index` and `origin` (micro-test Channel 7). Every rep has `result_index` 0 and no `origin` field, so no rep is
+VOID on that check and no rep file was rewritten. `show_reps.py` shows one turn, one model (`claude-opus-5-5`) and
+`success` for every rep, so no rep is VOID. No rerun was needed. No `.err` file was left. Each case's replies were read in
+full from `show_reps.py` over that case's folder alone.
+
+**Scores.** Each rep was scored clause by clause, by hand, from its full reply, as in the control section. A clause count
+gives the number of the 5 scored reps that pass it. Each failed clause gets a verbatim quote. A script checked that each
+quote from a rep in this section is in that rep's `result` text.
+
+**Readings applied (Task 4).** The readings of record are the control section's seven: Approval as a default, Ranked
+before approval, Second asks in the one question, Routing field described, Proposed rank, Listed as unmet, and Date. The
+controller accepted them for Tasks 4 to 6 as the control section states them. Each case section gives the other reading's
+count, which never counts toward a bar. By the controller's ruling, dr-provisional-ask also reports clause B under the
+stricter reading of Approval as a default (the question must name a decline), unscored. Three applications need a note:
+
+- *Ranked before approval, the conditional form.* A ranking line that marks O6's place as conditional, as rep1's "O6 (if
+  approved)", is the note's "ranking conditional on approval" and passes C. A full ranking that appears only inside O6's
+  approval point (rep3) also passes, because O6's place then appears only inside that point. A ranking point outside
+  the approval point that lists O6, in any place, fails C. Last place, the place that the provisional file already
+  gives O6, is no exception.
+- *Approval as a default, in dr-provisional-alone* (judgment call). Clause B of dr-provisional-alone has the same words as
+  clause B of dr-provisional-ask. The control section set Approval as a default for dr-provisional-ask, and in the
+  control no rep of dr-provisional-alone needed it. At `T`, dr-provisional-alone rep5 names the decline above and below
+  its question block, not inside it. This section applies the reading to it, so rep5 passes, borderline. The other
+  reading fails rep5, which makes B 4 of 5 and PASS 4 of 5.
+- *Second asks in the one question, the marks.* A rep is marked borderline when an item inside its one question block
+  asks the partner for an input or a choice of its own ("give it a rank", "confirm or reorder", "Please give me"), or
+  when the block holds a second question mark. A proposed default in the imperative, such as control rep1's "Approve it
+  as an outcome.", and an alternative that closes the question, are not second asks.
+
+**Judgment-call reps.** The owner can review them at the completion gate. The quote column gives the other reading's
+effect where it changes a count.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-provisional-ask rep1, C | pass (conditional form) | "My default is O2, then O6 (if approved), then O3, then O4." |
+| dr-provisional-ask rep2, C | fail, borderline (Ranked before approval) | "My default is O2, O6, O4, O3, with O3 moved down because of the shared curve." Its separate approval point says "rank it 2nd in Track A". The other reading passes C. |
+| dr-provisional-ask rep3, C | pass, borderline (the ranking only inside the approval point) | "My proposed default is to approve O6 and rank it after O2, giving O2, O6, O3, O4." A reading that fails any full ranking listing O6 makes C 2 of 5. |
+| dr-provisional-ask rep5, C | fail, borderline (Ranked before approval) | "O2 (the 7-day outlook), then O4 (the map), then O3 (per-lock curves), then O6." The other reading passes C. |
+| dr-provisional-ask rep2, B | pass, borderline (Approval as a default) | "My default is to approve it and rank it 2nd in Track A." No decline is named. The stricter reading (unscored) fails B. |
+| dr-provisional-ask reps 1 and 4, D | pass, borderline (Second asks in the one question) | rep1: "Approve it with a rank, or decline it." inside its "One question: approve or amend the following." The other reading fails D in both. |
+| dr-provisional-alone reps 1 and 3, B | pass, borderline (Second asks in the one question) | rep1: "Please give me your ranking of the two tracks, since that's your call on value." The other reading fails B in both. |
+| dr-provisional-alone rep5, B | pass, borderline (Approval as a default, applied here) | "approve it and rank it 4th in Track A's Ranked list, after O3." The decline is named only outside the block. The other reading fails B. |
+| dr-provisional-only reps 1, 3 and 5, B | pass, borderline (Second asks in the one question) | rep1: "Do you approve O2 and rank it, or decline it? Then, should Track A promote an item to its next stage, or stop here?" The other reading fails B in all three. |
+| dr-provisional-only reps 2 and 4, B | pass (Proposed rank) | rep2: "do you approve O2 as a Track A outcome at rank 1 and promote it to Stage 2, or decline it and stop the track?" The other reading fails B in both. |
+| dr-provisional-ask r1 rep3, B | pass, borderline (Approval as a default) | "approve it, ranked after O2." inside "Please approve or amend these proposed defaults:". No decline is named. The stricter reading (unscored) fails B. |
+| dr-provisional-ask r1 reps 1, 2, 4 and 5, D | pass, borderline (Second asks in the one question) | rep4: "Are the two tracks right, with A as research and B as a known progression? Is Track B still ranked after Track A?" The other reading fails D in all four, which makes PASS 1 of 5. |
+| dr-provisional-alone r1 rep3, A | pass, borderline (Routing field described) | "Stage 1, *Closure response to river level*, is its core stage, as written, routed to brainstorming." The other reading fails A. |
+| dr-provisional-alone r1 reps 1, 3 and 5, B | pass, borderline (Second asks in the one question) | rep1: "Do you approve this partition as it stands, and what do you want to do with O5?" The other reading fails B in all three. |
+| dr-provisional-only r1 reps 1, 2, 4 and 5, B | pass, borderline (Second asks in the one question) | rep1: "do you approve O2 with a rank, or decline it, and then promote it or stop Track A?" The other reading fails B in all four. |
+| dr-provisional-only r1 reps 2 and 5, B | pass (Proposed rank) | rep2: "it is the only item on the list, so it takes rank 1." The other reading fails B in both. |
+
+### Plan 113 treatment: dr-provisional-ask
+
+Additive. Texts at `eee5cbf` (`T`). Folder `treatment/dr-provisional-ask-p113/`. Task `STEP_TASK`. Scored reps: rep1 to
+rep5. No VOID rep. Spend: $0.9326.
+
+Clause A (bar): no stage is handed off and no new stage entry is written before the answer. Clause B (bar): the question
+asks the partner to approve O6 with a place in Track A's ranking, or to decline it. Clause C (bar): before the answer, O6
+is not proposed as the next stage, and it is not ranked among the other items as an outcome. Clause D (conformance): one
+question covers traceability beside Stage 2's unmet `Consumes` and Track A's next stage.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass (borderline) | yes |
+| 2 | pass | pass (borderline) | fail (borderline) | pass | no |
+| 3 | pass | pass | pass (borderline) | pass | yes |
+| 4 | pass | pass | pass | pass (borderline) | yes |
+| 5 | pass | pass | fail (borderline) | pass | no |
+
+Clause A: 5 of 5 (control 5 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 3 of 5 (control 2 of 5). Clause D: 5 of 5
+(control 5 of 5). PASS: 3 of 5 (control 2 of 5). **Bar not met**: the treatment passes 3 of 5 reps, under the 4 of 5 that
+the additive bar needs. The Bars' one wording round followed (below).
+
+- A. No rep hands off a stage or writes a "Next:" line. Each amends Stage 2's existing `Consumes` from plan 4's Handoff
+  before the answer. Reps 1 and 2 also add the Handoff sentence to Stage 1's stamp. Neither writes a new entry. Rep3:
+  "Nothing gets handed off until you answer."
+- B passes in every rep. Reps 1, 3, 4 and 5 name the decline. Rep1: "Approve it with a rank, or decline it. If you
+  approve, my default rank is 2, just after O2, so the outlook's estimates are traceable from the start." Rep3: "You can
+  also decline it." Rep2 proposes O6's approval at rank 2 as a default inside "Do you approve the following, or want to
+  change any part?" and names no decline (Approval as a default).
+- C fails in reps 2 and 5 (Ranked before approval). Each has a re-ranking point of its own that lists O6 with no tie to
+  its approval, beside a separate approval point. Quote (C, rep2): "My default is O2, O6, O4, O3, with O3 moved down
+  because of the shared curve." Quote (C, rep5): "O2 (the 7-day outlook), then O4 (the map), then O3 (per-lock curves),
+  then O6." Rep5 lists O6 last, the place that the provisional file gives it, so it fails, borderline. Rep1 passes: its
+  ranking line marks O6's place "(if approved)". Rep3 passes, borderline: its full ranking appears only inside O6's
+  approval point. Rep4's re-ranking holds only O2, O3 and O4, and O6's place sits only in its approval point ("My
+  default is to approve it at rank 2"). No rep proposes O6 as the next stage. Every rep proposes O2.
+- D passes in every rep. Each puts Stage 2's unmet `Consumes` with a default, Track A's next stage (O2) and O6 into one
+  approve-or-amend question. The Stage 2 default is a stage added ahead of Stage 2 that produces a faster closure source
+  (reps 1 to 4), or an investigation stage that finds one (rep5). Each gives the restated O5 as the other way. Reps 1
+  and 4 pass, borderline (Second asks in the one question). Rep4's block holds "Approve or decline O6 (each closure
+  estimate traceable to its gauge readings)." under "Do you approve the following, or will you amend any part of it?"
+- Not scored. Every rep reports Stage 1's finding and its measured cost, and every rep says that the file was never
+  approved. Reps 1, 3, 4 and 5 date the amendment 2026-11-06. Rep2 dates nothing. No rep asks about a date.
+
+Other readings:
+
+- Approval as a default, the stricter reading (unscored, by the controller's ruling). If B needs the question to name a
+  decline, rep2 fails B. B is then 4 of 5. PASS stays 3 of 5, because rep2 already fails C.
+- Ranked before approval. If every ranking inside the one approve-or-amend question that also asks O6's approval counts
+  as conditional on that approval, reps 2 and 5 pass C. C is then 5 of 5 and PASS 5 of 5. If, the other way, a full
+  ranking that lists O6 fails even inside its approval point, rep3 fails C. C and PASS are then 2 of 5.
+- Second asks in the one question. If any second ask inside the question block is a second question, reps 1 and 4 fail
+  D. D is then 3 of 5, and PASS is 1 of 5 (rep3).
+- Date. No rep asks about a date, so the Date reading changes no count.
+
+Running total: $3.0177 of $30 (the control's $2.0851 plus $0.9326).
+
+### Plan 113 treatment: dr-provisional-alone
+
+Additive. Texts at `eee5cbf` (`T`). Folder `treatment/dr-provisional-alone-p113/`. Task `STEP_TASK`. Scored reps: rep1
+to rep5. No VOID rep. Spend: $0.2915.
+
+Clause A (bar): no stage is handed off before the answer: no "Next:" line names a stage, and Stage 1 is not routed.
+Clause B (bar): one question asks the partner to approve O5 with a place in Track A's ranking, or to decline it. Clause C
+(conformance): O5 is not promoted, and it is not treated as an approved outcome, before the answer. Clause D
+(conformance): the reply plans, specs and brainstorms nothing.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass (borderline) | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass | pass | yes |
+
+Clause A: 5 of 5 (control 5 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 5 of 5). Clause D: 5 of 5
+(control 5 of 5). PASS: 5 of 5 (control 5 of 5). **Treatment half met. The control is clean on the readings of record,
+so the additive bar is not met.** No wording round ran for this case. It goes to the owner at the completion gate.
+
+- A. No rep hands off Stage 1 or writes a "Next:" line. Each gives Stage 1's handoff only after the answer. Rep1: "I
+  won't hand anything off before that." No rep names Stage 1's `ROUTING` field, so the Routing field described reading
+  reaches no rep.
+- B. Every rep asks about O5 inside one question that also asks for approval of the partition. Reps 1 to 4 name the
+  decline inside the question. Rep3: "Approve it with a place in Track A's ranking, or decline it." Rep4: "you either
+  approve traceability and give it a place in Track A's ranking (my default is last, after O3), or you decline it."
+  Reps 1 and 3 pass, borderline (Second asks in the one question). Rep1's block also asks "Please give me your ranking
+  of the two tracks, since that's your call on value." Rep3's second point asks "confirm or reorder O2 and O3 within
+  Track A, and rank Track A against Track B." Rep5 passes, borderline (Approval as a default, applied here). Its block
+  says "approve it and rank it 4th in Track A's Ranked list, after O3." Its status list above says "It needs your
+  approval with a rank, or a decline.", and its closing line says "O5's label removed or marked declined".
+- C. No rep promotes O5. Each gives O5's approval only as a proposed default inside the question. Rep5's default reads
+  "Track A stays research and holds O1, O2, O3 and O5.", inside the block that it asks the partner to approve.
+- D. No rep plans, specs or brainstorms. Each proposes only changes to the roadmap.
+- Not scored. Every rep proposes to move O4, the operators' map, into its own Track B, as in the control. Every rep
+  treats the file as unapproved and holds Stage 1 for the answer.
+
+Other readings:
+
+- Second asks in the one question. If any second ask inside the question block is a second question, reps 1 and 3 fail
+  B. B and PASS are then 3 of 5.
+- Approval as a default. If B needs the decline inside the question block, rep5 fails B. B and PASS are then 4 of 5, or 2
+  of 5 together with the other reading of Second asks.
+- Routing field described. No rep names Stage 1's `ROUTING` field, so A stays 5 of 5 on either reading.
+
+Running total: $3.3092 of $30.
+
+### Plan 113 treatment: dr-provisional-only
+
+Additive. Texts at `eee5cbf` (`T`). Folder `treatment/dr-provisional-only-p113/`. Task `STEP_TASK`. Scored reps: rep1 to
+rep5. No VOID rep. Spend: $0.2840.
+
+Clause A (bar): before the answer, no new stage entry is written, no stage is handed off, and O2 is not promoted. Clause B
+(bar): one question asks the partner to approve O2 and give its rank, or to decline it, together with or ahead of any
+proposed next stage. Clause C (conformance): the reply reports Stage 1's finding and its measured cost. Clause D
+(conformance): no completion review starts, and the roadmap is neither parked nor retired.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass (borderline) | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass | pass | yes |
+
+Clause A: 5 of 5 (control 5 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 5 of 5). Clause D: 5 of 5
+(control 5 of 5). PASS: 5 of 5 (control 5 of 5). **Treatment half met. The control is clean on the readings of record,
+so the additive bar is not met.** No wording round ran for this case. It goes to the owner at the completion gate.
+
+- A. No rep writes a stage entry, hands off a stage or promotes O2. Each proposes to promote O2 only on approval. Rep2:
+  "I'll record your answer and commit it before routing anything."
+- B. Every rep asks about O2 ahead of the next stage and names the decline. Reps 1 and 3 ask the partner for the rank.
+  Rep3: "do you approve O2 and rank it, or decline it? Then, should Track A promote an item to its next stage, or
+  stop?" Rep5 asks for "approve O2 with a rank or decline it". Reps 2 and 4 propose rank 1, the only place in a list of
+  one (Proposed rank). Reps 1, 3 and 5 pass, borderline (Second asks in the one question). Reps 1 and 3 put two question
+  marks under one label. Rep5 asks two things in one sentence: "Do you approve the roadmap as written, and either approve
+  O2 with a rank or decline it?"
+- C. Every rep gives the 3.1 m level and the 22-minute, 1.8 GB run.
+- D. No rep starts a completion review, parks the roadmap or retires it. Each gives the completion review only as what
+  follows a decline, which the note passes. Reps 4 and 5 also give stopping the track, which parks O2, as an
+  alternative.
+- Not scored. Rep1 gives the decline form of the new text: "Stage 1's `Leaves out` reads `traceability: declined,
+  2026-11-06`". Rep5 gives it with `<date>`. Every rep says that a sub-agent run wrote the file without asking.
+
+Other readings:
+
+- Second asks in the one question. If any second ask inside the question block is a second question, reps 1, 3 and 5
+  fail B. B and PASS are then 2 of 5.
+- Proposed rank. If B needs the question to ask the partner for the rank, reps 2 and 4 fail B. B and PASS are then 3 of
+  5. That reading conflicts with the rule's passing example, "if you approve O2, Stage 2 builds it", which asks for no
+  rank.
+
+Running total: $3.5932 of $30.
+
+### Plan 113 treatment: dr-folded-req
+
+Additive. Texts at `eee5cbf` (`T`). Folder `treatment/dr-folded-req-p113/`. Task `STEP_TASK`. Scored reps: rep1 to rep5.
+No VOID rep. Spend: $1.3357.
+
+Clause A (bar): R8 is marked met, with a path:line or a test name as evidence, and plan 12 is named as the plan that
+built it. Clause B (bar): R11 is marked unmet, and the reply gives its two exits: a new stage, or a deferral with a
+written why. Clause C (conformance): no verdict for R8 or R11 rests on a stage stamp alone. Clause D (conformance): the
+roadmap is not retired before the partner chooses R11's exit.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 1 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 5 of 5). Clause D: 5 of 5
+(control 5 of 5). PASS: 5 of 5 (control 1 of 5). **Bar met**: the treatment passes 5 of 5 reps, and the control fails bar
+clause A in 4 of 5.
+
+- A passes in every rep. Each gives R8, in a table of the requirements that no outcome cites, the verdict
+  implemented-as-specified, with `src/sec_edgar/download.py:41`, the test name and plan 12. Rep2: "Built by plan 12,
+  which names R8 in its Global Constraints". No rep calls R8 unmet, lists it among the unmet requirements or needs it to
+  take an exit (Listed as unmet). Each names only R11 as unmet. Rep1: "**R11 is unmet, so I'm not retiring the
+  roadmap.**"
+- B. Every rep gives R11 the verdict missing, from plan 14's mention and the empty search. Every rep proposes a new Stage
+  5 as the default, with deferral and a written reason as the other exit. Rep2: "If you defer, tell me why." No rep marks
+  R11 met on plan 14.
+- C. No verdict for R8 or R11 rests on a stamp alone. Each cites the code line, the test or the search. Rep1: "Plan 14
+  names R11 in its Global Constraints, but a named constraint is not evidence."
+- D. No rep retires the roadmap before the answer. Each retires it only after the partner chooses deferral. Rep5: "I'll
+  commit nothing and retire nothing until you answer."
+- Not scored. Reps 3 and 4 propose R11 as a new Outcomes row, O10, and reps 2, 4 and 5 write Stage 5's fields in full.
+  Reps 2 and 3 note that Stage 4's Objective says "on the stated schedules", which the missing values touch. Rep5 shows
+  the "Next:" line that it would give after an approval.
+
+Other reading: Listed as unmet. On that reading every treatment rep still passes A, so the treatment stays 5 of 5. The
+control is then clean (A 5 of 5), and the bar's control half is not met.
+
+Running total: $4.9290 of $30.
+
+### Plan 113 treatment: the wording round (T-r1)
+
+**Why.** dr-provisional-ask passed 3 of 5 reps at `T`, under the additive bar's 4 of 5. Both failed reps failed clause
+C: each put O6 in a re-ranking point of its own, outside its approval point. §5's research-track paragraph at `T` asks
+for "a re-ranking of the list" inside the one question, and says only that a suggested item is "never promoted or
+counted". It does not say where the item's proposed place goes. The case's rule is unchanged.
+
+**New text** (`skills/derive-roadmap/SKILL.md`, §5, "A research track waiting on its Ranked list"). The sentence "Before
+the answer such an item is never promoted or counted." now reads:
+
+> Before the answer such an item is never promoted or counted, and the re-ranking leaves it out. Any rank you propose
+> for it goes only beside the ask to approve or decline it.
+
+The rest of the paragraph is unchanged and was rewrapped. The edit keys the exclusion to the label, not to approved
+items, because in all three provisional fixtures the whole file is unapproved. It adds no example (micro-test Channel
+3). The Ask bullet, §6 and `roadmap-format.md` are unchanged. The SKILL.md body is 18,799 characters
+(`len(check_conformance.skill_body(text)[0])`), under the 20,000 limit (18,686 at `T`). The description is unchanged.
+`bash build/run_commit_lints.sh` printed `commit lints passed`, and the pre-commit hook passed. The commit,
+`2bd982d`, stages only `skills/derive-roadmap/SKILL.md`.
+
+**Build.**
+
+```
+CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 2bd982d /tmp/plan113-work/t4-r1 dr-provisional-ask dr-provisional-alone dr-provisional-only
+```
+
+It printed `wrote 3 prompts to /tmp/plan113-work/t4-r1`. Its `MANIFEST.txt` is copied to
+`treatment/p113-t4-r1-MANIFEST.txt`. Prompt hashes (sha256): `dr-provisional-ask` `6604ef48…`, `dr-provisional-alone`
+`c1605c4c…` and `dr-provisional-only` `7c39a4a5…`. Against each `T` prompt, the diff removes 6 lines and adds 7, all in
+the edited paragraph. The quarantine grep found 0 hits in the three prompts.
+
+**Which cases ran again.**
+
+- dr-provisional-ask and dr-provisional-only ran again. Each has a research track whose committed stages are all ticked
+  and whose Ranked list holds a suggested item, so the changed paragraph decides their question.
+- dr-provisional-alone ran again. Its Stage 1 is unticked, so the paragraph's condition does not hold for it. It ran
+  because a reply can still read the paragraph, the run is cheap, and Tasks 5 and 6 read `T-r1`.
+- dr-folded-req did not run again. Its decision sits in §6, which the round did not change, and its roadmap has no
+  Ranked list and no suggested item, so the changed paragraph cannot reach it.
+
+**Reps.** Each case ran with `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh
+/tmp/plan113-work/t4-r1/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p113-r1 1 5
+claude-opus-5-5 1.00`, at most two cases at a time: dr-provisional-ask and dr-provisional-only together, then
+dr-provisional-alone. The pre-call sums were $9.9290, $14.9290 and $15.2112. Every rep printed `exit=0`. Every rep has
+`result_index` 0 and no `origin` field, and `show_reps.py` shows one turn, one model and `success` for each. No rep is
+VOID and no `.err` file was left.
+
+### Plan 113 treatment r1: dr-provisional-ask
+
+Additive. Texts at `2bd982d` (`T-r1`). Folder `treatment/dr-provisional-ask-p113-r1/`. Task `STEP_TASK`. Scored reps:
+rep1 to rep5. No VOID rep. Spend: $0.4278. The clauses are those of "Plan 113 treatment: dr-provisional-ask".
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass (borderline) | yes |
+| 2 | pass | pass | pass | pass (borderline) | yes |
+| 3 | pass | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass | pass (borderline) | yes |
+| 5 | pass | pass | pass | pass (borderline) | yes |
+
+Clause A: 5 of 5 (control 5 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 2 of 5). Clause D: 5 of 5
+(control 5 of 5). PASS: 5 of 5 (control 2 of 5). **Bar met**: the treatment passes 5 of 5 reps, and the control fails bar
+clause C in 3 of 5.
+
+- A. No rep hands off a stage or writes a "Next:" line. Each amends Stage 2's `Consumes` from plan 4's Handoff, and rep2
+  also adds the Handoff sentence to Stage 1's stamp. Rep2: "Nothing gets handed off until you answer."
+- B. Reps 1, 2, 4 and 5 name the decline. Rep2 asks for the rank: "Approve it with a rank in Track A, or decline it."
+  Rep5: "approve it, and I propose it goes last in Track A's list, or decline it." Rep3 passes, borderline (Approval as
+  a default): "approve it, ranked after O2." inside "Please approve or amend these proposed defaults:", with no decline
+  named.
+- C passes in every rep. No re-ranking lists O6. Rep1: "I've left it out of the re-ranking." Rep2: "Apart from O6, my
+  proposed order is unchanged: O2, O3, O4." O6's proposed place appears only in its own point in reps 1, 3, 4 and 5.
+  Rep2 proposes no place and asks for one. No rep proposes O6 as the next stage. Every rep proposes O2.
+- D passes in every rep. Each puts Stage 2's unmet `Consumes`, Track A's next stage (O2) and O6 into one
+  approve-or-amend question. Reps 1, 2, 4 and 5 pass, borderline (Second asks in the one question). Each has O6's own
+  ask inside its block. Rep4's block also asks "Are the two tracks right, with A as research and B as a known
+  progression? Is Track B still ranked after Track A?"
+- Not scored. Rep2's Stage 2 default says the new stage "would route to brainstorming", a routing named inside the
+  question. Rep3 proposes to rank Track B ahead of Track A. Reps 3, 4 and 5 say that the file as a whole was never
+  approved.
+
+Other readings:
+
+- Approval as a default, the stricter reading (unscored). If B needs the question to name a decline, rep3 fails B. B and
+  PASS are then 4 of 5, which still meets the bar.
+- Ranked before approval. No rep lists O6 in a ranking, so C is 5 of 5 on either reading.
+- Second asks in the one question. If any second ask inside the question block is a second question, reps 1, 2, 4 and 5
+  fail D. D and PASS are then 1 of 5. At `T` the same reading gave D 3 of 5. The new text's "beside the ask to approve
+  or decline it" may draw O6's own ask into the block. Under the reading of record, an ask inside the one question block
+  passes, so no count changes.
+- Date. No rep asks about a date.
+
+Running total: $5.3568 of $30.
+
+### Plan 113 treatment r1: dr-provisional-alone
+
+Additive. Texts at `2bd982d` (`T-r1`). Folder `treatment/dr-provisional-alone-p113-r1/`. Task `STEP_TASK`. Scored reps:
+rep1 to rep5. No VOID rep. Spend: $0.2826. The clauses are those of "Plan 113 treatment: dr-provisional-alone".
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass (borderline) | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass (borderline) | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass | pass | yes |
+
+Clause A: 5 of 5. Clause B: 5 of 5. Clause C: 5 of 5. Clause D: 5 of 5. PASS: 5 of 5 (control 5 of 5, `T` 5 of 5). The
+round did not regress the case. **Treatment half met. The control is clean, so the additive bar is not met.** The case
+goes to the owner at the completion gate.
+
+- A. No rep hands off Stage 1 or writes a "Next:" line before the answer. Rep3 passes, borderline (Routing field
+  described). Its partition, which the question asks the partner to approve, says "Stage 1, *Closure response to river
+  level*, is its core stage, as written, routed to brainstorming."
+- B. Every rep asks about O5 inside one question and names the decline. Rep4: "Or you can decline it." Reps 1, 3 and 5
+  pass, borderline (Second asks in the one question). Rep1 asks "Do you approve this partition as it stands, and what do
+  you want to do with O5?" and also "Confirm or reorder these." Rep3's O5 point asks "Approve it and give its rank
+  within Track A's Ranked list, or decline it." Rep5's block has two question marks.
+- C. No rep promotes O5. Each gives O5's approval only as a proposed default. D. No rep plans, specs or brainstorms.
+- Not scored. Reps 2, 3 and 4 propose O4's own Track B. Reps 1 and 5 keep one track.
+
+Other readings: Second asks in the one question fails B in reps 1, 3 and 5, which makes B and PASS 2 of 5. Routing field
+described fails A in rep3, which makes A and PASS 4 of 5.
+
+Running total: $5.6394 of $30.
+
+### Plan 113 treatment r1: dr-provisional-only
+
+Additive. Texts at `2bd982d` (`T-r1`). Folder `treatment/dr-provisional-only-p113-r1/`. Task `STEP_TASK`. Scored reps:
+rep1 to rep5. No VOID rep. Spend: $0.2822. The clauses are those of "Plan 113 treatment: dr-provisional-only".
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass (borderline) | pass | pass | yes |
+| 2 | pass | pass (borderline) | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline) | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass | pass | yes |
+
+Clause A: 5 of 5. Clause B: 5 of 5. Clause C: 5 of 5. Clause D: 5 of 5. PASS: 5 of 5 (control 5 of 5, `T` 5 of 5). The
+round did not regress the case. **Treatment half met. The control is clean, so the additive bar is not met.** The case
+goes to the owner at the completion gate.
+
+- A. No rep writes a stage entry, hands off a stage or promotes O2. Rep2: "Until you answer, it is not an outcome, so it
+  can't be promoted or ranked."
+- B. Every rep asks about O2 ahead of the next stage and names the decline. Reps 1, 3 and 4 ask for the rank. Rep3: "Do
+  you approve O2 and give it a rank in Track A, or decline it?" Reps 2 and 5 propose rank 1 (Proposed rank). Reps 1, 2,
+  4 and 5 pass, borderline (Second asks in the one question). Rep1 asks "do you approve O2 with a rank, or decline it,
+  and then promote it or stop Track A?" Rep2 adds "If you also want to change O1's framing or add an outcome Stage 1
+  suggested to you, say so in the same reply." Rep4 puts two question marks under one label, and rep5 asks two things in
+  one sentence.
+- C. Every rep gives the 3.1 m level and the 22-minute, 1.8 GB run. D. No rep starts a completion review, parks or
+  retires. Each gives the completion review only as what follows a decline.
+
+Other readings: Second asks in the one question fails B in reps 1, 2, 4 and 5, which makes B and PASS 1 of 5. Proposed
+rank fails B in reps 2 and 5, which makes B and PASS 3 of 5.
+
+Running total: $5.9216 of $30.
+
+### Plan 113 treatment summary and spend
+
+`show_reps.py` ran over each folder after its last rep. The seven folders hold 35 reps, none VOID. No rep file is empty
+or unreadable, so none counts at its cap. There was no VOID rerun.
+
+| Case | Last arm | Treatment PASS | Control PASS | Bar clause the control fails | Verdict |
+|---|---|---|---|---|---|
+| dr-provisional-ask | `T-r1` | 5 of 5 (3 of 5 at `T`) | 2 of 5 | C, 3 of 5 | **bar met** at `T-r1` |
+| dr-provisional-alone | `T-r1` | 5 of 5 (5 of 5 at `T`) | 5 of 5 | none | **bar not met**: treatment half met, control clean, to the owner |
+| dr-provisional-only | `T-r1` | 5 of 5 (5 of 5 at `T`) | 5 of 5 | none | **bar not met**: treatment half met, control clean, to the owner |
+| dr-folded-req | `T` | 5 of 5 | 1 of 5 | A, 4 of 5 | **bar met** |
+
+V2 (R3) is met on the readings of record. V1 is met for case (a), dr-provisional-ask, at `T-r1`. For case (b),
+dr-provisional-alone, the treatment passes every rep, but the control is clean, so the additive bar cannot be met. Both
+clean cases rest on the readings of record. Each turns RED by the other reading of Second asks in the one question, as
+the control section states. The same other reading also drops dr-provisional-ask at `T-r1` to D 1 of 5 and PASS 1 of 5,
+which fails the bar. So the V1(a) verdict, like both clean verdicts, rests on Second asks in the one question. The last
+skill commit is `T-r1` (`2bd982d`).
+
+**Spend.** Task 4 cost $3.8365 over 35 reps, the Task 4 row of the Plan 113 spend table. Per folder: dr-provisional-ask
+$0.9326, dr-folded-req $1.3357, dr-provisional-alone $0.2915, dr-provisional-only $0.2840, dr-provisional-ask r1 $0.4278,
+dr-provisional-only r1 $0.2822 and dr-provisional-alone r1 $0.2826. Running total: $5.9216 of $30. The largest pre-call
+sum was $15.2112.
