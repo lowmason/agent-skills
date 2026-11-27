@@ -4,6 +4,7 @@ description: Use for reviews dispatched by the requesting-code-review skill and 
 tools: Read, Bash
 model: opus
 effort: xhigh
+# license: MIT. Adapted from https://github.com/obra/superpowers, Copyright (c) 2025 Jesse Vincent. Full text: LICENSE-superpowers (repository root; install.py installs it beside this file).
 # cc-guide: subagents.frontmatter subagents.tools @2.1.326
 ---
 

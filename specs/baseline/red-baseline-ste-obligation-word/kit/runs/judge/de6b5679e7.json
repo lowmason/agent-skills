@@ -1,0 +1,75 @@
+{
+ "case": "agent-error-message",
+ "verdicts": {
+  "r35bccb": {
+   "1": {
+    "pass": true,
+    "why": "Each hedge is still there: the error \"may have occurred\", the format \"may not match\", and the client \"may cause\" the mismatch, so the possibility wording stays equally strong."
+   },
+   "2": {
+    "pass": false,
+    "why": "The rewrite names \"the system\" as the thing processing the request, an actor the source never states, even though the reply flags it."
+   },
+   "3": {
+    "pass": true,
+    "why": "The source has no obligation words and the rewrite adds none."
+   }
+  },
+  "r3b60de": {
+   "1": {
+    "pass": true,
+    "why": "Each hedge is still there, with \"may have occurred\", \"may not match\" and \"may cause\" all expressing possibility."
+   },
+   "2": {
+    "pass": false,
+    "why": "The rewrite adds \"the system\" as the processing actor, which the source does not state, and the reply itself admits this."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite adds no obligation words, and the source had none."
+   }
+  },
+  "r6821a9": {
+   "1": {
+    "pass": true,
+    "why": "The error \"may have occurred\", the mismatch \"may be the cause\", and the client \"may cause\" it, so every hedge stays."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite keeps the source's \"your request\" and uses the passive voice, so it adds no actor, fact or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "There are no obligation words in the source or the rewrite."
+   }
+  },
+  "r466cc3": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", hedges the mismatch with \"may be\", and keeps the source's own \"could\" for the outdated client."
+   },
+   "2": {
+    "pass": true,
+    "why": "The passive \"the request was processed\" avoids adding an actor, and the rewrite adds no new fact or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite adds no obligation words."
+   }
+  },
+  "r5fa200": {
+   "1": {
+    "pass": true,
+    "why": "Every hedge stays, with \"may have occurred\", \"may not match\" and \"may cause\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite uses the source's \"your request\" in the passive voice and adds no fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "There are no obligation words in the source or the rewrite."
+   }
+  }
+ }
+}

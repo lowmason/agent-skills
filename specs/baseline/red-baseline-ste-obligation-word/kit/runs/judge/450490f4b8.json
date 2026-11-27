@@ -1,0 +1,75 @@
+{
+ "case": "agent-instruction",
+ "verdicts": {
+  "r8254bc": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the 'completes and raises no errors' condition and the 'sometimes' hedge on partial artifacts."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no new fact, condition or action, and it keeps the passive voice so it does not say who produces the partial artifact."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' is kept and no new obligation word is added."
+   }
+  },
+  "r70df1b": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the no-errors completion condition and says partial artifacts happen 'sometimes'."
+   },
+   "2": {
+    "pass": false,
+    "why": "It says the upstream job produces the partial artifact, but the source uses the passive voice and never names the producer."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' is kept and no new obligation word is added."
+   }
+  },
+  "r5d7c88": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the 'completed and raised no errors' condition and the 'sometimes' hedge."
+   },
+   "2": {
+    "pass": false,
+    "why": "It names the upstream job as the producer of partial artifacts, which the source does not state."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' is kept and no new obligation word is added."
+   }
+  },
+  "re3a2c0": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the condition that the upstream job completes with no errors and keeps 'sometimes'."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds nothing new and keeps the producer of partial artifacts unstated."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' is kept and no new obligation word is added."
+   }
+  },
+  "re092db": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the 'is complete and raised no errors' condition and the 'sometimes' hedge."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no fact, condition or action, and it keeps the passive voice for partial artifacts."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' is kept and no new obligation word is added."
+   }
+  }
+ }
+}

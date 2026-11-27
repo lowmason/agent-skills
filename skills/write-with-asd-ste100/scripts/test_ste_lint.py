@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 LINTER = Path(__file__).resolve().parent / 'ste-lint.py'
-PINNED_SHA256 = '29a10502a61b08aa4907484e3b5f9a0e57842b81294dd6f09654d84fdfd645b0'
+PINNED_SHA256 = '66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d'
 SYSTEM_PYTHON = Path('/usr/bin/python3')
 FENCE = '`' * 3
 USAGE_ERROR = 2  # the exit status of argparse's parser.error()
@@ -109,3 +109,16 @@ def test_skill_front_matter_description_is_read_as_prose():
     result = lint('--json', stdin=text)
     violations = json.loads(result.stdout)['violations']
     assert [(v['rule'], v['line']) for v in violations] == [('long-sentence', 3)]
+
+
+def test_bare_url_semicolon_is_not_prose():
+    inside = json.loads(lint('--json', stdin='See https://x.io/a;b for it.\n').stdout)
+    assert [v for v in inside['violations'] if v['rule'] == 'semicolon'] == []
+    after = json.loads(lint('--json', stdin='See https://x.io/a; then go.\n').stdout)
+    assert [v['col'] for v in after['violations'] if v['rule'] == 'semicolon'] == [19]
+
+
+def test_wrapped_phrasal_verb_is_found():
+    report = json.loads(lint('--json', stdin='Next we spin\nup the server.\n').stdout)
+    found = [(v['line'], v['col']) for v in report['violations'] if v['rule'] == 'phrasal-verb']
+    assert found == [(1, 9)]

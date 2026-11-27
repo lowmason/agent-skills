@@ -2,7 +2,8 @@
 '''Provenance lint: every skill directory is attributed in NOTICE and carries
 byte-identical copies of the root license files that apply to it
 (BUNDLED_LICENSES), and no binary document assets (.pdf/.epub/.docx) are
-git-tracked.
+git-tracked. Each superpowers-derived agent also carries a `# license:` pointer
+on its three surfaces (AGENT_LICENSES).
 
 Run: uv run python build/check_provenance.py
 Exit 0 if clean; exit 1 with one line per violation.
@@ -35,6 +36,15 @@ BUNDLED_LICENSES: dict[str, tuple[str, ...]] = {
     'LICENSE-andorra': ('bayesian-workflow',),
     'LICENSE-write-with-asd-ste100-sources': ('write-with-asd-ste100',),
 }
+
+# Root license file -> the agents that carry a `# license:` pointer to it, on
+# agents/<n>.md and the two generated adapters. The pointer sits in the
+# frontmatter (or a TOML comment), so the model never reads it.
+AGENT_LICENSES: dict[str, tuple[str, ...]] = {
+    'LICENSE-superpowers': ('code-reviewer', 'task-reviewer'),
+}
+POINTER_PREFIX = '# license: '
+LICENSE_NAME = re.compile(r'LICENSE-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*')
 
 
 def skill_dirs() -> list[str]:
@@ -73,6 +83,53 @@ def bundled_license_violations(repo: Path, skills: list[str],
                 errs.append(f'{rel}: differs from the root {name}; copy it again')
         errs += [f'skills/{skill}/{p.name}: not mapped to {skill} in BUNDLED_LICENSES'
                  for p in sorted(d.glob('LICENSE*')) if p.name not in wanted]
+    return errs
+
+
+def _pointer_split(text: str, surface: str) -> tuple[list[str], list[str]]:
+    '''(inside, outside): the pointer lines that count, and the ones in a
+    Markdown body. A TOML comment line is always inside.'''
+    lines = text.splitlines()
+    pointers = [i for i, line in enumerate(lines) if line.startswith(POINTER_PREFIX)]
+    if surface.endswith('.toml'):
+        return [lines[i] for i in pointers], []
+    end = 0
+    if lines and lines[0].strip() == '---':
+        end = next((i for i in range(1, len(lines)) if lines[i].strip() == '---'),
+                   len(lines))
+    return ([lines[i] for i in pointers if i < end],
+            [lines[i] for i in pointers if i >= end])
+
+
+def agent_license_violations(repo: Path, table: dict[str, tuple[str, ...]]) -> list[str]:
+    '''Each agent carries a `# license:` pointer naming exactly the root
+    license files the table maps to it, on agents/<n>.md and the codex and
+    gemini adapters, and no pointer sits where the model reads it.'''
+    errs: list[str] = []
+    roots = {p.name for p in repo.glob('LICENSE*') if p.is_file()}
+    agents = sorted(p.stem for p in (repo / 'agents').glob('*.md'))
+    for name, owners in sorted(table.items()):
+        if name not in roots:
+            errs.append(f'AGENT_LICENSES: {name} is not a root license file')
+        errs += [f'AGENT_LICENSES: {name} names {agent}, which is not an agent in agents/'
+                 for agent in owners if agent not in agents]
+    for agent in agents:
+        wanted = sorted(name for name, owners in table.items() if agent in owners)
+        for surface in (f'agents/{agent}.md', f'runtimes/codex/agents/{agent}.toml',
+                        f'runtimes/gemini/agents/{agent}.md'):
+            path = repo / surface
+            text = path.read_text() if path.is_file() else ''
+            inside, outside = _pointer_split(text, surface)
+            if outside:
+                errs.append(f'{surface}: license pointer outside the frontmatter, '
+                            'where the model reads it')
+            named = {n for line in inside for n in LICENSE_NAME.findall(line)}
+            errs += [f'{surface}: no license pointer naming {name}, '
+                     f'which AGENT_LICENSES maps to {agent}'
+                     for name in wanted if name not in named]
+            errs += [f'{surface}: license pointer names {name}, '
+                     f'which AGENT_LICENSES does not map to {agent}'
+                     for name in sorted(named - set(wanted))]
     return errs
 
 
@@ -132,6 +189,7 @@ def main() -> int:
     for name in missing_attributions(skill_dirs(), notice):
         errs.append(f'NOTICE: missing attribution entry for skill {name}/')
     errs += bundled_license_violations(REPO, skill_dirs(), BUNDLED_LICENSES)
+    errs += agent_license_violations(REPO, AGENT_LICENSES)
     claude_md = (REPO / 'CLAUDE.md').read_text()
     missing, extra = originals_mismatch(claude_md_originals(claude_md), notice_originals(notice))
     if missing:

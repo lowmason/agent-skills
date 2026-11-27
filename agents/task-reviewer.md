@@ -5,6 +5,7 @@ tools: Read, Bash
 model: sonnet  # task-review floor per subagent-driven-development Model Selection; the controller escalates to opus for risky/subtle diffs via an explicit dispatch override. The final whole-branch review (code-reviewer) stays opus.
 # effort: intentionally unpinned — effort follows the per-dispatch tier (SDD Model
 # Selection); a pin would only be a default, since a per-spawn effort overrides it.
+# license: MIT. Adapted from https://github.com/obra/superpowers, Copyright (c) 2025 Jesse Vincent. Full text: LICENSE-superpowers (repository root; install.py installs it beside this file).
 # cc-guide: subagents.frontmatter subagents.tools @2.1.326
 ---
 

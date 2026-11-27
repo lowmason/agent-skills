@@ -14,6 +14,7 @@ Symlinks are the default, so edits to installed items are live; re-run after a
 pull that adds skills, agents, or commands.
 A full install also includes each runtime's companion agents and commands, and
 for Claude the user-level rules in USER_RULES; --no-rules leaves the rules out.
+With the agents it installs the license files their `# license:` lines name, such as LICENSE-superpowers, in the same directory.
 --skill installs the named skills plus what they cannot work without (the
 DEPENDENCIES table in install.py); other companions only with --companions.
 --rule installs a user-level rule (Claude only) and the skills it names, in
@@ -33,6 +34,7 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -187,6 +189,36 @@ def file_items(source_dir: Path, suffix: str, destination_dir: Path) -> list[Ins
   ]
 
 
+LICENSE_POINTER_RE = re.compile(r'^# license: .*$', re.M)
+LICENSE_NAME_RE = re.compile(r'\bLICENSE-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*')
+
+
+def pointed_licenses(source: Path) -> list[str]:
+  names: list[str] = []
+  for line in LICENSE_POINTER_RE.findall(source.read_text()):
+    for name in LICENSE_NAME_RE.findall(line):
+      if name not in names:
+        names.append(name)
+  return names
+
+
+def agent_license_items(
+  agent_items: list[InstallItem], destination_dir: Path
+) -> list[InstallItem]:
+  items: dict[str, InstallItem] = {}
+  for agent in agent_items:
+    for name in pointed_licenses(agent.source):
+      if name in items:
+        continue
+      if not (REPO / name).is_file():
+        raise InstallError(
+          f'{agent.source.relative_to(REPO)}: license pointer names {name}, '
+          'which is not a file at the repository root'
+        )
+      items[name] = InstallItem(REPO / name, destination_dir / name)
+  return list(items.values())
+
+
 def folder_items(source_dir: Path, destination_dir: Path) -> list[InstallItem]:
   return [
     InstallItem(source, destination_dir / source.name)
@@ -208,7 +240,8 @@ def runtime_items(
   rule_items: list[InstallItem] = []
   if runtime == 'claude':
     skill_root = home / '.claude' / 'skills'
-    agent_items = file_items(REPO / 'agents', '.md', home / '.claude' / 'agents')
+    agent_dir = home / '.claude' / 'agents'
+    agent_items = file_items(REPO / 'agents', '.md', agent_dir)
     command_items = file_items(REPO / 'commands', '.md', home / '.claude' / 'commands')
     rule_items = [
       InstallItem(REPO / 'rules' / f'{name}.md', home / '.claude' / 'rules' / f'{name}.md')
@@ -216,9 +249,8 @@ def runtime_items(
     ]
   elif runtime == 'codex':
     skill_root = home / '.agents' / 'skills'
-    agent_items = file_items(
-      runtimes / 'codex' / 'agents', '.toml', home / '.codex' / 'agents'
-    )
+    agent_dir = home / '.codex' / 'agents'
+    agent_items = file_items(runtimes / 'codex' / 'agents', '.toml', agent_dir)
     command_items = []
   elif runtime == 'gemini':
     # Antigravity CLI (agy), Gemini CLI's successor, reads global skills from
@@ -226,15 +258,15 @@ def runtime_items(
     # adapters are skills there too. Its main agent dispatches an agent from
     # ~/.gemini/config/agents but not from ~/.gemini/agents (agy 1.5.7, probed).
     skill_root = home / '.gemini' / 'config' / 'skills'
-    agent_items = file_items(
-      runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'config' / 'agents'
-    )
+    agent_dir = home / '.gemini' / 'config' / 'agents'
+    agent_items = file_items(runtimes / 'gemini' / 'agents', '.md', agent_dir)
     command_items = folder_items(runtimes / 'gemini' / 'skills', skill_root)
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
   if companions:
-    return skill_items + rule_items + agent_items + command_items
+    license_items = agent_license_items(agent_items, agent_dir)
+    return skill_items + rule_items + agent_items + license_items + command_items
   required = [item for item in command_items if item.source.stem in commands]
   return skill_items + rule_items + required
 

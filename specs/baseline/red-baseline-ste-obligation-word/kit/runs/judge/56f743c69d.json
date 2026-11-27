@@ -1,0 +1,75 @@
+{
+ "case": "agent-instruction",
+ "verdicts": {
+  "r023c85": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the completion and no-errors conditions, and partial artifacts still happen \"sometimes\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite states only what the source says; the flags just point out gaps and add no instructions."
+   },
+   "3": {
+    "pass": true,
+    "why": "\"should\" stays \"should\" and no new obligation word appears."
+   }
+  },
+  "r475e8a": {
+   "1": {
+    "pass": true,
+    "why": "Both conditions stay, and the hedge \"sometimes\" is kept for partial artifacts."
+   },
+   "2": {
+    "pass": true,
+    "why": "Nothing is added to the rewrite, and the flags say outright that no instruction was added."
+   },
+   "3": {
+    "pass": true,
+    "why": "It keeps \"should\" and adds no stronger or extra obligation."
+   }
+  },
+  "re778ed": {
+   "1": {
+    "pass": true,
+    "why": "Consumption still depends on the job completing with no errors, and partial artifacts are \"sometimes\" produced."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact, condition or action; the flags only note what the source leaves out."
+   },
+   "3": {
+    "pass": true,
+    "why": "\"should\" is kept and no obligation word is added."
+   }
+  },
+  "r839413": {
+   "1": {
+    "pass": true,
+    "why": "Both conditions and the \"sometimes\" hedge stay."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no content; the note about the linter is a remark about process, not a new fact in the instruction."
+   },
+   "3": {
+    "pass": true,
+    "why": "\"should\" keeps its strength, and the only other \"should\" sits in a flag that describes a gap, not in the rewrite."
+   }
+  },
+  "rc31646": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the completion and no-errors conditions, and says a partial artifact is \"sometimes\" produced."
+   },
+   "2": {
+    "pass": true,
+    "why": "Changing \"consume\" to \"use\" and adding a \"Warning\" label adds no new fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "\"should\" stays \"should\" and no new obligation word is added."
+   }
+  }
+ }
+}

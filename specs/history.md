@@ -956,3 +956,32 @@ Differences from the design:
 Closed earlier deferred items:
 - "**A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final" (deferred by 85-derive-roadmap-later-qualities-and-spec-refs).
 - "**A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final" (deferred by 85-derive-roadmap-later-qualities-and-spec-refs).
+
+## 112-superpowers-agent-license-travel — 2026-11-27
+Plan: specs/plans/completed/112-superpowers-agent-license-travel.md · Spec: none
+
+Differences from the design:
+- Deviation (Task 1): a mutant task; it added tests for several pointers, a body `# license:` line and the dropped-tools order. Source: plan, Task 1.
+- Deviation (Task 2): a mutant task; it added per-surface, hyphenated-name, `main` wiring and wrong-license tests. Source: plan, Task 2.
+- Deviation (Task 3): a mutant task; it added tests for `pointed_licenses` inputs, duplicates, the refusal text, installed destination names and a name before a file suffix. Source: plan, Task 3.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 112-superpowers-agent-license-travel.
+
+Closed earlier deferred items:
+- "License travel for single-file agents (plan 53's spec, Out of scope)." (deferred by 53-agent-skills-portability): both superpowers-derived agents and their four adapters carry a `# license:` pointer, `install.py` installs `LICENSE-superpowers` beside the agents, and `check_provenance.py` checks the pointers.
+
+## 114-ste-drift-and-obligation-word — 2026-11-27
+Plan: specs/plans/completed/114-ste-drift-and-obligation-word.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 1): the pin test pins SHA-256 of the bytes, not the git blob; the pin moves after the download, whose blob hash 0b48290f proves the bytes — the plan named the blob — none: the blob check still runs at Step 4.
+- Ruling (Task 2): kit.py (runner, scrub, void, judge, flags, tally) was written before its tests, against TDD order; each test added after is proved by a deliberate break that must make it fail — no-model kit code, not shipped skill text — a test that never failed could pass vacuously; the breaks guard that.
+- Ruling (Task 3): (owner D8) agent reps get Read; kit fix: a batch registers every rep before the alarm stops it (2 reps were unregistered at the stop, added from their streams).
+- Ruling (final review): test_unread_flags... and test_flag_ids... now write a passing judge table first; assertions unchanged — the Codex fail-closed fix makes a missing judge table a fail — none.
+- Deviation (Task 3): with `--tools ""`, Opus reps wrote tool calls as text and two hit the output limit; the owner gave agent reps the Read tool (D8, kit amendment 1), and the first 5 reps were set aside. Source: plan, Task 3.
+- Deviation (Task 5): the final review applied the plan's V3 (D10, kit amendment 2): 4 `doc-symlink` reps were void for writing to `/tmp`, and 4 replacements ran. Source: plan, Task 5.
+- Deviation: treatment `agent-instruction` on Sonnet missed the all-checks bar (2 of 5) on a guessed actor and a sentence cap, not on the obligation check. The owner chose to accept it and file an item (D9), so Step 5's wording fix and re-run did not run. Source: plan, § Execution notes.
+- Deferred: 3 items. Source: specs/deferred_items.md, § 114-ste-drift-and-obligation-word.
+
+Closed earlier deferred items:
+- "`SKILL.md` has no line that keeps the strength of an obligation word such as "should"" (deferred by 52-write-with-asd-ste100).
+- "The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and" (deferred by deferred-2026-11-17).

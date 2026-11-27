@@ -162,6 +162,12 @@ with = ['pytest', 'numpy', 'polars']
 notes = ['Router tests.']
 
 [[suite]]
+name = 'ste-obligation-kit'
+dir = 'specs/baseline/red-baseline-ste-obligation-word/kit'
+with = ['pytest']
+notes = ['Plan 114 kit: mechanical checks, fixtures, scrub, void rules and a stub-claude run (no model). git required.']
+
+[[suite]]
 name = 'subagent-driven-development'
 dir = 'skills/subagent-driven-development/scripts'
 with = ['pytest']

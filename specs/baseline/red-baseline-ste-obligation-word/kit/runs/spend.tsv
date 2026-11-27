@@ -1,0 +1,130 @@
+what	cost
+probe rcbbaf2	0.0305
+probe r19d86e	0.0319
+rep reed463	0.0578
+rep r00c178	0.0689
+rep raa17f6	0.0619
+rep rb350aa	3.3681
+rep rb4ed87	3.4926
+probe rad5582	0.0588
+probe r20f9a4	0.0279
+rep rda3ad5	0.0694
+rep r5af8f8	0.0681
+rep r0fdd05	0.0700
+rep r09a75f	0.0689
+rep r1b09d6	0.0716
+rep r653012	0.0325
+rep r1a277f	0.0321
+rep r6128b0	0.0329
+rep rdade9f	0.0339
+rep r6fca49	0.0323
+rep r5afa5e	0.0647
+rep r1983ef	0.0647
+rep r70c412	0.0653
+rep rf3e295	0.0677
+rep r38d468	0.0660
+rep r3b60de	0.0303
+rep r35bccb	0.0304
+rep r5fa200	0.0311
+rep r6821a9	0.0338
+rep r466cc3	0.0353
+rep rcc440a	0.0679
+rep r263793	0.0664
+rep rf26c5f	0.0662
+rep r52a113	0.0682
+rep r4835ff	0.0695
+rep r45e47f	0.0317
+rep r3d9b89	0.0335
+rep rc57b53	0.0339
+rep r93f8f8	0.0345
+rep r4d5f63	0.0355
+judge control agent-tool-description claude-opus-5-5	0.0603
+judge control agent-tool-description claude-sonnet-5-5	0.0384
+judge control agent-error-message claude-opus-5-5	0.0439
+judge control agent-error-message claude-sonnet-5-5	0.0416
+judge control agent-instruction claude-opus-5-5	0.0414
+judge control agent-instruction claude-sonnet-5-5	0.0439
+rep r0226a8	0.0665
+rep r1b2820	0.0681
+rep r8bb20e	0.0695
+rep r22abf7	0.0686
+rep r1b0740	0.0753
+rep rf33b06	0.0326
+rep r780738	0.0331
+rep r17fafe	0.0329
+rep r434fb0	0.0350
+rep r89b000	0.0344
+rep rd3b603	0.0636
+rep rdbb339	0.0645
+rep rdaad48	0.0648
+rep re91e5c	0.0651
+rep r5a2a2f	0.0660
+rep r51ab4c	0.0310
+rep r37eb2a	0.0307
+rep r1f6af4	0.0314
+rep ra44a95	0.0322
+rep r085339	0.0350
+rep rc31646	0.0658
+rep re778ed	0.0666
+rep r475e8a	0.0667
+rep r023c85	0.0660
+rep r839413	0.0680
+rep r5d7c88	0.0311
+rep re3a2c0	0.0327
+rep r70df1b	0.0326
+rep re092db	0.0339
+rep r8254bc	0.0340
+judge treatment agent-tool-description claude-opus-5-5	0.0385
+judge treatment agent-tool-description claude-sonnet-5-5	0.0394
+judge treatment agent-error-message claude-opus-5-5	0.0475
+judge treatment agent-error-message claude-sonnet-5-5	0.0454
+judge treatment agent-instruction claude-opus-5-5	0.0367
+judge treatment agent-instruction claude-sonnet-5-5	0.0445
+rep rd084ca	0.0896
+rep rbc3c3d	0.0589
+rep r141a4d	0.0658
+rep rcdf06e	0.0896
+rep r3c2cea	0.0989
+rep r0d05f8	0.1338
+rep rbd93e0	0.1345
+rep r2f6e6e	0.1860
+rep r540955	0.2156
+rep rff96c3	0.2300
+rep rcb852d	0.0520
+rep r823089	0.0506
+rep r7d8d94	0.0551
+rep rc5676b	0.0566
+rep rbe6885	0.0605
+rep rc2a167	0.1103
+rep r51ae2a	0.1117
+rep r083e0f	0.1184
+rep r6b52f4	0.1226
+rep ra35651	0.1280
+rep r0d1aa3	0.0507
+rep r0238bf	0.0494
+rep rb79c52	0.0505
+rep r41ac38	0.0504
+rep rdfd743	0.0573
+rep r60f3b1	0.1203
+rep r27f0bb	0.1180
+rep rba9db0	0.1227
+rep r529cb6	0.1288
+rep rc19f8c	0.1232
+rep r41ea35	0.0330
+rep r1ccdea	0.0329
+rep rc25a13	0.0333
+rep r6bb04a	0.0347
+rep r68e522	0.0355
+rep rb36c1c	0.0671
+rep rf5fb10	0.0670
+rep r6c4cf5	0.0655
+rep r7703c3	0.0658
+rep r9a3586	0.0749
+judge treatment doc-clean claude-opus-5-5	0.0303
+judge treatment doc-clean claude-sonnet-5-5	0.0270
+judge treatment skill-md claude-opus-5-5	0.0270
+judge treatment skill-md claude-sonnet-5-5	0.0288
+rep rf95374	0.0561
+rep rc8221f	0.0577
+rep r580b65	0.1295
+rep r4d3796	0.1331
