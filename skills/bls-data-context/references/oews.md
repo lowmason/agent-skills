@@ -5,7 +5,7 @@
 OEWS estimates employment and wages for about 830 occupations of the 2018 SOC, for wage and salary workers in nonfarm establishments. It covers 22 of the 23 SOC major groups; major group 55 (military-specific occupations) is out. Self-employed workers, owners and partners in unincorporated firms, private-household employees and unpaid family workers are out of scope. ([HOM Concepts][5])
 
 - **Employment** is the estimated number of full- and part-time **jobs** in an occupation, not persons. ([HOM Concepts][5])
-- **Wages** are straight-time gross pay. Base rate, cost-of-living allowances, guaranteed pay, hazardous-duty pay, incentive pay (commissions, production bonuses) and tips are in. Overtime, shift differentials, nonproduction bonuses, severance and employer benefit costs are out. ([HOM Concepts][5])
+- **Wages** are straight-time gross pay. Base rate, cost-of-living allowances, guaranteed pay, hazardous-duty pay, incentive pay (commissions, production bonuses) and tips are in. Back pay, jury duty pay, overtime pay, severance pay, shift differentials, nonproduction bonuses, employer cost for supplementary benefits and tuition reimbursements are out. ([HOM Concepts][5])
 - **Annual wages** are hourly wages times 2,080 hours (52 weeks times 40 hours). Teachers, pilots and flight attendants have annual wages only. Actors and musicians have hourly wages only. ([HOM Concepts][5], [HOM Calculation][7])
 - **Industry and ownership.** Establishments are classified by NAICS (2022 NAICS since May 2022). Most government establishments are classified by ownership instead: OEWS-defined codes 999100 (federal executive branch and TVA), 999200 (state government, excluding schools and hospitals) and 999300 (local government, excluding schools, hospitals, gambling establishments and casino hotels) replace NAICS sector 92. USPS sits in NAICS 491100 in the industry-specific estimates. ([HOM Concepts][5])
 - **Industry scope.** Most of agriculture is out. Logging (113310) and support activities for crop and animal production (1151, 1152) are in. Private households (NAICS 814) are out. ([HOM Concepts][5])
@@ -19,8 +19,8 @@ OEWS estimates employment and wages for about 830 occupations of the 2018 SOC, f
 
 - **Two panels a year.** One panel is collected in May and one in November. Each holds about 186,000 to 189,000 establishments. Respondents report their payroll that **includes May 12 or November 12**. ([HOM Design][6])
 - **Six panels per estimate.** Each annual estimate combines six semiannual panels, a 3-year cycle of about 1.1 million establishments. The May 2025 estimates combine May 2025, November 2024, May 2024, November 2023, May 2023 and November 2022. ([HOM Design][6], [HOM Calculation][7])
-- **Estimates are published once a year**, with the May panel as the reference month. The "May 2025" vintage is not a May 2025 cross-section. It pools data from November 2022 on. ([HOM Calculation][7])
-- **Consecutive vintages overlap.** From the six-panel window above, two consecutive May vintages share four of their six panels. (Inference from the published window, not a BLS sentence.) Do not treat adjacent vintages as independent samples.
+- **Estimates are published once a year.** ([HOM Presentation][8], [oe.txt][1]) The "May 2025" vintage is not a May 2025 cross-section. It pools data from November 2022 on. ([HOM Calculation][7]) That the May panel is the reference month is an inference from the vintage names, not a BLS sentence.
+- **Consecutive vintages overlap.** From the six-panel window above, two consecutive May vintages share four of their six panels. (Inference from the published window, not a BLS sentence.) Do not treat adjacent vintages as independent samples. Section 7 calls each May vintage "an independent cross-section". The two statements use "independent" in different senses. Section 7 is about area lists: each vintage publishes its own set of areas on its own delineation. This section is about the underlying sample, which overlaps. The sources do not define the section 7 wording.
 - **Government data are a census.** The federal executive branch, USPS and TVA (annual), state government excluding schools and hospitals (each November) and Hawaii local government (each November) enter at the most recent year only. ([HOM Data sources][9], [HOM Design][6])
 - **Employment control.** Each in-scope establishment's employment is the average of its May and November QCEW employment for the two most recent panels, so occupational employment sums to the QCEW-based population. ([HOM Data sources][9], [HOM Calculation][7])
 - **Frame.** The frame is about 8.8 million UI-reporting establishments from QCEW, extracted every 6 months. ([HOM Design][6])
@@ -39,10 +39,10 @@ Each set of estimates mixes three years of panels. A classification change there
 | SOC 2010 to SOC 2018 | May 2019 to May 2021 | May 2019 and May 2020 used a hybrid of the 2010 and 2018 SOC, with combinations found in neither. May 2021 and later are fully 2018 SOC. |
 | NAICS updates | May 2008, May 2012, May 2017, May 2022 | 2007, 2012, 2017 and 2022 NAICS. |
 | Gambling and casinos | May 2014 | Local government gambling establishments and casino hotels moved from industry 9993 to NAICS 7132 and 72112. |
-| Private households | May 2017 | Some establishments moved from NAICS 814 (out of scope) to NAICS 624120 (in scope). Employment in occupations common in 624120 can rise. |
+| Private households | May 2017 | Some establishments moved from NAICS 814 (out of scope) to NAICS 624120 (in scope). BLS says May 2017 employment may show an increase in occupations common in NAICS 624120. |
 | Sample size | May 2017 | Panels fell from about 200,000 establishments. |
-| Estimator | May 2021, May 2022 | MB3 replaced the earlier method in May 2021. May 2022 changed wage processing: reported wage rates now represent private-sector and local government employers, instead of 12 wage intervals. |
-| Geography | May 2005, May 2015, May 2024 (major), May 2018 (detail) | See the delineation table in section 5. |
+| Estimator | May 2021, May 2022 | MB3 replaced the earlier method in May 2021. May 2022 changed wage processing: reported wage rates are used, if available, to represent private-sector and local government employers, instead of placing the wage data into 12 wage intervals. A small percentage of records still has no exact wage rate and is processed in the 12 intervals. ([HOM Concepts][5]) |
+| Geography | May 2005, May 2015, May 2024 (major), May 2018 (detail) | See the delineation table in section 7. |
 
 Other facts that matter across vintages ([HOM History][10]):
 
@@ -184,7 +184,7 @@ OEWS publishes most 2018 SOC detailed occupations. For a few it publishes only t
 
 ### 9.1 OEWS industry levels
 
-`oe.series.industry_code` joins to `oe.industry.industry_code`. The mapping has `industry_code`, `industry_name`, `display_level`, `selectable` and `sort_sequence`. `000000` is cross-industry all ownership. `000001` is cross-industry private only. `display_level=2` rows are broad NAICS sector rows such as construction, manufacturing and retail. State series carry only cross-industry codes. National series carry the industry detail. National industry-specific estimates go to the sector, 3-digit, most 4-digit and selected 5- and 6-digit NAICS levels. ([HOM Concepts][5], [HOM Presentation][8])
+`oe.series.industry_code` joins to `oe.industry.industry_code`. The mapping has `industry_code`, `industry_name`, `display_level`, `selectable` and `sort_sequence`. `000000` is cross-industry all ownership. `000001` is cross-industry private only. `display_level=2` rows are broad NAICS sector rows such as construction, manufacturing and retail. State series carry only cross-industry codes. National series carry the industry detail. The Handbook says national industry-specific estimates go to the sector, 3-digit, most 4-digit and selected 5- and 6-digit NAICS levels. ([HOM Concepts][5], [HOM Presentation][8]) `oe.txt` says the time-series industry classifications correspond to the sector, 3-, 4- and 5-digit NAICS groups, with over 450 industries. ([oe.txt][1]) The two sources differ on 6-digit detail. Check `oe.industry` for the codes actually present.
 
 ### 9.2 CES and QCEW high-level hierarchy
 

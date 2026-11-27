@@ -225,7 +225,7 @@ it points to the relevant `references/<program>.md`.
 | [references/sae.md](references/sae.md) | CES State & Area | State/metro estimation; SAM Gen3 small-area model; benchmark windows; SA two-step; ETL schema; OMB delineation adoption history for SAE and LAUS. |
 | [references/jolts.md](references/jolts.md) | JOLTS | Stock-vs-flow; rate denominators; 21-char series IDs; CES alignment; model-based state estimates. |
 | [references/bed.md](references/bed.md) | BED/BDM | Job-flow definitions; 28-char series IDs; dynamic firm sizing; death lag; flat-file schema. |
-| [references/oews.md](references/oews.md) | OEWS | Occupation×industry×geo scope limits; CES crosswalk; tidy schema; aggregation rules; OMB delineation per May vintage. |
+| [references/oews.md](references/oews.md) | OEWS | Occupation×industry×geo scope limits; panel design and reference periods; vintage comparability; series-ID field positions; flat files; measures; geography with OMB delineation per May vintage; industry scope and the CES crosswalk. |
 | [references/eci.md](references/eci.md) | ECI | Fixed-weight Laspeyres index; ECI-vs-ECEC; reweighting; seasonality; constant-dollar. |
 | [references/ecec.md](references/ecec.md) | ECEC | Cost-level concepts; benefit-cost-over-all-workers caveat; no state estimates; CPE bands. |
 | [references/cps.md](references/cps.md) | CPS | Household concepts; labor-force classification logic; rates/denominators; weights; CPS-vs-CES. |
