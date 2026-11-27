@@ -29,10 +29,10 @@ The drift spec that the probe code argues from is `specs/completed/claude-code-d
 
 ## Review Focus
 
-1. The model changes a step's command text, such as extra quoting. Expected: that step reads as never run, so the verdict is ERROR, not DIVERGES (Task 7, `test_a_rewritten_command_is_an_error_not_a_divergence`).
+1. The model changes a step's command text, such as extra quoting. Expected: that step reads as never run, so the verdict is ERROR, not DIVERGES (Task 6, `test_a_rewritten_command_is_an_error_not_a_divergence`).
 2. The owner's global git config has signing, hooks or another `init.defaultBranch`. Expected: the scratch repos still build the same way (Task 7, `test_the_setup_git_ignores_the_callers_global_config`).
 3. The owner's user settings set `worktree.baseRef`. Expected: fact 4 is not decided by them, because each run loads only project settings and the scratch repos have none (Task 7, `test_each_run_loads_project_settings_only`).
-4. `pwd` prints `/tmp/...` where the scratch path resolves to `/private/tmp/...`. Expected: the place still matches (Task 7, `test_a_pwd_through_a_symlink_names_the_same_place`).
+4. `pwd` prints `/tmp/...` where the scratch path resolves to `/private/tmp/...`. Expected: the place still matches (Task 6, `test_a_pwd_through_a_symlink_names_the_same_place`).
 5. The OS reuses a teardown hook's pid for another process. Expected: that process is never killed and is not read as the hook (Task 2, `test_collect_teardown_never_kills_a_pid_that_is_not_its_hook`).
 
 ## Decisions
