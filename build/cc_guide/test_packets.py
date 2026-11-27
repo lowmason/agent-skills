@@ -277,6 +277,46 @@ def test_a_verify_packet_per_group_copies_the_groups_pages_to_the_head_snapshot(
         '# Sections\n\n## beta.reference · guide lines 37-41\n\nNo triage row sent it here.\n\n')
 
 
+def swap_latest_to_newer(cache, tmp_path):
+    '''A check that swaps latest/ to a 2.1.903 fetch with an edited page.'''
+    newer = tmp_path / 'newer'
+    write_tree(newer, DOCS)
+    write_tree(newer, {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha gamma'),
+                       'changelog.md': DOCS['changelog.md'].replace(
+                           '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n'
+                           '</Update>\n<Update label="2.1.902"')})
+    check.live_docs(test_check.MANIFEST, cache, test_check.serving(newer), test_check.NOW)
+
+
+def test_the_verify_snapshot_holds_the_pages_load_pinned_when_latest_swaps(world, tmp_path):
+    '''Plan 109 R6.4: the head and the pages come from one generation.'''
+    loaded = load(world)
+    old = state.latest_dir(world[1])
+    swap_latest_to_newer(world[1], tmp_path)
+    assert state.latest_dir(world[1]) != old
+    packets.verify(loaded, tmp_path / 'v', ['alpha.overview'], None)
+    held = state.snapshot_docs(world[1], '2.1.902') / 'tools.md'
+    assert held.read_text() == DOCS['tools.md']
+
+
+def test_the_audit_snapshot_holds_the_pages_load_pinned_when_latest_swaps(world, tmp_path):
+    loaded = load(world)
+    swap_latest_to_newer(world[1], tmp_path)
+    packets.audit(loaded, tmp_path / 'a', 'alpha')
+    held = state.snapshot_docs(world[1], '2.1.902') / 'tools.md'
+    assert held.read_text() == DOCS['tools.md']
+
+
+def test_the_snapshot_skips_a_page_the_pinned_generation_lacks_though_latest_has_it(world, tmp_path):
+    (state.latest_dir(world[1]) / 'docs' / 'events.md').unlink()
+    loaded = load(world)
+    swap_latest_to_newer(world[1], tmp_path)
+    assert (state.latest_docs(world[1]) / 'events.md').is_file()
+    packets.audit(loaded, tmp_path / 'a', 'beta')
+    held = state.snapshot_docs(world[1], '2.1.902')
+    assert not (held / 'events.md').exists()
+
+
 def test_a_verify_packet_from_a_settled_triage_carries_its_rows_and_bookkeeping(world, tmp_path):
     write_tree(tmp_path / 't', {packets.SETTLED: json.dumps(
         {'mode': 'triage', 'advance_to': '2.1.902', 'verify': ['alpha.overview'], 'cleared': ['alpha.reference'],

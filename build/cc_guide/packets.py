@@ -24,7 +24,7 @@ from docs import CHANGELOG, Release, page_file, version_key
 from guide import read_citations, sections
 from lint import stale_citations
 from state import (BASELINE, MANIFEST, Manifest, SetupError, Source, baselined_text, citing_files, copy_to_snapshot,
-                   covered_files, group_terms, latest_dir, latest_docs, parse_baseline, parse_manifest, read_fetch_at,
+                   covered_files, group_terms, latest_dir, parse_baseline, parse_manifest, read_fetch_at,
                    snapshot_text)
 
 INDEX = 'index.json'
@@ -245,11 +245,13 @@ def triage(world: World, out: Path, through: str | None, size: int = RANGE) -> P
 
 
 def group_docs(world: World, groups: list[str]) -> Path:
-    '''R8.5's snapshot: the groups' cached pages copied from latest/ to the
-    head release's snapshot, which the verifier greps.'''
+    '''R8.5's snapshot: the groups' cached pages copied, from the generation
+    `load` pinned and not from a latest/ a check may since have swapped, to
+    the head release's snapshot, which the verifier greps.'''
+    pinned = Path(world.docs.origin)
     names = {page: page_file(page) for gid in groups for page in world.manifest.groups[gid].pages
-             if (latest_docs(world.cache) / page_file(page)).is_file()}
-    return copy_to_snapshot(world.cache, world.head, names)
+             if (pinned / page_file(page)).is_file()}
+    return copy_to_snapshot(world.cache, world.head, names, source=pinned)
 
 
 def section_list(world: World, sids: list[str], notes: dict[str, list[str]]) -> tuple[dict, list[str]]:
