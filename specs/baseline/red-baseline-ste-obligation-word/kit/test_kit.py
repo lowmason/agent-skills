@@ -317,3 +317,40 @@ def test_the_cost_alarm_registers_every_rep_of_its_batch(tmp_path):
     done = run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '2', '--jobs', '2')
     assert done.returncode == 3 and 'stop:' in done.stdout
     assert len(kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)) == 2
+
+
+# ---- survivors of the Task 2 mutant run ----
+
+def test_the_symlink_checks_fail_when_the_link_becomes_a_plain_file(tmp_path):
+    case = cases.BY_ID['doc-symlink']
+    repo = tmp_path / 'repo'
+    kit.build_fixture(case, repo)
+    (repo / 'docs/guide.md').unlink()
+    (repo / 'docs/guide.md').write_text('rewritten\n', encoding='utf-8')
+    (repo / 'docs/guide.ste.md').write_text('# Label printer setup\n', encoding='utf-8')
+    assert kit.doc_checks(case, kit.snapshot(case, repo))['link kept'] is False
+
+
+def test_an_origin_on_any_record_voids_the_rep():
+    peer = {'type': 'user', 'origin': {'kind': 'peer'}, 'message': {'content': 'hello'}}
+    assert kit.void_reason(records({}, peer), '').startswith('V4')
+
+
+def test_flag_ids_stay_unique_after_a_voided_rep_leaves_a_gap(tmp_path):
+    env = kit_env(tmp_path, 'Consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '3', '--jobs', '3').returncode == 0
+    reg = tmp_path / 'runs' / 'registry.tsv'
+    reps = [r['rep'] for r in kit.read_tsv(reg, kit.REGISTRY_FIELDS)]
+    write_judge(tmp_path, 'control', 'agent-instruction', 'claude-opus-5-5', dict.fromkeys(reps, True))
+    assert run_kit(env, 'flags').returncode == 0
+    first = {r['rep']: r['flag'] for r in kit.read_tsv(tmp_path / 'runs' / 'flags.tsv', kit.FLAG_FIELDS)}
+    rows = kit.read_tsv(reg, kit.REGISTRY_FIELDS)
+    gone = min(first, key=first.get)
+    kit.write_tsv(reg, kit.REGISTRY_FIELDS, [{**r, 'status': 'V3: test'} if r['rep'] == gone else r for r in rows])
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '3', '--jobs', '1').returncode == 0
+    reps = [r['rep'] for r in kit.read_tsv(reg, kit.REGISTRY_FIELDS) if r['status'] == 'good']
+    write_judge(tmp_path, 'control', 'agent-instruction', 'claude-opus-5-5', dict.fromkeys(reps, True))
+    assert run_kit(env, 'flags').returncode == 0
+    ids = [r['flag'] for r in kit.read_tsv(tmp_path / 'runs' / 'flags.tsv', kit.FLAG_FIELDS)]
+    assert len(ids) == 3 and len(set(ids)) == 3
