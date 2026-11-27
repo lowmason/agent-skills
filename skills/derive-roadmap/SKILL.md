@@ -216,12 +216,13 @@ Ask, put a re-ranking of the list and your proposed next stage (one item to
 promote), or stopping the track. A promoted item becomes a stage entry only
 after the answer. An item marked `suggested, not approved` is not yet an
 outcome, and a list that holds only such items is still waiting. Before the
-answer such an item is never promoted or counted. The question asks your
-partner to approve and rank each one, or decline it, and only then proposes
-the next stage, so one answer settles both. When your partner stops the track,
-only that track's remaining items park, one deferred item each, under the
-Parking rule below. The roadmap stays live: it moves only through §6, or when
-your partner parks the whole roadmap.
+answer such an item is never promoted or counted, and the re-ranking leaves it
+out. Any rank you propose for it goes only beside the ask to approve or
+decline it. The question asks your partner to approve and rank each one, or
+decline it, and only then proposes the next stage, so one answer settles both.
+When your partner stops the track, only that track's remaining items park,
+one deferred item each, under the Parking rule below. The roadmap stays live:
+it moves only through §6, or when your partner parks the whole roadmap.
 
 Then, once no item marked `suggested, not approved` is open, hand off the next
 stage (§4). With every stage ticked and no Ranked list waiting, go to §6.
