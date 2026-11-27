@@ -3121,7 +3121,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       "Out of scope". Size: plan. Done when: a skill scanner runs on `skills/` from the commit
       lints or from `.github/workflows/lints.yml`, and its first findings are triaged.
       → progress 2026-11-17 (owner ruling): plan it. The plan names the scanner, its source and its version, and the owner approves before anything is downloaded.
-- [ ] License travel for single-file agents (plan 53's spec, Out of scope).
+- [x] License travel for single-file agents (plan 53's spec, Out of scope).
       `agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers
       and install as single files without `LICENSE-superpowers`: the same gap R4 closes for
       skills. See `specs/completed/agent-skills-portability-spec.md`, "Out of scope", and
@@ -3129,6 +3129,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       points to the superpowers notice, and `install.py` installs that notice with it.
       → progress 2026-11-17 (owner ruling): `install.py` installs `LICENSE-superpowers` beside the agents, and each superpowers-derived agent carries a one-line pointer to it.
       → planned 2026-11-27: specs/plans/112-superpowers-agent-license-travel.md
+      → done 2026-11-27 (plan 112): both superpowers-derived agents and their four adapters carry a `# license:` pointer, `install.py` installs `LICENSE-superpowers` beside the agents, and `check_provenance.py` checks the pointers.
 - [x] Split and rewrite writing-skills against the guide (residual rewrite from plan 53's
       "Splitting writing-skills", Out of scope). Plan 72 completed the body split, removed
       `writing-skills-late-critical-headings` and updated the body-warning test and
@@ -6531,3 +6532,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       kept it out of the data files. A join through `naics_2017_to_2022` is possible but is not described.
       Size: quick-fix. Done when: SKILL.md says how to bridge IND 2017 and 2022, or the owner rules that no note is wanted.
       → done 2026-11-27 (/deferred quick fix): SKILL.md points to `references/revision-process.md`, which now gives the three-hop bridge `census_ind_2017_to_naics_2017` → `naics_2017_to_2022` → `census_ind_2022_to_naics_2022`, with counts read from `data/` (249 of 271 codes reach one 2022 code, six reach more, 16 have only `partial` rows or none) and a line that the workbook's own IND crosswalk is not bundled.
+
+## 112-superpowers-agent-license-travel — 2026-11-27
+- [ ] Probe live loading of the pointed agents after a default install (final review of plan 112, owner ruled defer).
+      Decision D5's owner check on 2026-11-27 put a regular-file copy of `LICENSE-superpowers` beside agents that
+      carried no pointer yet. It did not cover a default symlink install, agy or Codex reading adapters that now
+      carry the `# license:` comment, or Claude Code meeting the file in `~/.claude/agents/`. Size: quick-fix.
+      Done when: after `uv run python install.py all --companions` on the owner's Mac, `agy agents`, Codex `/agents`
+      and Claude Code `/agents` each list the same agents as before, with no `LICENSE-superpowers` entry and no
+      startup warning, and the result is noted here.

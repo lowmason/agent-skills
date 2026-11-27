@@ -6,6 +6,7 @@ tools:
 - read_file
 - run_command
 - manage_task
+# license: MIT. Adapted from https://github.com/obra/superpowers, Copyright (c) 2025 Jesse Vincent. Full text: LICENSE-superpowers (repository root; install.py installs it beside this file).
 ---
 
 You are a Senior Code Reviewer with expertise in software architecture,

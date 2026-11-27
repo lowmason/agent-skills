@@ -932,3 +932,15 @@ Closed deferred items:
 - "Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets" (deferred by 110-build-runner-and-ci-kit-suites): `clean_env` sets `XDG_CONFIG_HOME` to `/dev/null/no-xdg-config`, and `test_clean_env_hides_the_users_default_excludes` shows a `$HOME/.config/git/ignore` that lists `build/` no longer hides `build/a.py` (it failed before the fix).
 - "Put the Census industry (IND) counts in `skills/classification-codes/SKILL.md` prose under the count test" (deferred by 111-codes-and-bls-reference-skills): `test_skill_census_ind_prose_counts_match_data` reads the four numbers from the prose and checks them against the IND list heights, the six-digit codes each expansion claims and the NAICS level-6 counts; it failed when 266 or 1,012 was changed by one.
 - "Add a note to `skills/classification-codes/SKILL.md` on bridging Census IND 2017 codes to 2022 codes (final" (deferred by 111-codes-and-bls-reference-skills): SKILL.md points to `references/revision-process.md`, which now gives the three-hop bridge `census_ind_2017_to_naics_2017` → `naics_2017_to_2022` → `census_ind_2022_to_naics_2022`, with counts read from `data/` (249 of 271 codes reach one 2022 code, six reach more, 16 have only `partial` rows or none) and a line that the workbook's own IND crosswalk is not bundled.
+
+## 112-superpowers-agent-license-travel — 2026-11-27
+Plan: specs/plans/completed/112-superpowers-agent-license-travel.md · Spec: none
+
+Differences from the design:
+- Deviation (Task 1): a mutant task; it added tests for several pointers, a body `# license:` line and the dropped-tools order. Source: plan, Task 1.
+- Deviation (Task 2): a mutant task; it added per-surface, hyphenated-name, `main` wiring and wrong-license tests. Source: plan, Task 2.
+- Deviation (Task 3): a mutant task; it added tests for `pointed_licenses` inputs, duplicates, the refusal text, installed destination names and a name before a file suffix. Source: plan, Task 3.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 112-superpowers-agent-license-travel.
+
+Closed earlier deferred items:
+- "License travel for single-file agents (plan 53's spec, Out of scope)." (deferred by 53-agent-skills-portability): both superpowers-derived agents and their four adapters carry a `# license:` pointer, `install.py` installs `LICENSE-superpowers` beside the agents, and `check_provenance.py` checks the pointers.
