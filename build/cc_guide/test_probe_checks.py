@@ -768,6 +768,8 @@ TEARDOWN_PASS = 'the async SessionStart hook got TERM first at teardown and was 
 TEARDOWN_HUP = 'the async SessionStart hook got HUP first at teardown and was gone within 5 s'
 NO_SIGNAL = 'the async SessionStart hook got none of TERM, HUP, INT at teardown'
 NO_TRAP = ", so notice.sh's trap never runs"
+EXPIRED = ('the async SessionStart hook ran out its 120 s lifetime before claude -p ended, so its log shows nothing '
+           'about teardown')
 NOTICE_SH = Path(__file__).resolve().with_name('notice.sh')
 
 
@@ -833,6 +835,24 @@ def test_async_teardown_reads_the_first_signal_and_how_the_hook_ended(log, verdi
 ])
 def test_async_teardown_is_error_on_a_log_of_another_shape(log, finding):
     assert pc.assess_async_teardown(teardown_run(), log) == (ERROR, finding)
+
+
+def test_a_teardown_hook_that_expired_is_an_error():
+    '''A hook that ran out its lifetime ended by itself, so its log shows nothing about claude's teardown.'''
+    events = teardown_run()
+    verdict = pc.assess_async_teardown(events, ['start 4242', 'expired', 'gone'])
+    assert verdict.outcome == ERROR
+    assert f'{pc.TEARDOWN_LIFETIME} s lifetime' in verdict.finding and pc.TEARDOWN_LIFETIME == 120
+
+
+@pytest.mark.parametrize('log', [['start 41', 'TERM', 'expired', 'gone'], ['start 41', 'expired', 'alive'],
+                                 ['start 41', 'expired'], ['expired']])
+def test_an_expired_line_anywhere_in_the_log_is_read_before_any_other_reading(log):
+    assert pc.assess_async_teardown(teardown_run(), log) == (ERROR, EXPIRED)
+
+
+def test_an_expired_hook_is_an_error_even_when_the_run_broke():
+    assert pc.assess_async_teardown(None, ['start 41', 'expired', 'gone']) == (ERROR, EXPIRED)
 
 
 def test_async_teardown_reads_every_session_start_hook_response_and_no_other():

@@ -37,6 +37,7 @@ class Invocation(NamedTuple):
     env: dict[str, str]   # added to the caller's environment, less SCRUBBED_ENV
     timeout: int          # seconds
     suffix: str = '.jsonl'
+    sweep: bool = True    # after a normal exit, SIGKILL whatever the run left in its process group
 
 
 # Runs one invocation from a directory, writing its stdout and stderr to the
@@ -64,7 +65,9 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     bash: the group gets no terminal signal of its own. A stop signal while
     the run starts is held until `proc` is bound, so it cannot orphan it.
     The run inherits the caller's environment less SCRUBBED_ENV, then
-    takes what the invocation adds.'''
+    takes what the invocation adds. After a normal exit, a run with sweep
+    set has its group swept with SIGKILL, so a background child it left
+    behind does not outlive the probe.'''
     env = inherited_env() | inv.env
     with out.open('wb') as stdout, err.open('wb') as stderr:
         proc = None
@@ -72,7 +75,7 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
             with held_signals():
                 proc = subprocess.Popen(inv.argv, cwd=cwd, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
                                         env=env, start_new_session=True)
-            return proc.wait(timeout=inv.timeout)
+            code = proc.wait(timeout=inv.timeout)
         except subprocess.TimeoutExpired:
             stop_group(proc)
             return None
@@ -80,11 +83,18 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
             if proc is not None:
                 stop_group(proc)
             raise
+    if inv.sweep:
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.killpg(proc.pid, signal.SIGKILL)
+    return code
 
 
 def stop_group(proc: subprocess.Popen) -> None:
     '''SIGTERM to a run's process group, which lets a script's EXIT trap
-    run, then SIGKILL to whatever is left after KILL_GRACE. Stop signals are
+    run, then SIGKILL to whatever is left after up to KILL_GRACE seconds.
+    The wait is for the group's leader, not for every member: a member that
+    outlives the leader gets the SIGKILL at once. A run that exits normally
+    is swept by execute instead. Stop signals are
     held meanwhile, so a second Ctrl-C cannot skip the SIGKILL. macOS answers
     EPERM for a group whose members have all exited but are not reaped. The
     reaps are bounded, since an interrupted wait can leave Popen's lock held.'''

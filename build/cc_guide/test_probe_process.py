@@ -84,6 +84,46 @@ def test_a_timeout_stops_everything_the_run_started(tmp_path, pids):
     assert gone(child_of(pids))
 
 
+# A run whose leader starts a child and exits 0 at once, leaving the child in its process group.
+LEAVER = '#!/bin/sh\nsleep 60 &\necho "$$ $!" > "$1"\n'
+
+
+def test_a_normal_exit_sweeps_what_the_run_left_in_its_group(tmp_path, pids):
+    '''A run that ends normally can still leave a background child in its group; execute ends it.'''
+    inv = probe_process.Invocation('leaver', [str(executable(tmp_path / 'leaver', LEAVER)), str(pids)], {}, 30)
+    assert probe_process.execute(inv, tmp_path, tmp_path / 'leaver.out', tmp_path / 'leaver.err') == 0
+    assert gone(child_of(pids))
+
+
+def test_an_invocation_with_sweep_off_leaves_its_group_alone(tmp_path, pids):
+    '''async-teardown reads whether claude itself ended its hook, so its run is not swept.'''
+    inv = probe_process.Invocation('leaver', [str(executable(tmp_path / 'leaver', LEAVER)), str(pids)], {}, 30,
+                                   sweep=False)
+    assert probe_process.execute(inv, tmp_path, tmp_path / 'leaver.out', tmp_path / 'leaver.err') == 0
+    child = child_of(pids)
+    try:
+        assert not gone(child, 0.3)
+    finally:
+        with contextlib.suppress(ProcessLookupError):
+            os.kill(child, signal.SIGKILL)
+
+
+def test_a_sweep_of_a_group_already_gone_or_refused_still_returns_the_exit_code(tmp_path, monkeypatch):
+    '''The sweep suppresses what stop_group suppresses: no group left, and the EPERM macOS gives for a group of
+    unreaped members.'''
+    script = executable(tmp_path / 'three', '#!/bin/sh\nexit 3\n')
+    inv = probe_process.Invocation('three', [str(script)], {}, 30)
+    for failure in (ProcessLookupError, PermissionError):
+        sent = []
+
+        def refuse(pgid, signum, failure=failure):
+            sent.append(signum)
+            raise failure
+        monkeypatch.setattr(probe_process.os, 'killpg', refuse)
+        assert probe_process.execute(inv, tmp_path, tmp_path / 'three.out', tmp_path / 'three.err') == 3
+        assert sent == [signal.SIGKILL]
+
+
 def test_an_interrupt_stops_everything_the_run_started_and_still_propagates(tmp_path, pids, monkeypatch):
     '''Ctrl-C while a probe runs: its own process group gets no SIGINT from
     the terminal, so execute stops the group itself before re-raising.'''

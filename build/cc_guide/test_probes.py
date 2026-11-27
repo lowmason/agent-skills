@@ -2,6 +2,7 @@
 directory and the PROBES.md row each probe leaves (R10.6), the version
 refusal (R10.3), which probes run, and binaries. Every claude here is a
 fake, so no test spends a token or reads the real ~/.claude.'''
+import builtins
 import contextlib
 import json
 import os
@@ -322,7 +323,37 @@ def test_the_log_shows_the_home_directory_as_a_tilde(isolated_home):
     assert probes.shown_path(Path('/opt/claude')) == '/opt/claude'
 
 
-def planted_privates(monkeypatch) -> list[str]:
+def test_the_binary_cell_hides_the_resolved_home_and_the_login(tmp_path, monkeypatch):
+    '''HOME may be a symlink, and a binary found through PATH is often given by its resolved path.'''
+    real = tmp_path / 'real-home'
+    (real / 'zzlogin' / 'bin').mkdir(parents=True)
+    link = tmp_path / 'home-link'
+    link.symlink_to(real)
+    monkeypatch.setenv('HOME', str(link))
+    monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
+    binary = real / 'zzlogin' / 'bin' / 'claude'
+    row = probes.log_row(TODAY, '2.1.902', binary, 'agent-tools', probes.Verdict(PASS, 'ok'), False)
+    shown = row.split(' | ')[2]
+    assert shown.startswith('~')
+    assert str(real) not in row and 'zzlogin' not in row
+    assert shown == '~/<private>/bin/claude'
+    assert probes.shown_path(real) == '~'
+
+
+def test_run_prints_the_scrubbed_finding(repo, tmp_path, claude, isolated_home, monkeypatch):
+    '''The terminal gets the finding the log gets: a transcript of a run can be pasted anywhere.'''
+    finding = f'OSError: {Path.home()}/x refused mcp__srv__tool'
+    monkeypatch.setattr(probes, 'run_probe', lambda *args: probes.Verdict(ERROR, finding))
+    code, lines = run(repo, tmp_path, claude, FakeRuns({}), only=['agent-tools'])
+    assert code == 1
+    (printed,) = [line for line in lines if line.startswith('agent-tools: ')]
+    assert printed == 'agent-tools: ERROR: OSError: <private>/x refused <mcp-tool>'
+    assert str(Path.home()) not in printed
+    assert probes.public_finding(probes.Verdict(ERROR, finding)) == 'OSError: <private>/x refused <mcp-tool>'
+
+
+@pytest.fixture
+def planted_privates(isolated_home, monkeypatch) -> list[str]:
     '''The five strings a committed probe file must not show (owner, plan 58 decision D3), the login name set
     to a value no path or word in a test holds.'''
     monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
@@ -330,9 +361,9 @@ def planted_privates(monkeypatch) -> list[str]:
             os.path.realpath(tempfile.gettempdir()), 'zzlogin']
 
 
-def test_the_log_row_holds_no_private_text_and_no_mcp_tool_name(isolated_home, monkeypatch):
+def test_the_log_row_holds_no_private_text_and_no_mcp_tool_name(isolated_home, planted_privates):
     '''A finding built from an OSError, a scratch path or a tool name reaches a public repo through PROBES.md.'''
-    planted = planted_privates(monkeypatch)
+    planted = planted_privates
     finding = f"OSError: {' '.join(planted)} refused 'mcp__srv__tool' for mcp__plug__other"
     verdict = probes.Verdict(ERROR, finding)
     row = probes.log_row(TODAY, '2.1.902', isolated_home / 'bin' / 'claude', 'agent-tools', verdict, True)
@@ -826,14 +857,16 @@ def test_the_teardown_hook_logs_each_signal_at_once_and_keeps_running(tmp_path):
             assert proc.poll() is None, f'the hook ended on {name}'
 
 
-def test_the_teardown_hook_ends_by_itself_after_its_lifetime(tmp_path):
-    '''Nothing the probe starts runs unbounded: with its 120-second bound cut to 2, the hook ends on its own.'''
+def test_the_teardown_hook_logs_expired_once_its_lifetime_ends(tmp_path):
+    '''Nothing the probe starts runs unbounded: with its 120-second bound cut to 2, the hook ends on its own, and
+    its last line says so, so the assessment never reads its natural end as claude's teardown.'''
     bound = f'-lt {probes.TEARDOWN_LIFETIME} ]'
     assert probes.TEARDOWN_LIFETIME == 120 and bound in probes.TEARDOWN_HOOK
     proc, log = start_hook(tmp_path, probes.TEARDOWN_HOOK.replace(bound, '-lt 2 ]'))
     with reaped(proc):
         assert proc.wait(timeout=10) == 0
-        assert log.read_text(encoding='utf-8') == f'start {proc.pid}\n'
+        assert log.read_text(encoding='utf-8').splitlines()[-1] == 'expired'
+        assert log.read_text(encoding='utf-8') == f'start {proc.pid}\nexpired\n'
 
 
 def test_the_teardown_probe_reads_its_run_like_a_live_one(tmp_path):
@@ -848,10 +881,56 @@ def test_the_teardown_probe_reads_its_run_like_a_live_one(tmp_path):
                                                          'teardown.log']
 
 
+def test_the_teardown_run_is_not_swept_so_collect_sees_what_claude_left(tmp_path):
+    '''A sweep after claude -p ends would kill a hook claude left behind, and the log would read gone.'''
+    (inv,) = probes.prepare_teardown(tmp_path, 'claude', REPO)
+    assert inv.sweep is False
+    tools = tmp_path / 'tools'
+    tools.mkdir()
+    assert all(inv.sweep for inv in probes.prepare_agent_tools(tools, 'claude', REPO))
+
+
+def test_collect_teardown_never_kills_a_pid_that_is_not_its_hook(tmp_path, monkeypatch):
+    '''The OS may reuse a hook's pid once the hook is gone: that process is never signalled and never read as the
+    hook (Review Focus 5).'''
+    real_kill, sent = os.kill, []
+
+    def spy(pid, signum):
+        if signum:
+            sent.append((pid, signum))
+        return real_kill(pid, signum)
+    with reaped(subprocess.Popen(['sleep', '60'])) as other:
+        (tmp_path / 'teardown.log').write_text(f'start {other.pid}\nTERM\n', encoding='utf-8')
+        run_dir = tmp_path / 'run'
+        run_dir.mkdir()
+        monkeypatch.setattr(probes.os, 'kill', spy)
+        probes.collect_teardown(tmp_path, run_dir)
+        monkeypatch.undo()
+        assert sent == []
+        assert (run_dir / 'teardown.log').read_text(encoding='utf-8').splitlines()[-1] == 'gone'
+        assert other.poll() is None
+
+
+def test_is_hook_reads_the_command_line_of_the_pid(tmp_path, monkeypatch):
+    proc, log = start_hook(tmp_path)
+    with reaped(proc):
+        assert written(log)
+        assert probes.is_hook(proc.pid, tmp_path / probes.TEARDOWN_SCRIPT)
+        assert not probes.is_hook(proc.pid, tmp_path / 'other-hook.sh')
+    assert not probes.is_hook(gone_pid(), tmp_path / probes.TEARDOWN_SCRIPT)
+
+    def no_ps(*args, **kwargs):
+        raise OSError('no ps')
+    monkeypatch.setattr(probes.subprocess, 'run', no_ps)
+    assert not probes.is_hook(os.getpid(), Path(sys.argv[0]))
+
+
 def test_collect_teardown_waits_for_a_hook_that_goes_late_and_reads_its_log_after(tmp_path):
     '''A hook that logs TERM and ends a second after collect starts reads gone, with that TERM in the log.'''
     log = tmp_path / 'teardown.log'
-    pid = orphan(f"sleep 1; printf 'TERM\\n' >> {shlex.quote(str(log))}")
+    body = f"#!/bin/sh\nsleep 1\nprintf 'TERM\\n' >> {shlex.quote(str(log))}\n"
+    hook = executable(tmp_path / probes.TEARDOWN_SCRIPT, body)
+    pid = orphan(shlex.quote(str(hook)))
     log.write_text(f'start {pid}\n', encoding='utf-8')
     run_dir = tmp_path / 'run'
     run_dir.mkdir()
@@ -911,6 +990,7 @@ def test_collect_teardown_counts_a_pid_it_may_not_signal_as_alive(tmp_path, monk
         raise PermissionError(1, 'Operation not permitted')
 
     monkeypatch.setattr(probes, 'TEARDOWN_WAIT', 0.2)
+    monkeypatch.setattr(probes, 'is_hook', lambda pid, hook: True)
     monkeypatch.setattr(probes.os, 'kill', refuse)
     (tmp_path / 'teardown.log').write_text('start 99999\nTERM\n', encoding='utf-8')
     run_dir = tmp_path / 'run'
@@ -1126,14 +1206,59 @@ def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
         ERROR, 'OSError: disk full')
 
 
+def test_a_run_dir_that_cannot_be_made_is_an_error_row(tmp_path):
+    '''(i): run_probe returns ERROR, never a traceback, so the row is still written.'''
+    parent = tmp_path / 'a-file'
+    parent.write_text('', encoding='utf-8')
+    verdict = probes.run_probe('agent-tools', 'claude', REPO, parent / 'run', FakeRuns(TOOLS_PASS))
+    assert verdict.outcome == ERROR
+    name = verdict.finding.partition(':')[0]
+    assert issubclass(getattr(builtins, name), OSError), verdict.finding
+
+
+def test_a_scratch_folder_that_cannot_be_made_is_an_error_row(tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path / 'missing'))
+    verdict = probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'run', FakeRuns(TOOLS_PASS))
+    assert verdict.outcome == ERROR and verdict.finding.startswith('FileNotFoundError: ')
+
+
+def scratch_folders(tmp: Path) -> list[Path]:
+    return sorted(tmp.glob('cc-guide-probe-*'))
+
+
+def test_a_scratch_folder_inside_a_work_tree_is_an_error_and_is_removed(tmp_path, monkeypatch):
+    work = (tmp_path / 'work').resolve()
+    (work / 'tmp').mkdir(parents=True)
+    subprocess.run(['git', 'init', '-q'], cwd=work, check=True, capture_output=True)
+    monkeypatch.setattr(tempfile, 'tempdir', str(work / 'tmp'))
+    fake = FakeRuns(TOOLS_PASS)
+    verdict = probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'run', fake)
+    assert verdict.outcome == ERROR and 'inside a git work tree' in verdict.finding
+    assert f'{work}{os.sep}' in verdict.finding
+    assert fake.ran == []
+    assert scratch_folders(work / 'tmp') == []
+
+
+def test_scratch_is_removed_after_an_error_and_after_a_timeout(tmp_path, monkeypatch):
+    tmp = tmp_path / 'tmp'
+    tmp.mkdir()
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp))
+
+    def broken(inv, cwd, out, err):
+        raise OSError('no claude')
+    timeout = probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'r1', lambda inv, cwd, out, err: None)
+    assert timeout.outcome == ERROR and 'timed out' in timeout.finding
+    assert scratch_folders(tmp) == []
+    assert probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'r2', broken) == (ERROR, 'OSError: no claude')
+    assert scratch_folders(tmp) == []
+
+
 def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_run(tmp_path, isolated_home,
-                                                                                   monkeypatch):
+                                                                                   planted_privates):
     # The trim drops an init event's cwd and memory_paths, so those prove nothing. The private strings go where the
     # trim keeps them, a Bash command, and each must come out as <private> on its own: a path that another entry
     # covers by its prefix, as the temporary directory covers a home inside it, must not hide an uncovered one.
-    monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
-    planted = [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
-               os.path.realpath(tempfile.gettempdir()), 'zzlogin']
+    planted = planted_privates
     ran = {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'm', 'content': [
         {'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': 'ls ' + ' '.join(planted)}}]}}
     run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
@@ -1161,10 +1286,10 @@ def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_ru
      'agent-model-pins.transcripts.json'),
     ('stop-continuation', 'stop.jsonl', 'stop.log', 'false\n@P@\ntrue\n', 'stop-continuation.log'),
 ])
-def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated_home, monkeypatch, pid, stream_name,
-                                                              side_name, template, fixture):
+def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated_home, planted_privates, pid,
+                                                              stream_name, side_name, template, fixture):
     '''A transcripts.json or a stop.log is copied whole, so it needs the same scrub as a stream.'''
-    planted = planted_privates(monkeypatch)
+    planted = planted_privates
     run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
     write_tree(run_dir, {stream_name: stream(init(), RESULT), side_name: template.replace('@P@', ' '.join(planted))})
     probes.save_fixtures(run_dir, pid, dest)

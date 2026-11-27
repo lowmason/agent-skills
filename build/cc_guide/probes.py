@@ -469,18 +469,20 @@ def assess_explore(read: Read) -> Verdict:
 
 # async-teardown: an async SessionStart hook that logs `start <pid>`, then the name of each TEARDOWN_SIGNALS signal
 # it gets, and keeps running, since each trap only logs. `sleep 1 & wait $!` lets a trap run at once, not once a sleep
-# ends, and the loop ends by itself within TEARDOWN_LIFETIME seconds, so the hook never runs unbounded. It writes
-# nothing to stdout or stderr, so a pipe that claude closes cannot end it with SIGPIPE.
+# ends, and the loop ends by itself within TEARDOWN_LIFETIME seconds, so the hook never runs unbounded; it then logs
+# TEARDOWN_EXPIRED, which the assessment reads as ERROR. It writes nothing to stdout or stderr, so a pipe that claude
+# closes cannot end it with SIGPIPE.
 TEARDOWN_WAIT = probe_checks.TEARDOWN_WAIT  # seconds collect_teardown waits for the hook to go
 TEARDOWN_POLL = 0.1  # seconds between two looks for the hook
-TEARDOWN_LIFETIME = 120  # seconds the hook runs at most: its loop's one-second sleeps
+TEARDOWN_LIFETIME = probe_checks.TEARDOWN_LIFETIME  # seconds the hook runs at most
 TEARDOWN_TURNS = 1
 TEARDOWN_LOG = 'teardown.log'
+TEARDOWN_SCRIPT = 'teardown-hook.sh'
 TEARDOWN_TRAP = '''trap 'printf "{name}\\n" >> "$log"' {name}'''
 TEARDOWN_HOOK = '\n'.join(['#!/bin/sh', 'log=$1', 'echo "start $$" >> "$log"',
                            *(TEARDOWN_TRAP.format(name=name) for name in probe_checks.TEARDOWN_SIGNALS),
                            'n=0', f'while [ "$n" -lt {TEARDOWN_LIFETIME} ]; do', '    sleep 1 & wait $!',
-                           '    n=$((n + 1))', 'done', ''])
+                           '    n=$((n + 1))', 'done', f'echo {probe_checks.TEARDOWN_EXPIRED} >> "$log"', ''])
 
 
 def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
@@ -489,8 +491,9 @@ def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]
     matcher, as .claude/settings.json registers notice.sh's refresh, and
     asks for hook events in the stream, where claude -p may finalize the
     hook as cancelled. The reply takes one turn, so the hook is still
-    running when the run ends.'''
-    hook = scratch / 'teardown-hook.sh'
+    running when the run ends. The run is not swept, so collect_teardown
+    sees whether claude itself ended the hook.'''
+    hook = scratch / TEARDOWN_SCRIPT
     hook.write_text(TEARDOWN_HOOK, encoding='utf-8')
     hook.chmod(0o755)
     command = f'{shlex.quote(str(hook))} {shlex.quote(str(scratch / TEARDOWN_LOG))}'
@@ -500,7 +503,7 @@ def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]
     (scratch / '.claude' / 'settings.json').write_text(json.dumps(settings, indent=1) + '\n', encoding='utf-8')
     argv = claude_args(claude, 'Reply with the word OK.', turns=TEARDOWN_TURNS, sources='project', mode='default',
                        extra=('--include-hook-events',))
-    return [Invocation('teardown', argv, {}, PROBE_TIMEOUT)]
+    return [Invocation('teardown', argv, {}, PROBE_TIMEOUT, sweep=False)]
 
 
 def read_lines(path: Path) -> list[str]:
@@ -519,6 +522,18 @@ def running(pid: int) -> bool:
     return True
 
 
+def is_hook(pid: int, hook: Path) -> bool:
+    '''Whether the process with the pid runs the hook script: its command
+    line, as `ps -o args=` shows it, holds the script's path. A pid alone is
+    not a process identity, since the OS may reuse a gone hook's pid. A ps
+    that fails, as it does for a pid no process holds, is False.'''
+    try:
+        proc = subprocess.run(['ps', '-o', 'args=', '-p', str(pid)], capture_output=True, text=True)
+    except OSError:
+        return False
+    return proc.returncode == 0 and str(hook) in proc.stdout
+
+
 def hook_pids(lines: list[str]) -> list[int]:
     '''The pid on each start line of the hook's log, less those os.kill
     must never get: 0, which is the caller's own process group, 1, which is
@@ -532,20 +547,25 @@ def collect_teardown(scratch: Path, run_dir: Path) -> None:
     each pid on its start lines was gone within TEARDOWN_WAIT seconds of
     claude -p's end. Each one still there after the wait, or when the wait
     is cut short, gets SIGKILL, which no trap catches, so the hook never
-    outlives the probe. The log is read again after the wait, so a signal
+    outlives the probe. A pid counts as there only while it runs the hook
+    (is_hook): a process that took a gone hook's pid reads as gone and is
+    never signalled. The log is read again after the wait, so a signal
     the hook logs late still counts. A log with no start line is copied as
     it is, and an absent one as empty: the assessment reads either as
     ERROR.'''
-    log = scratch / TEARDOWN_LOG
+    log, hook = scratch / TEARDOWN_LOG, scratch / TEARDOWN_SCRIPT
     pids, end = hook_pids(read_lines(log)), []
+
+    def there(pid: int) -> bool:
+        return running(pid) and is_hook(pid, hook)
     try:
         deadline = time.monotonic() + TEARDOWN_WAIT
-        while any(map(running, pids)) and time.monotonic() < deadline:
+        while any(map(there, pids)) and time.monotonic() < deadline:
             time.sleep(TEARDOWN_POLL)
         if pids:
-            end = [probe_checks.TEARDOWN_ALIVE if any(map(running, pids)) else probe_checks.TEARDOWN_GONE]
+            end = [probe_checks.TEARDOWN_ALIVE if any(map(there, pids)) else probe_checks.TEARDOWN_GONE]
     finally:
-        for pid in filter(running, pids):
+        for pid in filter(there, pids):
             with contextlib.suppress(ProcessLookupError, PermissionError):
                 os.kill(pid, signal.SIGKILL)
     (run_dir / TEARDOWN_LOG).write_text(''.join(f'{line}\n' for line in [*read_lines(log), *end]), encoding='utf-8')
@@ -645,11 +665,12 @@ def new_run_dir(parent: Path, stem: str) -> Path:
 def run_probe(pid: str, claude: str, repo: Path, run_dir: Path, execute: Execute = execute) -> Verdict:
     '''One probe, from a fresh temporary directory that is removed after the
     verdict; its raw output stays in run_dir. A setup failure, a timeout or
-    unreadable output is ERROR, never a pass.'''
-    probe = PROBE_RUNS[pid]
-    run_dir.mkdir(parents=True, exist_ok=True)
-    scratch = Path(tempfile.mkdtemp(prefix=f'cc-guide-probe-{pid}-')).resolve()
+    unreadable output is ERROR, never a pass, and so is a run directory or
+    a scratch directory that cannot be made.'''
+    probe, scratch = PROBE_RUNS[pid], None
     try:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        scratch = Path(tempfile.mkdtemp(prefix=f'cc-guide-probe-{pid}-')).resolve()
         if inside_a_repo(scratch):
             return Verdict(ERROR, f'the temporary directory {scratch} is inside a git work tree')
         for inv in probe.prepare(scratch, claude, repo):
@@ -661,7 +682,8 @@ def run_probe(pid: str, claude: str, repo: Path, run_dir: Path, execute: Execute
     except PROBE_FAILURES as exc:
         return Verdict(ERROR, f'{type(exc).__name__}: {exc}')
     finally:
-        shutil.rmtree(scratch, ignore_errors=True)
+        if scratch is not None:
+            shutil.rmtree(scratch, ignore_errors=True)
 
 
 def binary_version(claude: Path) -> str:
@@ -678,9 +700,13 @@ def binary_version(claude: Path) -> str:
 
 
 def shown_path(path: Path) -> str:
-    '''A path as the log shows it, with ~ for the home directory (R10.6).'''
-    home, text = str(Path.home()), str(path)
-    return '~' + text[len(home):] if text == home or text.startswith(home + os.sep) else text
+    '''A path as the log shows it, with ~ for the home directory, as given
+    or resolved (R10.6).'''
+    text = str(path)
+    for home in (str(Path.home()), str(Path.home().resolve())):
+        if text == home or text.startswith(home + os.sep):
+            return '~' + text[len(home):]
+    return text
 
 
 def cell(text: str) -> str:
@@ -688,19 +714,25 @@ def cell(text: str) -> str:
     return ' '.join(text.split()).replace('|', '\\|')
 
 
+def public_finding(verdict: Verdict) -> str:
+    '''The finding with each MCP tool name and each private string hidden
+    (owner, plan 58 decision D3). The MCP pass runs first: a private string
+    inside an MCP name would otherwise become <private>, and the pass would
+    stop at its > and leave the rest of the name in the text.'''
+    return probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
+                               private_strings())
+
+
 def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, allow_old: bool,
             remaps: Sequence[str] = ()) -> str:
     '''One log row. PROBES.md is committed to a public repo, and a finding can
     carry a home or temporary path, the login name or an MCP tool name, so
-    the finding is scrubbed as a fixture is (owner, plan 58 decision D3). The
-    MCP pass runs first: a private string inside an MCP name would otherwise
-    become <private>, and the pass would stop at its > and leave the rest of
-    the name in the log. The Flags cell holds `--allow-old` when used, then
+    the finding is scrubbed as a fixture is (public_finding), and the Binary
+    cell, past its ~, is scrubbed of the same private strings. The Flags cell holds `--allow-old` when used, then
     the names of the alias remaps the run inherited (inherited_remaps).'''
-    finding = probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
-                                  private_strings())
     flags = [*(['--allow-old'] if allow_old else []), *remaps]
-    cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding, ' '.join(flags)]
+    binary = probe_checks.redact(shown_path(claude), private_strings())
+    cells = [day.isoformat(), version, binary, pid, verdict.outcome, public_finding(verdict), ' '.join(flags)]
     return '| ' + ' | '.join(map(cell, cells)) + ' |'
 
 
@@ -781,7 +813,7 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
             verdict = run_probe(pid, str(claude), repo, run_dir, execute)
             append_row(repo / PROBES, log_row(today, version, claude, pid, verdict, allow_old, remaps))
             outcomes.append(verdict.outcome)
-            lines += [f'{pid}: {verdict.outcome}: {verdict.finding}', f'  raw output: {run_dir}']
+            lines += [f'{pid}: {verdict.outcome}: {public_finding(verdict)}', f'  raw output: {run_dir}']
     lines.append(f'appended {len(outcomes)} row(s) to {PROBES}; nothing is committed')
     return (0 if all(o == PASS for o in outcomes) else 1), lines
 

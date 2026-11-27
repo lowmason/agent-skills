@@ -664,6 +664,8 @@ TEARDOWN_FIRST = 'TERM'
 TEARDOWN_WAIT = 5  # seconds probes.collect_teardown waits for the hook to go once claude -p has ended
 TEARDOWN_START_RE = re.compile(r'start ([0-9]+)')  # the hook's first log line, with its pid
 TEARDOWN_GONE, TEARDOWN_ALIVE = 'gone', 'alive'  # the line collect_teardown adds after its wait
+TEARDOWN_LIFETIME = 120  # seconds the probe hook runs at most: its loop's one-second sleeps
+TEARDOWN_EXPIRED = 'expired'  # the hook's last line when its lifetime ran out
 CANCELLED = 'cancelled'  # the outcome claude -p finalizes such a hook with (guide, hooks.pitfalls)
 NO_TRAP_RUNS = ", so notice.sh's trap never runs"  # a hook that got none of TEARDOWN_SIGNALS
 
@@ -675,7 +677,12 @@ def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
     hook_response in the stream has an outcome other than cancelled; a
     stream with none is no finding. A broken run, a log with no start line,
     and a log that holds another line or does not end in gone or alive are
-    ERROR.'''
+    ERROR. A log that holds expired is ERROR before any other reading: the
+    hook ended by itself, so the log shows nothing about claude's
+    teardown.'''
+    if TEARDOWN_EXPIRED in log:
+        return Verdict(ERROR, f'the async SessionStart hook ran out its {TEARDOWN_LIFETIME} s lifetime before '
+                              'claude -p ended, so its log shows nothing about teardown')
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
