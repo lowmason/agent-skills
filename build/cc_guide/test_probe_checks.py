@@ -1093,6 +1093,16 @@ def test_scrub_events_replaces_a_scratch_folder_name_in_a_command():
     assert pc.parse_stream(text)[1]['message']['content'][0]['input']['command'] == 'ls -A <private>/<scratch>/a.py'
 
 
+def test_scrub_events_keeps_no_message_id_or_request_id():
+    '''A raw assistant event carries the API's message id, and a transcript line its request id. Neither is a path,
+    but the replay's PRIVATE_RE refuses both (msg_, req_) as ids of the recording machine's runs.'''
+    event = assistant({'type': 'text', 'text': 'x'})
+    event['message']['id'] = 'msg_01AbCdEfGh'
+    event['requestId'] = 'req_011CXyZ'
+    text = pc.scrub_events([init(), event, result()], [])
+    assert 'msg_' not in text and 'req_' not in text
+
+
 def test_private_forms_lists_each_value_and_its_two_json_spellings():
     value = 'h\u00e9"me\\x'
     assert pc.private_forms([value]) == [value, 'h\u00e9\\"me\\\\x', 'h\\u00e9\\"me\\\\x']
