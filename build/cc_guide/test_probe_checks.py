@@ -1519,6 +1519,8 @@ def test_with_no_successful_keep_call_the_first_keep_call_is_read(tmp_path):
     calls = [c for c in wt_isolation_calls(places) if c[0] != 'ExitWorktree']
     at = next(n for n, c in enumerate(calls) if c[0] == 'ToolSearch') + 1
     refused = [*calls[:at], wt_exit(WT_NO_OP, True), wt_exit(WT_NOT_LOADED, True), *calls[at:]]
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=wt_stream(*refused)), places)
+    assert (sightings['isolation']['exited'], sightings['isolation']['exit_marked']) == (False, True)
     outcome, said = wt_verdict(places, isolation=wt_stream(*refused))
     assert outcome == DIVERGES
     assert 'isolation: ExitWorktree was refused' in said.split('; ')
