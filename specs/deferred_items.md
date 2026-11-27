@@ -3497,6 +3497,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the owner rules here that it stays.
       → progress 2026-11-11 (plan 87): the trigger of (l) fired. `build/cc_guide/probes.py` grew from 660 to 785 lines (`drive_cut` with its `drive-cut` entry point, and the compaction-cut probe). Plan 87 did not split it, as it said. Process control is still the part to move out.
       → triggered 2026-11-14: later edits touched `build/cc_guide/probes.py`. Plan 87's `244edd3` and `049d390` (2026-11-10) added the compaction-cut runner and probe, and `d778c3e` (2026-11-12) edited it again. The file is now 785 lines (the item recorded about 550).
+      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
 - [ ] The Stop-hook block cap probe (drift spec, Out of scope; logged at plan completion, as the
       spec's heading says). Size: plan. Revisit if: drift #2 (the Stop-hook continuation reading) is
       resolved toward re-checking.
@@ -6086,6 +6087,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       for `build/cc_guide/test_probe_replay.py`. The desktop case cannot run under `claude -p`, so it stays a hand
       check. Size: plan. Done when: a registered probe that covers the first four facts has a PASS row in
       `build/cc_guide/PROBES.md` on a current binary, or the docs state each of them.
+      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
 - [x] Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two
       facts from it: the Code tab ignores `worktree.baseRef` for the worktree it makes, and archiving a session
       can discard the worktree's uncommitted changes and removes a kept worktree about 30 days later. No group in
@@ -6486,24 +6488,28 @@ review and the Plan Completion gate (2026-10-27) add the others.
       a process identity. Pids 0, 1 and the probe's own are excluded already, and reuse inside 5 s needs a wrap of the
       pid space. Size: quick-fix (check the process start time or command line before the kill). Revisit if: a probe
       run's `collect_teardown` kills a process other than the probe's own hook.
+      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
 - [ ] The `async-teardown` hook lives 120 s (`TEARDOWN_HOOK` in `build/cc_guide/probes.py`), but the probe's `claude -p`
       call may run up to 600 s. A successful turn longer than 120 s would find the hook gone before teardown, log
       `start <pid>` then `gone` with no signal, and read DIVERGES with no real drift (Codex P2 on the final review of
       plan 109, declined; the probe turn is one short reply). Size: quick-fix (keep the hook alive past the call's
       timeout, or read natural expiry as inconclusive). Revisit if: an `async-teardown` run reports DIVERGES with a
       log of `start` and `gone` only, while its stream shows a turn longer than 120 s.
+      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
 - [ ] `prune_generations` (`build/cc_guide/check.py`) measures a generation's age from its folder mtime, not from the
       time it was replaced. A reader that pinned a generation older than an hour, just before two checks swap
       `latest` one after the other, finds the generation removed in the second swap (Codex P2 on the final review of
       plan 109, declined; the read lasts milliseconds). Size: quick-fix (touch the replaced generation in
       `swap_latest`, or keep the two latest replaced ones). Revisit if: a `packets.load` or `rebaseline` run fails
       with a missing file under a generation folder after two checks ran within one minute.
+      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
 - [ ] `explore_void` (`build/cc_guide/probe_checks.py`) treats any tool call by a subagent as a file read and voids
       the rep. A CLI that has these subagents hand back their answer through a tool call, as `SubagentHandback`
       appears in the `agent-model-pins` fixture, would make every `explore-override` rep read ERROR even though the
       answer sits in a tool input (the final review of plan 109, Declined to judge; none of the three 2.1.330 reps
       holds one). Size: quick-fix (read the answer from a hand-back tool input, or exempt that tool by name). Revisit
       if: an `explore-override` run reports ERROR "made 1 tool call(s)" for a rep whose only tool call is a hand-back.
+      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
 
 ## 110-build-runner-and-ci-kit-suites — 2026-11-26
 - [x] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
