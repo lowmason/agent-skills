@@ -836,9 +836,10 @@ def other_exit(events: list[dict]) -> str | None:
 
 
 def entered_by_model(events: list[dict]) -> bool:
-    '''Whether an EnterWorktree call succeeded, in a run whose prompt asks for none: its worktree, not the one the
-    run reads, could decide what ExitWorktree did.'''
-    return any(call_failed(events, (tid, tool_result_text(events, tid))) is False
+    '''Whether an EnterWorktree call was not refused, in a run whose prompt asks for none: its worktree, not the one
+    the run reads, could decide what ExitWorktree did. It fails closed: a call with no result, or with a result that
+    is not an error, counts as entered.'''
+    return any(call_failed(events, (tid, tool_result_text(events, tid))) is not True
                for _, tid, _ in positioned_calls(events, ENTER_TOOL))
 
 
@@ -931,7 +932,7 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
     result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both ExitWorktree runs,
     ExitWorktree is split_at_keep's call: the first keep call that succeeded or was refused with WT_NOOP_MARK, else the
     first keep call, and other_exit is the action of the first ExitWorktree call with another action that succeeded;
-    entered_by_model, whether an EnterWorktree call there succeeded.
+    entered_by_model, whether an EnterWorktree call there was not refused (no result counts).
     exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK; kept_before and
     kept_after, whether the first WT_LIST result before or after ExitWorktree has the worktree's own block, None when
     that list never ran or its result is an error; locked_before and locked_after, whether that block has a WT_LOCKED

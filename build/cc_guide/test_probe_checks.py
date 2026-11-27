@@ -1702,6 +1702,32 @@ def test_an_isolation_run_where_the_model_entered_a_worktree_is_an_error(tmp_pat
     assert 'isolation: the model called EnterWorktree, which the prompt does not ask for' in said.split('; ')
 
 
+WT_UNANSWERED_ENTER = ('EnterWorktree', {'name': 'probe'}, None, None)
+
+
+def test_a_noop_run_with_an_unanswered_enter_worktree_is_an_error(tmp_path):
+    '''Codex P2, round 3 (F11): an EnterWorktree call with no tool_result was not refused, so the run fails closed
+    as entered, though the rest of it is a valid No-op run.'''
+    places = wt_places(tmp_path)
+    events = wt_stream(WT_LOAD_EXIT, wt_exit(WT_NO_OP, True), WT_UNANSWERED_ENTER,
+                       wt_bash('pwd', places['plain-worktree']))
+    sightings = pc.worktree_sightings(wt_streams(places, noop=events), places)
+    assert sightings['noop']['entered_by_model'] is True
+    outcome, said = pc.assess_worktree_isolation(sightings)
+    assert outcome == ERROR
+    assert 'noop: the model called EnterWorktree, which the prompt does not ask for' in said.split('; ')
+
+
+def test_an_isolation_run_with_an_unanswered_enter_worktree_is_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(WT_UNANSWERED_ENTER, *wt_isolation_calls(places))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
+    assert sightings['isolation']['entered_by_model'] is True
+    outcome, said = pc.assess_worktree_isolation(sightings)
+    assert outcome == ERROR
+    assert 'isolation: the model called EnterWorktree, which the prompt does not ask for' in said.split('; ')
+
+
 def test_a_refused_enter_worktree_in_a_noop_run_is_not_that_error(tmp_path):
     places = wt_places(tmp_path)
     events = wt_stream(('EnterWorktree', {'name': 'probe'}, 'failed', True), WT_LOAD_EXIT, wt_exit(WT_NO_OP, True),
