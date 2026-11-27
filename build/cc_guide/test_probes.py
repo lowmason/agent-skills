@@ -353,7 +353,17 @@ def test_run_prints_the_scrubbed_finding(repo, tmp_path, claude, isolated_home, 
 
 
 @pytest.fixture
-def planted_privates(isolated_home, monkeypatch) -> list[str]:
+def symlinked_home(isolated_home, tmp_path, monkeypatch) -> Path:
+    '''HOME as a symlink to isolated_home, so Path.home() and Path.home().resolve() are two strings, as they are on
+    a machine whose home is a link (plan 58's Minor (w)). A test that plants both asserts that they differ.'''
+    link = tmp_path / 'linked'
+    link.symlink_to(isolated_home)
+    monkeypatch.setenv('HOME', str(link))
+    return link
+
+
+@pytest.fixture
+def planted_privates(symlinked_home, monkeypatch) -> list[str]:
     '''The five strings a committed probe file must not show (owner, plan 58 decision D3), the login name set
     to a value no path or word in a test holds.'''
     monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
@@ -1255,32 +1265,85 @@ def test_scratch_is_removed_after_an_error_and_after_a_timeout(tmp_path, monkeyp
     assert scratch_folders(tmp) == []
 
 
+def guard_dir(run_dir: Path, command: str = 'git status --porcelain', **given) -> Path:
+    '''A guard-liveness run directory whose first check ran `command`, which passes the guard.'''
+    first = tpc.guard_run(command, '(Bash completed with no output)')
+    first[1]['message']['content'][0]['input'].update(given)
+    streams = [first, *tpc.guard_streams()[1:]]
+    write_tree(run_dir, {f'guard-{n}.jsonl': stream(*events) for n, events in enumerate(streams, start=1)})
+    return run_dir
+
+
 def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_run(tmp_path, isolated_home,
-                                                                                   planted_privates):
+                                                                                   symlinked_home, planted_privates):
     # The trim drops an init event's cwd and memory_paths, so those prove nothing. The private strings go where the
-    # trim keeps them, a Bash command, and each must come out as <private> on its own: a path that another entry
-    # covers by its prefix, as the temporary directory covers a home inside it, must not hide an uncovered one.
+    # trim keeps them, a Bash command of the guard probe, and each must come out as <private> on its own: a path that
+    # another entry covers by its prefix, as the temporary directory covers a home inside it, must not hide an
+    # uncovered one. Home and its resolved path are two strings, so a dropped entry shows.
     planted = planted_privates
-    ran = {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'm', 'content': [
-        {'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': 'ls ' + ' '.join(planted)}}]}}
+    assert str(Path.home()) != str(Path.home().resolve())
     run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
-    with_bash = stream({**init(), 'cwd': str(isolated_home / 'work'), 'memory_paths': [str(isolated_home)]}, ran,
-                       RESULT)
-    write_tree(run_dir, {'probe-with-bash.jsonl': with_bash,
-                         'probe-without-bash.jsonl': TOOLS_PASS['probe-without-bash']})
-    probe = probes.PROBE_RUNS['agent-tools']
-    written = probes.save_fixtures(run_dir, 'agent-tools', dest)
-    assert sorted(p.name for p in written) == ['agent-tools.with-bash.jsonl', 'agent-tools.without-bash.jsonl']
-    scrubbed = (dest / 'agent-tools.with-bash.jsonl').read_text()
-    assert str(isolated_home) not in scrubbed
+    guard_dir(run_dir, 'git status --porcelain ' + ' '.join(planted))
+    probe = probes.PROBE_RUNS['guard-liveness']
+    written = probes.save_fixtures(run_dir, 'guard-liveness', dest)
+    assert sorted(p.name for p in written) == ['guard-liveness.1.jsonl', 'guard-liveness.2.jsonl',
+                                               'guard-liveness.3.jsonl']
+    scrubbed = (dest / 'guard-liveness.1.jsonl').read_text()
+    assert str(isolated_home) not in scrubbed and str(symlinked_home) not in scrubbed
     for value in planted:
         assert value not in scrubbed
     assert '<private>' in scrubbed
-    assert f'"command": "ls {" ".join(["<private>"] * len(planted))}"' in scrubbed
+    assert f'"command": "git status --porcelain {" ".join(["<private>"] * len(planted))}"' in scrubbed
     assert probe.assess(probes.reader(dest, probe.fixtures)) == probe.assess(probes.reader(run_dir))
-    write_tree(run_dir, {'probe-with-bash.jsonl': 'not a stream\n{"broken": \n'})
+    write_tree(run_dir, {'guard-1.jsonl': 'not a stream\n{"broken": \n'})
     with pytest.raises(state.SetupError):
-        probes.save_fixtures(run_dir, 'agent-tools', dest)
+        probes.save_fixtures(run_dir, 'guard-liveness', dest)
+
+
+def saved_inputs(dest: Path, fixture: str) -> list[dict]:
+    '''The input of each Bash call in a saved fixture stream.'''
+    events = probe_checks.parse_stream((dest / fixture).read_text(encoding='utf-8'))
+    return [block['input'] for e in events if e.get('type') == 'assistant' for block in e['message']['content']
+            if block.get('type') == 'tool_use' and block['name'] == 'Bash']
+
+
+def ran_bash(command: str) -> dict:
+    return {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'm', 'content': [
+        {'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': command}}]}}
+
+
+def test_save_fixtures_drops_command_text_unless_the_probe_reads_it(tmp_path):
+    '''Only guard-liveness reads a command (probe_checks.bash_calls), so a command in any other probe's stream is
+    text no assertion needs, and it may name a path or a repo of the recording machine.'''
+    assert [pid for pid, probe in probes.PROBE_RUNS.items() if probe.reads_commands] == ['guard-liveness']
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {'probe-with-bash.jsonl': stream(init(), ran_bash('ls -A /some/repo'), RESULT),
+                         'probe-without-bash.jsonl': TOOLS_PASS['probe-without-bash']})
+    probes.save_fixtures(run_dir, 'agent-tools', dest)
+    assert saved_inputs(dest, 'agent-tools.with-bash.jsonl') == [{}]
+    guard_dir(run_dir)
+    probes.save_fixtures(run_dir, 'guard-liveness', dest)
+    assert saved_inputs(dest, 'guard-liveness.1.jsonl') == [{'command': 'git status --porcelain'}]
+
+
+@pytest.mark.parametrize('pid', list(probes.PROBE_RUNS))
+def test_the_scratch_pattern_matches_the_whole_name_mkdtemp_gives_each_probe(pid, tmp_path, monkeypatch):
+    '''run_probe makes its folder with mkdtemp and this prefix; a probe id that holds a digit, or whose last word
+    is eight letters long, must not leave part of the name behind.'''
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
+    name = Path(tempfile.mkdtemp(prefix=f'cc-guide-probe-{pid}-')).name
+    assert probe_checks.SCRATCH_RE.fullmatch(name), name
+    assert probe_checks.SCRATCH_RE.sub('<scratch>', f'/t/{name}/a.py') == '/t/<scratch>/a.py'
+
+
+def test_save_fixtures_replaces_the_scratch_folder_name(tmp_path):
+    '''A scratch folder's name ends in a random suffix, so a re-recorded fixture would change for no reason.'''
+    name = 'cc-guide-probe-agent-model-pins-7665i08q'
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    guard_dir(run_dir, f'git status --porcelain /scratch/{name}/a.py')
+    probes.save_fixtures(run_dir, 'guard-liveness', dest)
+    assert saved_inputs(dest, 'guard-liveness.1.jsonl') == [{'command': 'git status --porcelain /scratch/<scratch>/a.py'}]
+    assert '7665i08q' not in (dest / 'guard-liveness.1.jsonl').read_text()
 
 
 @pytest.mark.parametrize('pid, stream_name, side_name, template, fixture', [
@@ -1299,3 +1362,23 @@ def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated
     for value in planted:
         assert value not in saved
     assert saved == template.replace('@P@', ' '.join(['<private>'] * len(planted)))
+
+
+@pytest.mark.parametrize('ensure_ascii', [True, False])
+def test_save_fixtures_scrubs_an_escaped_private_value_from_a_side_file(tmp_path, isolated_home, monkeypatch,
+                                                                         ensure_ascii):
+    '''A side file is written by json.dumps, which spells a quote, a backslash and, by default, a non-ASCII
+    character with an escape, so the raw private string would not match it. The home folder's name and the login
+    each hold one of those, and the home's holds all three, so its raw form and its two JSON forms differ.'''
+    home = tmp_path / 'h\u00e9"me\\x'
+    home.mkdir()
+    monkeypatch.setenv('HOME', str(home))
+    monkeypatch.setattr('getpass.getuser', lambda: 'zzl\u00f6gin')
+    written = json.dumps({'Explore': [{'model': f'{home} zzl\u00f6gin', 'effort': 'low'}]}, ensure_ascii=ensure_ascii)
+    assert str(home) not in written
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {'pins.jsonl': stream(init(), RESULT), 'transcripts.json': written})
+    probes.save_fixtures(run_dir, 'agent-model-pins', dest)
+    saved = (dest / 'agent-model-pins.transcripts.json').read_text()
+    assert saved == json.dumps({'Explore': [{'model': '<private> <private>', 'effort': 'low'}]},
+                               ensure_ascii=ensure_ascii)

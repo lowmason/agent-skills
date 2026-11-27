@@ -18,7 +18,8 @@ from state import DIVERGES, ERROR, PASS, parse_probes
 FIXTURES = Path(__file__).resolve().parent / 'probe_streams'
 PROBES_LOG = Path(__file__).resolve().parent / 'PROBES.md'
 LOG_ROW_RE = re.compile(r'^\| \d{4}-\d{2}-\d{2} \|', re.MULTILINE)
-PRIVATE_RE = re.compile(r'/Users/|/home/|/private/|/var/folders/|/tmp/|toolu_0|mcp__|'
+# A message id and a request id (msg_, req_) are the API's, and a raw stream carries them as it does a tool-use id.
+PRIVATE_RE = re.compile(r'/Users/|/home/|/private/|/var/folders/|/tmp/|toolu_0|msg_|req_|mcp__|'
                         r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
 
@@ -54,6 +55,14 @@ def with_tools(*added):
     return edit
 
 
+def without_tools(*dropped):
+    def edit(event):
+        if event.get('subtype') == 'init':
+            event['tools'] = [t for t in event['tools'] if t not in dropped]
+        return event
+    return edit
+
+
 def model_of(parent_model: dict[str, str]):
     def edit(event):
         if event.get('type') == 'assistant' and event.get('parent_tool_use_id') in parent_model:
@@ -66,18 +75,39 @@ def drop(kind: str):
     return lambda event: {} if event.get('subtype') == kind else event
 
 
-def explore_ids() -> dict[str, str]:
+def pin_ids(agent: str) -> dict[str, str]:
+    '''Each dispatch of `agent` in the recorded pins stream, mapped to the session model.'''
     probe = probes.PROBE_RUNS['agent-model-pins']
     events = probes.stream_of(probes.reader(FIXTURES, probe.fixtures)('pins.jsonl'))
-    return {tid: 'claude-sonnet-5-5' for tid, kind in probes.probe_checks.dispatches(events).items()
-            if kind == 'Explore'}
+    return {tid: 'claude-sonnet-5-5' for tid, kind in probe_checks.dispatches(events).items() if kind == agent}
 
 
-def unmarked(event):
-    for block in (event.get('message') or {}).get('content') or []:
-        if block.get('type') == 'tool_result':
-            block['content'] = '<output>'
-    return event
+def with_result(text: str):
+    '''An edit that replaces the text of each tool result.'''
+    def edit(event):
+        for block in (event.get('message') or {}).get('content') or []:
+            if block.get('type') == 'tool_result':
+                block['content'] = text
+        return event
+    return edit
+
+
+unmarked = with_result('<output>')
+marked = with_result(f'{probe_checks.GUARD_MARKER} denied')
+
+
+def transcripts_with(edit) -> dict[str, str]:
+    '''The recorded transcripts.json with `edit` applied to it.'''
+    probe = probes.PROBE_RUNS['agent-model-pins']
+    saved = json.loads((FIXTURES / probe.fixtures['transcripts.json']).read_text(encoding='utf-8'))
+    return {'transcripts.json': json.dumps(edit(saved))}
+
+
+def reviewing_at(effort: str):
+    def edit(saved):
+        saved[probe_checks.REVIEWER] = [{**line, 'effort': effort} for line in saved[probe_checks.REVIEWER]]
+        return saved
+    return edit
 
 
 def payloads_with(edit) -> dict[str, str]:
@@ -162,21 +192,48 @@ def outcome(value: str):
     return edit
 
 
+def exiting(code: int):
+    '''An edit that gives each Stop hook_response the exit code `code`.'''
+    def edit(event):
+        if event.get('subtype') == 'hook_response' and event.get('hook_event') == 'Stop':
+            event['exit_code'] = code
+        return event
+    return edit
+
+
 CUT_WINDOW = probes.register_window()
 
 
-# Each ERROR case names its finding, so a missing fixture, which is ERROR for
-# another reason, cannot pass it.
+# Each case names its finding. An ERROR case does so because a missing fixture, which is ERROR for another reason,
+# cannot then pass it, and a DIVERGES case because the divergence must be the one the edit made.
 @pytest.mark.parametrize('pid, changes, outcome, finding', [
     ('agent-tools', lambda: edited('agent-tools', 'probe-with-bash.jsonl', with_tools('Grep', 'Glob')), DIVERGES,
-     None),
+     'with Bash: Bash, Glob, Grep, Read; without Bash: Glob, Grep, Read'),
+    # The control half of the rule: the agent without Bash must get Grep and Glob both.
+    ('agent-tools', lambda: edited('agent-tools', 'probe-without-bash.jsonl', without_tools('Glob')), DIVERGES,
+     'with Bash: Bash, Read; without Bash: Grep, Read'),
+    # A control that gains Bash did not get its own tool list, so it proves nothing about the rule: ERROR, not drift.
+    ('agent-tools', lambda: edited('agent-tools', 'probe-without-bash.jsonl', with_tools('Bash')), ERROR,
+     'the control agent did not get its own tool list: Bash, Glob, Grep, Read'),
     ('agent-tools', lambda: edited('agent-tools', 'probe-without-bash.jsonl', drop('init')), ERROR,
      'the agent without Bash: no init event'),
-    ('stop-continuation', lambda: {'stop.log': 'false\nfalse\ntrue\n'}, DIVERGES, None),
+    ('stop-continuation', lambda: {'stop.log': 'false\nfalse\ntrue\n'}, DIVERGES,
+     'stop_hook_active read false, false, true'),
     ('stop-continuation', lambda: {'stop.log': ''}, ERROR, 'the Stop hook never logged a call'),
-    ('agent-model-pins', lambda: edited('agent-model-pins', 'pins.jsonl', model_of(explore_ids())), DIVERGES, None),
+    # The log is the recorded one, so the stream's exit codes alone are wrong.
+    ('stop-continuation', lambda: edited('stop-continuation', 'stop.jsonl', exiting(0)), ERROR,
+     'stop_hook_active read false, true, true, but the stream shows Stop hook exits [0, 0, 0]'),
+    ('agent-model-pins', lambda: edited('agent-model-pins', 'pins.jsonl', model_of(pin_ids('Explore'))), DIVERGES,
+     'Explore served claude-sonnet-5-5'),
+    ('agent-model-pins', lambda: edited('agent-model-pins', 'pins.jsonl', model_of(pin_ids('test-runner'))), DIVERGES,
+     'test-runner served claude-sonnet-5-5'),
+    ('agent-model-pins', lambda: transcripts_with(reviewing_at('high')), DIVERGES, 'code-reviewer effort high'),
     ('agent-model-pins', lambda: {'transcripts.json': '{}'}, ERROR, 'no transcript lines for Explore'),
-    ('guard-liveness', lambda: edited('guard-liveness', 'guard-2.jsonl', unmarked), DIVERGES, None),
+    ('guard-liveness', lambda: edited('guard-liveness', 'guard-2.jsonl', unmarked), DIVERGES,
+     'git fetch --dry-run origin was not denied'),
+    # Check 1's command is the read-only one, which the guard must pass.
+    ('guard-liveness', lambda: edited('guard-liveness', 'guard-1.jsonl', marked), DIVERGES,
+     'git status --porcelain was denied'),
     ('guard-liveness', lambda: edited('guard-liveness', 'guard-3.jsonl', drop('init')), ERROR,
      'check 3: no init event'),
     # agent-payload's cases pin their findings, DIVERGES included.
@@ -240,7 +297,7 @@ CUT_WINDOW = probes.register_window()
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())
     assert verdict.outcome == outcome
-    assert finding is None or verdict.finding == finding
+    assert verdict.finding == finding
 
 
 def test_no_fixture_holds_a_path_or_an_id_from_the_recording_machine():

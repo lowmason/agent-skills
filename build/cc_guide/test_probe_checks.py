@@ -14,6 +14,7 @@ from cc_fixtures import isolated_home  # noqa: F401
 from state import DIVERGES, ERROR, PASS
 
 GUARD = Path(__file__).resolve().parents[2] / 'hooks' / 'dispatch-model-guard.py'
+STREAMS = Path(__file__).resolve().with_name('probe_streams')
 
 
 def init(tools=('Read', 'Bash'), model='claude-sonnet-5-5'):
@@ -834,8 +835,18 @@ def test_a_hand_back_with_no_text_in_its_message_field_says_nothing(given):
     assert rep['seen'][EXPLORE] == {'mark': False, 'claude_md': False, 'git_status': False}
 
 
-def test_the_hand_back_tool_and_field_are_the_ones_the_recorded_runs_show():
+def test_the_hand_back_tool_is_the_one_the_recorded_run_calls():
+    recorded = pc.parse_stream((STREAMS / 'agent-model-pins.jsonl').read_text(encoding='utf-8'))
+    called = {block['name'] for e in recorded if e.get('type') == 'assistant' for block in e['message']['content']
+              if block.get('type') == 'tool_use'}
+    assert 'SubagentHandback' in called
     assert pc.HANDBACK_TOOLS == frozenset({'SubagentHandback'})
+
+
+def test_the_hand_back_field_is_pinned_by_a_literal():
+    # scrub_events trims a tool call's input to the keys the assertions read, so no committed stream shows the
+    # field a hand-back carries its answer in. This literal is the one check of it, made when the field was read
+    # from a raw run (2.1.330).
     assert pc.HANDBACK_FIELD == 'message'
 
 
@@ -1040,3 +1051,48 @@ def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
     assert pc.forwarded_models(kept, {'toolu_fixture1'}) == {'claude-haiku-5-5'}
     assert pc.tool_result_text(kept, 'toolu_fixture2') == DENIAL
     assert pc.tool_result_text(kept, 'toolu_fixture1') == '<output>'
+
+
+def command_events(command='ls', **given):
+    return [init(), assistant(tool_use('toolu_1', 'Bash', command=command, **given)), result()]
+
+
+def test_scrub_events_keeps_a_command_unless_told_not_to():
+    '''The guard probe reads its Bash commands, so a scrub keeps them by default; keep_commands=False drops the
+    command and keeps the rest of the input, which the pin probes' dispatch checks read.'''
+    events = command_events('git status --porcelain', model='haiku', subagent_type='Explore')
+    kept = pc.parse_stream(pc.scrub_events(events, []))[1]['message']['content'][0]['input']
+    assert kept == {'subagent_type': 'Explore', 'model': 'haiku', 'command': 'git status --porcelain'}
+    dropped = pc.parse_stream(pc.scrub_events(events, [], keep_commands=False))[1]['message']['content'][0]['input']
+    assert dropped == {'subagent_type': 'Explore', 'model': 'haiku'}
+
+
+@pytest.mark.parametrize('text, scrubbed', [
+    ('cc-guide-probe-agent-model-pins-7665i08q', '<scratch>'),
+    # The name ends after its eight-character suffix, so a path segment after it stays.
+    ('ls /t/cc-guide-probe-agent-tools-7665i08q/a.py', 'ls /t/<scratch>/a.py'),
+    ('"cc-guide-probe-guard-liveness-a_b1c2d3"', '"<scratch>"'),
+    # A suffix of letters only, then a hyphen and more words: the id is the shortest that leaves an 8-character suffix.
+    ('cc-guide-probe-agent-tools-abcdefgh-more', '<scratch>-more'),
+    ('cc-guide-probe-explore-override-aaaaaaaa and cc-guide-probe-async-teardown-bbbbbbbb',
+     '<scratch> and <scratch>'),
+    # Not a mkdtemp name: a short suffix, a long one, and no suffix.
+    ('cc-guide-probe-agent-tools-short', 'cc-guide-probe-agent-tools-short'),
+    ('cc-guide-probe-agent-tools-7665i08qxyz', 'cc-guide-probe-agent-tools-7665i08qxyz'),
+    ('cc-guide-probe-', 'cc-guide-probe-'),
+])
+def test_scratch_names_are_replaced_by_a_mark(text, scrubbed):
+    assert pc.SCRATCH_MARK == '<scratch>'
+    assert pc.SCRATCH_RE.sub(pc.SCRATCH_MARK, text) == scrubbed
+
+
+def test_scrub_events_replaces_a_scratch_folder_name_in_a_command():
+    events = command_events('ls -A /tmp/cc-guide-probe-agent-model-pins-7665i08q/a.py')
+    text = pc.scrub_events(events, ['/tmp'])
+    assert '7665i08q' not in text
+    assert pc.parse_stream(text)[1]['message']['content'][0]['input']['command'] == 'ls -A <private>/<scratch>/a.py'
+
+
+def test_private_forms_lists_each_value_and_its_two_json_spellings():
+    value = 'h\u00e9"me\\x'
+    assert pc.private_forms([value]) == [value, 'h\u00e9\\"me\\\\x', 'h\\u00e9\\"me\\\\x']

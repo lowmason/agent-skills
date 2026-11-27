@@ -85,6 +85,8 @@ class Probe(NamedTuple):
     assess: Callable[[Read], Verdict]
     # run-directory file -> the fixture file it is scrubbed into (R12.6)
     fixtures: dict[str, str]
+    # whether the assertion reads a Bash call's command, so its fixtures keep the text (R12.6): only guard-liveness
+    reads_commands: bool = False
 
 
 def prepare_guard(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
@@ -578,7 +580,8 @@ def assess_teardown(read: Read) -> Verdict:
 
 PROBE_RUNS = {
     'guard-liveness': Probe(prepare_guard, collect_guard, assess_guard,
-                            {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)}),
+                            {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)},
+                            reads_commands=True),
     'agent-tools': Probe(prepare_agent_tools, collect_nothing, assess_agent_tools,
                          {'probe-with-bash.jsonl': 'agent-tools.with-bash.jsonl',
                           'probe-without-bash.jsonl': 'agent-tools.without-bash.jsonl'}),
@@ -623,19 +626,21 @@ def private_strings() -> list[str]:
 def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
     '''R12.6: turn one recorded run into the fixtures its replay test reads,
     each stream cut down and scrubbed of the home directory, the temporary
-    directory and the login name, and each other file scrubbed of the same
-    (owner, plan 58 decision D3).'''
-    private = private_strings()
+    directory and the login name, and each other file scrubbed of the same,
+    and of each one's JSON-escaped forms, since a side file is JSON text
+    (owner, plan 58 decision D3). A stream keeps a Bash command only when
+    the probe reads commands.'''
+    probe, private = PROBE_RUNS[pid], private_strings()
     written = []
-    for name, fixture in PROBE_RUNS[pid].fixtures.items():
+    for name, fixture in probe.fixtures.items():
         text = (run_dir / name).read_text(encoding='utf-8')
         if name.endswith('.jsonl'):
             events = probe_checks.parse_stream(text)
             if events is None:
                 raise SetupError(f'{run_dir / name}: not a stream-json file')
-            text = probe_checks.scrub_events(events, private)
+            text = probe_checks.scrub_events(events, private, keep_commands=probe.reads_commands)
         else:
-            text = probe_checks.redact(text, private)
+            text = probe_checks.redact(text, probe_checks.private_forms(private))
         dest.mkdir(parents=True, exist_ok=True)
         (dest / fixture).write_text(text, encoding='utf-8')
         written.append(dest / fixture)

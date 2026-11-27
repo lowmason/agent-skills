@@ -51,6 +51,12 @@ MCP_MARK = '<mcp-tool>'
 # A tool name that starts with the MCP prefix, up to white space, a quote, a closing bracket or one of `,;:`.
 MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>,;:]*''')
 PRIVATE_MARK = '<private>'
+# A scratch folder: tempfile.mkdtemp's prefix, cc-guide-probe-<probe id>-, then the eight characters it adds, from
+# lowercase letters, digits and underscore. A probe id is lowercase words joined by hyphens, and several end in a word
+# of eight letters (guard-liveness), so the id takes as much as leaves a suffix of exactly eight characters, and the
+# name ends at one more character that a name cannot hold, so a path segment after it stays.
+SCRATCH_MARK = '<scratch>'
+SCRATCH_RE = re.compile(r'cc-guide-probe-[a-z]+(?:-[a-z]+)*-[a-z0-9_]{8}(?![A-Za-z0-9_])')
 # compaction-cut: two probe skills whose bodies differ only in their filler. Text and digits split into tokens at
 # different rates, so the two cuts tell a limit in characters from one in tokens. The names have the same
 # length, so the two headers do too.
@@ -734,10 +740,15 @@ def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
     return Verdict(DIVERGES, shown)
 
 
-def _trim_block(block: dict) -> dict | None:
+DISPATCH_INPUT_KEYS = ('subagent_type', 'model')  # the input fields the dispatch checks read
+COMMAND_KEY = 'command'  # a Bash call's input field, which only assess_guard_liveness reads
+
+
+def _trim_block(block: dict, keep_commands: bool = True) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
-        kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'model', 'command')}
+        keys = (*DISPATCH_INPUT_KEYS, COMMAND_KEY) if keep_commands else DISPATCH_INPUT_KEYS
+        kept = {k: v for k, v in (block.get('input') or {}).items() if k in keys}
         name = block.get('name')
         if isinstance(name, str) and name.startswith(MCP_PREFIX):
             name = MCP_MARK  # a call to an MCP tool names a server the recording machine has installed
@@ -751,7 +762,7 @@ def _trim_block(block: dict) -> dict | None:
     return None
 
 
-def _trim_event(event: dict) -> dict | None:
+def _trim_event(event: dict, keep_commands: bool = True) -> dict | None:
     kind, sub = event.get('type'), event.get('subtype')
     if is_init(event):
         # An MCP tool's name names a server the recording machine has installed.
@@ -772,7 +783,8 @@ def _trim_event(event: dict) -> dict | None:
     if kind in ('assistant', 'user'):
         message = event.get('message') or {}
         content = message.get('content')
-        blocks = [_trim_block(b) for b in content if isinstance(b, dict)] if isinstance(content, list) else []
+        blocks = ([_trim_block(b, keep_commands) for b in content if isinstance(b, dict)]
+                  if isinstance(content, list) else [])
         trimmed = {'content': [b for b in blocks if b]}
         if kind == 'assistant':
             trimmed['model'] = message.get('model')
@@ -789,23 +801,33 @@ def redact(text: str, private: list[str]) -> str:
     return text
 
 
-def json_escaped(value: str) -> str:
-    '''`value` as it reads inside a JSON string: a quote or a backslash gets a backslash before it.'''
-    return json.dumps(value, ensure_ascii=False)[1:-1]
+def json_escaped(value: str, *, ensure_ascii: bool = False) -> str:
+    '''`value` as it reads inside a JSON string: a quote or a backslash gets a backslash before it, and with
+    ensure_ascii, which json.dumps does by default, a non-ASCII character becomes a \\u escape.'''
+    return json.dumps(value, ensure_ascii=ensure_ascii)[1:-1]
 
 
-def scrub_events(events: list[dict], private: list[str]) -> str:
+def private_forms(private: list[str]) -> list[str]:
+    '''Each string in `private` as given and as it reads inside a JSON string written with ensure_ascii False and
+    with True, so a value with a quote, a backslash or a non-ASCII character is found in either kind of file.'''
+    return [form for value in private
+            for form in (value, json_escaped(value), json_escaped(value, ensure_ascii=True))]
+
+
+def scrub_events(events: list[dict], private: list[str], *, keep_commands: bool = True) -> str:
     '''A recorded stream as a committable fixture (R12.6; owner, plan 58
     decision D3): cut to the fields the assertions read, so text blocks and
     tool output lose their text, and stripped of what must stay out of a
     public repo: MCP tool names leave the init tool list and become
     <mcp-tool> in a tool call and in a hook's name, each string in
-    `private` (home and scratch paths, the login name) and its form inside
-    a JSON string, longest first, becomes <private>, and uuids and tool-use
-    ids become stable placeholders.'''
-    kept = [t for t in map(_trim_event, events) if t is not None]
-    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n',
-                  [*private, *map(json_escaped, private)])
+    `private` (home and scratch paths, the login name) and its forms inside
+    a JSON string, longest first, becomes <private>, a scratch folder's
+    name becomes <scratch>, and uuids and tool-use ids become stable
+    placeholders. A Bash call keeps its command only with `keep_commands`,
+    which a probe that reads commands sets (Probe.reads_commands).'''
+    kept = [t for t in (_trim_event(e, keep_commands) for e in events) if t is not None]
+    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n', private_forms(private))
+    text = SCRATCH_RE.sub(SCRATCH_MARK, text)
     ids: dict[str, str] = {}
     text = TOOL_ID_RE.sub(lambda m: ids.setdefault(m.group(0), f'toolu_fixture{len(ids) + 1}'), text)
     uuids: dict[str, str] = {}
