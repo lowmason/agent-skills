@@ -110,7 +110,7 @@ def test_a_stub_rep_runs_in_its_own_home_with_the_planned_environment_and_a_scru
     assert home.parent == tmp_path / 'root' and logged['env']['TMPDIR'] == str(home / 'tmp')
     assert Path(logged['cwd']) == home / 'work'
     argv = logged['argv']
-    assert argv[argv.index('--tools') + 1] == ''
+    assert argv[argv.index('--tools') + 1] == 'Read'
     assert argv[argv.index('--append-system-prompt') + 1].startswith(f'Base directory for this skill: {home}/skill/')
     settings = json.loads(argv[argv.index('--settings') + 1])
     assert set(kit.CROSS_SESSION_TOOLS) <= set(settings['permissions']['deny'])
@@ -148,3 +148,12 @@ def test_unread_flags_fail_the_tally_and_justified_flags_pass_it(tmp_path):
     rows = kit.read_tsv(flags, kit.FLAG_FIELDS)
     kit.write_tsv(flags, kit.FLAG_FIELDS, [{**r, 'verdict': 'justified', 'reason': 'test'} for r in rows])
     assert 'agent-instruction claude-opus-5-5 5/5 PASS (obligation 5/5)' in run_kit(env, 'tally').stdout
+
+
+def test_an_agent_case_scores_the_final_message_and_a_document_case_scores_every_message():
+    recs = [{'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'I should read agent-mode.md.'}]}},
+            {'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'Consume the artifact.'}]}},
+            {'type': 'result', 'is_error': False, 'result': 'Consume the artifact.', 'result_index': 0}]
+    assert kit.reply_text(recs, final=True) == 'Consume the artifact.'
+    assert kit.reply_text(recs).startswith('I should read')
+    assert len(cases.obligation_flags(kit.reply_text(recs, final=True), cases.AGENT_SOURCES['C'])) == 1

@@ -1,0 +1,34 @@
+rep rad5582 shape agent model claude-opus-5-5 status good
+init tools: ['Read']
+init skills: ['deep-research', 'design', 'design-sync', 'dataviz', 'update-config', 'verify', 'debug', 'code-review', 'simplify', 'batch', 'fewer-permission-prompts', 'doctor', 'loop', 'schedule', 'claude-api', 'workflow-authoring', 'run', 'run-skill-generator', 'plugin-authoring']
+init mcp: []
+
+This is everything I can see in this session.
+
+**Instruction files and rules**
+- `/private/tmp/ste114/rad5582/.claude/rules/write-with-asd-ste100.md` is your private global rule, "Plain technical English". It tells me to write for people about 80% of the way to ASD-STE100 Simplified Technical English. ASD-STE100 is the controlled English that the aerospace industry uses.
+- The system prompt holds the Claude Code harness instructions. These cover tool use, permissions, privacy, security limits, the game-building limit, context management and the environment details.
+- No `CLAUDE.md` or other project instruction file was loaded.
+
+**Memory**
+- None. I have no saved memory and no summary of an earlier conversation.
+
+**Tools**
+- `Read` is the only tool that I can call. It reads files from the local filesystem.
+- The system prompt says that deferred tools can appear later. None has appeared yet.
+
+**Skills**
+- `write-with-asd-ste100`, at `/private/tmp/ste114/rad5582/skill/write-with-asd-ste100`. Its main instructions are loaded.
+- Its referenced files are not loaded. These are `references/agent-mode.md`, `references/strict.md`, `references/document-rewrite.md`, `references/examples.md`, `scripts/ste-lint.py` and `LICENSE-write-with-asd-ste100-sources`.
+- The skill mentions a writing-skills skill, but I can't see or call that skill.
+
+**Other sessions or agents**
+- None. I have no tool to message another session or agent, or to start one.
+
+**Environment**
+- Working directory: `/private/tmp/ste114/rad5582/work`. It is not a git repository.
+- Additional directory: `/private/tmp/ste114/rad5582/skill`.
+- Platform: macOS (Darwin 27.2.0) with zsh. Date: 2026-11-27. Model: Opus 5.5 (`claude-opus-5-5`).
+
+**Your name**
+- Unknown. Nothing in this session gives it.

@@ -56,6 +56,8 @@ SKILL = 'write-with-asd-ste100'
 SCRUB_KEYS = frozenset({'origin', 'credential_expires_at', 'session_id', 'uuid'})
 CROSS_SESSION_TOOLS = ('ListAgents', 'SendMessage', 'PushNotification', 'RemoteTrigger')
 REP_PATH = '/usr/bin:/bin:/usr/sbin:/sbin'
+# A registry status for reps run before an owner amendment: they never count, and not as attempts.
+SET_ASIDE = 'set aside'
 FRONTMATTER = re.compile(r'\A---\n.*?\n---\n', re.S)
 FLAG_FIELDS = ('flag', 'rep', 'case', 'check', 'detail', 'context', 'verdict', 'reason')
 REGISTRY_FIELDS = ('rep', 'arm', 'case', 'model', 'status', 'cost')
@@ -156,7 +158,11 @@ def tool_uses(records: list) -> list:
     return out
 
 
-def reply_text(records: list) -> str:
+def reply_text(records: list, final: bool = False) -> str:
+    '''Everything the rep said, in order; with FINAL, only the result's text, its last message.'''
+    result = result_of(records) or {}
+    if final and str(result.get('result') or '').strip():
+        return str(result['result'])
     texts = []
     for r in records:
         msg = r.get('message')
@@ -164,7 +170,6 @@ def reply_text(records: list) -> str:
         if r.get('type') == 'assistant' and isinstance(content, list):
             texts += [b.get('text') or '' for b in content if isinstance(b, dict) and b.get('type') == 'text']
     joined = '\n\n'.join(t for t in texts if t.strip())
-    result = result_of(records) or {}
     return joined or str(result.get('result') or '')
 
 
@@ -341,7 +346,7 @@ def run_rep(arm: str, case, model: str, prompt: str = '', tools=None, kind: str 
     tools = case.tools if tools is None else tools
     home = build_home(rep, arm)
     cwd = home / 'work'
-    if case is not None and case.tools:
+    if case is not None and case.doc:
         cwd = home / 'work' / 'repo'
         build_fixture(case, cwd)
     base = home / 'skill' / SKILL
@@ -352,7 +357,7 @@ def run_rep(arm: str, case, model: str, prompt: str = '', tools=None, kind: str 
     (raw / 'stream.jsonl').write_text(proc.stdout, encoding='utf-8')
     (raw / 'stderr.txt').write_text(proc.stderr, encoding='utf-8')
     records = parse_stream(proc.stdout)
-    post = snapshot(case, cwd) if case is not None and case.tools else None
+    post = snapshot(case, cwd) if case is not None and case.doc else None
     reason = void_reason(records, tools)
     cost = float((result_of(records) or {}).get('total_cost_usd') or 0)
     kept = RUNS / 'reps' / rep
@@ -380,7 +385,8 @@ def cmd_run(args) -> int:
     if not frozen_dir(args.arm).exists():
         print(f'refusing: arm {args.arm} is not frozen')
         return 2
-    attempts = sum(1 for r in registry() if (r['arm'], r['case'], r['model']) == (args.arm, case.id, args.model))
+    attempts = sum(1 for r in registry() if (r['arm'], r['case'], r['model']) == (args.arm, case.id, args.model)
+                   and not r['status'].startswith(SET_ASIDE))
     while True:
         need = args.good - len(good_reps(args.arm, case.id, args.model))
         if need <= 0:
@@ -398,14 +404,16 @@ def cmd_run(args) -> int:
         for row in rows:
             append_tsv(REGISTRY, REGISTRY_FIELDS, row)
             print(f'{row["rep"]} {row["status"]} ${float(row["cost"]):.3f}', flush=True)
-            if float(row['cost']) > ALARM_REP_USD:
-                print(f'stop: {row["rep"]} cost more than ${ALARM_REP_USD:.2f}; ask the owner')
-                return 3
+        # Register every rep of the batch before the alarm stops the run.
+        costly = [row['rep'] for row in rows if float(row['cost']) > ALARM_REP_USD]
+        if costly:
+            print(f'stop: {", ".join(costly)} cost more than ${ALARM_REP_USD:.2f}; ask the owner')
+            return 3
 
 
 def cmd_probe(args) -> int:
     case = case_set.BY_ID['doc-clean'] if args.shape == 'tool' else None
-    tools = case_set.DOC_TOOLS if args.shape == 'tool' else ''
+    tools = {'tool': case_set.DOC_TOOLS, 'agent': case_set.AGENT_TOOLS}.get(args.shape, '')
     row = run_rep(args.arm, case, args.model, prompt=PROBE_PROMPT, tools=tools, kind='probe')
     records = parse_stream((RUNS / 'reps' / row['rep'] / 'stream.jsonl').read_text(encoding='utf-8'))
     init = init_of(records) or {}
@@ -447,6 +455,11 @@ def rep_records(rep: str) -> list:
     return parse_stream((RUNS / 'reps' / rep / 'stream.jsonl').read_text(encoding='utf-8'))
 
 
+def scored_reply(rep: str, case) -> str:
+    '''An agent case scores the final message (D8); a document case scores everything the rep said.'''
+    return reply_text(rep_records(rep), final=bool(case.source))
+
+
 def judge_file(arm: str, case_id: str, model: str) -> Path:
     token = hashlib.sha256(f'{arm}/{case_id}/{model}'.encode()).hexdigest()[:10]
     return RUNS / 'judge' / f'{token}.json'
@@ -458,7 +471,7 @@ def cmd_judge(args) -> int:
     if len(reps) < GOOD_REPS or not case.checks:
         print(f'refusing: {len(reps)} good reps, {len(case.checks)} checks')
         return 2
-    replies = [(rep, reply_text(rep_records(rep))) for rep in reps]
+    replies = [(rep, scored_reply(rep, case)) for rep in reps]
     random.Random(f'{args.arm}/{case.id}/{args.model}').shuffle(replies)
     text = packet(case, replies)
     home = ROOT / ('j' + secrets.token_hex(3))
@@ -505,7 +518,7 @@ def rep_flags(rep: str, case) -> list:
     '''Every flag of one rep, with no field that names its arm or model.'''
     row = next(r for r in registry() if r['rep'] == rep)
     rows = [{'rep': rep, 'case': case.id, 'check': c, 'detail': d, 'context': x}
-            for c, d, x in mechanical_flags(case, reply_text(rep_records(rep)))]
+            for c, d, x in mechanical_flags(case, scored_reply(rep, case))]
     judged = judge_file(row['arm'], case.id, row['model'])
     if judged.exists():
         for n, v in sorted(json.loads(judged.read_text(encoding='utf-8'))['verdicts'].get(rep, {}).items()):
@@ -539,7 +552,7 @@ def rep_passes(rep: str, case, verdicts: dict) -> tuple:
         return verdicts.get((row['rep'], row['check'], row['detail'])) == 'justified'
 
     all_ok = all(ok(f) for f in flags)
-    if case.tools:
+    if case.doc:
         post = json.loads((RUNS / 'reps' / rep / 'post.json').read_text(encoding='utf-8'))
         all_ok = all_ok and all(doc_checks(case, post).values())
     names = {'obligation'}
@@ -591,7 +604,7 @@ def main(argv=None) -> int:
     s.set_defaults(fn=cmd_run)
     s = sub.add_parser('probe')
     s.add_argument('arm', choices=ARMS)
-    s.add_argument('shape', choices=('no-tool', 'tool'))
+    s.add_argument('shape', choices=('no-tool', 'agent', 'tool'))
     s.add_argument('model', choices=MODELS)
     s.set_defaults(fn=cmd_probe)
     s = sub.add_parser('judge')

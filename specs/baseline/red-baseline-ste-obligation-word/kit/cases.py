@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 
 FENCE = '`' * 3
 DOC_TOOLS = 'Bash,Read,Edit,Write'
+# Owner, plan 114 D8 (2026-11-27): with no tools, Opus 5.5 reps wrote tool calls as text to open references/.
+AGENT_TOOLS = 'Read'
 
 
 @dataclass(frozen=True)
@@ -86,6 +88,7 @@ def agent_case(case_id: str, kind: str, letter: str, hedges: str, cap: int) -> C
     return Case(
         id=case_id,
         prompt=f'Rewrite this {kind} in agent mode, for an agent reader.\n\n<source>\n{AGENT_SOURCES[letter]}\n</source>\n',
+        tools=AGENT_TOOLS,
         checks=(hedges, NO_ADDITIONS, OBLIGATION),
         sentence_cap=cap,
         source=AGENT_SOURCES[letter],

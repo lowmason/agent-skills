@@ -96,3 +96,14 @@ The executing session reads every flag in full and writes a verdict, `count` or 
 5. Treatment arm: freeze it, run the three agent cases on both models, then judges.
 6. `kit.py flags`, then the hand reading of every flag, then `kit.py tally`.
 7. The four document cases in the treatment arm on both models, then judges, flags, hand reading and the tally.
+
+## Amendment 1 (owner, plan 114 D8, 2026-11-27)
+
+The control arm's first batch, `agent-tool-description` on `claude-opus-5-5`, stopped on the $3 alarm. With `--tools ""`, 4 of its 5 reps wrote tool calls as text, to open `references/agent-mode.md` and to run the linter. Two of them ran to the 128,000-token output limit, at $3.37 and $3.49. No void rule covered this. Asked, the owner chose "Give agent reps Read". From this amendment on:
+
+- An agent case runs with `--tools Read`, `--permission-mode auto`, `--add-dir <skill folder's parent>`, the guard and the deny list, from the empty folder `work/` in its `HOME`. It has no fixture repo. It can open the skill's `references/`.
+- V2 no longer applies to agent cases. V3 (a denied tool call) now applies to them.
+- An agent case is scored on the result's text, the rep's final message, not on every message. The judges get the same text.
+- The 5 reps of that first batch have the registry status `set aside (D8)`. They never count, and they are not attempts under the 8-attempt limit. Their $7.05 counts toward the cap.
+- One `agent` probe rep on each model checks the new shape before the next scored rep.
+- Every other rule above is unchanged, the control stop included.
