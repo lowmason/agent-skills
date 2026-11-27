@@ -45,6 +45,7 @@
 - **D4** (planner, for plan review, 2026-11-27): a fresh control arm runs on the current `SKILL.md`. The isolation differs from `skill-r2`, so its unscored 3 of 5 is no control. If the control passes the obligation check at 4 of 5 or better on both models, stop and ask the owner before the line ships. Applied in: Task 3.
 - **D5** (planner, for plan review, 2026-11-27): all four document cases run (`doc-clean`, `doc-dirty`, `skill-md`, `doc-symlink`), on the final skill text and both models. [34] says "a run of the document cases", and `doc-clean` ran before fix 4 changed step 3. Applied in: Task 5.
 - **D6** (planner, for plan review, 2026-11-27): the new line names "should", a word of the `agent-instruction` source. The item names "should" as its example, so the overlap check records it and allows it. Applied in: Task 4.
+- **D7** (owner, plan review, 2026-11-27): approve as written, with D3 to D6 standing. Execute inline in the planning session (executing-plans). Applied in: all tasks.
 
 ---
 
