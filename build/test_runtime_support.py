@@ -1161,3 +1161,44 @@ def test_license_pointer_stays_out_of_the_model_input():
     assert '# license:' not in tomllib.loads(codex.read_text())['developer_instructions']
     for path in (canonical, gemini, codex):
       assert line in path.read_text().splitlines()
+
+
+SECOND_POINTER = '# license: Apache-2.0. Also adapted from elsewhere.'
+
+
+def two_pointer_source(tmp_path, body='body\n', tools='Read, Agent(x)'):
+  source = tmp_path / 'lead.md'
+  source.write_text(
+    f'---\nname: lead\ndescription: Leads.\ntools: {tools}\n{POINTER}\n{SECOND_POINTER}\n'
+    f'# cc-guide: x @1\n---\n{body}'
+  )
+  return source
+
+
+def test_license_pointers_keep_every_frontmatter_line_in_file_order(tmp_path):
+  sync = load_sync_module()
+  assert sync.license_pointers(two_pointer_source(tmp_path)) == [POINTER, SECOND_POINTER]
+
+
+def test_license_pointers_ignore_a_license_line_in_the_body(tmp_path):
+  sync = load_sync_module()
+  source = two_pointer_source(tmp_path, body='# license: in the body\ntext\n')
+  assert sync.license_pointers(source) == [POINTER, SECOND_POINTER]
+  assert '# license: in the body' not in sync.render_gemini_agent(source).partition('\n---\n\n')[0]
+  assert sync.render_codex_agent(source).count('# license:') == 2
+
+
+def test_both_adapters_carry_every_pointer_in_order(tmp_path):
+  sync = load_sync_module()
+  source = two_pointer_source(tmp_path)
+  assert sync.render_codex_agent(source).splitlines()[1:3] == [POINTER, SECOND_POINTER]
+  head = sync.render_gemini_agent(source).partition('\n---\n\n')[0].splitlines()
+  assert head.index(POINTER) + 1 == head.index(SECOND_POINTER)
+
+
+def test_gemini_pointer_comes_before_the_dropped_tools_note(tmp_path):
+  sync = load_sync_module()
+  head = sync.render_gemini_agent(two_pointer_source(tmp_path)).partition('\n---\n\n')[0]
+  lines = head.splitlines()
+  note = next(i for i, line in enumerate(lines) if line.startswith('# Claude-only tools dropped'))
+  assert lines.index(SECOND_POINTER) < note
