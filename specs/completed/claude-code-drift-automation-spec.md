@@ -9,7 +9,8 @@ follow-ups 45 and 51, in `specs/plans/completed/`. Retired here by plan 58, the 
 read the guide at `18b4a71` (R1.1, R2.6, R5, R7, R11.1, R12.2, R12.3).
 
 **Amended 2026-11-26** by plan 109 (`specs/plans/109-cc-guide-fetch-notice-and-probes.md`): `check` writes each
-fetch into its own generation folder and swaps the `latest` symlink to it at once (Layout, R6.3, R6.4).
+fetch into its own generation folder and swaps the `latest` symlink to it at once (Layout, R6.3, R6.4), and the
+`explore-override` probe may read the canary tokens its subagents echo (R10.5).
 
 **Earlier status: DESIGN APPROVED (2026-10-03).** The owner reviewed the merged
 spec and approved it as written, including the merge-time choices neither
@@ -1179,7 +1180,9 @@ R10.5 **Assertions.**
 - Assert on raw `--output-format stream-json` events. Fall back to the probe
   session's transcript (`message.model`, `effort`) only for fields the stream
   lacks.
-- Never assert on the model's prose.
+- Never assert on the model's prose, except the `explore-override` probe, which reads the random canary
+  tokens and marks that each subagent echoes from its own context, since a subagent's context shows only in
+  its output (owner, plan 109, 2026-11-26).
 - Record one real stream per probe before writing its assertion, as the guard
   probe did.
 - Outcomes: **PASS** matches the guide. **DIVERGES** means the behaviour
