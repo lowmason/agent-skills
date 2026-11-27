@@ -8427,6 +8427,7 @@ Stop: $30.00 total. Per-rep cap: $1.00.
 | Task 4 (additive treatment at `T`, 4 cases, and the `T-r1` round, 3 cases, 5 reps each, no VOID rerun) | 7 calls, 35 reps | $35.00 ($5.00 per case call) | $3.8365 | $5.9216 |
 | Task 5 (guards at `T-final`, 10 cases, and the `BASE113` re-run of dr-park-ranked, 5 reps each, no VOID rerun) | 11 calls, 55 reps | $55.00 ($5.00 per case call) | $5.0295 | $10.9511 |
 | Task 6 (V3 runs at `T-final`: dr-tracks twice and dr-known-progression-79, 5 reps each, no VOID rerun) | 3 calls, 15 reps | $15.00 ($5.00 per case call) | $2.3218 | $13.2729 |
+| Task 6 fix round 1 (the `BASE113` re-run of dr-known-progression-79, 5 reps, no VOID rerun) | 1 call, 5 reps | $5.00 | $0.8791 | $14.1520 |
 
 The Actual and Running total cells sum each rep's `total_cost_usd`. The Task 1 row rounds $0.0174 to $0.02, and the
 running total uses $0.0174.
@@ -8448,8 +8449,10 @@ sum was $20.3032. These figures match the "Plan 113 guards summary and spend" se
 Running total after Task 6: $13.2729 of $30 ($13.27). The sum of `total_cost_usd` over Task 6's 15 reps is $2.3218. No
 rep file is empty or unreadable, so none counts at its cap. At most two calls ran at once, and before each call the
 running total plus the worst case of every call still running and of the new call stayed under $30. The largest such
-sum was $20.9511. These figures match the "Plan 113 V3 summary and spend" section, below. Plan 113 ran 126 reps in all,
-and no rep was VOID.
+sum was $20.9511. These figures match the "Plan 113 V3 summary and spend" section, below.
+
+Running total after Task 6 fix round 1: $14.1520 of $30 ($14.15). The `BASE113` re-run's 5 reps cost $0.8791. Its
+pre-call sum was $18.2729, and no other call ran. Plan 113 ran 131 reps in all, and no rep was VOID.
 
 ## Plan 113: control
 
@@ -10137,6 +10140,10 @@ owner (plan 113, Bars). A rep is one fresh `claude -p` run with no tools. Result
 - **dr-tracks, run b** meets the bar: PASS 5 of 5.
 - **dr-known-progression-79 misses the bar**: PASS 3 of 5, where the bar needs 4. Reps 2 and 3 name traceability in no
   stage. Bar clause B passes in 5 of 5. The run goes to the owner, and the item stays open.
+- **As guards** (fix round 1): the spec's V3 says these runs "double as guards for this spec's edits". Each guard bar
+  is its comparison arm's 5 of 5 minus one, so 4. Both dr-tracks runs meet it. dr-known-progression-79 misses it, so it
+  re-ran at `BASE113`, as the plan's Open item 5 says for a guard that misses. The `BASE113` arm passes 5 of 5. No
+  wording round ran.
 
 **Checks before any rep.**
 
@@ -10422,28 +10429,107 @@ hardening stages. Between `T-final` and the two arms that passed 5 of 5 (`2e91b0
 are plan 113's edits and the `175bf83` removal, and for `2e91b05` also `73f7dae`'s §4 commit sentence and plan 85's two
 final-review sentences. None of them names traceability, a manifest, provenance or a replay. Across its arms, the case's
 traceability count reads 4 of 5 (`5f52dfc`), 5 of 5 (`2e91b05`), 4 of 5 (`59df779`), 5 of 5 (`73f7dae`) and 3 of 5
-(`T-final`). This run cannot show whether plan 113's edits caused the two fails. A five-rep re-run at `BASE113` (about
-$1) would show it. The plan has no step for that run, so it did not run. It is an option for the owner.
+(`T-final`). This run cannot show whether plan 113's edits caused the two fails. Fix round 1 re-ran the case at
+`BASE113` ("Plan 113 V3: dr-known-progression-79 at `BASE113`", below).
 
 Running total: $13.2729 of $30.
 
+### Plan 113 V3: dr-known-progression-79 at `BASE113`
+
+Fix round 1 of Task 6, by the controller's ruling. The spec's V3 says the three runs "double as guards for this spec's
+edits" (a designer's call). The plan's Open item 5, approved in D1, says that a guard that misses re-runs at `BASE113`
+before its wording round, to show which change caused the miss. As a guard, dr-known-progression-79 compares with its
+arms at `2e91b05` (plan 85's guard) and `73f7dae`, which pass 5 of 5 each. So its guard bar is 5 − 1 = 4, and the
+`T-final` run (3 of 5) misses it. The two dr-tracks runs compare with plan 85's guard at `2e91b05` (5 of 5). Their
+guard bar is 4, and both meet it (5 of 5 each).
+
+Two plan rules meet here. The Bars give V3 no wording round, and Open item 5 puts the `BASE113` re-run before a guard's
+wording round. The controller ruled the diagnostic re-run and no wording round. No wording round ran. This re-run edits
+no skill text, and no skill commit follows it.
+
+**Build.**
+
+```
+CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 171e7631be8d5c6c97a230c51fc94d1e16127a5b /tmp/plan113-work/t6-base dr-known-progression-79
+```
+
+It printed `wrote 1 prompts to /tmp/plan113-work/t6-base`. Its `MANIFEST.txt` is copied to
+`treatment/p113-t6-base-MANIFEST.txt`. It shows `budget 1.00`, and its sec-edgar read has sha256 `c43fa455…`. The prompt
+hash is `ab05981e…`, the same as the `BASE113` check build above. The diff from it to the `T-final` prompt removes 11
+lines and adds 27, all of them plan 113's edits. The quarantine grep found 0 hits in the manifest and 7 `quarantine`
+hits in the prompt, all inside the verbatim sec-edgar spec, so they are exempt.
+
+**Reps.** One call, `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh
+/tmp/plan113-work/t6-base/dr-known-progression-79.txt
+specs/baseline/red-baseline-new-project-entry/treatment/dr-known-progression-79-p113-base 1 5 claude-opus-5-5 1.00`, ran
+as a background shell command. The pre-call sum was $18.2729. Every rep printed `exit=0`. Every rep JSON has
+`result_index` 0 and no `origin` key, and `show_reps.py` shows one turn, one model and `success` for each. No rep is VOID,
+no rerun was needed and no `.err` file was left. The run day was 2026-11-27, the same day as the `T-final` run. The
+replies were read in full from `show_reps.py` over this folder alone. Scored reps: rep1 to rep5. Spend: $0.8791. The
+clauses and readings are those of "Plan 113 V3: dr-known-progression-79".
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass (borderline, counts per file) | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline, First stage per outcome) | pass | pass | pass | yes |
+| 5 | pass (borderline, counts per file) | pass | pass | pass | pass | yes |
+
+Clause B: 5 of 5 (`T-final` 5 of 5). Clause A: 5 of 5 (5 of 5). Clause C: 5 of 5, which is manifest 5 of 5 and
+traceability 5 of 5 (`T-final` 3 of 5, traceability 3 of 5). Clause D: 5 of 5 (5 of 5). Clause E (recorded): 5 of 5.
+PASS: 5 of 5 (`T-final` 3 of 5).
+
+- B. No first-stage Exit names a manifest, a per-row provenance record or point-in-time awareness. Reps 1 and 5 check
+  the row counts against each source file, and they pass, borderline, by the reading of record that a count is not a
+  manifest. Rep5: "with row counts per source file matching the files' data rows". Rep1: "the row counts match the
+  source files". Rep4 checks one count: "its row count checked against the source files".
+- A. Every rep commits the index work, then the submissions, then 10-K and 8-K handling, as Stages 1 to 3. Rep4 passes,
+  borderline (First stage per outcome). Its "Stage 6: Full-history backfill" runs O1 to O3 over the full range after
+  Stage 3.
+- C. Every rep names a manifest and a per-row link to the source in Stage 4. Rep1's Exit: "any output row or document
+  names its source file and content hash". Rep2's Exit: "traceability — any table row, submission or extracted
+  document resolves to its source URL and content hash". Rep3's Stage 4 is "Manifests and replay", the name that the
+  failed `T-final` reps used, but its Produces line ties rows to sources: "a manifest tying each table row, submission
+  and extracted document to its source URL, hash and receipt time". Rep5: "Every stored file and table row traces to
+  its source URL, content hash and receipt time".
+- D. Every stage entry has a `Leaves out` field. Rep1's Stages 4 to 7 read "nothing". E. No Stage 1 Exit requires a
+  publication pointer or an atomic generation.
+- Not scored. No Completion section carries the path:line rule, which plan 113's edit 3 added to §6. No Outcomes header
+  has a `Spec` column, and no rep writes `suggested, not approved`. Rep4 writes eight stages and rep5 five.
+
+Other readings:
+
+- A row count for each source file as a run manifest (the `T7` arm's other reading). Reps 1 and 5 fail B. PASS is then
+  3 of 5. Read the same way, `T-final` reps 1 and 4 ("row counts per quarter reported") may fail too.
+- The strict reading of A. Rep4 fails A. PASS is then 4 of 5. Both readings together: 2 of 5.
+
+**What the re-run shows.** The miss is not present at `BASE113`, before plan 113's edits: the `BASE113` arm passes 5 of 5,
+and its traceability is 5 of 5. The run does not show that plan 113's edits cause the miss. The gap between the arms is
+two reps in five, no line of the `BASE113` to `T-final` diff names traceability, and five-rep arms cannot show more than
+that. Both arms ran on the same day, so the frame-date gap does not differ between them. No wording round ran.
+
+Running total: $14.1520 of $30.
+
 ### Plan 113 V3 summary and spend
 
-`show_reps.py` ran over each folder after its last rep. The three folders hold 15 reps, none VOID. No rep file is empty or
+`show_reps.py` ran over each folder after its last rep. The four folders hold 20 reps, none VOID. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun, no `.err` file was left and no rep JSON was rewritten.
 
-| Run | Text | Bar | PASS | Bar clause | Clause C | Verdict |
-|---|---|---|---|---|---|---|
-| dr-tracks, run a | `2bd982d` | at least 4 of 5 | 5 of 5 | A 5 of 5 | 5 of 5 | **met** |
-| dr-tracks, run b | `2bd982d` | at least 4 of 5 | 5 of 5 | A 5 of 5 | 5 of 5 | **met** |
-| dr-known-progression-79 | `2bd982d` | at least 4 of 5 | 3 of 5 | B 5 of 5 | 3 of 5 (traceability) | **missed**: to the owner |
+| Run | Text | V3 bar | PASS | Bar clause | Clause C | V3 verdict | Guard bar | Guard verdict |
+|---|---|---|---|---|---|---|---|---|
+| dr-tracks, run a | `2bd982d` | at least 4 of 5 | 5 of 5 | A 5 of 5 | 5 of 5 | **met** | at least 4 (`2e91b05` 5 of 5) | met |
+| dr-tracks, run b | `2bd982d` | at least 4 of 5 | 5 of 5 | A 5 of 5 | 5 of 5 | **met** | at least 4 (`2e91b05` 5 of 5) | met |
+| dr-known-progression-79 | `2bd982d` | at least 4 of 5 | 3 of 5 | B 5 of 5 | 3 of 5 (traceability) | **missed**: to the owner | at least 4 (`2e91b05`, `73f7dae` 5 of 5) | **missed**: re-ran at `BASE113` |
+| dr-known-progression-79, diagnostic | `171e763` (`BASE113`) | none (diagnostic) | 5 of 5 | B 5 of 5 | 5 of 5 | not a V3 run | none | the miss is not present at `BASE113` |
 
-The two dr-tracks runs meet V3. dr-known-progression-79 does not, so V3 is not met, and the plan 79 item stays open
-("Plan 113: summary", Plan completion items). By the plan's Bars, no wording round follows.
+The two dr-tracks runs meet V3 and their guard bars. dr-known-progression-79 meets neither, so V3 is not met, and the
+plan 79 item stays open ("Plan 113: summary", Plan completion items). Its `BASE113` re-run passes 5 of 5. By the plan's
+Bars, no wording round follows, and none ran.
 
-**Spend.** Task 6 cost $2.3218 over 15 reps, the Task 6 row of the Plan 113 spend table. Per folder: dr-tracks run a
-$0.6830, run b $0.7325 and dr-known-progression-79 $0.9063. Running total: $13.2729 of $30. The largest pre-call sum
-was $20.9511.
+**Spend.** Task 6 cost $3.2009 over 20 reps, the two Task 6 rows of the Plan 113 spend table. Per folder: dr-tracks run
+a $0.6830, run b $0.7325, dr-known-progression-79 $0.9063 and its `BASE113` re-run $0.8791. Running total: $14.1520 of
+$30. The largest pre-call sum was $20.9511.
 
 ## Plan 113: summary
 
@@ -10477,17 +10563,20 @@ count on each other reading. An other reading never counts toward a bar.
 | Task 5, guard | dr-rerank-second | guard, at least 4 | `T7` (`59df779`): 5 of 5 | PASS 5 of 5 | met | Each question-marked sentence as its own question: 4 of 5 |
 | Task 5, guard | dr-stop-track | guard, at least 4 | `2e91b05`: 5 of 5 | PASS 5 of 5 | met | Inline fields, the other way: 2 of 5 |
 | Task 5, guard | dr-park-ranked | guard, at least 3 | `2e91b05`: 4 of 5 | PASS 1 of 5 | **missed**: to the owner | Date, the other way: 3 of 5. Item by description, the other way: 3 of 5 (2 of 5 on the strict count of rep2's C). Both: 5 of 5. |
-| Task 5, diagnostic | dr-park-ranked at `BASE113` | guard, at least 3 | `2e91b05`: 4 of 5 | PASS 2 of 5 | missed too: the miss predates plan 113's edits | Table items, the other way: 3 of 5 (2 of 5 strict). Date and Table items, both the other way: 5 of 5. |
+| Task 5, diagnostic | dr-park-ranked at `BASE113` | guard, at least 3 | `2e91b05`: 4 of 5 | PASS 2 of 5 | missed too: the miss is present before plan 113's edits | Table items, the other way: 3 of 5 (2 of 5 strict). Date and Table items, both the other way: 5 of 5. |
 | Task 5, guard | dr-resume-marker | guard, at least 4 | round 3 (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | Carried citation, the other way: 3 of 5 (round 3 is also 3 of 5) |
 | Task 5, guard | dr-resume-blocked | guard, at least 4 | round 3 (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met, on the new Date aside reading | Date aside, the other way: 2 of 5 against a same-reading bar of 3, a miss |
 | Task 5, guard | dr-resume-legacy | guard, at least 4 | `2e91b05`: 5 of 5 | PASS 5 of 5 | met | none changes a count |
-| Task 6, V3 | dr-tracks, run a | at least 4 of 5 | plan 79 run a (`5f52dfc`): 3 of 5 | PASS 5 of 5 | **met** | Item 4, Says why or Dependency fact, the other way: 4 of 5 each. Any two: 3 of 5. |
-| Task 6, V3 | dr-tracks, run b | at least 4 of 5 | plan 79 run b (`5f52dfc`): 2 of 5 | PASS 5 of 5 | **met** | Steps or item 4, the other way: 4 of 5 |
-| Task 6, V3 | dr-known-progression-79 | at least 4 of 5 | plan 85 guard (`2e91b05`): 5 of 5 | PASS 3 of 5 | **missed**: to the owner | By reference read into an Objective: 4 of 5. A link between outputs as lineage: 5 of 5. File list, or traceability strictly per row: 2 of 5. |
+| Task 6, V3 and guard | dr-tracks, run a | V3 at least 4 of 5, guard at least 4 | plan 79 run a (`5f52dfc`): 3 of 5. Guard comparison: plan 85 guard (`2e91b05`): 5 of 5 | PASS 5 of 5 | **met** (V3 and guard) | Item 4, Says why or Dependency fact, the other way: 4 of 5 each. Any two: 3 of 5. |
+| Task 6, V3 and guard | dr-tracks, run b | V3 at least 4 of 5, guard at least 4 | plan 79 run b (`5f52dfc`): 2 of 5. Guard comparison: plan 85 guard (`2e91b05`): 5 of 5 | PASS 5 of 5 | **met** (V3 and guard) | Steps or item 4, the other way: 4 of 5 |
+| Task 6, V3 and guard | dr-known-progression-79 | V3 at least 4 of 5, guard at least 4 | plan 85 guard (`2e91b05`) and `73f7dae`: 5 of 5 each | PASS 3 of 5 | **missed** (V3 and guard): to the owner | By reference read into an Objective: 4 of 5. A link between outputs as lineage: 5 of 5. File list, or traceability strictly per row: 2 of 5. |
+| Task 6 fix round 1, diagnostic | dr-known-progression-79 at `BASE113` | none (Open item 5's re-run) | the same comparisons | PASS 5 of 5 | the miss is not present at `BASE113` | A count for each source file as a manifest: 3 of 5. The strict reading of A: 4 of 5. Both: 2 of 5. |
 
 On the readings of record: V1(a) and V2 meet the additive bar, both clean-control cases miss it with treatments at 5 of
-5, nine of ten guards meet the guard bar, and two of the three V3 runs meet their bar. The misses are dr-park-ranked (a
-guard) and dr-known-progression-79 (V3). Every met additive verdict rests on a new reading (owner gate item 5).
+5, nine of ten guards meet the guard bar, and two of the three V3 runs meet their V3 and guard bars. The misses are
+dr-park-ranked (a guard) and dr-known-progression-79 (V3, and as a guard). Each miss re-ran at `BASE113`. dr-park-ranked
+misses there too (2 of 5). dr-known-progression-79 passes there (5 of 5). Every met additive verdict rests on a new
+reading (owner gate item 5).
 
 ### Spend
 
@@ -10499,9 +10588,10 @@ guard) and dr-known-progression-79 (V3). Every met additive verdict rests on a n
 | Task 4 (treatment arms at `T`, and the `T-r1` round) | 35 | $3.8365 |
 | Task 5 (guards at `T-final`, and the `BASE113` re-run) | 55 | $5.0295 |
 | Task 6 (V3 runs at `T-final`) | 15 | $2.3218 |
-| **Total** | **126** | **$13.2729 of $30** |
+| Task 6 fix round 1 (the `BASE113` re-run of dr-known-progression-79) | 5 | $0.8791 |
+| **Total** | **131** | **$14.1520 of $30** |
 
-The total is under the $30 stop and under the plan's estimate of about $15 (Open for plan review item 6). The 126 reps
+The total is under the $30 stop and under the plan's estimate of about $15 (Open for plan review item 6). The 131 reps
 include no VOID rep and no empty or unreadable rep file. One wording round ran (Task 4, `T-r1`).
 
 ### Plan completion items
@@ -10536,7 +10626,9 @@ each pass 4 of 5 under the kit in specs/baseline/red-baseline-new-project-entry/
 
 The owner ruled both readings (Provenance on bytes 2026-11-11, no Echo 2026-11-17). At `T-final` the two independent
 dr-tracks runs pass 5 of 5 each, and dr-known-progression-79 passes 3 of 5 ("Plan 113: dr-tracks runs"). Its two fails
-leave traceability out of every stage. The item stays open with a dated note, and the miss goes to the owner (spec V3).
+leave traceability out of every stage. Its `BASE113` re-run passes 5 of 5, so the miss is not present before plan 113's
+edits. The `Done when:` reads the runs at the final text, so it is still not met. The item stays open with a dated
+note, and the miss goes to the owner (spec V3).
 
 ### Untested passages
 
@@ -10562,22 +10654,27 @@ No clause of any plan 113 arm scores these passages.
 
 ### Owner gate
 
-1. **V3 miss: dr-known-progression-79 is 3 of 5** (bar 4). Item 5095 stays open. Bar clause B is 5 of 5. Reps 2 and 3
-   leave traceability out of every stage and name "manifests and replay" instead. The confirmed Provenance on bytes
-   reading fails them, and so does the clause text alone. No line of the `BASE113` to `T-final` diff names traceability.
-   The case's earlier arms passed 3, 5, 4 and 5 of 5 (`5f52dfc`, `2e91b05`, `59df779` and `73f7dae`). First stage per
-   outcome (plan 79, not confirmed) decides no count here, because reps 2 and 3 fail C as well. A `BASE113` re-run
-   (about $1) would show whether plan 113's edits caused the two fails. It did not run, because the plan has no step for
-   it.
-2. **Guard miss: dr-park-ranked** (`T-final` 1 of 5, `BASE113` 2 of 5, bar 3). The pending decision: the miss rests on a
-   regression that predates plan 113's edits. The comparison arm at `2e91b05` passed 4 of 5, and the `BASE113` re-run
-   passes 2 of 5. The `BASE113` arm misses too, so plan 113's edits are not shown to cause the miss. Five-rep arms
-   cannot show more than that. The frame-date gap (item 6) is one likely cause of the placeholder headings, outside the
-   skill text. The §5 Parking paragraph is byte-identical at `2e91b05`, `BASE113` and `T-final`. Both bar clauses pass
-   in all 10 reps. Every fail is a placeholder date heading (clause C) or table-form items (clause D). By the
-   controller's ruling, no wording round ran in this plan: a round would edit Parking text outside plan 113's edits and
-   change what Task 6 read. The owner rules whether to accept that, or to order a round after the PR with the same fixtures. The
-   facts are in "Plan 113 guards summary and spend", Owner gate.
+1. **V3 and guard miss: dr-known-progression-79 is 3 of 5** (V3 bar 4, guard bar 4). Item 5095 stays open. Bar clause
+   B is 5 of 5. Reps 2 and 3 leave traceability out of every stage and name "manifests and replay" instead. The
+   confirmed Provenance on bytes reading fails them, and so does the clause text alone. No line of the `BASE113` to
+   `T-final` diff names traceability. The case's earlier arms passed 3, 5, 4 and 5 of 5 (`5f52dfc`, `2e91b05`,
+   `59df779` and `73f7dae`). First stage per outcome (plan 79, not confirmed) decides no count here, because reps 2 and
+   3 fail C as well. As a guard (spec V3, "double as guards"), the case re-ran at `BASE113` by Open item 5, in Task 6's
+   fix round 1. The `BASE113` arm passes 5 of 5, so the miss is not present before plan 113's edits. Both arms ran on
+   the same day. Five-rep arms do not show that plan 113's edits cause the miss. The plan's rules conflict here: the
+   Bars give V3 no wording round, and Open item 5 puts the re-run before a guard's wording round. By the controller's
+   ruling the re-run ran and no wording round ran. The owner rules what follows: accept the miss with the item open, or
+   order a wording round or a further run.
+2. **Guard miss: dr-park-ranked** (`T-final` 1 of 5, `BASE113` 2 of 5, bar 3). The pending decision: the miss is present
+   at `BASE113` too, before plan 113's edits. So plan 113's edits are not shown to cause it. The comparison arm at
+   `2e91b05` passed 4 of 5. The change from 4 of 5 to 2 of 5 is not shown to be a skill-text regression. The §5 Parking
+   paragraph is byte-identical at `2e91b05`, `BASE113` and `T-final`, and the change is confounded by the run date: the
+   gap between the frame date and the run day grew from four days to three weeks (item 6). That gap is one likely cause
+   of the placeholder headings. Five-rep arms cannot show more than that. Both bar clauses pass in all 10 reps. Every
+   fail is a placeholder date heading (clause C) or table-form items (clause D). By the controller's ruling, no wording
+   round ran in this plan: a round would edit Parking text outside plan 113's edits and change what Task 6 read. The
+   owner rules whether to accept that, or to order a round after the PR with the same fixtures. The facts are in "Plan
+   113 guards summary and spend", Owner gate.
 3. **Two clean controls: dr-provisional-alone and dr-provisional-only.** Each control fails no bar clause, so the
    additive bar cannot be met, though each treatment passes 5 of 5 at `T` and at `T-r1`. By the Bars, a clean control
    reverts no change. Every rep of both controls already reads the provisional line as an unapproved file and asks
