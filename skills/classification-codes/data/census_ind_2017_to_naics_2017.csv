@@ -1,0 +1,1730 @@
+census_ind_2017,census_title_2017,naics_2017,naics_title_2017,via
+0170,Crop production,111110,Soybean Farming,prefix
+0170,Crop production,111120,Oilseed (except Soybean) Farming,prefix
+0170,Crop production,111130,Dry Pea and Bean Farming,prefix
+0170,Crop production,111140,Wheat Farming,prefix
+0170,Crop production,111150,Corn Farming,prefix
+0170,Crop production,111160,Rice Farming,prefix
+0170,Crop production,111191,Oilseed and Grain Combination Farming,prefix
+0170,Crop production,111199,All Other Grain Farming,prefix
+0170,Crop production,111211,Potato Farming,prefix
+0170,Crop production,111219,Other Vegetable (except Potato) and Melon Farming,prefix
+0170,Crop production,111310,Orange Groves,prefix
+0170,Crop production,111320,Citrus (except Orange) Groves,prefix
+0170,Crop production,111331,Apple Orchards,prefix
+0170,Crop production,111332,Grape Vineyards,prefix
+0170,Crop production,111333,Strawberry Farming,prefix
+0170,Crop production,111334,Berry (except Strawberry) Farming,prefix
+0170,Crop production,111335,Tree Nut Farming,prefix
+0170,Crop production,111336,Fruit and Tree Nut Combination Farming,prefix
+0170,Crop production,111339,Other Noncitrus Fruit Farming,prefix
+0170,Crop production,111411,Mushroom Production,prefix
+0170,Crop production,111419,Other Food Crops Grown Under Cover,prefix
+0170,Crop production,111421,Nursery and Tree Production,prefix
+0170,Crop production,111422,Floriculture Production,prefix
+0170,Crop production,111910,Tobacco Farming,prefix
+0170,Crop production,111920,Cotton Farming,prefix
+0170,Crop production,111930,Sugarcane Farming,prefix
+0170,Crop production,111940,Hay Farming,prefix
+0170,Crop production,111991,Sugar Beet Farming,prefix
+0170,Crop production,111992,Peanut Farming,prefix
+0170,Crop production,111998,All Other Miscellaneous Crop Farming,prefix
+0180,Animal production and aquaculture,112111,Beef Cattle Ranching and Farming,prefix
+0180,Animal production and aquaculture,112112,Cattle Feedlots,prefix
+0180,Animal production and aquaculture,112120,Dairy Cattle and Milk Production,prefix
+0180,Animal production and aquaculture,112130,Dual-Purpose Cattle Ranching and Farming,prefix
+0180,Animal production and aquaculture,112210,Hog and Pig Farming,prefix
+0180,Animal production and aquaculture,112310,Chicken Egg Production,prefix
+0180,Animal production and aquaculture,112320,Broilers and Other Meat Type Chicken Production,prefix
+0180,Animal production and aquaculture,112330,Turkey Production,prefix
+0180,Animal production and aquaculture,112340,Poultry Hatcheries,prefix
+0180,Animal production and aquaculture,112390,Other Poultry Production,prefix
+0180,Animal production and aquaculture,112410,Sheep Farming,prefix
+0180,Animal production and aquaculture,112420,Goat Farming,prefix
+0180,Animal production and aquaculture,112511,Finfish Farming and Fish Hatcheries,prefix
+0180,Animal production and aquaculture,112512,Shellfish Farming,prefix
+0180,Animal production and aquaculture,112519,Other Aquaculture,prefix
+0180,Animal production and aquaculture,112910,Apiculture,prefix
+0180,Animal production and aquaculture,112920,Horses and Other Equine Production,prefix
+0180,Animal production and aquaculture,112930,Fur-Bearing Animal and Rabbit Production,prefix
+0180,Animal production and aquaculture,112990,All Other Animal Production,prefix
+0190,Forestry except logging,113110,Timber Tract Operations,prefix
+0190,Forestry except logging,113210,Forest Nurseries and Gathering of Forest Products,prefix
+0270,Logging,113310,Logging,prefix
+0280,"Fishing, hunting and trapping",114111,Finfish Fishing,prefix
+0280,"Fishing, hunting and trapping",114112,Shellfish Fishing,prefix
+0280,"Fishing, hunting and trapping",114119,Other Marine Fishing,prefix
+0280,"Fishing, hunting and trapping",114210,Hunting and Trapping,prefix
+0290,Support activities for agriculture and forestry,115111,Cotton Ginning,prefix
+0290,Support activities for agriculture and forestry,115112,"Soil Preparation, Planting, and Cultivating",prefix
+0290,Support activities for agriculture and forestry,115113,"Crop Harvesting, Primarily by Machine",prefix
+0290,Support activities for agriculture and forestry,115114,Postharvest Crop Activities (except Cotton Ginning),prefix
+0290,Support activities for agriculture and forestry,115115,Farm Labor Contractors and Crew Leaders,prefix
+0290,Support activities for agriculture and forestry,115116,Farm Management Services,prefix
+0290,Support activities for agriculture and forestry,115210,Support Activities for Animal Production,prefix
+0290,Support activities for agriculture and forestry,115310,Support Activities for Forestry,prefix
+0370,Oil and gas extraction,211120,Crude Petroleum Extraction,prefix
+0370,Oil and gas extraction,211130,Natural Gas Extraction,prefix
+0380,Coal mining,212111,Bituminous Coal and Lignite Surface Mining,prefix
+0380,Coal mining,212112,Bituminous Coal Underground Mining,prefix
+0380,Coal mining,212113,Anthracite Mining,prefix
+0390,Metal ore mining,212210,Iron Ore Mining,prefix
+0390,Metal ore mining,212221,Gold Ore Mining,prefix
+0390,Metal ore mining,212222,Silver Ore Mining,prefix
+0390,Metal ore mining,212230,"Copper, Nickel, Lead, and Zinc Mining",prefix
+0390,Metal ore mining,212291,Uranium-Radium-Vanadium Ore Mining,prefix
+0390,Metal ore mining,212299,All Other Metal Ore Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212311,Dimension Stone Mining and Quarrying,prefix
+0470,Nonmetallic mineral mining and quarrying,212312,Crushed and Broken Limestone Mining and Quarrying,prefix
+0470,Nonmetallic mineral mining and quarrying,212313,Crushed and Broken Granite Mining and Quarrying,prefix
+0470,Nonmetallic mineral mining and quarrying,212319,Other Crushed and Broken Stone Mining and Quarrying,prefix
+0470,Nonmetallic mineral mining and quarrying,212321,Construction Sand and Gravel Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212322,Industrial Sand Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212324,Kaolin and Ball Clay Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212325,Clay and Ceramic and Refractory Minerals Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212391,"Potash, Soda, and Borate Mineral Mining",prefix
+0470,Nonmetallic mineral mining and quarrying,212392,Phosphate Rock Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212393,Other Chemical and Fertilizer Mineral Mining,prefix
+0470,Nonmetallic mineral mining and quarrying,212399,All Other Nonmetallic Mineral Mining,prefix
+0480,Not specified type of mining,211120,Crude Petroleum Extraction,partial
+0480,Not specified type of mining,211130,Natural Gas Extraction,partial
+0480,Not specified type of mining,212111,Bituminous Coal and Lignite Surface Mining,partial
+0480,Not specified type of mining,212112,Bituminous Coal Underground Mining,partial
+0480,Not specified type of mining,212113,Anthracite Mining,partial
+0480,Not specified type of mining,212210,Iron Ore Mining,partial
+0480,Not specified type of mining,212221,Gold Ore Mining,partial
+0480,Not specified type of mining,212222,Silver Ore Mining,partial
+0480,Not specified type of mining,212230,"Copper, Nickel, Lead, and Zinc Mining",partial
+0480,Not specified type of mining,212291,Uranium-Radium-Vanadium Ore Mining,partial
+0480,Not specified type of mining,212299,All Other Metal Ore Mining,partial
+0480,Not specified type of mining,212311,Dimension Stone Mining and Quarrying,partial
+0480,Not specified type of mining,212312,Crushed and Broken Limestone Mining and Quarrying,partial
+0480,Not specified type of mining,212313,Crushed and Broken Granite Mining and Quarrying,partial
+0480,Not specified type of mining,212319,Other Crushed and Broken Stone Mining and Quarrying,partial
+0480,Not specified type of mining,212321,Construction Sand and Gravel Mining,partial
+0480,Not specified type of mining,212322,Industrial Sand Mining,partial
+0480,Not specified type of mining,212324,Kaolin and Ball Clay Mining,partial
+0480,Not specified type of mining,212325,Clay and Ceramic and Refractory Minerals Mining,partial
+0480,Not specified type of mining,212391,"Potash, Soda, and Borate Mineral Mining",partial
+0480,Not specified type of mining,212392,Phosphate Rock Mining,partial
+0480,Not specified type of mining,212393,Other Chemical and Fertilizer Mineral Mining,partial
+0480,Not specified type of mining,212399,All Other Nonmetallic Mineral Mining,partial
+0480,Not specified type of mining,213111,Drilling Oil and Gas Wells,partial
+0480,Not specified type of mining,213112,Support Activities for Oil and Gas Operations,partial
+0480,Not specified type of mining,213113,Support Activities for Coal Mining,partial
+0480,Not specified type of mining,213114,Support Activities for Metal Mining,partial
+0480,Not specified type of mining,213115,Support Activities for Nonmetallic Minerals (except Fuels) Mining,partial
+0490,Support activities for mining,213111,Drilling Oil and Gas Wells,prefix
+0490,Support activities for mining,213112,Support Activities for Oil and Gas Operations,prefix
+0490,Support activities for mining,213113,Support Activities for Coal Mining,prefix
+0490,Support activities for mining,213114,Support Activities for Metal Mining,prefix
+0490,Support activities for mining,213115,Support Activities for Nonmetallic Minerals (except Fuels) Mining,prefix
+0570,"Electric power generation, transmission and distribution",221111,Hydroelectric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221112,Fossil Fuel Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221113,Nuclear Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221114,Solar Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221115,Wind Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221116,Geothermal Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221117,Biomass Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221118,Other Electric Power Generation,prefix
+0570,"Electric power generation, transmission and distribution",221121,Electric Bulk Power Transmission and Control,prefix
+0570,"Electric power generation, transmission and distribution",221122,Electric Power Distribution,prefix
+0580,Natural gas distribution,221210,Natural Gas Distribution,prefix
+0590,"Electric and gas, and other combinations",221111,Hydroelectric Power Generation,partial
+0590,"Electric and gas, and other combinations",221112,Fossil Fuel Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221113,Nuclear Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221114,Solar Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221115,Wind Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221116,Geothermal Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221117,Biomass Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221118,Other Electric Power Generation,partial
+0590,"Electric and gas, and other combinations",221121,Electric Bulk Power Transmission and Control,partial
+0590,"Electric and gas, and other combinations",221122,Electric Power Distribution,partial
+0590,"Electric and gas, and other combinations",221210,Natural Gas Distribution,partial
+0670,"Water, steam, air-conditioning, and irrigation systems",221310,Water Supply and Irrigation Systems,prefix
+0670,"Water, steam, air-conditioning, and irrigation systems",221330,Steam and Air-Conditioning Supply,prefix
+0680,Sewage treatment facilities,221320,Sewage Treatment Facilities,prefix
+0690,Not specified utilities,221111,Hydroelectric Power Generation,partial
+0690,Not specified utilities,221112,Fossil Fuel Electric Power Generation,partial
+0690,Not specified utilities,221113,Nuclear Electric Power Generation,partial
+0690,Not specified utilities,221114,Solar Electric Power Generation,partial
+0690,Not specified utilities,221115,Wind Electric Power Generation,partial
+0690,Not specified utilities,221116,Geothermal Electric Power Generation,partial
+0690,Not specified utilities,221117,Biomass Electric Power Generation,partial
+0690,Not specified utilities,221118,Other Electric Power Generation,partial
+0690,Not specified utilities,221121,Electric Bulk Power Transmission and Control,partial
+0690,Not specified utilities,221122,Electric Power Distribution,partial
+0690,Not specified utilities,221210,Natural Gas Distribution,partial
+0690,Not specified utilities,221310,Water Supply and Irrigation Systems,partial
+0690,Not specified utilities,221320,Sewage Treatment Facilities,partial
+0690,Not specified utilities,221330,Steam and Air-Conditioning Supply,partial
+0770,Construction,236115,New Single-Family Housing Construction (except For-Sale Builders),prefix
+0770,Construction,236116,New Multifamily Housing Construction (except For-Sale Builders),prefix
+0770,Construction,236117,New Housing For-Sale Builders,prefix
+0770,Construction,236118,Residential Remodelers,prefix
+0770,Construction,236210,Industrial Building Construction,prefix
+0770,Construction,236220,Commercial and Institutional Building Construction,prefix
+0770,Construction,237110,Water and Sewer Line and Related Structures Construction,prefix
+0770,Construction,237120,Oil and Gas Pipeline and Related Structures Construction,prefix
+0770,Construction,237130,Power and Communication Line and Related Structures Construction,prefix
+0770,Construction,237210,Land Subdivision,prefix
+0770,Construction,237310,"Highway, Street, and Bridge Construction",prefix
+0770,Construction,237990,Other Heavy and Civil Engineering Construction,prefix
+0770,Construction,238110,Poured Concrete Foundation and Structure Contractors,prefix
+0770,Construction,238120,Structural Steel and Precast Concrete Contractors,prefix
+0770,Construction,238130,Framing Contractors,prefix
+0770,Construction,238140,Masonry Contractors,prefix
+0770,Construction,238150,Glass and Glazing Contractors,prefix
+0770,Construction,238160,Roofing Contractors,prefix
+0770,Construction,238170,Siding Contractors,prefix
+0770,Construction,238190,"Other Foundation, Structure, and Building Exterior Contractors",prefix
+0770,Construction,238210,Electrical Contractors and Other Wiring Installation Contractors,prefix
+0770,Construction,238220,"Plumbing, Heating, and Air-Conditioning Contractors",prefix
+0770,Construction,238290,Other Building Equipment Contractors,prefix
+0770,Construction,238310,Drywall and Insulation Contractors,prefix
+0770,Construction,238320,Painting and Wall Covering Contractors,prefix
+0770,Construction,238330,Flooring Contractors,prefix
+0770,Construction,238340,Tile and Terrazzo Contractors,prefix
+0770,Construction,238350,Finish Carpentry Contractors,prefix
+0770,Construction,238390,Other Building Finishing Contractors,prefix
+0770,Construction,238910,Site Preparation Contractors,prefix
+0770,Construction,238990,All Other Specialty Trade Contractors,prefix
+1070,"Animal food, grain and oilseed milling",311111,Dog and Cat Food Manufacturing,prefix
+1070,"Animal food, grain and oilseed milling",311119,Other Animal Food Manufacturing,prefix
+1070,"Animal food, grain and oilseed milling",311211,Flour Milling,prefix
+1070,"Animal food, grain and oilseed milling",311212,Rice Milling,prefix
+1070,"Animal food, grain and oilseed milling",311213,Malt Manufacturing,prefix
+1070,"Animal food, grain and oilseed milling",311221,Wet Corn Milling,prefix
+1070,"Animal food, grain and oilseed milling",311224,Soybean and Other Oilseed Processing,prefix
+1070,"Animal food, grain and oilseed milling",311225,Fats and Oils Refining and Blending,prefix
+1070,"Animal food, grain and oilseed milling",311230,Breakfast Cereal Manufacturing,prefix
+1080,Sugar and confectionery products,311313,Beet Sugar Manufacturing,prefix
+1080,Sugar and confectionery products,311314,Cane Sugar Manufacturing,prefix
+1080,Sugar and confectionery products,311340,Nonchocolate Confectionery Manufacturing,prefix
+1080,Sugar and confectionery products,311351,Chocolate and Confectionery Manufacturing from Cacao Beans,prefix
+1080,Sugar and confectionery products,311352,Confectionery Manufacturing from Purchased Chocolate,prefix
+1090,Fruit and vegetable preserving and specialty food manufacturing,311411,"Frozen Fruit, Juice, and Vegetable Manufacturing",prefix
+1090,Fruit and vegetable preserving and specialty food manufacturing,311412,Frozen Specialty Food Manufacturing,prefix
+1090,Fruit and vegetable preserving and specialty food manufacturing,311421,Fruit and Vegetable Canning,prefix
+1090,Fruit and vegetable preserving and specialty food manufacturing,311422,Specialty Canning,prefix
+1090,Fruit and vegetable preserving and specialty food manufacturing,311423,Dried and Dehydrated Food Manufacturing,prefix
+1170,Dairy product manufacturing,311511,Fluid Milk Manufacturing,prefix
+1170,Dairy product manufacturing,311512,Creamery Butter Manufacturing,prefix
+1170,Dairy product manufacturing,311513,Cheese Manufacturing,prefix
+1170,Dairy product manufacturing,311514,"Dry, Condensed, and Evaporated Dairy Product Manufacturing",prefix
+1170,Dairy product manufacturing,311520,Ice Cream and Frozen Dessert Manufacturing,prefix
+1180,Animal slaughtering and processing,311611,Animal (except Poultry) Slaughtering,prefix
+1180,Animal slaughtering and processing,311612,Meat Processed from Carcasses,prefix
+1180,Animal slaughtering and processing,311613,Rendering and Meat Byproduct Processing,prefix
+1180,Animal slaughtering and processing,311615,Poultry Processing,prefix
+1190,Retail bakeries,311811,Retail Bakeries,exact
+1270,"Bakeries and tortilla manufacturing, except retail bakeries",311812,Commercial Bakeries,prefix
+1270,"Bakeries and tortilla manufacturing, except retail bakeries",311813,"Frozen Cakes, Pies, and Other Pastries Manufacturing",prefix
+1270,"Bakeries and tortilla manufacturing, except retail bakeries",311821,Cookie and Cracker Manufacturing,prefix
+1270,"Bakeries and tortilla manufacturing, except retail bakeries",311824,"Dry Pasta, Dough, and Flour Mixes Manufacturing from Purchased Flour",prefix
+1270,"Bakeries and tortilla manufacturing, except retail bakeries",311830,Tortilla Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311710,Seafood Product Preparation and Packaging,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311911,Roasted Nuts and Peanut Butter Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311919,Other Snack Food Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311920,Coffee and Tea Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311930,Flavoring Syrup and Concentrate Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311941,"Mayonnaise, Dressing, and Other Prepared Sauce Manufacturing",prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311942,Spice and Extract Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311991,Perishable Prepared Food Manufacturing,prefix
+1280,"Seafood and other miscellaneous foods, n.e.c.",311999,All Other Miscellaneous Food Manufacturing,prefix
+1290,Not specified food industries,311111,Dog and Cat Food Manufacturing,partial
+1290,Not specified food industries,311119,Other Animal Food Manufacturing,partial
+1290,Not specified food industries,311211,Flour Milling,partial
+1290,Not specified food industries,311212,Rice Milling,partial
+1290,Not specified food industries,311213,Malt Manufacturing,partial
+1290,Not specified food industries,311221,Wet Corn Milling,partial
+1290,Not specified food industries,311224,Soybean and Other Oilseed Processing,partial
+1290,Not specified food industries,311225,Fats and Oils Refining and Blending,partial
+1290,Not specified food industries,311230,Breakfast Cereal Manufacturing,partial
+1290,Not specified food industries,311313,Beet Sugar Manufacturing,partial
+1290,Not specified food industries,311314,Cane Sugar Manufacturing,partial
+1290,Not specified food industries,311340,Nonchocolate Confectionery Manufacturing,partial
+1290,Not specified food industries,311351,Chocolate and Confectionery Manufacturing from Cacao Beans,partial
+1290,Not specified food industries,311352,Confectionery Manufacturing from Purchased Chocolate,partial
+1290,Not specified food industries,311411,"Frozen Fruit, Juice, and Vegetable Manufacturing",partial
+1290,Not specified food industries,311412,Frozen Specialty Food Manufacturing,partial
+1290,Not specified food industries,311421,Fruit and Vegetable Canning,partial
+1290,Not specified food industries,311422,Specialty Canning,partial
+1290,Not specified food industries,311423,Dried and Dehydrated Food Manufacturing,partial
+1290,Not specified food industries,311511,Fluid Milk Manufacturing,partial
+1290,Not specified food industries,311512,Creamery Butter Manufacturing,partial
+1290,Not specified food industries,311513,Cheese Manufacturing,partial
+1290,Not specified food industries,311514,"Dry, Condensed, and Evaporated Dairy Product Manufacturing",partial
+1290,Not specified food industries,311520,Ice Cream and Frozen Dessert Manufacturing,partial
+1290,Not specified food industries,311611,Animal (except Poultry) Slaughtering,partial
+1290,Not specified food industries,311612,Meat Processed from Carcasses,partial
+1290,Not specified food industries,311613,Rendering and Meat Byproduct Processing,partial
+1290,Not specified food industries,311615,Poultry Processing,partial
+1290,Not specified food industries,311710,Seafood Product Preparation and Packaging,partial
+1290,Not specified food industries,311811,Retail Bakeries,partial
+1290,Not specified food industries,311812,Commercial Bakeries,partial
+1290,Not specified food industries,311813,"Frozen Cakes, Pies, and Other Pastries Manufacturing",partial
+1290,Not specified food industries,311821,Cookie and Cracker Manufacturing,partial
+1290,Not specified food industries,311824,"Dry Pasta, Dough, and Flour Mixes Manufacturing from Purchased Flour",partial
+1290,Not specified food industries,311830,Tortilla Manufacturing,partial
+1290,Not specified food industries,311911,Roasted Nuts and Peanut Butter Manufacturing,partial
+1290,Not specified food industries,311919,Other Snack Food Manufacturing,partial
+1290,Not specified food industries,311920,Coffee and Tea Manufacturing,partial
+1290,Not specified food industries,311930,Flavoring Syrup and Concentrate Manufacturing,partial
+1290,Not specified food industries,311941,"Mayonnaise, Dressing, and Other Prepared Sauce Manufacturing",partial
+1290,Not specified food industries,311942,Spice and Extract Manufacturing,partial
+1290,Not specified food industries,311991,Perishable Prepared Food Manufacturing,partial
+1290,Not specified food industries,311999,All Other Miscellaneous Food Manufacturing,partial
+1370,Beverage manufacturing,312111,Soft Drink Manufacturing,prefix
+1370,Beverage manufacturing,312112,Bottled Water Manufacturing,prefix
+1370,Beverage manufacturing,312113,Ice Manufacturing,prefix
+1370,Beverage manufacturing,312120,Breweries,prefix
+1370,Beverage manufacturing,312130,Wineries,prefix
+1370,Beverage manufacturing,312140,Distilleries,prefix
+1390,Tobacco manufacturing,312230,Tobacco Manufacturing,prefix
+1470,"Fiber, yarn, and thread mills",313110,"Fiber, Yarn, and Thread Mills",prefix
+1480,"Fabric mills, except knitting mills",313210,Broadwoven Fabric Mills,prefix
+1480,"Fabric mills, except knitting mills",313220,Narrow Fabric Mills and Schiffli Machine Embroidery,prefix
+1480,"Fabric mills, except knitting mills",313230,Nonwoven Fabric Mills,prefix
+1490,Textile and fabric finishing and fabric coating mills,313310,Textile and Fabric Finishing Mills,prefix
+1490,Textile and fabric finishing and fabric coating mills,313320,Fabric Coating Mills,prefix
+1570,Carpet and rug mills,314110,Carpet and Rug Mills,prefix
+1590,"Textile product mills, except carpet and rug",314120,Curtain and Linen Mills,prefix
+1590,"Textile product mills, except carpet and rug",314910,Textile Bag and Canvas Mills,prefix
+1590,"Textile product mills, except carpet and rug",314994,"Rope, Cordage, Twine, Tire Cord, and Tire Fabric Mills",prefix
+1590,"Textile product mills, except carpet and rug",314999,All Other Miscellaneous Textile Product Mills,prefix
+1670,"Knitting fabric mills, and apparel knitting mills",313240,Knit Fabric Mills,prefix
+1670,"Knitting fabric mills, and apparel knitting mills",315110,Hosiery and Sock Mills,prefix
+1670,"Knitting fabric mills, and apparel knitting mills",315190,Other Apparel Knitting Mills,prefix
+1691,"Cut and sew, and apparel accessories and other apparel manufacturing",315210,Cut and Sew Apparel Contractors,prefix
+1691,"Cut and sew, and apparel accessories and other apparel manufacturing",315220,Men’s and Boys’ Cut and Sew Apparel Manufacturing,prefix
+1691,"Cut and sew, and apparel accessories and other apparel manufacturing",315240,"Women’s, Girls’, and Infants’ Cut and Sew Apparel Manufacturing",prefix
+1691,"Cut and sew, and apparel accessories and other apparel manufacturing",315280,Other Cut and Sew Apparel Manufacturing,prefix
+1691,"Cut and sew, and apparel accessories and other apparel manufacturing",315990,Apparel Accessories and Other Apparel Manufacturing,prefix
+1770,Footwear manufacturing,316210,Footwear Manufacturing,prefix
+1790,"Leather and hide tanning and finishing, and other leather and allied product manufacturing",316110,Leather and Hide Tanning and Finishing,prefix
+1790,"Leather and hide tanning and finishing, and other leather and allied product manufacturing",316992,Women's Handbag and Purse Manufacturing,prefix
+1790,"Leather and hide tanning and finishing, and other leather and allied product manufacturing",316998,All Other Leather Good and Allied Product Manufacturing,prefix
+1870,"Pulp, paper, and paperboard mills",322110,Pulp Mills,prefix
+1870,"Pulp, paper, and paperboard mills",322121,Paper (except Newsprint) Mills,prefix
+1870,"Pulp, paper, and paperboard mills",322122,Newsprint Mills,prefix
+1870,"Pulp, paper, and paperboard mills",322130,Paperboard Mills,prefix
+1880,Paperboard container manufacturing,322211,Corrugated and Solid Fiber Box Manufacturing,prefix
+1880,Paperboard container manufacturing,322212,Folding Paperboard Box Manufacturing,prefix
+1880,Paperboard container manufacturing,322219,Other Paperboard Container Manufacturing,prefix
+1890,Miscellaneous paper and pulp products,322220,Paper Bag and Coated and Treated Paper Manufacturing,prefix
+1890,Miscellaneous paper and pulp products,322230,Stationery Product Manufacturing,prefix
+1890,Miscellaneous paper and pulp products,322291,Sanitary Paper Product Manufacturing,prefix
+1890,Miscellaneous paper and pulp products,322299,All Other Converted Paper Product Manufacturing,prefix
+1990,Printing and related support activities,323111,Commercial Printing (except Screen and Books),prefix
+1990,Printing and related support activities,323113,Commercial Screen Printing,prefix
+1990,Printing and related support activities,323117,Books Printing,prefix
+1990,Printing and related support activities,323120,Support Activities for Printing,prefix
+2070,Petroleum refining,324110,Petroleum Refineries,prefix
+2090,Miscellaneous petroleum and coal products,324121,Asphalt Paving Mixture and Block Manufacturing,prefix
+2090,Miscellaneous petroleum and coal products,324122,Asphalt Shingle and Coating Materials Manufacturing,prefix
+2090,Miscellaneous petroleum and coal products,324191,Petroleum Lubricating Oil and Grease Manufacturing,prefix
+2090,Miscellaneous petroleum and coal products,324199,All Other Petroleum and Coal Products Manufacturing,prefix
+2170,"Resin, synthetic rubber, and fibers and filaments manufacturing",325211,Plastics Material and Resin Manufacturing,prefix
+2170,"Resin, synthetic rubber, and fibers and filaments manufacturing",325212,Synthetic Rubber Manufacturing,prefix
+2170,"Resin, synthetic rubber, and fibers and filaments manufacturing",325220,Artificial and Synthetic Fibers and Filaments Manufacturing,prefix
+2180,Agricultural chemical manufacturing,325311,Nitrogenous Fertilizer Manufacturing,prefix
+2180,Agricultural chemical manufacturing,325312,Phosphatic Fertilizer Manufacturing,prefix
+2180,Agricultural chemical manufacturing,325314,Fertilizer (Mixing Only) Manufacturing,prefix
+2180,Agricultural chemical manufacturing,325320,Pesticide and Other Agricultural Chemical Manufacturing,prefix
+2190,Pharmaceutical and medicine manufacturing,325411,Medicinal and Botanical Manufacturing,prefix
+2190,Pharmaceutical and medicine manufacturing,325412,Pharmaceutical Preparation Manufacturing,prefix
+2190,Pharmaceutical and medicine manufacturing,325413,In-Vitro Diagnostic Substance Manufacturing,prefix
+2190,Pharmaceutical and medicine manufacturing,325414,Biological Product (except Diagnostic) Manufacturing,prefix
+2270,"Paint, coating, and adhesive manufacturing",325510,Paint and Coating Manufacturing,prefix
+2270,"Paint, coating, and adhesive manufacturing",325520,Adhesive Manufacturing,prefix
+2280,"Soap, cleaning compound, and cosmetics manufacturing",325611,Soap and Other Detergent Manufacturing,prefix
+2280,"Soap, cleaning compound, and cosmetics manufacturing",325612,Polish and Other Sanitation Good Manufacturing,prefix
+2280,"Soap, cleaning compound, and cosmetics manufacturing",325613,Surface Active Agent Manufacturing,prefix
+2280,"Soap, cleaning compound, and cosmetics manufacturing",325620,Toilet Preparation Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325110,Petrochemical Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325120,Industrial Gas Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325130,Synthetic Dye and Pigment Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325180,Other Basic Inorganic Chemical Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325193,Ethyl Alcohol Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325194,"Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",prefix
+2290,Industrial and miscellaneous chemicals,325199,All Other Basic Organic Chemical Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325910,Printing Ink Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325920,Explosives Manufacturing,prefix
+2290,Industrial and miscellaneous chemicals,325991,Custom Compounding of Purchased Resins,prefix
+2290,Industrial and miscellaneous chemicals,325992,"Photographic Film, Paper, Plate, and Chemical Manufacturing",prefix
+2290,Industrial and miscellaneous chemicals,325998,All Other Miscellaneous Chemical Product and Preparation Manufacturing,prefix
+2370,Plastics product manufacturing,326111,Plastics Bag and Pouch Manufacturing,prefix
+2370,Plastics product manufacturing,326112,Plastics Packaging Film and Sheet (including Laminated) Manufacturing,prefix
+2370,Plastics product manufacturing,326113,Unlaminated Plastics Film and Sheet (except Packaging) Manufacturing,prefix
+2370,Plastics product manufacturing,326121,Unlaminated Plastics Profile Shape Manufacturing,prefix
+2370,Plastics product manufacturing,326122,Plastics Pipe and Pipe Fitting Manufacturing,prefix
+2370,Plastics product manufacturing,326130,"Laminated Plastics Plate, Sheet (except Packaging), and Shape Manufacturing",prefix
+2370,Plastics product manufacturing,326140,Polystyrene Foam Product Manufacturing,prefix
+2370,Plastics product manufacturing,326150,Urethane and Other Foam Product (except Polystyrene) Manufacturing,prefix
+2370,Plastics product manufacturing,326160,Plastics Bottle Manufacturing,prefix
+2370,Plastics product manufacturing,326191,Plastics Plumbing Fixture Manufacturing,prefix
+2370,Plastics product manufacturing,326199,All Other Plastics Product Manufacturing,prefix
+2380,Tire manufacturing,326211,Tire Manufacturing (except Retreading),prefix
+2380,Tire manufacturing,326212,Tire Retreading,prefix
+2390,"Rubber products, except tires, manufacturing",326220,Rubber and Plastics Hoses and Belting Manufacturing,prefix
+2390,"Rubber products, except tires, manufacturing",326291,Rubber Product Manufacturing for Mechanical Use,prefix
+2390,"Rubber products, except tires, manufacturing",326299,All Other Rubber Product Manufacturing,prefix
+2470,"Pottery, ceramics, and plumbing fixture manufacturing",327110,"Pottery, Ceramics, and Plumbing Fixture Manufacturing",prefix
+2480,Clay building material and refractories manufacturing,327120,Clay Building Material and Refractories Manufacturing,exact
+2490,Glass and glass product manufacturing,327211,Flat Glass Manufacturing,prefix
+2490,Glass and glass product manufacturing,327212,Other Pressed and Blown Glass and Glassware Manufacturing,prefix
+2490,Glass and glass product manufacturing,327213,Glass Container Manufacturing,prefix
+2490,Glass and glass product manufacturing,327215,Glass Product Manufacturing Made of Purchased Glass,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327310,Cement Manufacturing,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327320,Ready-Mix Concrete Manufacturing,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327331,Concrete Block and Brick Manufacturing,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327332,Concrete Pipe Manufacturing,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327390,Other Concrete Product Manufacturing,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327410,Lime Manufacturing,prefix
+2570,"Cement, concrete, lime, and gypsum product manufacturing",327420,Gypsum Product Manufacturing,prefix
+2590,Miscellaneous nonmetallic mineral product manufacturing,327910,Abrasive Product Manufacturing,prefix
+2590,Miscellaneous nonmetallic mineral product manufacturing,327991,Cut Stone and Stone Product Manufacturing,prefix
+2590,Miscellaneous nonmetallic mineral product manufacturing,327992,Ground or Treated Mineral and Earth Manufacturing,prefix
+2590,Miscellaneous nonmetallic mineral product manufacturing,327993,Mineral Wool Manufacturing,prefix
+2590,Miscellaneous nonmetallic mineral product manufacturing,327999,All Other Miscellaneous Nonmetallic Mineral Product Manufacturing,prefix
+2670,Iron and steel mills and steel product manufacturing,331110,Iron and Steel Mills and Ferroalloy Manufacturing,prefix
+2670,Iron and steel mills and steel product manufacturing,331210,Iron and Steel Pipe and Tube Manufacturing from Purchased Steel,prefix
+2670,Iron and steel mills and steel product manufacturing,331221,Rolled Steel Shape Manufacturing,prefix
+2670,Iron and steel mills and steel product manufacturing,331222,Steel Wire Drawing,prefix
+2680,Aluminum production and processing,331313,Alumina Refining and Primary Aluminum Production,prefix
+2680,Aluminum production and processing,331314,Secondary Smelting and Alloying of Aluminum,prefix
+2680,Aluminum production and processing,331315,"Aluminum Sheet, Plate, and Foil Manufacturing",prefix
+2680,Aluminum production and processing,331318,"Other Aluminum Rolling, Drawing, and Extruding",prefix
+2690,Nonferrous metal (except aluminum) production and processing,331410,Nonferrous Metal (except Aluminum) Smelting and Refining,prefix
+2690,Nonferrous metal (except aluminum) production and processing,331420,"Copper Rolling, Drawing, Extruding, and Alloying",prefix
+2690,Nonferrous metal (except aluminum) production and processing,331491,"Nonferrous Metal (except Copper and Aluminum) Rolling, Drawing, and Extruding",prefix
+2690,Nonferrous metal (except aluminum) production and processing,331492,"Secondary Smelting, Refining, and Alloying of Nonferrous Metal (except Copper and Aluminum)",prefix
+2770,Foundries,331511,Iron Foundries,prefix
+2770,Foundries,331512,Steel Investment Foundries,prefix
+2770,Foundries,331513,Steel Foundries (except Investment),prefix
+2770,Foundries,331523,Nonferrous Metal Die-Casting Foundries,prefix
+2770,Foundries,331524,Aluminum Foundries (except Die-Casting),prefix
+2770,Foundries,331529,Other Nonferrous Metal Foundries (except Die-Casting),prefix
+2780,Metal forgings and stampings,332111,Iron and Steel Forging,prefix
+2780,Metal forgings and stampings,332112,Nonferrous Forging,prefix
+2780,Metal forgings and stampings,332114,Custom Roll Forming,prefix
+2780,Metal forgings and stampings,332117,Powder Metallurgy Part Manufacturing,prefix
+2780,Metal forgings and stampings,332119,"Metal Crown, Closure, and Other Metal Stamping (except Automotive)",prefix
+2790,Cutlery and hand tool manufacturing,332215,"Metal Kitchen Cookware, Utensil, Cutlery, and Flatware (except Precious) Manufacturing",prefix
+2790,Cutlery and hand tool manufacturing,332216,Saw Blade and Handtool Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332311,Prefabricated Metal Building and Component Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332312,Fabricated Structural Metal Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332313,Plate Work Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332321,Metal Window and Door Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332322,Sheet Metal Work Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332323,Ornamental and Architectural Metal Work Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332410,Power Boiler and Heat Exchanger Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332420,Metal Tank (Heavy Gauge) Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332431,Metal Can Manufacturing,prefix
+2870,"Structural metals, and boiler, tank, and shipping container manufacturing",332439,Other Metal Container Manufacturing,prefix
+2880,"Machine shops; turned product; screw, nut, and bolt manufacturing",332710,Machine Shops,prefix
+2880,"Machine shops; turned product; screw, nut, and bolt manufacturing",332721,Precision Turned Product Manufacturing,prefix
+2880,"Machine shops; turned product; screw, nut, and bolt manufacturing",332722,"Bolt, Nut, Screw, Rivet, and Washer Manufacturing",prefix
+2890,"Coating, engraving, heat treating, and allied activities",332811,Metal Heat Treating,prefix
+2890,"Coating, engraving, heat treating, and allied activities",332812,"Metal Coating, Engraving (except Jewelry and Silverware), and Allied Services to Manufacturers",prefix
+2890,"Coating, engraving, heat treating, and allied activities",332813,"Electroplating, Plating, Polishing, Anodizing, and Coloring",prefix
+2970,Ordnance,332992,Small Arms Ammunition Manufacturing,exact
+2970,Ordnance,332993,Ammunition (except Small Arms) Manufacturing,exact
+2970,Ordnance,332994,"Small Arms, Ordnance, and Ordnance Accessories Manufacturing",exact
+2980,Miscellaneous fabricated metal products manufacturing,332510,Hardware Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332613,Spring Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332618,Other Fabricated Wire Product Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332911,Industrial Valve Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332912,Fluid Power Valve and Hose Fitting Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332913,Plumbing Fixture Fitting and Trim Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332919,Other Metal Valve and Pipe Fitting Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332991,Ball and Roller Bearing Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332996,Fabricated Pipe and Pipe Fitting Manufacturing,prefix
+2980,Miscellaneous fabricated metal products manufacturing,332999,All Other Miscellaneous Fabricated Metal Product Manufacturing,prefix
+2990,Not specified metal industries,331110,Iron and Steel Mills and Ferroalloy Manufacturing,partial
+2990,Not specified metal industries,331210,Iron and Steel Pipe and Tube Manufacturing from Purchased Steel,partial
+2990,Not specified metal industries,331221,Rolled Steel Shape Manufacturing,partial
+2990,Not specified metal industries,331222,Steel Wire Drawing,partial
+2990,Not specified metal industries,331313,Alumina Refining and Primary Aluminum Production,partial
+2990,Not specified metal industries,331314,Secondary Smelting and Alloying of Aluminum,partial
+2990,Not specified metal industries,331315,"Aluminum Sheet, Plate, and Foil Manufacturing",partial
+2990,Not specified metal industries,331318,"Other Aluminum Rolling, Drawing, and Extruding",partial
+2990,Not specified metal industries,331410,Nonferrous Metal (except Aluminum) Smelting and Refining,partial
+2990,Not specified metal industries,331420,"Copper Rolling, Drawing, Extruding, and Alloying",partial
+2990,Not specified metal industries,331491,"Nonferrous Metal (except Copper and Aluminum) Rolling, Drawing, and Extruding",partial
+2990,Not specified metal industries,331492,"Secondary Smelting, Refining, and Alloying of Nonferrous Metal (except Copper and Aluminum)",partial
+2990,Not specified metal industries,331511,Iron Foundries,partial
+2990,Not specified metal industries,331512,Steel Investment Foundries,partial
+2990,Not specified metal industries,331513,Steel Foundries (except Investment),partial
+2990,Not specified metal industries,331523,Nonferrous Metal Die-Casting Foundries,partial
+2990,Not specified metal industries,331524,Aluminum Foundries (except Die-Casting),partial
+2990,Not specified metal industries,331529,Other Nonferrous Metal Foundries (except Die-Casting),partial
+2990,Not specified metal industries,332111,Iron and Steel Forging,partial
+2990,Not specified metal industries,332112,Nonferrous Forging,partial
+2990,Not specified metal industries,332114,Custom Roll Forming,partial
+2990,Not specified metal industries,332117,Powder Metallurgy Part Manufacturing,partial
+2990,Not specified metal industries,332119,"Metal Crown, Closure, and Other Metal Stamping (except Automotive)",partial
+2990,Not specified metal industries,332215,"Metal Kitchen Cookware, Utensil, Cutlery, and Flatware (except Precious) Manufacturing",partial
+2990,Not specified metal industries,332216,Saw Blade and Handtool Manufacturing,partial
+2990,Not specified metal industries,332311,Prefabricated Metal Building and Component Manufacturing,partial
+2990,Not specified metal industries,332312,Fabricated Structural Metal Manufacturing,partial
+2990,Not specified metal industries,332313,Plate Work Manufacturing,partial
+2990,Not specified metal industries,332321,Metal Window and Door Manufacturing,partial
+2990,Not specified metal industries,332322,Sheet Metal Work Manufacturing,partial
+2990,Not specified metal industries,332323,Ornamental and Architectural Metal Work Manufacturing,partial
+2990,Not specified metal industries,332410,Power Boiler and Heat Exchanger Manufacturing,partial
+2990,Not specified metal industries,332420,Metal Tank (Heavy Gauge) Manufacturing,partial
+2990,Not specified metal industries,332431,Metal Can Manufacturing,partial
+2990,Not specified metal industries,332439,Other Metal Container Manufacturing,partial
+2990,Not specified metal industries,332510,Hardware Manufacturing,partial
+2990,Not specified metal industries,332613,Spring Manufacturing,partial
+2990,Not specified metal industries,332618,Other Fabricated Wire Product Manufacturing,partial
+2990,Not specified metal industries,332710,Machine Shops,partial
+2990,Not specified metal industries,332721,Precision Turned Product Manufacturing,partial
+2990,Not specified metal industries,332722,"Bolt, Nut, Screw, Rivet, and Washer Manufacturing",partial
+2990,Not specified metal industries,332811,Metal Heat Treating,partial
+2990,Not specified metal industries,332812,"Metal Coating, Engraving (except Jewelry and Silverware), and Allied Services to Manufacturers",partial
+2990,Not specified metal industries,332813,"Electroplating, Plating, Polishing, Anodizing, and Coloring",partial
+2990,Not specified metal industries,332911,Industrial Valve Manufacturing,partial
+2990,Not specified metal industries,332912,Fluid Power Valve and Hose Fitting Manufacturing,partial
+2990,Not specified metal industries,332913,Plumbing Fixture Fitting and Trim Manufacturing,partial
+2990,Not specified metal industries,332919,Other Metal Valve and Pipe Fitting Manufacturing,partial
+2990,Not specified metal industries,332991,Ball and Roller Bearing Manufacturing,partial
+2990,Not specified metal industries,332992,Small Arms Ammunition Manufacturing,partial
+2990,Not specified metal industries,332993,Ammunition (except Small Arms) Manufacturing,partial
+2990,Not specified metal industries,332994,"Small Arms, Ordnance, and Ordnance Accessories Manufacturing",partial
+2990,Not specified metal industries,332996,Fabricated Pipe and Pipe Fitting Manufacturing,partial
+2990,Not specified metal industries,332999,All Other Miscellaneous Fabricated Metal Product Manufacturing,partial
+3070,Agricultural implement manufacturing,333111,Farm Machinery and Equipment Manufacturing,prefix
+3070,Agricultural implement manufacturing,333112,Lawn and Garden Tractor and Home Lawn and Garden Equipment Manufacturing,prefix
+3080,"Construction, and mining and oil and gas field machinery manufacturing",333120,Construction Machinery Manufacturing,prefix
+3080,"Construction, and mining and oil and gas field machinery manufacturing",333131,Mining Machinery and Equipment Manufacturing,prefix
+3080,"Construction, and mining and oil and gas field machinery manufacturing",333132,Oil and Gas Field Machinery and Equipment Manufacturing,prefix
+3095,Commercial and service industry machinery manufacturing,333314,Optical Instrument and Lens Manufacturing,prefix
+3095,Commercial and service industry machinery manufacturing,333316,Photographic and Photocopying Equipment Manufacturing,prefix
+3095,Commercial and service industry machinery manufacturing,333318,Other Commercial and Service Industry Machinery Manufacturing,prefix
+3170,Metalworking machinery manufacturing,333511,Industrial Mold Manufacturing,prefix
+3170,Metalworking machinery manufacturing,333514,"Special Die and Tool, Die Set, Jig, and Fixture Manufacturing",prefix
+3170,Metalworking machinery manufacturing,333515,Cutting Tool and Machine Tool Accessory Manufacturing,prefix
+3170,Metalworking machinery manufacturing,333517,Machine Tool Manufacturing,prefix
+3170,Metalworking machinery manufacturing,333519,Rolling Mill and Other Metalworking Machinery Manufacturing,prefix
+3180,"Engine, turbine, and power transmission equipment manufacturing",333611,Turbine and Turbine Generator Set Units Manufacturing,prefix
+3180,"Engine, turbine, and power transmission equipment manufacturing",333612,"Speed Changer, Industrial High-Speed Drive, and Gear Manufacturing",prefix
+3180,"Engine, turbine, and power transmission equipment manufacturing",333613,Mechanical Power Transmission Equipment Manufacturing,prefix
+3180,"Engine, turbine, and power transmission equipment manufacturing",333618,Other Engine Equipment Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333111,Farm Machinery and Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333112,Lawn and Garden Tractor and Home Lawn and Garden Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333120,Construction Machinery Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333131,Mining Machinery and Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333132,Oil and Gas Field Machinery and Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333241,Food Product Machinery Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333242,Semiconductor Machinery Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333243,"Sawmill, Woodworking, and Paper Machinery Manufacturing",prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333244,Printing Machinery and Equipment Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333249,Other Industrial Machinery Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333314,Optical Instrument and Lens Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333316,Photographic and Photocopying Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333318,Other Commercial and Service Industry Machinery Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333413,Industrial and Commercial Fan and Blower and Air Purification Equipment Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333414,Heating Equipment (except Warm Air Furnaces) Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333415,Air-Conditioning and Warm Air Heating Equipment and Commercial and Industrial Refrigeration Equipment Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333511,Industrial Mold Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333514,"Special Die and Tool, Die Set, Jig, and Fixture Manufacturing",partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333515,Cutting Tool and Machine Tool Accessory Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333517,Machine Tool Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333519,Rolling Mill and Other Metalworking Machinery Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333611,Turbine and Turbine Generator Set Units Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333612,"Speed Changer, Industrial High-Speed Drive, and Gear Manufacturing",partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333613,Mechanical Power Transmission Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333618,Other Engine Equipment Manufacturing,partial
+3291,"Machinery manufacturing, n.e.c. or not specified",333912,Air and Gas Compressor Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333914,"Measuring, Dispensing, and Other Pumping Equipment Manufacturing",prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333921,Elevator and Moving Stairway Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333922,Conveyor and Conveying Equipment Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333923,"Overhead Traveling Crane, Hoist, and Monorail System Manufacturing",prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333924,"Industrial Truck, Tractor, Trailer, and Stacker Machinery Manufacturing",prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333991,Power-Driven Handtool Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333992,Welding and Soldering Equipment Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333993,Packaging Machinery Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333994,Industrial Process Furnace and Oven Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333995,Fluid Power Cylinder and Actuator Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333996,Fluid Power Pump and Motor Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333997,Scale and Balance Manufacturing,prefix
+3291,"Machinery manufacturing, n.e.c. or not specified",333999,All Other Miscellaneous General Purpose Machinery Manufacturing,prefix
+3365,Computer and peripheral equipment manufacturing,334111,Electronic Computer Manufacturing,prefix
+3365,Computer and peripheral equipment manufacturing,334112,Computer Storage Device Manufacturing,prefix
+3365,Computer and peripheral equipment manufacturing,334118,Computer Terminal and Other Computer Peripheral Equipment Manufacturing,prefix
+3370,"Communications, audio, and video equipment manufacturing",334210,Telephone Apparatus Manufacturing,prefix
+3370,"Communications, audio, and video equipment manufacturing",334220,Radio and Television Broadcasting and Wireless Communications Equipment Manufacturing,prefix
+3370,"Communications, audio, and video equipment manufacturing",334290,Other Communications Equipment Manufacturing,prefix
+3370,"Communications, audio, and video equipment manufacturing",334310,Audio and Video Equipment Manufacturing,prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334510,Electromedical and Electrotherapeutic Apparatus Manufacturing,prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334511,"Search, Detection, Navigation, Guidance, Aeronautical, and Nautical System and Instrument Manufacturing",prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334512,"Automatic Environmental Control Manufacturing for Residential, Commercial, and Appliance Use",prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334513,"Instruments and Related Products Manufacturing for Measuring, Displaying, and Controlling Industrial Process Variables",prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334514,Totalizing Fluid Meter and Counting Device Manufacturing,prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334515,Instrument Manufacturing for Measuring and Testing Electricity and Electrical Signals,prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334516,Analytical Laboratory Instrument Manufacturing,prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334517,Irradiation Apparatus Manufacturing,prefix
+3380,"Navigational, measuring, electromedical, and control instruments manufacturing",334519,Other Measuring and Controlling Device Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334412,Bare Printed Circuit Board Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334413,Semiconductor and Related Device Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334416,"Capacitor, Resistor, Coil, Transformer, and Other Inductor Manufacturing",prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334417,Electronic Connector Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334418,Printed Circuit Assembly (Electronic Assembly) Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334419,Other Electronic Component Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334613,Blank Magnetic and Optical Recording Media Manufacturing,prefix
+3390,"Electronic component and product manufacturing, n.e.c.",334614,"Software and Other Prerecorded Compact Disc, Tape, and Record Reproducing",prefix
+3470,Household appliance manufacturing,335210,Small Electrical Appliance Manufacturing,prefix
+3470,Household appliance manufacturing,335220,Major Household Appliance Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335110,Electric Lamp Bulb and Part Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335121,Residential Electric Lighting Fixture Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335122,"Commercial, Industrial, and Institutional Electric Lighting Fixture Manufacturing",prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335129,Other Lighting Equipment Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335311,"Power, Distribution, and Specialty Transformer Manufacturing",prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335312,Motor and Generator Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335313,Switchgear and Switchboard Apparatus Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335314,Relay and Industrial Control Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335911,Storage Battery Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335912,Primary Battery Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335921,Fiber Optic Cable Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335929,Other Communication and Energy Wire Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335931,Current-Carrying Wiring Device Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335932,Noncurrent-Carrying Wiring Device Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335991,Carbon and Graphite Product Manufacturing,prefix
+3490,"Electric lighting and electrical equipment manufacturing, and other electrical component manufacturing, n.e.c.",335999,All Other Miscellaneous Electrical Equipment and Component Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336111,Automobile Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336112,Light Truck and Utility Vehicle Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336120,Heavy Duty Truck Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336211,Motor Vehicle Body Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336212,Truck Trailer Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336213,Motor Home Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336214,Travel Trailer and Camper Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336310,Motor Vehicle Gasoline Engine and Engine Parts Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336320,Motor Vehicle Electrical and Electronic Equipment Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336330,Motor Vehicle Steering and Suspension Components (except Spring) Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336340,Motor Vehicle Brake System Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336350,Motor Vehicle Transmission and Power Train Parts Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336360,Motor Vehicle Seating and Interior Trim Manufacturing,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336370,Motor Vehicle Metal Stamping,prefix
+3570,Motor vehicles and motor vehicle equipment manufacturing,336390,Other Motor Vehicle Parts Manufacturing,prefix
+3580,Aircraft and parts manufacturing,336411,Aircraft Manufacturing,exact
+3580,Aircraft and parts manufacturing,336412,Aircraft Engine and Engine Parts Manufacturing,exact
+3580,Aircraft and parts manufacturing,336413,Other Aircraft Parts and Auxiliary Equipment Manufacturing,exact
+3590,Aerospace products and parts manufacturing,336414,Guided Missile and Space Vehicle Manufacturing,exact
+3590,Aerospace products and parts manufacturing,336415,Guided Missile and Space Vehicle Propulsion Unit and Propulsion Unit Parts Manufacturing,exact
+3590,Aerospace products and parts manufacturing,336419,Other Guided Missile and Space Vehicle Parts and Auxiliary Equipment Manufacturing,exact
+3670,Railroad rolling stock manufacturing,336510,Railroad Rolling Stock Manufacturing,prefix
+3680,Ship and boat building,336611,Ship Building and Repairing,prefix
+3680,Ship and boat building,336612,Boat Building,prefix
+3690,Other transportation equipment manufacturing,336991,"Motorcycle, Bicycle, and Parts Manufacturing",prefix
+3690,Other transportation equipment manufacturing,336992,"Military Armored Vehicle, Tank, and Tank Component Manufacturing",prefix
+3690,Other transportation equipment manufacturing,336999,All Other Transportation Equipment Manufacturing,prefix
+3770,Sawmills and wood preservation,321113,Sawmills,prefix
+3770,Sawmills and wood preservation,321114,Wood Preservation,prefix
+3780,"Veneer, plywood, and engineered wood products",321211,Hardwood Veneer and Plywood Manufacturing,prefix
+3780,"Veneer, plywood, and engineered wood products",321212,Softwood Veneer and Plywood Manufacturing,prefix
+3780,"Veneer, plywood, and engineered wood products",321213,Engineered Wood Member (except Truss) Manufacturing,prefix
+3780,"Veneer, plywood, and engineered wood products",321214,Truss Manufacturing,prefix
+3780,"Veneer, plywood, and engineered wood products",321219,Reconstituted Wood Product Manufacturing,prefix
+3790,Prefabricated wood buildings and mobile homes manufacturing,321991,Manufactured Home (Mobile Home) Manufacturing,exact
+3790,Prefabricated wood buildings and mobile homes manufacturing,321992,Prefabricated Wood Building Manufacturing,exact
+3875,Miscellaneous wood products,321911,Wood Window and Door Manufacturing,prefix
+3875,Miscellaneous wood products,321912,"Cut Stock, Resawing Lumber, and Planing",prefix
+3875,Miscellaneous wood products,321918,Other Millwork (including Flooring),prefix
+3875,Miscellaneous wood products,321920,Wood Container and Pallet Manufacturing,prefix
+3875,Miscellaneous wood products,321999,All Other Miscellaneous Wood Product Manufacturing,prefix
+3895,Furniture and related product manufacturing,337110,Wood Kitchen Cabinet and Countertop Manufacturing,prefix
+3895,Furniture and related product manufacturing,337121,Upholstered Household Furniture Manufacturing,prefix
+3895,Furniture and related product manufacturing,337122,Nonupholstered Wood Household Furniture Manufacturing,prefix
+3895,Furniture and related product manufacturing,337124,Metal Household Furniture Manufacturing,prefix
+3895,Furniture and related product manufacturing,337125,Household Furniture (except Wood and Metal) Manufacturing,prefix
+3895,Furniture and related product manufacturing,337127,Institutional Furniture Manufacturing,prefix
+3895,Furniture and related product manufacturing,337211,Wood Office Furniture Manufacturing,prefix
+3895,Furniture and related product manufacturing,337212,Custom Architectural Woodwork and Millwork Manufacturing,prefix
+3895,Furniture and related product manufacturing,337214,Office Furniture (except Wood) Manufacturing,prefix
+3895,Furniture and related product manufacturing,337215,"Showcase, Partition, Shelving, and Locker Manufacturing",prefix
+3895,Furniture and related product manufacturing,337910,Mattress Manufacturing,prefix
+3895,Furniture and related product manufacturing,337920,Blind and Shade Manufacturing,prefix
+3960,Medical equipment and supplies manufacturing,339112,Surgical and Medical Instrument Manufacturing,prefix
+3960,Medical equipment and supplies manufacturing,339113,Surgical Appliance and Supplies Manufacturing,prefix
+3960,Medical equipment and supplies manufacturing,339114,Dental Equipment and Supplies Manufacturing,prefix
+3960,Medical equipment and supplies manufacturing,339115,Ophthalmic Goods Manufacturing,prefix
+3960,Medical equipment and supplies manufacturing,339116,Dental Laboratories,prefix
+3970,"Sporting and athletic goods, and doll, toy and game manufacturing",339920,Sporting and Athletic Goods Manufacturing,prefix
+3970,"Sporting and athletic goods, and doll, toy and game manufacturing",339930,"Doll, Toy, and Game Manufacturing",prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339910,Jewelry and Silverware Manufacturing,prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339940,Office Supplies (except Paper) Manufacturing,prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339950,Sign Manufacturing,prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339991,"Gasket, Packing, and Sealing Device Manufacturing",prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339992,Musical Instrument Manufacturing,prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339993,"Fastener, Button, Needle, and Pin Manufacturing",prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339994,"Broom, Brush, and Mop Manufacturing",prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339995,Burial Casket Manufacturing,prefix
+3980,"Miscellaneous manufacturing, n.e.c.",339999,All Other Miscellaneous Manufacturing,prefix
+3990,Not specified manufacturing industries,311111,Dog and Cat Food Manufacturing,partial
+3990,Not specified manufacturing industries,311119,Other Animal Food Manufacturing,partial
+3990,Not specified manufacturing industries,311211,Flour Milling,partial
+3990,Not specified manufacturing industries,311212,Rice Milling,partial
+3990,Not specified manufacturing industries,311213,Malt Manufacturing,partial
+3990,Not specified manufacturing industries,311221,Wet Corn Milling,partial
+3990,Not specified manufacturing industries,311224,Soybean and Other Oilseed Processing,partial
+3990,Not specified manufacturing industries,311225,Fats and Oils Refining and Blending,partial
+3990,Not specified manufacturing industries,311230,Breakfast Cereal Manufacturing,partial
+3990,Not specified manufacturing industries,311313,Beet Sugar Manufacturing,partial
+3990,Not specified manufacturing industries,311314,Cane Sugar Manufacturing,partial
+3990,Not specified manufacturing industries,311340,Nonchocolate Confectionery Manufacturing,partial
+3990,Not specified manufacturing industries,311351,Chocolate and Confectionery Manufacturing from Cacao Beans,partial
+3990,Not specified manufacturing industries,311352,Confectionery Manufacturing from Purchased Chocolate,partial
+3990,Not specified manufacturing industries,311411,"Frozen Fruit, Juice, and Vegetable Manufacturing",partial
+3990,Not specified manufacturing industries,311412,Frozen Specialty Food Manufacturing,partial
+3990,Not specified manufacturing industries,311421,Fruit and Vegetable Canning,partial
+3990,Not specified manufacturing industries,311422,Specialty Canning,partial
+3990,Not specified manufacturing industries,311423,Dried and Dehydrated Food Manufacturing,partial
+3990,Not specified manufacturing industries,311511,Fluid Milk Manufacturing,partial
+3990,Not specified manufacturing industries,311512,Creamery Butter Manufacturing,partial
+3990,Not specified manufacturing industries,311513,Cheese Manufacturing,partial
+3990,Not specified manufacturing industries,311514,"Dry, Condensed, and Evaporated Dairy Product Manufacturing",partial
+3990,Not specified manufacturing industries,311520,Ice Cream and Frozen Dessert Manufacturing,partial
+3990,Not specified manufacturing industries,311611,Animal (except Poultry) Slaughtering,partial
+3990,Not specified manufacturing industries,311612,Meat Processed from Carcasses,partial
+3990,Not specified manufacturing industries,311613,Rendering and Meat Byproduct Processing,partial
+3990,Not specified manufacturing industries,311615,Poultry Processing,partial
+3990,Not specified manufacturing industries,311710,Seafood Product Preparation and Packaging,partial
+3990,Not specified manufacturing industries,311811,Retail Bakeries,partial
+3990,Not specified manufacturing industries,311812,Commercial Bakeries,partial
+3990,Not specified manufacturing industries,311813,"Frozen Cakes, Pies, and Other Pastries Manufacturing",partial
+3990,Not specified manufacturing industries,311821,Cookie and Cracker Manufacturing,partial
+3990,Not specified manufacturing industries,311824,"Dry Pasta, Dough, and Flour Mixes Manufacturing from Purchased Flour",partial
+3990,Not specified manufacturing industries,311830,Tortilla Manufacturing,partial
+3990,Not specified manufacturing industries,311911,Roasted Nuts and Peanut Butter Manufacturing,partial
+3990,Not specified manufacturing industries,311919,Other Snack Food Manufacturing,partial
+3990,Not specified manufacturing industries,311920,Coffee and Tea Manufacturing,partial
+3990,Not specified manufacturing industries,311930,Flavoring Syrup and Concentrate Manufacturing,partial
+3990,Not specified manufacturing industries,311941,"Mayonnaise, Dressing, and Other Prepared Sauce Manufacturing",partial
+3990,Not specified manufacturing industries,311942,Spice and Extract Manufacturing,partial
+3990,Not specified manufacturing industries,311991,Perishable Prepared Food Manufacturing,partial
+3990,Not specified manufacturing industries,311999,All Other Miscellaneous Food Manufacturing,partial
+3990,Not specified manufacturing industries,312111,Soft Drink Manufacturing,partial
+3990,Not specified manufacturing industries,312112,Bottled Water Manufacturing,partial
+3990,Not specified manufacturing industries,312113,Ice Manufacturing,partial
+3990,Not specified manufacturing industries,312120,Breweries,partial
+3990,Not specified manufacturing industries,312130,Wineries,partial
+3990,Not specified manufacturing industries,312140,Distilleries,partial
+3990,Not specified manufacturing industries,312230,Tobacco Manufacturing,partial
+3990,Not specified manufacturing industries,313110,"Fiber, Yarn, and Thread Mills",partial
+3990,Not specified manufacturing industries,313210,Broadwoven Fabric Mills,partial
+3990,Not specified manufacturing industries,313220,Narrow Fabric Mills and Schiffli Machine Embroidery,partial
+3990,Not specified manufacturing industries,313230,Nonwoven Fabric Mills,partial
+3990,Not specified manufacturing industries,313240,Knit Fabric Mills,partial
+3990,Not specified manufacturing industries,313310,Textile and Fabric Finishing Mills,partial
+3990,Not specified manufacturing industries,313320,Fabric Coating Mills,partial
+3990,Not specified manufacturing industries,314110,Carpet and Rug Mills,partial
+3990,Not specified manufacturing industries,314120,Curtain and Linen Mills,partial
+3990,Not specified manufacturing industries,314910,Textile Bag and Canvas Mills,partial
+3990,Not specified manufacturing industries,314994,"Rope, Cordage, Twine, Tire Cord, and Tire Fabric Mills",partial
+3990,Not specified manufacturing industries,314999,All Other Miscellaneous Textile Product Mills,partial
+3990,Not specified manufacturing industries,315110,Hosiery and Sock Mills,partial
+3990,Not specified manufacturing industries,315190,Other Apparel Knitting Mills,partial
+3990,Not specified manufacturing industries,315210,Cut and Sew Apparel Contractors,partial
+3990,Not specified manufacturing industries,315220,Men’s and Boys’ Cut and Sew Apparel Manufacturing,partial
+3990,Not specified manufacturing industries,315240,"Women’s, Girls’, and Infants’ Cut and Sew Apparel Manufacturing",partial
+3990,Not specified manufacturing industries,315280,Other Cut and Sew Apparel Manufacturing,partial
+3990,Not specified manufacturing industries,315990,Apparel Accessories and Other Apparel Manufacturing,partial
+3990,Not specified manufacturing industries,316110,Leather and Hide Tanning and Finishing,partial
+3990,Not specified manufacturing industries,316210,Footwear Manufacturing,partial
+3990,Not specified manufacturing industries,316992,Women's Handbag and Purse Manufacturing,partial
+3990,Not specified manufacturing industries,316998,All Other Leather Good and Allied Product Manufacturing,partial
+3990,Not specified manufacturing industries,321113,Sawmills,partial
+3990,Not specified manufacturing industries,321114,Wood Preservation,partial
+3990,Not specified manufacturing industries,321211,Hardwood Veneer and Plywood Manufacturing,partial
+3990,Not specified manufacturing industries,321212,Softwood Veneer and Plywood Manufacturing,partial
+3990,Not specified manufacturing industries,321213,Engineered Wood Member (except Truss) Manufacturing,partial
+3990,Not specified manufacturing industries,321214,Truss Manufacturing,partial
+3990,Not specified manufacturing industries,321219,Reconstituted Wood Product Manufacturing,partial
+3990,Not specified manufacturing industries,321911,Wood Window and Door Manufacturing,partial
+3990,Not specified manufacturing industries,321912,"Cut Stock, Resawing Lumber, and Planing",partial
+3990,Not specified manufacturing industries,321918,Other Millwork (including Flooring),partial
+3990,Not specified manufacturing industries,321920,Wood Container and Pallet Manufacturing,partial
+3990,Not specified manufacturing industries,321991,Manufactured Home (Mobile Home) Manufacturing,partial
+3990,Not specified manufacturing industries,321992,Prefabricated Wood Building Manufacturing,partial
+3990,Not specified manufacturing industries,321999,All Other Miscellaneous Wood Product Manufacturing,partial
+3990,Not specified manufacturing industries,322110,Pulp Mills,partial
+3990,Not specified manufacturing industries,322121,Paper (except Newsprint) Mills,partial
+3990,Not specified manufacturing industries,322122,Newsprint Mills,partial
+3990,Not specified manufacturing industries,322130,Paperboard Mills,partial
+3990,Not specified manufacturing industries,322211,Corrugated and Solid Fiber Box Manufacturing,partial
+3990,Not specified manufacturing industries,322212,Folding Paperboard Box Manufacturing,partial
+3990,Not specified manufacturing industries,322219,Other Paperboard Container Manufacturing,partial
+3990,Not specified manufacturing industries,322220,Paper Bag and Coated and Treated Paper Manufacturing,partial
+3990,Not specified manufacturing industries,322230,Stationery Product Manufacturing,partial
+3990,Not specified manufacturing industries,322291,Sanitary Paper Product Manufacturing,partial
+3990,Not specified manufacturing industries,322299,All Other Converted Paper Product Manufacturing,partial
+3990,Not specified manufacturing industries,323111,Commercial Printing (except Screen and Books),partial
+3990,Not specified manufacturing industries,323113,Commercial Screen Printing,partial
+3990,Not specified manufacturing industries,323117,Books Printing,partial
+3990,Not specified manufacturing industries,323120,Support Activities for Printing,partial
+3990,Not specified manufacturing industries,324110,Petroleum Refineries,partial
+3990,Not specified manufacturing industries,324121,Asphalt Paving Mixture and Block Manufacturing,partial
+3990,Not specified manufacturing industries,324122,Asphalt Shingle and Coating Materials Manufacturing,partial
+3990,Not specified manufacturing industries,324191,Petroleum Lubricating Oil and Grease Manufacturing,partial
+3990,Not specified manufacturing industries,324199,All Other Petroleum and Coal Products Manufacturing,partial
+3990,Not specified manufacturing industries,325110,Petrochemical Manufacturing,partial
+3990,Not specified manufacturing industries,325120,Industrial Gas Manufacturing,partial
+3990,Not specified manufacturing industries,325130,Synthetic Dye and Pigment Manufacturing,partial
+3990,Not specified manufacturing industries,325180,Other Basic Inorganic Chemical Manufacturing,partial
+3990,Not specified manufacturing industries,325193,Ethyl Alcohol Manufacturing,partial
+3990,Not specified manufacturing industries,325194,"Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",partial
+3990,Not specified manufacturing industries,325199,All Other Basic Organic Chemical Manufacturing,partial
+3990,Not specified manufacturing industries,325211,Plastics Material and Resin Manufacturing,partial
+3990,Not specified manufacturing industries,325212,Synthetic Rubber Manufacturing,partial
+3990,Not specified manufacturing industries,325220,Artificial and Synthetic Fibers and Filaments Manufacturing,partial
+3990,Not specified manufacturing industries,325311,Nitrogenous Fertilizer Manufacturing,partial
+3990,Not specified manufacturing industries,325312,Phosphatic Fertilizer Manufacturing,partial
+3990,Not specified manufacturing industries,325314,Fertilizer (Mixing Only) Manufacturing,partial
+3990,Not specified manufacturing industries,325320,Pesticide and Other Agricultural Chemical Manufacturing,partial
+3990,Not specified manufacturing industries,325411,Medicinal and Botanical Manufacturing,partial
+3990,Not specified manufacturing industries,325412,Pharmaceutical Preparation Manufacturing,partial
+3990,Not specified manufacturing industries,325413,In-Vitro Diagnostic Substance Manufacturing,partial
+3990,Not specified manufacturing industries,325414,Biological Product (except Diagnostic) Manufacturing,partial
+3990,Not specified manufacturing industries,325510,Paint and Coating Manufacturing,partial
+3990,Not specified manufacturing industries,325520,Adhesive Manufacturing,partial
+3990,Not specified manufacturing industries,325611,Soap and Other Detergent Manufacturing,partial
+3990,Not specified manufacturing industries,325612,Polish and Other Sanitation Good Manufacturing,partial
+3990,Not specified manufacturing industries,325613,Surface Active Agent Manufacturing,partial
+3990,Not specified manufacturing industries,325620,Toilet Preparation Manufacturing,partial
+3990,Not specified manufacturing industries,325910,Printing Ink Manufacturing,partial
+3990,Not specified manufacturing industries,325920,Explosives Manufacturing,partial
+3990,Not specified manufacturing industries,325991,Custom Compounding of Purchased Resins,partial
+3990,Not specified manufacturing industries,325992,"Photographic Film, Paper, Plate, and Chemical Manufacturing",partial
+3990,Not specified manufacturing industries,325998,All Other Miscellaneous Chemical Product and Preparation Manufacturing,partial
+3990,Not specified manufacturing industries,326111,Plastics Bag and Pouch Manufacturing,partial
+3990,Not specified manufacturing industries,326112,Plastics Packaging Film and Sheet (including Laminated) Manufacturing,partial
+3990,Not specified manufacturing industries,326113,Unlaminated Plastics Film and Sheet (except Packaging) Manufacturing,partial
+3990,Not specified manufacturing industries,326121,Unlaminated Plastics Profile Shape Manufacturing,partial
+3990,Not specified manufacturing industries,326122,Plastics Pipe and Pipe Fitting Manufacturing,partial
+3990,Not specified manufacturing industries,326130,"Laminated Plastics Plate, Sheet (except Packaging), and Shape Manufacturing",partial
+3990,Not specified manufacturing industries,326140,Polystyrene Foam Product Manufacturing,partial
+3990,Not specified manufacturing industries,326150,Urethane and Other Foam Product (except Polystyrene) Manufacturing,partial
+3990,Not specified manufacturing industries,326160,Plastics Bottle Manufacturing,partial
+3990,Not specified manufacturing industries,326191,Plastics Plumbing Fixture Manufacturing,partial
+3990,Not specified manufacturing industries,326199,All Other Plastics Product Manufacturing,partial
+3990,Not specified manufacturing industries,326211,Tire Manufacturing (except Retreading),partial
+3990,Not specified manufacturing industries,326212,Tire Retreading,partial
+3990,Not specified manufacturing industries,326220,Rubber and Plastics Hoses and Belting Manufacturing,partial
+3990,Not specified manufacturing industries,326291,Rubber Product Manufacturing for Mechanical Use,partial
+3990,Not specified manufacturing industries,326299,All Other Rubber Product Manufacturing,partial
+3990,Not specified manufacturing industries,327110,"Pottery, Ceramics, and Plumbing Fixture Manufacturing",partial
+3990,Not specified manufacturing industries,327120,Clay Building Material and Refractories Manufacturing,partial
+3990,Not specified manufacturing industries,327211,Flat Glass Manufacturing,partial
+3990,Not specified manufacturing industries,327212,Other Pressed and Blown Glass and Glassware Manufacturing,partial
+3990,Not specified manufacturing industries,327213,Glass Container Manufacturing,partial
+3990,Not specified manufacturing industries,327215,Glass Product Manufacturing Made of Purchased Glass,partial
+3990,Not specified manufacturing industries,327310,Cement Manufacturing,partial
+3990,Not specified manufacturing industries,327320,Ready-Mix Concrete Manufacturing,partial
+3990,Not specified manufacturing industries,327331,Concrete Block and Brick Manufacturing,partial
+3990,Not specified manufacturing industries,327332,Concrete Pipe Manufacturing,partial
+3990,Not specified manufacturing industries,327390,Other Concrete Product Manufacturing,partial
+3990,Not specified manufacturing industries,327410,Lime Manufacturing,partial
+3990,Not specified manufacturing industries,327420,Gypsum Product Manufacturing,partial
+3990,Not specified manufacturing industries,327910,Abrasive Product Manufacturing,partial
+3990,Not specified manufacturing industries,327991,Cut Stone and Stone Product Manufacturing,partial
+3990,Not specified manufacturing industries,327992,Ground or Treated Mineral and Earth Manufacturing,partial
+3990,Not specified manufacturing industries,327993,Mineral Wool Manufacturing,partial
+3990,Not specified manufacturing industries,327999,All Other Miscellaneous Nonmetallic Mineral Product Manufacturing,partial
+3990,Not specified manufacturing industries,331110,Iron and Steel Mills and Ferroalloy Manufacturing,partial
+3990,Not specified manufacturing industries,331210,Iron and Steel Pipe and Tube Manufacturing from Purchased Steel,partial
+3990,Not specified manufacturing industries,331221,Rolled Steel Shape Manufacturing,partial
+3990,Not specified manufacturing industries,331222,Steel Wire Drawing,partial
+3990,Not specified manufacturing industries,331313,Alumina Refining and Primary Aluminum Production,partial
+3990,Not specified manufacturing industries,331314,Secondary Smelting and Alloying of Aluminum,partial
+3990,Not specified manufacturing industries,331315,"Aluminum Sheet, Plate, and Foil Manufacturing",partial
+3990,Not specified manufacturing industries,331318,"Other Aluminum Rolling, Drawing, and Extruding",partial
+3990,Not specified manufacturing industries,331410,Nonferrous Metal (except Aluminum) Smelting and Refining,partial
+3990,Not specified manufacturing industries,331420,"Copper Rolling, Drawing, Extruding, and Alloying",partial
+3990,Not specified manufacturing industries,331491,"Nonferrous Metal (except Copper and Aluminum) Rolling, Drawing, and Extruding",partial
+3990,Not specified manufacturing industries,331492,"Secondary Smelting, Refining, and Alloying of Nonferrous Metal (except Copper and Aluminum)",partial
+3990,Not specified manufacturing industries,331511,Iron Foundries,partial
+3990,Not specified manufacturing industries,331512,Steel Investment Foundries,partial
+3990,Not specified manufacturing industries,331513,Steel Foundries (except Investment),partial
+3990,Not specified manufacturing industries,331523,Nonferrous Metal Die-Casting Foundries,partial
+3990,Not specified manufacturing industries,331524,Aluminum Foundries (except Die-Casting),partial
+3990,Not specified manufacturing industries,331529,Other Nonferrous Metal Foundries (except Die-Casting),partial
+3990,Not specified manufacturing industries,332111,Iron and Steel Forging,partial
+3990,Not specified manufacturing industries,332112,Nonferrous Forging,partial
+3990,Not specified manufacturing industries,332114,Custom Roll Forming,partial
+3990,Not specified manufacturing industries,332117,Powder Metallurgy Part Manufacturing,partial
+3990,Not specified manufacturing industries,332119,"Metal Crown, Closure, and Other Metal Stamping (except Automotive)",partial
+3990,Not specified manufacturing industries,332215,"Metal Kitchen Cookware, Utensil, Cutlery, and Flatware (except Precious) Manufacturing",partial
+3990,Not specified manufacturing industries,332216,Saw Blade and Handtool Manufacturing,partial
+3990,Not specified manufacturing industries,332311,Prefabricated Metal Building and Component Manufacturing,partial
+3990,Not specified manufacturing industries,332312,Fabricated Structural Metal Manufacturing,partial
+3990,Not specified manufacturing industries,332313,Plate Work Manufacturing,partial
+3990,Not specified manufacturing industries,332321,Metal Window and Door Manufacturing,partial
+3990,Not specified manufacturing industries,332322,Sheet Metal Work Manufacturing,partial
+3990,Not specified manufacturing industries,332323,Ornamental and Architectural Metal Work Manufacturing,partial
+3990,Not specified manufacturing industries,332410,Power Boiler and Heat Exchanger Manufacturing,partial
+3990,Not specified manufacturing industries,332420,Metal Tank (Heavy Gauge) Manufacturing,partial
+3990,Not specified manufacturing industries,332431,Metal Can Manufacturing,partial
+3990,Not specified manufacturing industries,332439,Other Metal Container Manufacturing,partial
+3990,Not specified manufacturing industries,332510,Hardware Manufacturing,partial
+3990,Not specified manufacturing industries,332613,Spring Manufacturing,partial
+3990,Not specified manufacturing industries,332618,Other Fabricated Wire Product Manufacturing,partial
+3990,Not specified manufacturing industries,332710,Machine Shops,partial
+3990,Not specified manufacturing industries,332721,Precision Turned Product Manufacturing,partial
+3990,Not specified manufacturing industries,332722,"Bolt, Nut, Screw, Rivet, and Washer Manufacturing",partial
+3990,Not specified manufacturing industries,332811,Metal Heat Treating,partial
+3990,Not specified manufacturing industries,332812,"Metal Coating, Engraving (except Jewelry and Silverware), and Allied Services to Manufacturers",partial
+3990,Not specified manufacturing industries,332813,"Electroplating, Plating, Polishing, Anodizing, and Coloring",partial
+3990,Not specified manufacturing industries,332911,Industrial Valve Manufacturing,partial
+3990,Not specified manufacturing industries,332912,Fluid Power Valve and Hose Fitting Manufacturing,partial
+3990,Not specified manufacturing industries,332913,Plumbing Fixture Fitting and Trim Manufacturing,partial
+3990,Not specified manufacturing industries,332919,Other Metal Valve and Pipe Fitting Manufacturing,partial
+3990,Not specified manufacturing industries,332991,Ball and Roller Bearing Manufacturing,partial
+3990,Not specified manufacturing industries,332992,Small Arms Ammunition Manufacturing,partial
+3990,Not specified manufacturing industries,332993,Ammunition (except Small Arms) Manufacturing,partial
+3990,Not specified manufacturing industries,332994,"Small Arms, Ordnance, and Ordnance Accessories Manufacturing",partial
+3990,Not specified manufacturing industries,332996,Fabricated Pipe and Pipe Fitting Manufacturing,partial
+3990,Not specified manufacturing industries,332999,All Other Miscellaneous Fabricated Metal Product Manufacturing,partial
+3990,Not specified manufacturing industries,333111,Farm Machinery and Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333112,Lawn and Garden Tractor and Home Lawn and Garden Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333120,Construction Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333131,Mining Machinery and Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333132,Oil and Gas Field Machinery and Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333241,Food Product Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333242,Semiconductor Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333243,"Sawmill, Woodworking, and Paper Machinery Manufacturing",partial
+3990,Not specified manufacturing industries,333244,Printing Machinery and Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333249,Other Industrial Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333314,Optical Instrument and Lens Manufacturing,partial
+3990,Not specified manufacturing industries,333316,Photographic and Photocopying Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333318,Other Commercial and Service Industry Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333413,Industrial and Commercial Fan and Blower and Air Purification Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333414,Heating Equipment (except Warm Air Furnaces) Manufacturing,partial
+3990,Not specified manufacturing industries,333415,Air-Conditioning and Warm Air Heating Equipment and Commercial and Industrial Refrigeration Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333511,Industrial Mold Manufacturing,partial
+3990,Not specified manufacturing industries,333514,"Special Die and Tool, Die Set, Jig, and Fixture Manufacturing",partial
+3990,Not specified manufacturing industries,333515,Cutting Tool and Machine Tool Accessory Manufacturing,partial
+3990,Not specified manufacturing industries,333517,Machine Tool Manufacturing,partial
+3990,Not specified manufacturing industries,333519,Rolling Mill and Other Metalworking Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333611,Turbine and Turbine Generator Set Units Manufacturing,partial
+3990,Not specified manufacturing industries,333612,"Speed Changer, Industrial High-Speed Drive, and Gear Manufacturing",partial
+3990,Not specified manufacturing industries,333613,Mechanical Power Transmission Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333618,Other Engine Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333912,Air and Gas Compressor Manufacturing,partial
+3990,Not specified manufacturing industries,333914,"Measuring, Dispensing, and Other Pumping Equipment Manufacturing",partial
+3990,Not specified manufacturing industries,333921,Elevator and Moving Stairway Manufacturing,partial
+3990,Not specified manufacturing industries,333922,Conveyor and Conveying Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333923,"Overhead Traveling Crane, Hoist, and Monorail System Manufacturing",partial
+3990,Not specified manufacturing industries,333924,"Industrial Truck, Tractor, Trailer, and Stacker Machinery Manufacturing",partial
+3990,Not specified manufacturing industries,333991,Power-Driven Handtool Manufacturing,partial
+3990,Not specified manufacturing industries,333992,Welding and Soldering Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,333993,Packaging Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,333994,Industrial Process Furnace and Oven Manufacturing,partial
+3990,Not specified manufacturing industries,333995,Fluid Power Cylinder and Actuator Manufacturing,partial
+3990,Not specified manufacturing industries,333996,Fluid Power Pump and Motor Manufacturing,partial
+3990,Not specified manufacturing industries,333997,Scale and Balance Manufacturing,partial
+3990,Not specified manufacturing industries,333999,All Other Miscellaneous General Purpose Machinery Manufacturing,partial
+3990,Not specified manufacturing industries,334111,Electronic Computer Manufacturing,partial
+3990,Not specified manufacturing industries,334112,Computer Storage Device Manufacturing,partial
+3990,Not specified manufacturing industries,334118,Computer Terminal and Other Computer Peripheral Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,334210,Telephone Apparatus Manufacturing,partial
+3990,Not specified manufacturing industries,334220,Radio and Television Broadcasting and Wireless Communications Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,334290,Other Communications Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,334310,Audio and Video Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,334412,Bare Printed Circuit Board Manufacturing,partial
+3990,Not specified manufacturing industries,334413,Semiconductor and Related Device Manufacturing,partial
+3990,Not specified manufacturing industries,334416,"Capacitor, Resistor, Coil, Transformer, and Other Inductor Manufacturing",partial
+3990,Not specified manufacturing industries,334417,Electronic Connector Manufacturing,partial
+3990,Not specified manufacturing industries,334418,Printed Circuit Assembly (Electronic Assembly) Manufacturing,partial
+3990,Not specified manufacturing industries,334419,Other Electronic Component Manufacturing,partial
+3990,Not specified manufacturing industries,334510,Electromedical and Electrotherapeutic Apparatus Manufacturing,partial
+3990,Not specified manufacturing industries,334511,"Search, Detection, Navigation, Guidance, Aeronautical, and Nautical System and Instrument Manufacturing",partial
+3990,Not specified manufacturing industries,334512,"Automatic Environmental Control Manufacturing for Residential, Commercial, and Appliance Use",partial
+3990,Not specified manufacturing industries,334513,"Instruments and Related Products Manufacturing for Measuring, Displaying, and Controlling Industrial Process Variables",partial
+3990,Not specified manufacturing industries,334514,Totalizing Fluid Meter and Counting Device Manufacturing,partial
+3990,Not specified manufacturing industries,334515,Instrument Manufacturing for Measuring and Testing Electricity and Electrical Signals,partial
+3990,Not specified manufacturing industries,334516,Analytical Laboratory Instrument Manufacturing,partial
+3990,Not specified manufacturing industries,334517,Irradiation Apparatus Manufacturing,partial
+3990,Not specified manufacturing industries,334519,Other Measuring and Controlling Device Manufacturing,partial
+3990,Not specified manufacturing industries,334613,Blank Magnetic and Optical Recording Media Manufacturing,partial
+3990,Not specified manufacturing industries,334614,"Software and Other Prerecorded Compact Disc, Tape, and Record Reproducing",partial
+3990,Not specified manufacturing industries,335110,Electric Lamp Bulb and Part Manufacturing,partial
+3990,Not specified manufacturing industries,335121,Residential Electric Lighting Fixture Manufacturing,partial
+3990,Not specified manufacturing industries,335122,"Commercial, Industrial, and Institutional Electric Lighting Fixture Manufacturing",partial
+3990,Not specified manufacturing industries,335129,Other Lighting Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,335210,Small Electrical Appliance Manufacturing,partial
+3990,Not specified manufacturing industries,335220,Major Household Appliance Manufacturing,partial
+3990,Not specified manufacturing industries,335311,"Power, Distribution, and Specialty Transformer Manufacturing",partial
+3990,Not specified manufacturing industries,335312,Motor and Generator Manufacturing,partial
+3990,Not specified manufacturing industries,335313,Switchgear and Switchboard Apparatus Manufacturing,partial
+3990,Not specified manufacturing industries,335314,Relay and Industrial Control Manufacturing,partial
+3990,Not specified manufacturing industries,335911,Storage Battery Manufacturing,partial
+3990,Not specified manufacturing industries,335912,Primary Battery Manufacturing,partial
+3990,Not specified manufacturing industries,335921,Fiber Optic Cable Manufacturing,partial
+3990,Not specified manufacturing industries,335929,Other Communication and Energy Wire Manufacturing,partial
+3990,Not specified manufacturing industries,335931,Current-Carrying Wiring Device Manufacturing,partial
+3990,Not specified manufacturing industries,335932,Noncurrent-Carrying Wiring Device Manufacturing,partial
+3990,Not specified manufacturing industries,335991,Carbon and Graphite Product Manufacturing,partial
+3990,Not specified manufacturing industries,335999,All Other Miscellaneous Electrical Equipment and Component Manufacturing,partial
+3990,Not specified manufacturing industries,336111,Automobile Manufacturing,partial
+3990,Not specified manufacturing industries,336112,Light Truck and Utility Vehicle Manufacturing,partial
+3990,Not specified manufacturing industries,336120,Heavy Duty Truck Manufacturing,partial
+3990,Not specified manufacturing industries,336211,Motor Vehicle Body Manufacturing,partial
+3990,Not specified manufacturing industries,336212,Truck Trailer Manufacturing,partial
+3990,Not specified manufacturing industries,336213,Motor Home Manufacturing,partial
+3990,Not specified manufacturing industries,336214,Travel Trailer and Camper Manufacturing,partial
+3990,Not specified manufacturing industries,336310,Motor Vehicle Gasoline Engine and Engine Parts Manufacturing,partial
+3990,Not specified manufacturing industries,336320,Motor Vehicle Electrical and Electronic Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,336330,Motor Vehicle Steering and Suspension Components (except Spring) Manufacturing,partial
+3990,Not specified manufacturing industries,336340,Motor Vehicle Brake System Manufacturing,partial
+3990,Not specified manufacturing industries,336350,Motor Vehicle Transmission and Power Train Parts Manufacturing,partial
+3990,Not specified manufacturing industries,336360,Motor Vehicle Seating and Interior Trim Manufacturing,partial
+3990,Not specified manufacturing industries,336370,Motor Vehicle Metal Stamping,partial
+3990,Not specified manufacturing industries,336390,Other Motor Vehicle Parts Manufacturing,partial
+3990,Not specified manufacturing industries,336411,Aircraft Manufacturing,partial
+3990,Not specified manufacturing industries,336412,Aircraft Engine and Engine Parts Manufacturing,partial
+3990,Not specified manufacturing industries,336413,Other Aircraft Parts and Auxiliary Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,336414,Guided Missile and Space Vehicle Manufacturing,partial
+3990,Not specified manufacturing industries,336415,Guided Missile and Space Vehicle Propulsion Unit and Propulsion Unit Parts Manufacturing,partial
+3990,Not specified manufacturing industries,336419,Other Guided Missile and Space Vehicle Parts and Auxiliary Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,336510,Railroad Rolling Stock Manufacturing,partial
+3990,Not specified manufacturing industries,336611,Ship Building and Repairing,partial
+3990,Not specified manufacturing industries,336612,Boat Building,partial
+3990,Not specified manufacturing industries,336991,"Motorcycle, Bicycle, and Parts Manufacturing",partial
+3990,Not specified manufacturing industries,336992,"Military Armored Vehicle, Tank, and Tank Component Manufacturing",partial
+3990,Not specified manufacturing industries,336999,All Other Transportation Equipment Manufacturing,partial
+3990,Not specified manufacturing industries,337110,Wood Kitchen Cabinet and Countertop Manufacturing,partial
+3990,Not specified manufacturing industries,337121,Upholstered Household Furniture Manufacturing,partial
+3990,Not specified manufacturing industries,337122,Nonupholstered Wood Household Furniture Manufacturing,partial
+3990,Not specified manufacturing industries,337124,Metal Household Furniture Manufacturing,partial
+3990,Not specified manufacturing industries,337125,Household Furniture (except Wood and Metal) Manufacturing,partial
+3990,Not specified manufacturing industries,337127,Institutional Furniture Manufacturing,partial
+3990,Not specified manufacturing industries,337211,Wood Office Furniture Manufacturing,partial
+3990,Not specified manufacturing industries,337212,Custom Architectural Woodwork and Millwork Manufacturing,partial
+3990,Not specified manufacturing industries,337214,Office Furniture (except Wood) Manufacturing,partial
+3990,Not specified manufacturing industries,337215,"Showcase, Partition, Shelving, and Locker Manufacturing",partial
+3990,Not specified manufacturing industries,337910,Mattress Manufacturing,partial
+3990,Not specified manufacturing industries,337920,Blind and Shade Manufacturing,partial
+3990,Not specified manufacturing industries,339112,Surgical and Medical Instrument Manufacturing,partial
+3990,Not specified manufacturing industries,339113,Surgical Appliance and Supplies Manufacturing,partial
+3990,Not specified manufacturing industries,339114,Dental Equipment and Supplies Manufacturing,partial
+3990,Not specified manufacturing industries,339115,Ophthalmic Goods Manufacturing,partial
+3990,Not specified manufacturing industries,339116,Dental Laboratories,partial
+3990,Not specified manufacturing industries,339910,Jewelry and Silverware Manufacturing,partial
+3990,Not specified manufacturing industries,339920,Sporting and Athletic Goods Manufacturing,partial
+3990,Not specified manufacturing industries,339930,"Doll, Toy, and Game Manufacturing",partial
+3990,Not specified manufacturing industries,339940,Office Supplies (except Paper) Manufacturing,partial
+3990,Not specified manufacturing industries,339950,Sign Manufacturing,partial
+3990,Not specified manufacturing industries,339991,"Gasket, Packing, and Sealing Device Manufacturing",partial
+3990,Not specified manufacturing industries,339992,Musical Instrument Manufacturing,partial
+3990,Not specified manufacturing industries,339993,"Fastener, Button, Needle, and Pin Manufacturing",partial
+3990,Not specified manufacturing industries,339994,"Broom, Brush, and Mop Manufacturing",partial
+3990,Not specified manufacturing industries,339995,Burial Casket Manufacturing,partial
+3990,Not specified manufacturing industries,339999,All Other Miscellaneous Manufacturing,partial
+4070,Motor vehicle and motor vehicle parts and supplies merchant wholesalers,423110,Automobile and Other Motor Vehicle Merchant Wholesalers,prefix
+4070,Motor vehicle and motor vehicle parts and supplies merchant wholesalers,423120,Motor Vehicle Supplies and New Parts Merchant Wholesalers,prefix
+4070,Motor vehicle and motor vehicle parts and supplies merchant wholesalers,423130,Tire and Tube Merchant Wholesalers,prefix
+4070,Motor vehicle and motor vehicle parts and supplies merchant wholesalers,423140,Motor Vehicle Parts (Used) Merchant Wholesalers,prefix
+4080,Furniture and home furnishing merchant wholesalers,423210,Furniture Merchant Wholesalers,prefix
+4080,Furniture and home furnishing merchant wholesalers,423220,Home Furnishing Merchant Wholesalers,prefix
+4090,Lumber and other construction materials merchant wholesalers,423310,"Lumber, Plywood, Millwork, and Wood Panel Merchant Wholesalers",prefix
+4090,Lumber and other construction materials merchant wholesalers,423320,"Brick, Stone, and Related Construction Material Merchant Wholesalers",prefix
+4090,Lumber and other construction materials merchant wholesalers,423330,"Roofing, Siding, and Insulation Material Merchant Wholesalers",prefix
+4090,Lumber and other construction materials merchant wholesalers,423390,Other Construction Material Merchant Wholesalers,prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423410,Photographic Equipment and Supplies Merchant Wholesalers,prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423420,Office Equipment Merchant Wholesalers,prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423430,Computer and Computer Peripheral Equipment and Software Merchant Wholesalers,prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423440,Other Commercial Equipment Merchant Wholesalers,prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423450,"Medical, Dental, and Hospital Equipment and Supplies Merchant Wholesalers",prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423460,Ophthalmic Goods Merchant Wholesalers,prefix
+4170,Professional and commercial equipment and supplies merchant wholesalers,423490,Other Professional Equipment and Supplies Merchant Wholesalers,prefix
+4180,"Metals and minerals, except petroleum, merchant wholesalers",423510,Metal Service Centers and Other Metal Merchant Wholesalers,prefix
+4180,"Metals and minerals, except petroleum, merchant wholesalers",423520,Coal and Other Mineral and Ore Merchant Wholesalers,prefix
+4195,Household appliances and electrical and electronic goods merchant wholesalers,423610,"Electrical Apparatus and Equipment, Wiring Supplies, and Related Equipment Merchant Wholesalers",prefix
+4195,Household appliances and electrical and electronic goods merchant wholesalers,423620,"Household Appliances, Electric Housewares, and Consumer Electronics Merchant Wholesalers",prefix
+4195,Household appliances and electrical and electronic goods merchant wholesalers,423690,Other Electronic Parts and Equipment Merchant Wholesalers,prefix
+4265,"Hardware, and plumbing and heating equipment, and supplies merchant wholesalers",423710,Hardware Merchant Wholesalers,prefix
+4265,"Hardware, and plumbing and heating equipment, and supplies merchant wholesalers",423720,Plumbing and Heating Equipment and Supplies (Hydronics) Merchant Wholesalers,prefix
+4265,"Hardware, and plumbing and heating equipment, and supplies merchant wholesalers",423730,Warm Air Heating and Air-Conditioning Equipment and Supplies Merchant Wholesalers,prefix
+4265,"Hardware, and plumbing and heating equipment, and supplies merchant wholesalers",423740,Refrigeration Equipment and Supplies Merchant Wholesalers,prefix
+4270,"Machinery, equipment, and supplies merchant wholesalers",423810,Construction and Mining (except Oil Well) Machinery and Equipment Merchant Wholesalers,prefix
+4270,"Machinery, equipment, and supplies merchant wholesalers",423820,Farm and Garden Machinery and Equipment Merchant Wholesalers,prefix
+4270,"Machinery, equipment, and supplies merchant wholesalers",423830,Industrial Machinery and Equipment Merchant Wholesalers,prefix
+4270,"Machinery, equipment, and supplies merchant wholesalers",423840,Industrial Supplies Merchant Wholesalers,prefix
+4270,"Machinery, equipment, and supplies merchant wholesalers",423850,Service Establishment Equipment and Supplies Merchant Wholesalers,prefix
+4270,"Machinery, equipment, and supplies merchant wholesalers",423860,Transportation Equipment and Supplies (except Motor Vehicle) Merchant Wholesalers,prefix
+4280,Recyclable material merchant wholesalers,423930,Recyclable Material Merchant Wholesalers,prefix
+4290,Miscellaneous durable goods merchant wholesalers,423910,Sporting and Recreational Goods and Supplies Merchant Wholesalers,prefix
+4290,Miscellaneous durable goods merchant wholesalers,423920,Toy and Hobby Goods and Supplies Merchant Wholesalers,prefix
+4290,Miscellaneous durable goods merchant wholesalers,423940,"Jewelry, Watch, Precious Stone, and Precious Metal Merchant Wholesalers",prefix
+4290,Miscellaneous durable goods merchant wholesalers,423990,Other Miscellaneous Durable Goods Merchant Wholesalers,prefix
+4370,Paper and paper products merchant wholesalers,424110,Printing and Writing Paper Merchant Wholesalers,prefix
+4370,Paper and paper products merchant wholesalers,424120,Stationery and Office Supplies Merchant Wholesalers,prefix
+4370,Paper and paper products merchant wholesalers,424130,Industrial and Personal Service Paper Merchant Wholesalers,prefix
+4380,"Drugs, sundries, and chemical and allied products merchant  wholesalers",424210,Drugs and Druggists' Sundries Merchant Wholesalers,prefix
+4380,"Drugs, sundries, and chemical and allied products merchant  wholesalers",424610,Plastics Materials and Basic Forms and Shapes Merchant Wholesalers,prefix
+4380,"Drugs, sundries, and chemical and allied products merchant  wholesalers",424690,Other Chemical and Allied Products Merchant Wholesalers,prefix
+4390,"Apparel, piece goods, and notions merchant wholesalers",424310,"Piece Goods, Notions, and Other Dry Goods Merchant Wholesalers",prefix
+4390,"Apparel, piece goods, and notions merchant wholesalers",424320,Men's and Boys' Clothing and Furnishings Merchant Wholesalers,prefix
+4390,"Apparel, piece goods, and notions merchant wholesalers",424330,"Women's, Children's, and Infants' Clothing and Accessories Merchant Wholesalers",prefix
+4390,"Apparel, piece goods, and notions merchant wholesalers",424340,Footwear Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424410,General Line Grocery Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424420,Packaged Frozen Food Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424430,Dairy Product (except Dried or Canned) Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424440,Poultry and Poultry Product Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424450,Confectionery Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424460,Fish and Seafood Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424470,Meat and Meat Product Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424480,Fresh Fruit and Vegetable Merchant Wholesalers,prefix
+4470,Grocery and related product merchant wholesalers,424490,Other Grocery and Related Products Merchant Wholesalers,prefix
+4480,Farm product raw material merchant wholesalers,424510,Grain and Field Bean Merchant Wholesalers,prefix
+4480,Farm product raw material merchant wholesalers,424520,Livestock Merchant Wholesalers,prefix
+4480,Farm product raw material merchant wholesalers,424590,Other Farm Product Raw Material Merchant Wholesalers,prefix
+4490,Petroleum and petroleum products merchant wholesalers,424710,Petroleum Bulk Stations and Terminals,prefix
+4490,Petroleum and petroleum products merchant wholesalers,424720,Petroleum and Petroleum Products Merchant Wholesalers (except Bulk Stations and Terminals),prefix
+4560,Alcoholic beverages merchant wholesalers,424810,Beer and Ale Merchant Wholesalers,prefix
+4560,Alcoholic beverages merchant wholesalers,424820,Wine and Distilled Alcoholic Beverage Merchant Wholesalers,prefix
+4570,Farm supplies merchant wholesalers,424910,Farm Supplies Merchant Wholesalers,prefix
+4580,Miscellaneous nondurable goods merchant wholesalers,424920,"Book, Periodical, and Newspaper Merchant Wholesalers",prefix
+4580,Miscellaneous nondurable goods merchant wholesalers,424930,"Flower, Nursery Stock, and Florists' Supplies Merchant Wholesalers",prefix
+4580,Miscellaneous nondurable goods merchant wholesalers,424940,Tobacco and Tobacco Product Merchant Wholesalers,prefix
+4580,Miscellaneous nondurable goods merchant wholesalers,424950,"Paint, Varnish, and Supplies Merchant Wholesalers",prefix
+4580,Miscellaneous nondurable goods merchant wholesalers,424990,Other Miscellaneous Nondurable Goods Merchant Wholesalers,prefix
+4585,Wholesale electronic markets and agents and brokers,425110,Business to Business Electronic Markets,prefix
+4585,Wholesale electronic markets and agents and brokers,425120,Wholesale Trade Agents and Brokers,prefix
+4590,Not specified wholesale trade,423110,Automobile and Other Motor Vehicle Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423120,Motor Vehicle Supplies and New Parts Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423130,Tire and Tube Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423140,Motor Vehicle Parts (Used) Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423210,Furniture Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423220,Home Furnishing Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423310,"Lumber, Plywood, Millwork, and Wood Panel Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423320,"Brick, Stone, and Related Construction Material Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423330,"Roofing, Siding, and Insulation Material Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423390,Other Construction Material Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423410,Photographic Equipment and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423420,Office Equipment Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423430,Computer and Computer Peripheral Equipment and Software Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423440,Other Commercial Equipment Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423450,"Medical, Dental, and Hospital Equipment and Supplies Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423460,Ophthalmic Goods Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423490,Other Professional Equipment and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423510,Metal Service Centers and Other Metal Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423520,Coal and Other Mineral and Ore Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423610,"Electrical Apparatus and Equipment, Wiring Supplies, and Related Equipment Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423620,"Household Appliances, Electric Housewares, and Consumer Electronics Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423690,Other Electronic Parts and Equipment Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423710,Hardware Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423720,Plumbing and Heating Equipment and Supplies (Hydronics) Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423730,Warm Air Heating and Air-Conditioning Equipment and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423740,Refrigeration Equipment and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423810,Construction and Mining (except Oil Well) Machinery and Equipment Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423820,Farm and Garden Machinery and Equipment Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423830,Industrial Machinery and Equipment Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423840,Industrial Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423850,Service Establishment Equipment and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423860,Transportation Equipment and Supplies (except Motor Vehicle) Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423910,Sporting and Recreational Goods and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423920,Toy and Hobby Goods and Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423930,Recyclable Material Merchant Wholesalers,partial
+4590,Not specified wholesale trade,423940,"Jewelry, Watch, Precious Stone, and Precious Metal Merchant Wholesalers",partial
+4590,Not specified wholesale trade,423990,Other Miscellaneous Durable Goods Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424110,Printing and Writing Paper Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424120,Stationery and Office Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424130,Industrial and Personal Service Paper Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424210,Drugs and Druggists' Sundries Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424310,"Piece Goods, Notions, and Other Dry Goods Merchant Wholesalers",partial
+4590,Not specified wholesale trade,424320,Men's and Boys' Clothing and Furnishings Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424330,"Women's, Children's, and Infants' Clothing and Accessories Merchant Wholesalers",partial
+4590,Not specified wholesale trade,424340,Footwear Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424410,General Line Grocery Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424420,Packaged Frozen Food Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424430,Dairy Product (except Dried or Canned) Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424440,Poultry and Poultry Product Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424450,Confectionery Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424460,Fish and Seafood Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424470,Meat and Meat Product Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424480,Fresh Fruit and Vegetable Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424490,Other Grocery and Related Products Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424510,Grain and Field Bean Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424520,Livestock Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424590,Other Farm Product Raw Material Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424610,Plastics Materials and Basic Forms and Shapes Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424690,Other Chemical and Allied Products Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424710,Petroleum Bulk Stations and Terminals,partial
+4590,Not specified wholesale trade,424720,Petroleum and Petroleum Products Merchant Wholesalers (except Bulk Stations and Terminals),partial
+4590,Not specified wholesale trade,424810,Beer and Ale Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424820,Wine and Distilled Alcoholic Beverage Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424910,Farm Supplies Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424920,"Book, Periodical, and Newspaper Merchant Wholesalers",partial
+4590,Not specified wholesale trade,424930,"Flower, Nursery Stock, and Florists' Supplies Merchant Wholesalers",partial
+4590,Not specified wholesale trade,424940,Tobacco and Tobacco Product Merchant Wholesalers,partial
+4590,Not specified wholesale trade,424950,"Paint, Varnish, and Supplies Merchant Wholesalers",partial
+4590,Not specified wholesale trade,424990,Other Miscellaneous Nondurable Goods Merchant Wholesalers,partial
+4590,Not specified wholesale trade,425110,Business to Business Electronic Markets,partial
+4590,Not specified wholesale trade,425120,Wholesale Trade Agents and Brokers,partial
+4670,Automobile dealers,441110,New Car Dealers,prefix
+4670,Automobile dealers,441120,Used Car Dealers,prefix
+4680,Other motor vehicle dealers,441210,Recreational Vehicle Dealers,prefix
+4680,Other motor vehicle dealers,441222,Boat Dealers,prefix
+4680,Other motor vehicle dealers,441228,"Motorcycle, ATV, and All Other Motor Vehicle Dealers",prefix
+4690,"Automotive parts, accessories, and tire stores",441310,Automotive Parts and Accessories Stores,prefix
+4690,"Automotive parts, accessories, and tire stores",441320,Tire Dealers,prefix
+4770,Furniture and home furnishings stores,442110,Furniture Stores,prefix
+4770,Furniture and home furnishings stores,442210,Floor Covering Stores,prefix
+4770,Furniture and home furnishings stores,442291,Window Treatment Stores,prefix
+4770,Furniture and home furnishings stores,442299,All Other Home Furnishings Stores,prefix
+4780,Household appliance stores,443141,Household Appliance Stores,exact
+4795,Electronics Stores,443142,Electronics Stores,exact
+4870,Building material and supplies dealers,444110,Home Centers,prefix
+4870,Building material and supplies dealers,444120,Paint and Wallpaper Stores,prefix
+4870,Building material and supplies dealers,444190,Other Building Material Dealers,prefix
+4880,Hardware stores,444130,Hardware Stores,prefix
+4890,Lawn and garden equipment and supplies stores,444210,Outdoor Power Equipment Stores,prefix
+4890,Lawn and garden equipment and supplies stores,444220,"Nursery, Garden Center, and Farm Supply Stores",prefix
+4971,Supermarkets and other grocery (except convenience) stores,445110,Supermarkets and Other Grocery (except Convenience) Stores,prefix
+4972,Convenience Stores,445120,Convenience Stores,prefix
+4980,Specialty food stores,445210,Meat Markets,prefix
+4980,Specialty food stores,445220,Fish and Seafood Markets,prefix
+4980,Specialty food stores,445230,Fruit and Vegetable Markets,prefix
+4980,Specialty food stores,445291,Baked Goods Stores,prefix
+4980,Specialty food stores,445292,Confectionery and Nut Stores,prefix
+4980,Specialty food stores,445299,All Other Specialty Food Stores,prefix
+4990,"Beer, wine, and liquor stores",445310,"Beer, Wine, and Liquor Stores",prefix
+5070,Pharmacies and drug stores,446110,Pharmacies and Drug Stores,prefix
+5080,"Health and personal care, except drug, stores",446120,"Cosmetics, Beauty Supplies, and Perfume Stores",prefix
+5080,"Health and personal care, except drug, stores",446130,Optical Goods Stores,prefix
+5080,"Health and personal care, except drug, stores",446191,Food (Health) Supplement Stores,prefix
+5080,"Health and personal care, except drug, stores",446199,All Other Health and Personal Care Stores,prefix
+5090,Gasoline stations,447110,Gasoline Stations with Convenience Stores,prefix
+5090,Gasoline stations,447190,Other Gasoline Stations,prefix
+5170,Clothing stores,448110,Men's Clothing Stores,prefix
+5170,Clothing stores,448120,Women's Clothing Stores,prefix
+5170,Clothing stores,448130,Children's and Infants' Clothing Stores,prefix
+5170,Clothing stores,448140,Family Clothing Stores,prefix
+5170,Clothing stores,448150,Clothing Accessories Stores,prefix
+5170,Clothing stores,448190,Other Clothing Stores,prefix
+5180,Shoe stores,448210,Shoe Stores,prefix
+5190,"Jewelry, luggage, and leather goods stores",448310,Jewelry Stores,prefix
+5190,"Jewelry, luggage, and leather goods stores",448320,Luggage and Leather Goods Stores,prefix
+5275,"Sporting goods, and hobby and toy stores",451110,Sporting Goods Stores,prefix
+5275,"Sporting goods, and hobby and toy stores",451120,"Hobby, Toy, and Game Stores",prefix
+5280,"Sewing, needlework, and piece goods stores",451130,"Sewing, Needlework, and Piece Goods Stores",prefix
+5295,Musical instrument and supplies stores,451140,Musical Instrument and Supplies Stores,prefix
+5370,Book stores and news dealers,451211,Book Stores,prefix
+5370,Book stores and news dealers,451212,News Dealers and Newsstands,prefix
+5381,Department stores,452210,Department Stores,prefix
+5391,"General merchandise stores, including warehouse clubs and supercenters",452311,Warehouse Clubs and Supercenters,prefix
+5391,"General merchandise stores, including warehouse clubs and supercenters",452319,All Other General Merchandise Stores,prefix
+5470,Florists,453110,Florists,prefix
+5480,Office supplies and stationery stores,453210,Office Supplies and Stationery Stores,prefix
+5490,Used merchandise stores,453310,Used Merchandise Stores,prefix
+5570,"Gift, novelty, and souvenir shops",453220,"Gift, Novelty, and Souvenir Stores",prefix
+5580,Miscellaneous retail stores,453910,Pet and Pet Supplies Stores,prefix
+5580,Miscellaneous retail stores,453920,Art Dealers,prefix
+5580,Miscellaneous retail stores,453930,Manufactured (Mobile) Home Dealers,prefix
+5580,Miscellaneous retail stores,453991,Tobacco Stores,prefix
+5580,Miscellaneous retail stores,453998,All Other Miscellaneous Store Retailers (except Tobacco Stores),prefix
+5593,Electronic shopping and mail-order houses,454110,Electronic Shopping and Mail-Order Houses,exact
+5670,Vending machine operators,454210,Vending Machine Operators,prefix
+5680,Fuel dealers,454310,Fuel Dealers,exact
+5690,Other direct selling establishments,454390,Other Direct Selling Establishments,prefix
+5790,Not specified retail trade,441110,New Car Dealers,partial
+5790,Not specified retail trade,441120,Used Car Dealers,partial
+5790,Not specified retail trade,441210,Recreational Vehicle Dealers,partial
+5790,Not specified retail trade,441222,Boat Dealers,partial
+5790,Not specified retail trade,441228,"Motorcycle, ATV, and All Other Motor Vehicle Dealers",partial
+5790,Not specified retail trade,441310,Automotive Parts and Accessories Stores,partial
+5790,Not specified retail trade,441320,Tire Dealers,partial
+5790,Not specified retail trade,442110,Furniture Stores,partial
+5790,Not specified retail trade,442210,Floor Covering Stores,partial
+5790,Not specified retail trade,442291,Window Treatment Stores,partial
+5790,Not specified retail trade,442299,All Other Home Furnishings Stores,partial
+5790,Not specified retail trade,443141,Household Appliance Stores,partial
+5790,Not specified retail trade,443142,Electronics Stores,partial
+5790,Not specified retail trade,444110,Home Centers,partial
+5790,Not specified retail trade,444120,Paint and Wallpaper Stores,partial
+5790,Not specified retail trade,444130,Hardware Stores,partial
+5790,Not specified retail trade,444190,Other Building Material Dealers,partial
+5790,Not specified retail trade,444210,Outdoor Power Equipment Stores,partial
+5790,Not specified retail trade,444220,"Nursery, Garden Center, and Farm Supply Stores",partial
+5790,Not specified retail trade,445110,Supermarkets and Other Grocery (except Convenience) Stores,partial
+5790,Not specified retail trade,445120,Convenience Stores,partial
+5790,Not specified retail trade,445210,Meat Markets,partial
+5790,Not specified retail trade,445220,Fish and Seafood Markets,partial
+5790,Not specified retail trade,445230,Fruit and Vegetable Markets,partial
+5790,Not specified retail trade,445291,Baked Goods Stores,partial
+5790,Not specified retail trade,445292,Confectionery and Nut Stores,partial
+5790,Not specified retail trade,445299,All Other Specialty Food Stores,partial
+5790,Not specified retail trade,445310,"Beer, Wine, and Liquor Stores",partial
+5790,Not specified retail trade,446110,Pharmacies and Drug Stores,partial
+5790,Not specified retail trade,446120,"Cosmetics, Beauty Supplies, and Perfume Stores",partial
+5790,Not specified retail trade,446130,Optical Goods Stores,partial
+5790,Not specified retail trade,446191,Food (Health) Supplement Stores,partial
+5790,Not specified retail trade,446199,All Other Health and Personal Care Stores,partial
+5790,Not specified retail trade,447110,Gasoline Stations with Convenience Stores,partial
+5790,Not specified retail trade,447190,Other Gasoline Stations,partial
+5790,Not specified retail trade,448110,Men's Clothing Stores,partial
+5790,Not specified retail trade,448120,Women's Clothing Stores,partial
+5790,Not specified retail trade,448130,Children's and Infants' Clothing Stores,partial
+5790,Not specified retail trade,448140,Family Clothing Stores,partial
+5790,Not specified retail trade,448150,Clothing Accessories Stores,partial
+5790,Not specified retail trade,448190,Other Clothing Stores,partial
+5790,Not specified retail trade,448210,Shoe Stores,partial
+5790,Not specified retail trade,448310,Jewelry Stores,partial
+5790,Not specified retail trade,448320,Luggage and Leather Goods Stores,partial
+5790,Not specified retail trade,451110,Sporting Goods Stores,partial
+5790,Not specified retail trade,451120,"Hobby, Toy, and Game Stores",partial
+5790,Not specified retail trade,451130,"Sewing, Needlework, and Piece Goods Stores",partial
+5790,Not specified retail trade,451140,Musical Instrument and Supplies Stores,partial
+5790,Not specified retail trade,451211,Book Stores,partial
+5790,Not specified retail trade,451212,News Dealers and Newsstands,partial
+5790,Not specified retail trade,452210,Department Stores,partial
+5790,Not specified retail trade,452311,Warehouse Clubs and Supercenters,partial
+5790,Not specified retail trade,452319,All Other General Merchandise Stores,partial
+5790,Not specified retail trade,453110,Florists,partial
+5790,Not specified retail trade,453210,Office Supplies and Stationery Stores,partial
+5790,Not specified retail trade,453220,"Gift, Novelty, and Souvenir Stores",partial
+5790,Not specified retail trade,453310,Used Merchandise Stores,partial
+5790,Not specified retail trade,453910,Pet and Pet Supplies Stores,partial
+5790,Not specified retail trade,453920,Art Dealers,partial
+5790,Not specified retail trade,453930,Manufactured (Mobile) Home Dealers,partial
+5790,Not specified retail trade,453991,Tobacco Stores,partial
+5790,Not specified retail trade,453998,All Other Miscellaneous Store Retailers (except Tobacco Stores),partial
+5790,Not specified retail trade,454110,Electronic Shopping and Mail-Order Houses,partial
+5790,Not specified retail trade,454210,Vending Machine Operators,partial
+5790,Not specified retail trade,454310,Fuel Dealers,partial
+5790,Not specified retail trade,454390,Other Direct Selling Establishments,partial
+6070,Air transportation,481111,Scheduled Passenger Air Transportation,prefix
+6070,Air transportation,481112,Scheduled Freight Air Transportation,prefix
+6070,Air transportation,481211,Nonscheduled Chartered Passenger Air Transportation,prefix
+6070,Air transportation,481212,Nonscheduled Chartered Freight Air Transportation,prefix
+6070,Air transportation,481219,Other Nonscheduled Air Transportation,prefix
+6080,Rail transportation,482111,Line-Haul Railroads,prefix
+6080,Rail transportation,482112,Short Line Railroads,prefix
+6090,Water transportation,483111,Deep Sea Freight Transportation,prefix
+6090,Water transportation,483112,Deep Sea Passenger Transportation,prefix
+6090,Water transportation,483113,Coastal and Great Lakes Freight Transportation,prefix
+6090,Water transportation,483114,Coastal and Great Lakes Passenger Transportation,prefix
+6090,Water transportation,483211,Inland Water Freight Transportation,prefix
+6090,Water transportation,483212,Inland Water Passenger Transportation,prefix
+6170,Truck transportation,484110,"General Freight Trucking, Local",prefix
+6170,Truck transportation,484121,"General Freight Trucking, Long-Distance, Truckload",prefix
+6170,Truck transportation,484122,"General Freight Trucking, Long-Distance, Less Than Truckload",prefix
+6170,Truck transportation,484210,Used Household and Office Goods Moving,prefix
+6170,Truck transportation,484220,"Specialized Freight (except Used Goods) Trucking, Local",prefix
+6170,Truck transportation,484230,"Specialized Freight (except Used Goods) Trucking, Long-Distance",prefix
+6180,Bus service and urban transit,485111,Mixed Mode Transit Systems,prefix
+6180,Bus service and urban transit,485112,Commuter Rail Systems,prefix
+6180,Bus service and urban transit,485113,Bus and Other Motor Vehicle Transit Systems,prefix
+6180,Bus service and urban transit,485119,Other Urban Transit Systems,prefix
+6180,Bus service and urban transit,485210,Interurban and Rural Bus Transportation,prefix
+6180,Bus service and urban transit,485410,School and Employee Bus Transportation,prefix
+6180,Bus service and urban transit,485510,Charter Bus Industry,prefix
+6180,Bus service and urban transit,485991,Special Needs Transportation,prefix
+6180,Bus service and urban transit,485999,All Other Transit and Ground Passenger Transportation,prefix
+6190,Taxi and limousine service,485310,Taxi Service,prefix
+6190,Taxi and limousine service,485320,Limousine Service,prefix
+6270,Pipeline transportation,486110,Pipeline Transportation of Crude Oil,prefix
+6270,Pipeline transportation,486210,Pipeline Transportation of Natural Gas,prefix
+6270,Pipeline transportation,486910,Pipeline Transportation of Refined Petroleum Products,prefix
+6270,Pipeline transportation,486990,All Other Pipeline Transportation,prefix
+6280,Scenic and sightseeing transportation,487110,"Scenic and Sightseeing Transportation, Land",prefix
+6280,Scenic and sightseeing transportation,487210,"Scenic and Sightseeing Transportation, Water",prefix
+6280,Scenic and sightseeing transportation,487990,"Scenic and Sightseeing Transportation, Other",prefix
+6290,Services incidental to transportation,488111,Air Traffic Control,prefix
+6290,Services incidental to transportation,488119,Other Airport Operations,prefix
+6290,Services incidental to transportation,488190,Other Support Activities for Air Transportation,prefix
+6290,Services incidental to transportation,488210,Support Activities for Rail Transportation,prefix
+6290,Services incidental to transportation,488310,Port and Harbor Operations,prefix
+6290,Services incidental to transportation,488320,Marine Cargo Handling,prefix
+6290,Services incidental to transportation,488330,Navigational Services to Shipping,prefix
+6290,Services incidental to transportation,488390,Other Support Activities for Water Transportation,prefix
+6290,Services incidental to transportation,488410,Motor Vehicle Towing,prefix
+6290,Services incidental to transportation,488490,Other Support Activities for Road Transportation,prefix
+6290,Services incidental to transportation,488510,Freight Transportation Arrangement,prefix
+6290,Services incidental to transportation,488991,Packing and Crating,prefix
+6290,Services incidental to transportation,488999,All Other Support Activities for Transportation,prefix
+6370,Postal Service,491110,Postal Service,prefix
+6380,Couriers and messengers,492110,Couriers and Express Delivery Services,prefix
+6380,Couriers and messengers,492210,Local Messengers and Local Delivery,prefix
+6390,Warehousing and storage,493110,General Warehousing and Storage,prefix
+6390,Warehousing and storage,493120,Refrigerated Warehousing and Storage,prefix
+6390,Warehousing and storage,493130,Farm Product Warehousing and Storage,prefix
+6390,Warehousing and storage,493190,Other Warehousing and Storage,prefix
+6470,Newspaper publishers,511110,Newspaper Publishers,prefix
+6480,"Periodical, book, and directory publishers",511120,Periodical Publishers,prefix
+6480,"Periodical, book, and directory publishers",511130,Book Publishers,prefix
+6480,"Periodical, book, and directory publishers",511140,Directory and Mailing List Publishers,prefix
+6480,"Periodical, book, and directory publishers",511191,Greeting Card Publishers,prefix
+6480,"Periodical, book, and directory publishers",511199,All Other Publishers,prefix
+6490,Software publishers,511210,Software Publishers,prefix
+6570,Motion pictures and video industries,512110,Motion Picture and Video Production,prefix
+6570,Motion pictures and video industries,512120,Motion Picture and Video Distribution,prefix
+6570,Motion pictures and video industries,512131,Motion Picture Theaters (except Drive-Ins),prefix
+6570,Motion pictures and video industries,512132,Drive-In Motion Picture Theaters,prefix
+6570,Motion pictures and video industries,512191,Teleproduction and Other Postproduction Services,prefix
+6570,Motion pictures and video industries,512199,Other Motion Picture and Video Industries,prefix
+6590,Sound recording industries,512230,Music Publishers,prefix
+6590,Sound recording industries,512240,Sound Recording Studios,prefix
+6590,Sound recording industries,512250,Record Production and Distribution,prefix
+6590,Sound recording industries,512290,Other Sound Recording Industries,prefix
+6670,Broadcasting (except internet),515111,Radio Networks,prefix
+6670,Broadcasting (except internet),515112,Radio Stations,prefix
+6670,Broadcasting (except internet),515120,Television Broadcasting,prefix
+6670,Broadcasting (except internet),515210,Cable and Other Subscription Programming,prefix
+6672,Internet publishing and broadcasting and web search portals,519130,Internet Publishing and Broadcasting and Web Search Portals,prefix
+6680,Wired telecommunications carriers,517311,Wired Telecommunications Carriers,exact
+6690,"Telecommunications, except wired telecommunications carriers",517312,Wireless Telecommunications Carriers (except Satellite),prefix
+6690,"Telecommunications, except wired telecommunications carriers",517410,Satellite Telecommunications,prefix
+6690,"Telecommunications, except wired telecommunications carriers",517911,Telecommunications Resellers,prefix
+6690,"Telecommunications, except wired telecommunications carriers",517919,All Other Telecommunications,prefix
+6695,"Data processing, hosting, and related services",518210,"Data Processing, Hosting, and Related Services",prefix
+6770,Libraries and archives,519120,Libraries and Archives,prefix
+6780,"Other information services, except libraries and archives, and internet publishing and broadcasting and web search portals",519110,News Syndicates,prefix
+6780,"Other information services, except libraries and archives, and internet publishing and broadcasting and web search portals",519190,All Other Information Services,prefix
+6870,Banking and related activities,521110,Monetary Authorities-Central Bank,prefix
+6870,Banking and related activities,522110,Commercial Banking,prefix
+6870,Banking and related activities,522190,Other Depository Credit Intermediation,prefix
+6880,"Savings institutions, including credit unions",522120,Savings Institutions,prefix
+6880,"Savings institutions, including credit unions",522130,Credit Unions,prefix
+6890,Nondepository credit and related activities,522210,Credit Card Issuing,prefix
+6890,Nondepository credit and related activities,522220,Sales Financing,prefix
+6890,Nondepository credit and related activities,522291,Consumer Lending,prefix
+6890,Nondepository credit and related activities,522292,Real Estate Credit,prefix
+6890,Nondepository credit and related activities,522293,International Trade Financing,prefix
+6890,Nondepository credit and related activities,522294,Secondary Market Financing,prefix
+6890,Nondepository credit and related activities,522298,All Other Nondepository Credit Intermediation,prefix
+6890,Nondepository credit and related activities,522310,Mortgage and Nonmortgage Loan Brokers,prefix
+6890,Nondepository credit and related activities,522320,"Financial Transactions Processing, Reserve, and Clearinghouse Activities",prefix
+6890,Nondepository credit and related activities,522390,Other Activities Related to Credit Intermediation,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523110,Investment Banking and Securities Dealing,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523120,Securities Brokerage,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523130,Commodity Contracts Dealing,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523140,Commodity Contracts Brokerage,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523210,Securities and Commodity Exchanges,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523910,Miscellaneous Intermediation,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523920,Portfolio Management,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523930,Investment Advice,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523991,"Trust, Fiduciary, and Custody Activities",prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",523999,Miscellaneous Financial Investment Activities,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",525110,Pension Funds,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",525120,Health and Welfare Funds,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",525190,Other Insurance Funds,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",525910,Open-End Investment Funds,prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",525920,"Trusts, Estates, and Agency Accounts",prefix
+6970,"Securities, commodities, funds, trusts, and other financial investments",525990,Other Financial Vehicles,prefix
+6991,Insurance carriers,524113,Direct Life Insurance Carriers,prefix
+6991,Insurance carriers,524114,Direct Health and Medical Insurance Carriers,prefix
+6991,Insurance carriers,524126,Direct Property and Casualty Insurance Carriers,prefix
+6991,Insurance carriers,524127,Direct Title Insurance Carriers,prefix
+6991,Insurance carriers,524128,"Other Direct Insurance (except Life, Health, and Medical) Carriers",prefix
+6991,Insurance carriers,524130,Reinsurance Carriers,prefix
+6992,"Agencies, brokerages, and other insurance related activities",524210,Insurance Agencies and Brokerages,prefix
+6992,"Agencies, brokerages, and other insurance related activities",524291,Claims Adjusting,prefix
+6992,"Agencies, brokerages, and other insurance related activities",524292,Third Party Administration of Insurance and Pension Funds,prefix
+6992,"Agencies, brokerages, and other insurance related activities",524298,All Other Insurance Related Activities,prefix
+7071,"Lessors of real estate, and offices of real estate agents and brokers",531110,Lessors of Residential Buildings and Dwellings,prefix
+7071,"Lessors of real estate, and offices of real estate agents and brokers",531120,Lessors of Nonresidential Buildings (except Miniwarehouses),prefix
+7071,"Lessors of real estate, and offices of real estate agents and brokers",531130,Lessors of Miniwarehouses and Self-Storage Units,prefix
+7071,"Lessors of real estate, and offices of real estate agents and brokers",531190,Lessors of Other Real Estate Property,prefix
+7071,"Lessors of real estate, and offices of real estate agents and brokers",531210,Offices of Real Estate Agents and Brokers,prefix
+7072,"Real estate property managers, offices of real estate appraisers, and other activities related to real estate",531311,Residential Property Managers,prefix
+7072,"Real estate property managers, offices of real estate appraisers, and other activities related to real estate",531312,Nonresidential Property Managers,prefix
+7072,"Real estate property managers, offices of real estate appraisers, and other activities related to real estate",531320,Offices of Real Estate Appraisers,prefix
+7072,"Real estate property managers, offices of real estate appraisers, and other activities related to real estate",531390,Other Activities Related to Real Estate,prefix
+7080,Automotive equipment rental and leasing,532111,Passenger Car Rental,prefix
+7080,Automotive equipment rental and leasing,532112,Passenger Car Leasing,prefix
+7080,Automotive equipment rental and leasing,532120,"Truck, Utility Trailer, and RV (Recreational Vehicle) Rental and Leasing",prefix
+7181,Other consumer goods rental,532210,Consumer Electronics and Appliances Rental,prefix
+7181,Other consumer goods rental,532281,Formal Wear and Costume Rental,exact
+7181,Other consumer goods rental,532282,Video Tape and Disc Rental,exact
+7181,Other consumer goods rental,532283,Home Health Equipment Rental,exact
+7181,Other consumer goods rental,532284,Recreational Goods Rental,exact
+7181,Other consumer goods rental,532289,All Other Consumer Goods Rental,exact
+7181,Other consumer goods rental,532310,General Rental Centers,prefix
+7190,"Commercial, industrial, and other intangible assets rental and leasing",532411,"Commercial Air, Rail, and Water Transportation Equipment Rental and Leasing",prefix
+7190,"Commercial, industrial, and other intangible assets rental and leasing",532412,"Construction, Mining, and Forestry Machinery and Equipment Rental and Leasing",prefix
+7190,"Commercial, industrial, and other intangible assets rental and leasing",532420,Office Machinery and Equipment Rental and Leasing,prefix
+7190,"Commercial, industrial, and other intangible assets rental and leasing",532490,Other Commercial and Industrial Machinery and Equipment Rental and Leasing,prefix
+7190,"Commercial, industrial, and other intangible assets rental and leasing",533110,Lessors of Nonfinancial Intangible Assets (except Copyrighted Works),prefix
+7270,Legal services,541110,Offices of Lawyers,prefix
+7270,Legal services,541120,Offices of Notaries,prefix
+7270,Legal services,541191,Title Abstract and Settlement Offices,prefix
+7270,Legal services,541199,All Other Legal Services,prefix
+7280,"Accounting, tax preparation, bookkeeping, and payroll services",541211,Offices of Certified Public Accountants,prefix
+7280,"Accounting, tax preparation, bookkeeping, and payroll services",541213,Tax Preparation Services,prefix
+7280,"Accounting, tax preparation, bookkeeping, and payroll services",541214,Payroll Services,prefix
+7280,"Accounting, tax preparation, bookkeeping, and payroll services",541219,Other Accounting Services,prefix
+7290,"Architectural, engineering, and related services",541310,Architectural Services,prefix
+7290,"Architectural, engineering, and related services",541320,Landscape Architectural Services,prefix
+7290,"Architectural, engineering, and related services",541330,Engineering Services,prefix
+7290,"Architectural, engineering, and related services",541340,Drafting Services,prefix
+7290,"Architectural, engineering, and related services",541350,Building Inspection Services,prefix
+7290,"Architectural, engineering, and related services",541360,Geophysical Surveying and Mapping Services,prefix
+7290,"Architectural, engineering, and related services",541370,Surveying and Mapping (except Geophysical) Services,prefix
+7290,"Architectural, engineering, and related services",541380,Testing Laboratories,prefix
+7370,Specialized design services,541410,Interior Design Services,prefix
+7370,Specialized design services,541420,Industrial Design Services,prefix
+7370,Specialized design services,541430,Graphic Design Services,prefix
+7370,Specialized design services,541490,Other Specialized Design Services,prefix
+7380,Computer systems design and related services,541511,Custom Computer Programming Services,prefix
+7380,Computer systems design and related services,541512,Computer Systems Design Services,prefix
+7380,Computer systems design and related services,541513,Computer Facilities Management Services,prefix
+7380,Computer systems design and related services,541519,Other Computer Related Services,prefix
+7390,"Management, scientific, and technical consulting services",541611,Administrative Management and General Management Consulting Services,prefix
+7390,"Management, scientific, and technical consulting services",541612,Human Resources Consulting Services,prefix
+7390,"Management, scientific, and technical consulting services",541613,Marketing Consulting Services,prefix
+7390,"Management, scientific, and technical consulting services",541614,"Process, Physical Distribution, and Logistics Consulting Services",prefix
+7390,"Management, scientific, and technical consulting services",541618,Other Management Consulting Services,prefix
+7390,"Management, scientific, and technical consulting services",541620,Environmental Consulting Services,prefix
+7390,"Management, scientific, and technical consulting services",541690,Other Scientific and Technical Consulting Services,prefix
+7460,Scientific research and development services,541713,Research and Development in Nanotechnology,prefix
+7460,Scientific research and development services,541714,Research and Development in Biotechnology (except Nanobiotechnology),prefix
+7460,Scientific research and development services,541715,"Research and Development in the Physical, Engineering, and Life Sciences (except Nanotechnology and Biotechnology)",prefix
+7460,Scientific research and development services,541720,Research and Development in the Social Sciences and Humanities,prefix
+7470,"Advertising, public relations, and related services",541810,Advertising Agencies,prefix
+7470,"Advertising, public relations, and related services",541820,Public Relations Agencies,prefix
+7470,"Advertising, public relations, and related services",541830,Media Buying Agencies,prefix
+7470,"Advertising, public relations, and related services",541840,Media Representatives,prefix
+7470,"Advertising, public relations, and related services",541850,Outdoor Advertising,prefix
+7470,"Advertising, public relations, and related services",541860,Direct Mail Advertising,prefix
+7470,"Advertising, public relations, and related services",541870,Advertising Material Distribution Services,prefix
+7470,"Advertising, public relations, and related services",541890,Other Services Related to Advertising,prefix
+7480,Veterinary services,541940,Veterinary Services,prefix
+7490,"Other professional, scientific, and technical services",541910,Marketing Research and Public Opinion Polling,prefix
+7490,"Other professional, scientific, and technical services",541921,"Photography Studios, Portrait",prefix
+7490,"Other professional, scientific, and technical services",541922,Commercial Photography,prefix
+7490,"Other professional, scientific, and technical services",541930,Translation and Interpretation Services,prefix
+7490,"Other professional, scientific, and technical services",541990,"All Other Professional, Scientific, and Technical Services",prefix
+7570,Management of companies and enterprises,551111,Offices of Bank Holding Companies,prefix
+7570,Management of companies and enterprises,551112,Offices of Other Holding Companies,prefix
+7570,Management of companies and enterprises,551114,"Corporate, Subsidiary, and Regional Managing Offices",prefix
+7580,Employment services,561311,Employment Placement Agencies,prefix
+7580,Employment services,561312,Executive Search Services,prefix
+7580,Employment services,561320,Temporary Help Services,prefix
+7580,Employment services,561330,Professional Employer Organizations,prefix
+7590,Business support services,561410,Document Preparation Services,prefix
+7590,Business support services,561421,Telephone Answering Services,prefix
+7590,Business support services,561422,Telemarketing Bureaus and Other Contact Centers,prefix
+7590,Business support services,561431,Private Mail Centers,prefix
+7590,Business support services,561439,Other Business Service Centers (including Copy Shops),prefix
+7590,Business support services,561440,Collection Agencies,prefix
+7590,Business support services,561450,Credit Bureaus,prefix
+7590,Business support services,561491,Repossession Services,prefix
+7590,Business support services,561492,Court Reporting and Stenotype Services,prefix
+7590,Business support services,561499,All Other Business Support Services,prefix
+7670,Travel arrangements and reservation services,561510,Travel Agencies,prefix
+7670,Travel arrangements and reservation services,561520,Tour Operators,prefix
+7670,Travel arrangements and reservation services,561591,Convention and Visitors Bureaus,prefix
+7670,Travel arrangements and reservation services,561599,All Other Travel Arrangement and Reservation Services,prefix
+7680,Investigation and security services,561611,Investigation Services,prefix
+7680,Investigation and security services,561612,Security Guards and Patrol Services,prefix
+7680,Investigation and security services,561613,Armored Car Services,prefix
+7680,Investigation and security services,561621,Security Systems Services (except Locksmiths),prefix
+7680,Investigation and security services,561622,Locksmiths,prefix
+7690,Services to buildings and dwellings (except cleaning during construction and immediately after construction),561710,Exterminating and Pest Control Services,prefix
+7690,Services to buildings and dwellings (except cleaning during construction and immediately after construction),561720,Janitorial Services,prefix
+7690,Services to buildings and dwellings (except cleaning during construction and immediately after construction),561740,Carpet and Upholstery Cleaning Services,prefix
+7690,Services to buildings and dwellings (except cleaning during construction and immediately after construction),561790,Other Services to Buildings and Dwellings,prefix
+7770,Landscaping services,561730,Landscaping Services,prefix
+7780,Other administrative and other support services,561110,Office Administrative Services,prefix
+7780,Other administrative and other support services,561210,Facilities Support Services,prefix
+7780,Other administrative and other support services,561910,Packaging and Labeling Services,prefix
+7780,Other administrative and other support services,561920,Convention and Trade Show Organizers,prefix
+7780,Other administrative and other support services,561990,All Other Support Services,prefix
+7790,Waste management and remediation services,562111,Solid Waste Collection,prefix
+7790,Waste management and remediation services,562112,Hazardous Waste Collection,prefix
+7790,Waste management and remediation services,562119,Other Waste Collection,prefix
+7790,Waste management and remediation services,562211,Hazardous Waste Treatment and Disposal,prefix
+7790,Waste management and remediation services,562212,Solid Waste Landfill,prefix
+7790,Waste management and remediation services,562213,Solid Waste Combustors and Incinerators,prefix
+7790,Waste management and remediation services,562219,Other Nonhazardous Waste Treatment and Disposal,prefix
+7790,Waste management and remediation services,562910,Remediation Services,prefix
+7790,Waste management and remediation services,562920,Materials Recovery Facilities,prefix
+7790,Waste management and remediation services,562991,Septic Tank and Related Services,prefix
+7790,Waste management and remediation services,562998,All Other Miscellaneous Waste Management Services,prefix
+7860,Elementary and secondary schools,611110,Elementary and Secondary Schools,prefix
+7870,"Colleges, universities, and professional schools, including junior colleges",611210,Junior Colleges,prefix
+7870,"Colleges, universities, and professional schools, including junior colleges",611310,"Colleges, Universities, and Professional Schools",prefix
+7880,"Business, technical, and trade schools and training",611410,Business and Secretarial Schools,prefix
+7880,"Business, technical, and trade schools and training",611420,Computer Training,prefix
+7880,"Business, technical, and trade schools and training",611430,Professional and Management Development Training,prefix
+7880,"Business, technical, and trade schools and training",611511,Cosmetology and Barber Schools,prefix
+7880,"Business, technical, and trade schools and training",611512,Flight Training,prefix
+7880,"Business, technical, and trade schools and training",611513,Apprenticeship Training,prefix
+7880,"Business, technical, and trade schools and training",611519,Other Technical and Trade Schools,prefix
+7890,"Other schools and instruction, and educational support services",611610,Fine Arts Schools,prefix
+7890,"Other schools and instruction, and educational support services",611620,Sports and Recreation Instruction,prefix
+7890,"Other schools and instruction, and educational support services",611630,Language Schools,prefix
+7890,"Other schools and instruction, and educational support services",611691,Exam Preparation and Tutoring,prefix
+7890,"Other schools and instruction, and educational support services",611692,Automobile Driving Schools,prefix
+7890,"Other schools and instruction, and educational support services",611699,All Other Miscellaneous Schools and Instruction,prefix
+7890,"Other schools and instruction, and educational support services",611710,Educational Support Services,prefix
+7970,Offices of physicians,621111,Offices of Physicians (except Mental Health Specialists),prefix
+7970,Offices of physicians,621112,"Offices of Physicians, Mental Health Specialists",prefix
+7980,Offices of dentists,621210,Offices of Dentists,prefix
+7990,Offices of chiropractors,621310,Offices of Chiropractors,prefix
+8070,Offices of optometrists,621320,Offices of Optometrists,prefix
+8080,Offices of other health practitioners,621330,Offices of Mental Health Practitioners (except Physicians),prefix
+8080,Offices of other health practitioners,621340,"Offices of Physical, Occupational and Speech Therapists, and Audiologists",prefix
+8080,Offices of other health practitioners,621391,Offices of Podiatrists,prefix
+8080,Offices of other health practitioners,621399,Offices of All Other Miscellaneous Health Practitioners,prefix
+8090,Outpatient care centers,621410,Family Planning Centers,prefix
+8090,Outpatient care centers,621420,Outpatient Mental Health and Substance Abuse Centers,prefix
+8090,Outpatient care centers,621491,HMO Medical Centers,prefix
+8090,Outpatient care centers,621492,Kidney Dialysis Centers,prefix
+8090,Outpatient care centers,621493,Freestanding Ambulatory Surgical and Emergency Centers,prefix
+8090,Outpatient care centers,621498,All Other Outpatient Care Centers,prefix
+8170,Home health care services,621610,Home Health Care Services,prefix
+8180,Other health care services,621511,Medical Laboratories,prefix
+8180,Other health care services,621512,Diagnostic Imaging Centers,prefix
+8180,Other health care services,621910,Ambulance Services,prefix
+8180,Other health care services,621991,Blood and Organ Banks,prefix
+8180,Other health care services,621999,All Other Miscellaneous Ambulatory Health Care Services,prefix
+8191,"General medical and surgical hospitals, and specialty (except psychiatric and substance abuse) hospitals",622110,General Medical and Surgical Hospitals,prefix
+8191,"General medical and surgical hospitals, and specialty (except psychiatric and substance abuse) hospitals",622310,Specialty (except Psychiatric and Substance Abuse) Hospitals,prefix
+8192,Psychiatric and substance abuse hospitals,622210,Psychiatric and Substance Abuse Hospitals,prefix
+8270,Nursing care facilities (skilled nursing facilities),623110,Nursing Care Facilities (Skilled Nursing Facilities),prefix
+8290,"Residential care facilities, except skilled nursing facilities",623210,Residential Intellectual and Developmental Disability Facilities,prefix
+8290,"Residential care facilities, except skilled nursing facilities",623220,Residential Mental Health and Substance Abuse Facilities,prefix
+8290,"Residential care facilities, except skilled nursing facilities",623311,Continuing Care Retirement Communities,prefix
+8290,"Residential care facilities, except skilled nursing facilities",623312,Assisted Living Facilities for the Elderly,prefix
+8290,"Residential care facilities, except skilled nursing facilities",623990,Other Residential Care Facilities,prefix
+8370,Individual and family services,624110,Child and Youth Services,prefix
+8370,Individual and family services,624120,Services for the Elderly and Persons with Disabilities,prefix
+8370,Individual and family services,624190,Other Individual and Family Services,prefix
+8380,"Community food and housing, and emergency services",624210,Community Food Services,prefix
+8380,"Community food and housing, and emergency services",624221,Temporary Shelters,prefix
+8380,"Community food and housing, and emergency services",624229,Other Community Housing Services,prefix
+8380,"Community food and housing, and emergency services",624230,Emergency and Other Relief Services,prefix
+8390,Vocational rehabilitation services,624310,Vocational Rehabilitation Services,prefix
+8470,Child day care services,624410,Child Day Care Services,prefix
+8561,Performing arts companies,711110,Theater Companies and Dinner Theaters,prefix
+8561,Performing arts companies,711120,Dance Companies,prefix
+8561,Performing arts companies,711130,Musical Groups and Artists,prefix
+8561,Performing arts companies,711190,Other Performing Arts Companies,prefix
+8562,Spectator sports,711211,Sports Teams and Clubs,prefix
+8562,Spectator sports,711212,Racetracks,prefix
+8562,Spectator sports,711219,Other Spectator Sports,prefix
+8563,"Promoters of performing arts, sports, and similar events, agents and managers for artists, athletes, entertainers, and other public figures",711310,"Promoters of Performing Arts, Sports, and Similar Events with Facilities",prefix
+8563,"Promoters of performing arts, sports, and similar events, agents and managers for artists, athletes, entertainers, and other public figures",711320,"Promoters of Performing Arts, Sports, and Similar Events without Facilities",prefix
+8563,"Promoters of performing arts, sports, and similar events, agents and managers for artists, athletes, entertainers, and other public figures",711410,"Agents and Managers for Artists, Athletes, Entertainers, and Other Public Figures",prefix
+8564,"Independent artists, writers, and performers",711510,"Independent Artists, Writers, and Performers",prefix
+8570,"Museums, art galleries, historical sites, and similar institutions",712110,Museums,prefix
+8570,"Museums, art galleries, historical sites, and similar institutions",712120,Historical Sites,prefix
+8570,"Museums, art galleries, historical sites, and similar institutions",712130,Zoos and Botanical Gardens,prefix
+8570,"Museums, art galleries, historical sites, and similar institutions",712190,Nature Parks and Other Similar Institutions,prefix
+8580,Bowling centers,713950,Bowling Centers,prefix
+8590,"Other amusement, gambling, and recreation industries",713110,Amusement and Theme Parks,prefix
+8590,"Other amusement, gambling, and recreation industries",713120,Amusement Arcades,prefix
+8590,"Other amusement, gambling, and recreation industries",713210,Casinos (except Casino Hotels),prefix
+8590,"Other amusement, gambling, and recreation industries",713290,Other Gambling Industries,prefix
+8590,"Other amusement, gambling, and recreation industries",713910,Golf Courses and Country Clubs,prefix
+8590,"Other amusement, gambling, and recreation industries",713920,Skiing Facilities,prefix
+8590,"Other amusement, gambling, and recreation industries",713930,Marinas,prefix
+8590,"Other amusement, gambling, and recreation industries",713940,Fitness and Recreational Sports Centers,prefix
+8590,"Other amusement, gambling, and recreation industries",713990,All Other Amusement and Recreation Industries,prefix
+8660,Traveler accommodation,721110,Hotels (except Casino Hotels) and Motels,prefix
+8660,Traveler accommodation,721120,Casino Hotels,prefix
+8660,Traveler accommodation,721191,Bed-and-Breakfast Inns,prefix
+8660,Traveler accommodation,721199,All Other Traveler Accommodation,prefix
+8670,"Recreational vehicle parks and camps, and rooming and boarding houses, dormitories, and workers' camps",721211,RV (Recreational Vehicle) Parks and Campgrounds,prefix
+8670,"Recreational vehicle parks and camps, and rooming and boarding houses, dormitories, and workers' camps",721214,Recreational and Vacation Camps (except Campgrounds),prefix
+8670,"Recreational vehicle parks and camps, and rooming and boarding houses, dormitories, and workers' camps",721310,"Rooming and Boarding Houses, Dormitories, and Workers' Camps",prefix
+8680,Restaurants and other food services,722310,Food Service Contractors,prefix
+8680,Restaurants and other food services,722320,Caterers,prefix
+8680,Restaurants and other food services,722330,Mobile Food Services,prefix
+8680,Restaurants and other food services,722511,Full-Service Restaurants,prefix
+8680,Restaurants and other food services,722513,Limited-Service Restaurants,prefix
+8680,Restaurants and other food services,722514,"Cafeterias, Grill Buffets, and Buffets",prefix
+8680,Restaurants and other food services,722515,Snack and Nonalcoholic Beverage Bars,prefix
+8690,"Drinking places, alcoholic beverages",722410,Drinking Places (Alcoholic Beverages),prefix
+8770,Automotive repair and maintenance,811111,General Automotive Repair,prefix
+8770,Automotive repair and maintenance,811112,Automotive Exhaust System Repair,prefix
+8770,Automotive repair and maintenance,811113,Automotive Transmission Repair,prefix
+8770,Automotive repair and maintenance,811118,Other Automotive Mechanical and Electrical Repair and Maintenance,prefix
+8770,Automotive repair and maintenance,811121,"Automotive Body, Paint, and Interior Repair and Maintenance",prefix
+8770,Automotive repair and maintenance,811122,Automotive Glass Replacement Shops,prefix
+8770,Automotive repair and maintenance,811191,Automotive Oil Change and Lubrication Shops,prefix
+8770,Automotive repair and maintenance,811198,All Other Automotive Repair and Maintenance,prefix
+8780,Car washes,811192,Car Washes,exact
+8790,Electronic and precision equipment repair and maintenance,811211,Consumer Electronics Repair and Maintenance,prefix
+8790,Electronic and precision equipment repair and maintenance,811212,Computer and Office Machine Repair and Maintenance,prefix
+8790,Electronic and precision equipment repair and maintenance,811213,Communication Equipment Repair and Maintenance,prefix
+8790,Electronic and precision equipment repair and maintenance,811219,Other Electronic and Precision Equipment Repair and Maintenance,prefix
+8870,Commercial and industrial machinery and equipment repair and maintenance,811310,Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance,prefix
+8891,Personal and household goods repair and maintenance,811411,Home and Garden Equipment Repair and Maintenance,prefix
+8891,Personal and household goods repair and maintenance,811412,Appliance Repair and Maintenance,prefix
+8891,Personal and household goods repair and maintenance,811420,Reupholstery and Furniture Repair,prefix
+8891,Personal and household goods repair and maintenance,811430,Footwear and Leather Goods Repair,prefix
+8891,Personal and household goods repair and maintenance,811490,Other Personal and Household Goods Repair and Maintenance,prefix
+8970,Barber shops,812111,Barber Shops,exact
+8980,Beauty salons,812112,Beauty Salons,exact
+8990,Nail salons and other personal care services,812113,Nail Salons,exact
+8990,Nail salons and other personal care services,812191,Diet and Weight Reducing Centers,prefix
+8990,Nail salons and other personal care services,812199,Other Personal Care Services,prefix
+9070,Drycleaning and laundry services,812310,Coin-Operated Laundries and Drycleaners,prefix
+9070,Drycleaning and laundry services,812320,Drycleaning and Laundry Services (except Coin-Operated),prefix
+9070,Drycleaning and laundry services,812331,Linen Supply,prefix
+9070,Drycleaning and laundry services,812332,Industrial Launderers,prefix
+9080,"Funeral homes, and cemeteries and crematories",812210,Funeral Homes and Funeral Services,prefix
+9080,"Funeral homes, and cemeteries and crematories",812220,Cemeteries and Crematories,prefix
+9090,Other personal services,812910,Pet Care (except Veterinary) Services,prefix
+9090,Other personal services,812921,Photofinishing Laboratories (except One-Hour),prefix
+9090,Other personal services,812922,One-Hour Photofinishing,prefix
+9090,Other personal services,812930,Parking Lots and Garages,prefix
+9090,Other personal services,812990,All Other Personal Services,prefix
+9160,Religious organizations,813110,Religious Organizations,prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813211,Grantmaking Foundations,prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813212,Voluntary Health Organizations,prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813219,Other Grantmaking and Giving Services,prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813311,Human Rights Organizations,prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813312,"Environment, Conservation and Wildlife Organizations",prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813319,Other Social Advocacy Organizations,prefix
+9170,"Civic, social, advocacy organizations, and grantmaking and giving services",813410,Civic and Social Organizations,prefix
+9180,Labor unions,813930,Labor Unions and Similar Labor Organizations,prefix
+9190,"Business, professional, political, and similar organizations",813910,Business Associations,prefix
+9190,"Business, professional, political, and similar organizations",813920,Professional Organizations,prefix
+9190,"Business, professional, political, and similar organizations",813940,Political Organizations,prefix
+9190,"Business, professional, political, and similar organizations",813990,"Other Similar Organizations (except Business, Professional, Labor, and Political Organizations)",prefix
+9290,Private households,814110,Private Households,prefix
+9370,Executive offices and legislative bodies,921110,Executive Offices,prefix
+9370,Executive offices and legislative bodies,921120,Legislative Bodies,prefix
+9370,Executive offices and legislative bodies,921140,"Executive and Legislative Offices, Combined",prefix
+9370,Executive offices and legislative bodies,921150,American Indian and Alaska Native Tribal Governments,partial
+9380,Public finance activities,921130,Public Finance Activities,prefix
+9390,Other general government and support,921190,Other General Government Support,prefix
+9470,"Justice, public order, and safety activities",921150,American Indian and Alaska Native Tribal Governments,partial
+9470,"Justice, public order, and safety activities",922110,Courts,prefix
+9470,"Justice, public order, and safety activities",922120,Police Protection,prefix
+9470,"Justice, public order, and safety activities",922130,Legal Counsel and Prosecution,prefix
+9470,"Justice, public order, and safety activities",922140,Correctional Institutions,prefix
+9470,"Justice, public order, and safety activities",922150,Parole Offices and Probation Offices,prefix
+9470,"Justice, public order, and safety activities",922160,Fire Protection,prefix
+9470,"Justice, public order, and safety activities",922190,"Other Justice, Public Order, and Safety Activities",prefix
+9480,Administration of human resource programs,923110,Administration of Education Programs,prefix
+9480,Administration of human resource programs,923120,Administration of Public Health Programs,prefix
+9480,Administration of human resource programs,923130,"Administration of Human Resource Programs (except Education, Public Health, and Veterans' Affairs Programs)",prefix
+9480,Administration of human resource programs,923140,Administration of Veterans' Affairs,prefix
+9490,Administration of environmental quality and housing programs,924110,Administration of Air and Water Resource and Solid Waste Management Programs,prefix
+9490,Administration of environmental quality and housing programs,924120,Administration of Conservation Programs,prefix
+9490,Administration of environmental quality and housing programs,925110,Administration of Housing Programs,prefix
+9490,Administration of environmental quality and housing programs,925120,Administration of Urban Planning and Community and Rural Development,prefix
+9570,Administration of economic programs and space research,926110,Administration of General Economic Programs,prefix
+9570,Administration of economic programs and space research,926120,Regulation and Administration of Transportation Programs,prefix
+9570,Administration of economic programs and space research,926130,"Regulation and Administration of Communications, Electric, Gas, and Other Utilities",prefix
+9570,Administration of economic programs and space research,926140,Regulation of Agricultural Marketing and Commodities,prefix
+9570,Administration of economic programs and space research,926150,"Regulation, Licensing, and Inspection of Miscellaneous Commercial Sectors",prefix
+9570,Administration of economic programs and space research,927110,Space Research and Technology,prefix
+9590,National security and international affairs,928110,National Security,partial
+9590,National security and international affairs,928120,International Affairs,prefix
+9670,U. S. Army,928110,National Security,partial
+9680,U. S. Air Force,928110,National Security,partial
+9690,U. S. Navy,928110,National Security,partial
+9770,U. S. Marines,928110,National Security,partial
+9780,U. S. Coast Guard,928110,National Security,partial
+9790,"Armed Forces, Branch not specified",928110,National Security,partial
+9870,Military Reserves or National Guard,928110,National Security,partial

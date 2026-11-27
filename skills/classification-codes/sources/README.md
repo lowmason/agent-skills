@@ -1,6 +1,6 @@
 # sources/
 
-The files in this folder are verbatim copies of U.S. Government works. The U.S. Census Bureau publishes the NAICS structure and concordance files and the Census occupation code lists. The U.S. Bureau of Labor Statistics publishes the SOC structure and crosswalk files.
+The files in this folder are verbatim copies of U.S. Government works. The U.S. Census Bureau publishes the NAICS structure and concordance files and the Census occupation and industry code lists. The U.S. Bureau of Labor Statistics publishes the SOC structure and crosswalk files.
 
 These files are in the public domain under 17 U.S.C. § 105.
 

@@ -9,7 +9,10 @@ Run from this directory (bare import, directory-scoped, like the other skill tes
 
 from __future__ import annotations
 
+import hashlib
 import io
+import re
+import urllib.request
 import zipfile
 from datetime import date
 from pathlib import Path
@@ -521,3 +524,85 @@ def test_parse_each_bundled_delineation_workbook(delineation: build.Delineation)
     # Every vintage carries the eleven-plus metropolitan divisions; a header mismatch would zero this.
     assert frame.get_column('metdiv_code').drop_nulls().n_unique() >= 29
     assert build.validate_cbsa_counties(frame) == []
+
+
+# --------------------------------------------------------------------------------------------
+# Offline fetch and sheet reading
+# --------------------------------------------------------------------------------------------
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+TEST_URL = 'https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_Gaz_counties_national.zip'
+
+
+def refuse_network(*args, **kwargs):
+    raise AssertionError('offline fetch must not touch the network')
+
+
+def test_fetch_offline_without_cache_raises(tmp_path):
+    with pytest.raises(FileNotFoundError, match='--offline set but'):
+        build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+
+
+def test_fetch_offline_uses_cache_without_network(tmp_path, monkeypatch):
+    payload = b'cached bytes'
+    cached = tmp_path / '2025_Gaz_counties_national.zip'
+    cached.write_bytes(payload)
+    monkeypatch.setattr(urllib.request, 'urlopen', refuse_network)
+    path, sha256, _retrieved = build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+    assert path == cached
+    assert sha256 == hashlib.sha256(payload).hexdigest()
+
+
+def test_fetch_filename_override_names_the_cache_file(tmp_path, monkeypatch):
+    payload = b'override bytes'
+    cached = tmp_path / 'renamed.zip'
+    cached.write_bytes(payload)
+    monkeypatch.setattr(urllib.request, 'urlopen', refuse_network)
+    path, sha256, _retrieved = build.fetch(TEST_URL, tmp_path, offline=True, refresh=False, filename='renamed.zip')
+    assert path == cached
+    assert sha256 == hashlib.sha256(payload).hexdigest()
+    with pytest.raises(FileNotFoundError, match='--offline set but'):
+        build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+
+
+def test_read_sheet_returns_all_utf8():
+    raw = build.read_sheet(SOURCES / '2023_list1_2023.xlsx')
+    assert raw.width > 0 and raw.height > 0
+    assert all(dtype == pl.Utf8 for dtype in raw.dtypes)
+    assert any('CBSA Code' in row for row in raw.rows())
+
+
+# --------------------------------------------------------------------------------------------
+# Documented counts match the committed data
+# --------------------------------------------------------------------------------------------
+
+
+def table_counts(skill_md: str) -> dict[str, int]:
+    '''The first number in the `rows` cell of each `data/*.csv` row of the `## Files` table.'''
+    counts = {}
+    for line in skill_md.split('## Files', 1)[1].splitlines():
+        cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+        match = re.fullmatch(r'`(data/[^`]+\.csv)`', cells[0]) if cells else None
+        if match is None or len(cells) < 2:
+            continue
+        counts[match.group(1)] = int(re.match(r'[\d,]+', cells[1]).group().replace(',', ''))
+    return counts
+
+
+def test_skill_table_counts_match_data():
+    skill_md = (SKILL_DIR / 'SKILL.md').read_text()
+    counts = table_counts(skill_md)
+    assert counts, 'no data/*.csv rows found in the SKILL.md Files table'
+    for relative, documented in counts.items():
+        actual = pl.read_csv(SKILL_DIR / relative, infer_schema=False).height
+        assert documented == actual, f'SKILL.md {relative}: documents {documented} rows, file has {actual}'
+    match = re.search(r'\(([\d,]+) current plus ([\d,]+) closed\)', skill_md)
+    assert match, 'SKILL.md no longer states the current-plus-closed split'
+    flags = pl.read_csv(SKILL_DIR / 'data/counties.csv', infer_schema=False).get_column('is_current')
+    current_rows = int((flags == 'true').sum())
+    closed_rows = int((flags == 'false').sum())
+    documented = (int(match.group(1).replace(',', '')), int(match.group(2).replace(',', '')))
+    assert documented == (current_rows, closed_rows), (
+        f'SKILL.md data/counties.csv: documents {documented[0]} current plus {documented[1]} closed, '
+        f'file has {current_rows} plus {closed_rows}'
+    )

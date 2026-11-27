@@ -1,23 +1,85 @@
 # OEWS (Occupational Employment and Wage Statistics)
 
-## 1. Purpose
+## 1. What OEWS measures
 
-Build a repeatable downloader and parser for BLS OEWS time-series files that produces a tidy analytical dataset of occupational employment and wage estimates by:
+OEWS estimates employment and wages for about 830 occupations of the 2018 SOC, for wage and salary workers in nonfarm establishments. It covers 22 of the 23 SOC major groups; major group 55 (military-specific occupations) is out. Self-employed workers, owners and partners in unincorporated firms, private-household employees and unpaid family workers are out of scope. ([HOM Concepts][5])
 
-1. **Geography:** national and state.
-2. **Industry:** CES-aligned national, domain, supersector, and sector levels.
-3. **Occupation:** at least 4-digit SOC, meaning broad and detailed SOC occupations, not just major groups.
-4. **Measures:** employment, employment RSE, hourly/annual mean wages, wage RSE, and hourly/annual percentile wages.
-
-Important limitation: the OEWS time-series files support **cross-industry estimates by nation and state**, but **industry-specific estimates only at the national level**. BLS describes cross-industry estimates as available by nation, state, and metro area, while industry-specific estimates are available at the national level. ([download.bls.gov][1]) Therefore, the required extract should produce:
-
-* **National × industry × SOC** estimates.
-* **State × cross-industry × SOC** estimates.
-* It should **not expect state × industry × SOC** cells from these files.
+- **Employment** is the estimated number of full- and part-time **jobs** in an occupation, not persons. ([HOM Concepts][5])
+- **Wages** are straight-time gross pay. Base rate, cost-of-living allowances, guaranteed pay, hazardous-duty pay, incentive pay (commissions, production bonuses) and tips are in. Back pay, jury duty pay, overtime pay, severance pay, shift differentials, nonproduction bonuses, employer cost for supplementary benefits and tuition reimbursements are out. ([HOM Concepts][5])
+- **Annual wages** are hourly wages times 2,080 hours (52 weeks times 40 hours). Teachers, pilots and flight attendants have annual wages only. Actors and musicians have hourly wages only. ([HOM Concepts][5], [HOM Calculation][7])
+- **Industry and ownership.** Establishments are classified by NAICS (2022 NAICS since May 2022). Most government establishments are classified by ownership instead: OEWS-defined codes 999100 (federal executive branch and TVA), 999200 (state government, excluding schools and hospitals) and 999300 (local government, excluding schools, hospitals, gambling establishments and casino hotels) replace NAICS sector 92. USPS sits in NAICS 491100 in the industry-specific estimates. ([HOM Concepts][5])
+- **Industry scope.** Most of agriculture is out. Logging (113310) and support activities for crop and animal production (1151, 1152) are in. Private households (NAICS 814) are out. ([HOM Concepts][5])
+- **Geography.** The estimates cover the nation, the 50 states, DC, Guam, Puerto Rico and the Virgin Islands, and about 530 metropolitan and nonmetropolitan areas. The sampling design uses over 580 MSA and nonmetropolitan (balance-of-state) areas. ([HOM Concepts][5], [HOM Design][6])
+- **Limit.** Cross-industry estimates are available by nation, state and metro area. Industry-specific estimates are available at the **national** level only. ([oe.txt][1]) There are no state x industry x SOC cells in these files.
+- **Precision.** The estimator is model-based (MB3). The relative standard errors measure model error, not nonmodel error such as bias. ([HOM Presentation][8])
 
 ---
 
-## 2. Source files
+## 2. Panel design and reference periods
+
+- **Two panels a year.** One panel is collected in May and one in November. Each holds about 186,000 to 189,000 establishments. Respondents report their payroll that **includes May 12 or November 12**. ([HOM Design][6])
+- **Six panels per estimate.** Each annual estimate combines six semiannual panels, a 3-year cycle of about 1.1 million establishments. The May 2025 estimates combine May 2025, November 2024, May 2024, November 2023, May 2023 and November 2022. ([HOM Design][6], [HOM Calculation][7])
+- **Estimates are published once a year.** ([HOM Presentation][8], [oe.txt][1]) The "May 2025" vintage is not a May 2025 cross-section. It pools data from November 2022 on. ([HOM Calculation][7]) That the May panel is the reference month is an inference from the vintage names, not a BLS sentence.
+- **Consecutive vintages overlap.** From the six-panel window above, two consecutive May vintages share four of their six panels. (Inference from the published window, not a BLS sentence.) Do not treat adjacent vintages as independent samples. Section 7 calls each May vintage "an independent cross-section". The two statements use "independent" in different senses. Section 7 is about area lists: each vintage publishes its own set of areas on its own delineation. This section is about the underlying sample, which overlaps. The sources do not define the section 7 wording.
+- **Some units are a census, the rest are sampled.** A probability sample covers private-sector establishments, local government establishments, and state government schools and hospitals. A census covers the federal executive branch, USPS and TVA (annual), state government excluding schools and hospitals (each November) and Hawaii local government excluding schools and hospitals (each November). For those census units, only the most recent census enters each year's estimates. Hospitals are a separate case: the Data sources page also says a census of public- and private-owned hospitals is taken over a 3-year period, while the Design page lists state government hospitals as sampled. The pages do not say how the two fit. ([HOM Data sources][9], [HOM Design][6])
+- **Employment control.** Each in-scope establishment's employment is the average of its May and November QCEW employment for the two most recent panels, so occupational employment sums to the QCEW-based population. ([HOM Data sources][9], [HOM Calculation][7])
+- **Frame.** The frame is about 8.8 million UI-reporting establishments from QCEW, extracted every 6 months. ([HOM Design][6])
+- **Substate sums.** A few establishments give a state but no county. They count in state and national estimates but not in any substate area, so the metro and nonmetropolitan areas of a state can sum to less than the state. ([HOM Design][6])
+
+---
+
+## 3. Vintages and comparability over time
+
+Each set of estimates mixes three years of panels. A classification change therefore takes three years to phase in. ([HOM History][10])
+
+| Change | Vintage | What happened |
+|---|---|---|
+| SOC 2000 to SOC 2010 | May 2010 to May 2012 | May 2010 and May 2011 used a hybrid of the 2000 and 2010 SOC with some OEWS-specific combinations. May 2012 to May 2018 are 2010 SOC. |
+| Occupation aggregation | May 2017 | 21 SOC detailed occupations were replaced by SOC broad occupations or OEWS-specific combinations. |
+| SOC 2010 to SOC 2018 | May 2019 to May 2021 | May 2019 and May 2020 used a hybrid of the 2010 and 2018 SOC, with combinations found in neither. May 2021 and later are fully 2018 SOC. |
+| NAICS updates | May 2008, May 2012, May 2017, May 2022 | 2007, 2012, 2017 and 2022 NAICS. |
+| Gambling and casinos | May 2014 | Local government gambling establishments and casino hotels moved from industry 9993 to NAICS 7132 and 72112. |
+| Private households | May 2017 | Some establishments moved from NAICS 814 (out of scope) to NAICS 624120 (in scope). BLS says May 2017 employment may show an increase in occupations common in NAICS 624120. |
+| Sample size | May 2017 | Panels fell from about 200,000 establishments. |
+| Estimator | May 2021, May 2022 | MB3 replaced the earlier method in May 2021. May 2022 changed wage processing: reported wage rates are used, if available, to represent private-sector and local government employers, instead of placing the wage data into 12 wage intervals. A small percentage of records still has no exact wage rate and is processed in the 12 intervals. ([HOM Concepts][5]) |
+| Geography | May 2005, May 2015, May 2024 (major), May 2018 (detail) | See the delineation table in section 7. |
+
+Other facts that matter across vintages ([HOM History][10]):
+
+- The program was named Occupational Employment Statistics (OES) before spring 2021. Older pages and files use that name.
+- Before 2002 the program collected 400,000 establishments a year with a fourth-quarter reference. From 2002 it uses the May 12 and November 12 reference dates. It published semiannually in 2003 and 2004 and went back to annual publication in 2005.
+- The 1988-95 predecessor data are national, by 2- and 3-digit SIC industry, with no wages or state data. They are not directly comparable to current data.
+- The 1997 and 1998 estimates used an OEWS-specific occupation system. The SOC began with the 1999 estimates.
+
+The BLS Handbook does not state a break test for each of these changes. Treat a level comparison across a row above as a comparison across a definition change, and check the occupation or industry code in both vintages.
+
+---
+
+## 4. Series ID anatomy
+
+`oe.txt` lists the `oe.series` columns and a series ID of the form `OEUM000040000000000000001`. ([oe.txt][1])
+
+| Part | Chars | Example | Meaning |
+|---|---|---|---|
+| Survey abbreviation | 1-2 | `OE` | Survey code. |
+| `seasonal` | 3 | `U` | Seasonal code. The `oe.txt` example is `U`. |
+| `areatype_code` | 4 | `M` | Area type. `N` national, `S` state, `M` metropolitan or nonmetropolitan area. |
+| `area_code` | 5-11 | `0000400` | 7-character area code. |
+| `industry_code` | 12-17 | `000000` | 6-character OEWS industry code. |
+| `occupation_code` | 18-23 | `000000` | 6-character SOC-based code. |
+| `datatype_code` | 24-25 | `01` | Measure. See section 6. |
+
+The `oe.txt` layout gives field lengths. The character positions above are the running sum of those lengths, so they are derived from `oe.txt` and not printed in it. The example is 25 characters. The `series_id` column is declared 30 characters wide. ([oe.txt][1])
+
+Other `oe.series` columns that are not part of the ID breakdown: `state_code` (2), `sector_code` (6, for example `11--12`), `series_title`, `footnote_codes`, and the begin and end year and period. ([oe.txt][1]) The ID breakdown in the data-file section of `oe.txt` leaves out `areatype_code`, but it prints the same 25-character example. The `oe.series` section includes it.
+
+Data files carry `series_id`, `year`, `period`, `value` (12 wide) and `footnote_codes`. ([oe.txt][1])
+
+BLS footnotes special characteristics of the data where necessary. ([oe.txt][1]) The `oe.footnote` mapping file defines `footnote_code` and `footnote_text`. The layout's example is code `7` with the text `Estimate not released.` ([oe.txt][1]) The layout file does not say what `value` holds when an estimate is not released. Advice, not a BLS statement: read `footnote_codes` before you cast `value` to a number.
+
+---
+
+## 5. Flat files
 
 Use the BLS flat files under:
 
@@ -25,10 +87,9 @@ Use the BLS flat files under:
 https://download.bls.gov/pub/time.series/oe/
 ```
 
-Required files:
-
 ```text
 oe.data.0.Current      # current release observations
+oe.data.1.AllData      # all year-to-date data
 oe.series              # series metadata / code decomposition
 oe.area                # geography codes
 oe.areatype            # geography type labels
@@ -42,15 +103,11 @@ oe.footnote            # footnote labels
 oe.txt                 # layout documentation
 ```
 
-`oe.data.0.Current` is the current-year data file; `oe.data.1.AllData` is the all-data file. The OEWS documentation lists these files and the mapping files in the OE time-series directory. ([download.bls.gov][1]) The live `oe.release` file I could access reports `2024A01` / `May 2024`; the pipeline should record this as metadata rather than hard-code it. ([download.bls.gov][2])
+([oe.txt][1]) Read the current release from `oe.release` rather than hard-coding it. `oe.release` has `release_date` (for example `2004S01`) and a description (for example `May 2004`). ([oe.txt][1])
 
----
+### File parsing rules
 
-## 3. File parsing rules
-
-OEWS data and series files are ASCII text with headers. The documentation says data elements in the main data files are separated by spaces; mapping files are tab-delimited. ([download.bls.gov][1])
-
-Parse as follows:
+OEWS data and series files are ASCII text with headers. The documentation says data elements in the main data files are separated by spaces and mapping files are tab-delimited. ([oe.txt][1])
 
 ```python
 DATA_FILES_SPACE_DELIMITED = ["oe.data.0.Current", "oe.series"]
@@ -60,13 +117,13 @@ MAPPING_FILES_TAB_DELIMITED = [
 ]
 ```
 
-Use `oe.series` as the primary metadata spine. The series file contains `series_id`, `seasonal`, `areatype_code`, `industry_code`, `occupation_code`, `datatype_code`, `state_code`, `area_code`, `sector_code`, title, and begin/end metadata. The data file contains `series_id`, `year`, `period`, `value`, and `footnote_codes`. ([download.bls.gov][1])
+`oe.series` is the metadata spine. It holds `series_id`, `seasonal`, `areatype_code`, `industry_code`, `occupation_code`, `datatype_code`, `state_code`, `area_code`, `sector_code`, a title, and begin and end metadata. Keep all codes as strings so leading zeros survive. ([oe.txt][1])
 
 ---
 
-## 4. Measure selection
+## 6. Measures
 
-Keep these `datatype_code` values:
+`oe.datatype` defines these `datatype_code` values:
 
 | datatype_code | measure                                                 |
 | ------------- | ------------------------------------------------------- |
@@ -75,42 +132,20 @@ Keep these `datatype_code` values:
 | 03            | hourly mean wage                                        |
 | 04            | annual mean wage                                        |
 | 05            | wage percent relative standard error                    |
-| 06–10         | hourly wage percentiles: 10th, 25th, median, 75th, 90th |
-| 11–15         | annual wage percentiles: 10th, 25th, median, 75th, 90th |
+| 06-10         | hourly wage percentiles: 10th, 25th, median, 75th, 90th |
+| 11-15         | annual wage percentiles: 10th, 25th, median, 75th, 90th |
+| 16            | employment per 1,000 jobs                               |
+| 17            | location quotient                                       |
 
-The attached datatype file defines these codes, including employment, wage means, wage RSE, and wage percentiles.
+Codes 16 and 17 are different in kind from the core estimates. Do not mix them with employment and wage values.
 
-Optional: keep `16` employment per 1,000 jobs and `17` location quotient in a secondary output, but do not mix them with wage/employment core estimates.
+Storage: employment is rounded to the nearest ten, hourly wages to the cent, annual wages to the dollar, and percent RSEs to one decimal place. ([oe.txt][1]) Percentile wages come from the empirical distribution of the predicted population. ([HOM Calculation][7])
 
 ---
 
-## 5. Geography filter
+## 7. Geography
 
-Join `oe.series` to `oe.area` on `state_code`, `area_code`, and `areatype_code`.
-
-Keep only:
-
-```text
-areatype_code = "N"   # National
-areatype_code = "S"   # State
-```
-
-Drop:
-
-```text
-areatype_code = "M"   # Metropolitan / nonmetropolitan area
-```
-
-The area mapping file contains `state_code`, `area_code`, `areatype_code`, and `area_name`; national is `state_code=00`, `area_code=0000000`, `areatype_code=N`, and states use `areatype_code=S`.
-
-Create geography fields:
-
-```text
-geo_level: national | state
-state_fips: null for national, else state_code
-area_code
-area_name
-```
+`oe.series` joins to `oe.area` on `state_code`, `area_code` and `areatype_code`. The area file holds `state_code`, `area_code`, `areatype_code` and `area_name`. National is `state_code=00`, `area_code=0000000`, `areatype_code=N`. States use `areatype_code=S`. Metropolitan and nonmetropolitan areas use `areatype_code=M`.
 
 ### OMB delineation adoption (matters only if `areatype_code = "M"` rows are kept)
 
@@ -134,84 +169,30 @@ Sources: https://www.bls.gov/oes/notices/2024/msa-changes.htm; https://www.bls.g
 
 ---
 
-## 6. Occupation filter: “at least 4-digit SOC”
+## 8. Occupations
 
-Join `oe.series.occupation_code` to `oe.occupation.occupation_code`.
+`oe.occupation` has `occupation_code`, `occupation_name`, `occupation_description`, `display_level`, `selectable` and `sort_sequence`. `000000` is All Occupations.
 
-The OEWS occupation file has `occupation_code`, `occupation_name`, `occupation_description`, `display_level`, `selectable`, and `sort_sequence`.
+* `display_level = 0`: major SOC groups, for example `110000`.
+* `display_level = 1`: minor groups, for example `111000`.
+* `display_level = 2`: broad SOC, for example `112020`.
+* `display_level = 3`: detailed SOC, for example `112021`.
 
-Recommended occupation scope:
-
-```text
-include selectable == "T"
-include occupation_code != "000000"
-include display_level >= 2
-```
-
-Interpretation:
-
-* `display_level = 0`: major SOC groups, e.g. `110000`.
-* `display_level = 1`: minor groups, e.g. `111000`.
-* `display_level = 2`: broad SOC, e.g. `112020`.
-* `display_level = 3`: detailed SOC, e.g. `112021`.
-
-Output SOC fields:
-
-```text
-soc_code_raw      # e.g. 112021
-soc_code          # e.g. 11-2021
-soc_major         # 11-0000
-soc_minor         # 11-2000 or equivalent grouping
-soc_broad         # 11-2020 where applicable
-soc_detail_flag   # true if display_level == 3
-occupation_name
-occupation_display_level
-```
-
-Keep `000000 All Occupations` only in a separate QA/aggregate output.
+OEWS publishes most 2018 SOC detailed occupations. For a few it publishes only the broad occupation or an OEWS-specific combination of detailed occupations. ([HOM Concepts][5])
 
 ---
 
-## 7. Industry scope and CES alignment
+## 9. Industry scope and the CES crosswalk
 
-### 7.1 Direct OEWS industry levels
+### 9.1 OEWS industry levels
 
-Join `oe.series.industry_code` to `oe.industry.industry_code`.
+`oe.series.industry_code` joins to `oe.industry.industry_code`. The mapping has `industry_code`, `industry_name`, `display_level`, `selectable` and `sort_sequence`. `000000` is cross-industry all ownership. `000001` is cross-industry private only. `display_level=2` rows are broad NAICS sector rows such as construction, manufacturing and retail. State series carry only cross-industry codes. National series carry the industry detail. The Handbook says national industry-specific estimates go to the sector, 3-digit, most 4-digit and selected 5- and 6-digit NAICS levels. ([HOM Concepts][5], [HOM Presentation][8]) `oe.txt` says the time-series industry classifications correspond to the sector, 3-, 4- and 5-digit NAICS groups, with over 450 industries. ([oe.txt][1]) The two sources differ on 6-digit detail. Check `oe.industry` for the codes actually present.
 
-OEWS industry mapping includes `industry_code`, `industry_name`, `display_level`, `selectable`, and `sort_sequence`; `000000` is cross-industry all ownership, `000001` is private-only cross-industry, and `display_level=2` rows are broad NAICS sector rows such as construction, manufacturing, retail, etc.
+### 9.2 CES and QCEW high-level hierarchy
 
-Directly downloadable industry levels:
+BLS QCEW documents high-level aggregation above NAICS sectors: total, two domains, supersectors and NAICS sectors. ([Bureau of Labor Statistics][3]) The QCEW high-level titles include `10 Total, all industries`, `101 Goods-Producing`, `102 Service-Providing`, and supersectors such as natural resources and mining, construction, manufacturing, trade/transportation/utilities, information, financial activities, professional/business services, education/health, leisure/hospitality, other services and public administration. ([Bureau of Labor Statistics][3]) The CES state publication hierarchy similarly defines total nonfarm, total private, goods-producing, service-providing, private service-providing, supersectors and sector-level breakouts. ([Bureau of Labor Statistics][4])
 
-```text
-industry_code = "000000"  # Cross-industry, private + government
-industry_code = "000001"  # Cross-industry, private only
-industry display_level = 2 # broad NAICS sector rows, national only
-```
-
-### 7.2 CES / QCEW high-level crosswalk
-
-Use a maintained internal crosswalk from OEWS NAICS sector rows to CES/QCEW hierarchy.
-
-BLS QCEW documents high-level aggregation above NAICS sectors: total, two domains, supersectors, and NAICS sectors. ([Bureau of Labor Statistics][3]) The QCEW high-level titles include `10 Total, all industries`, `101 Goods-Producing`, `102 Service-Providing`, and supersectors such as natural resources and mining, construction, manufacturing, trade/transportation/utilities, information, financial activities, professional/business services, education/health, leisure/hospitality, other services, and public administration. ([Bureau of Labor Statistics][3]) The CES state publication hierarchy similarly defines total nonfarm, total private, goods-producing, service-providing, private service-providing, supersectors, and sector-level breakouts. ([Bureau of Labor Statistics][4])
-
-Recommended `dim_ces_industry` fields:
-
-```text
-ces_level              # national | domain | supersector | sector
-ces_code               # e.g. 00, 05, 06, 10, 20, 30, 40, 41, ...
-ces_title
-ces_parent_code
-ces_parent_title
-naics_sector_codes
-oe_industry_codes
-direct_oe_available    # true/false
-aggregation_method     # direct | employment_sum | employment_weighted_mean | unsupported
-ces_scope_flag         # in_scope_nfp | partial | out_of_scope
-```
-
-### 7.3 Suggested crosswalk structure
-
-At minimum:
+### 9.3 Crosswalk from OEWS sector rows to CES
 
 ```text
 national:
@@ -253,221 +234,26 @@ sector:
   70-720000 Accommodation and Food Services -> NAICS 72
 ```
 
-Do **not** silently use OEWS `11--12 Agriculture, Forestry, Fishing and Hunting` as CES mining/logging. CES mining and logging is much narrower: logging plus mining. Mark this as a special crosswalk case.
+Do **not** silently use OEWS `11--12 Agriculture, Forestry, Fishing and Hunting` as CES mining/logging. CES mining and logging is much narrower: logging plus mining. Treat it as a special crosswalk case.
+
+### 9.4 Aggregating across OEWS cells
+
+- Employment can be summed from component sectors when all components are present.
+- Mean wages can be employment-weighted from component means: `mean_wage_agg = sum(employment_i * mean_wage_i) / sum(employment_i)`.
+- Wage percentiles **cannot** be aggregated from component percentiles.
+- RSEs cannot be aggregated by simple arithmetic.
+- State x industry cells do not exist in these files (section 1).
 
 ---
 
-## 8. Direct versus derived estimates
-
-The pipeline should produce two outputs:
-
-### A. `oews_direct_estimates`
-
-Only cells directly present in OEWS.
-
-Primary filters:
-
-```text
-seasonal = "U"
-areatype_code in ("N", "S")
-datatype_code in ("01"..."15")
-occupation_display_level >= 2
-selectable occupation = "T"
-```
-
-Industry filters:
-
-```text
-if geo_level == "state":
-    industry_code == "000000"     # cross-industry only
-
-if geo_level == "national":
-    industry_code in approved OEWS industry list
-```
-
-### B. `oews_ces_industry_estimates`
-
-CES-aligned view.
-
-Rules:
-
-1. For direct cells, pass through unchanged.
-2. For CES domain/supersector aggregates:
-
-   * Employment can be summed from component sectors when all components are available.
-   * Hourly/annual mean wages can be employment-weighted from component means:
-
-     ```text
-     mean_wage_agg = sum(employment_i * mean_wage_i) / sum(employment_i)
-     ```
-   * Wage percentiles **cannot** be validly aggregated from component percentiles. Mark as `unsupported_derived_percentile`.
-   * RSEs cannot be naively aggregated. Mark as missing unless a formal variance method is implemented.
-3. For state × industry CES levels, output no rows unless direct OEWS rows exist in a future release; log these as `not_available_in_oews_time_series`.
-
----
-
-## 9. Tidy output schema
-
-Recommended long-format table:
-
-```text
-release_id
-source_file
-year
-period
-seasonal
-geo_level
-state_fips
-area_code
-area_name
-ces_level
-ces_code
-ces_title
-ces_parent_code
-oe_industry_code
-oe_industry_name
-oe_industry_display_level
-sector_code
-sector_name
-soc_code_raw
-soc_code
-occupation_name
-occupation_display_level
-datatype_code
-measure_name
-measure_group              # employment | employment_rse | wage_mean | wage_percentile | wage_rse
-wage_basis                 # hourly | annual | null
-percentile                 # 10 | 25 | 50 | 75 | 90 | null
-value
-footnote_codes
-estimate_status            # direct | derived | unavailable
-derivation_method
-quality_flag
-created_at
-```
-
-Wide analytical output, optional:
-
-```text
-release_id
-year
-period
-geo_level
-state_fips
-area_code
-area_name
-ces_level
-ces_code
-ces_title
-oe_industry_code
-soc_code
-occupation_name
-employment
-employment_rse
-hourly_mean_wage
-annual_mean_wage
-wage_rse
-hourly_p10
-hourly_p25
-hourly_median
-hourly_p75
-hourly_p90
-annual_p10
-annual_p25
-annual_median
-annual_p75
-annual_p90
-footnote_codes_combined
-estimate_status
-```
-
----
-
-## 10. Processing steps
-
-1. **Download files**
-
-   * Download required source and mapping files.
-   * Save raw files with content hash and retrieval timestamp.
-   * Save `oe.release` metadata.
-
-2. **Parse**
-
-   * Read `oe.data.0.Current` and `oe.series`.
-   * Read mapping files.
-   * Treat all codes as strings to preserve leading zeroes.
-
-3. **Join**
-
-   * `data` join `series` by `series_id`.
-   * Join `area`, `datatype`, `industry`, `occupation`, `sector`, `seasonal`, `footnote`.
-
-4. **Filter**
-
-   * `seasonal == "U"`.
-   * `areatype_code in ("N", "S")`.
-   * `datatype_code in 01–15`.
-   * `occupation.display_level >= 2`.
-   * `occupation.selectable == "T"`.
-   * For state rows: `industry_code == "000000"`.
-   * For national rows: keep approved cross-industry and industry rows.
-
-5. **Normalize codes**
-
-   * Format SOC as `XX-XXXX`.
-   * Attach CES industry code using `dim_ces_industry`.
-   * Attach `geo_level`.
-
-6. **Build direct output**
-
-   * Store all valid direct OEWS rows in long form.
-   * Pivot to wide if needed.
-
-7. **Build derived CES aggregates**
-
-   * For national CES domain/supersector rows, derive employment and mean wages where component coverage is complete.
-   * Do not derive percentile wages or RSEs unless a formal method is added.
-   * Mark all derived rows explicitly.
-
-8. **Validate**
-
-   * Confirm one current release in `oe.release`.
-   * Confirm no duplicate direct keys:
-
-     ```text
-     release_id, year, period, seasonal, area_code, industry_code, occupation_code, datatype_code
-     ```
-   * Confirm all `series_id` in data join to series.
-   * Confirm all included occupations join to `oe.occupation`.
-   * Confirm state rows have only `industry_code=000000`.
-   * Confirm national industry-specific rows have `areatype_code=N`.
-   * Confirm employment values are numeric and wages respect expected formatting.
-
----
-
-## 11. Data-quality rules
-
-1. Preserve `footnote_codes` on every estimate.
-2. Do not impute suppressed or footnoted estimates by default.
-3. If value is nonnumeric or blank, set `value = null` and `quality_flag = "non_numeric_or_missing"`.
-4. Employment is rounded to nearest ten; hourly wages to cents; annual wages to dollars; percent RSEs to one decimal place. ([download.bls.gov][1])
-5. Treat derived CES aggregates as secondary. Direct OEWS estimates are the authoritative output.
-
----
-
-## 12. Acceptance criteria
-
-The downloader is complete when it can:
-
-1. Reproduce all national and state cross-industry SOC employment/wage estimates for broad and detailed SOC occupations.
-2. Reproduce all national industry-specific OEWS estimates for approved industry rows.
-3. Attach CES hierarchy metadata to national industry rows.
-4. Produce national CES domain/supersector/sector employment aggregates where valid.
-5. Refuse or explicitly flag unsupported state × industry cells.
-6. Preserve release, footnote, source-file, and derivation metadata.
-7. Produce deterministic output from the same raw files.
+## Sources
 
 [1]: https://download.bls.gov/pub/time.series/oe/oe.txt "download.bls.gov"
-[2]: https://download.bls.gov/pub/time.series/oe/oe.release "download.bls.gov"
 [3]: https://www.bls.gov/cew/classifications/industry/industry-supersectors.htm "Quarterly Census of Employment and Wages :  U.S. Bureau of Labor Statistics"
 [4]: https://www.bls.gov/sae/additional-resources/guaranteed-publication-levels-and-the-ces-small-domain-model-sdm.htm "Guaranteed publication levels and the CES Small Domain Model (SDM) :  U.S. Bureau of Labor Statistics"
+[5]: https://www.bls.gov/opub/hom/oews/concepts.htm "OEWS Handbook of Methods: Concepts"
+[6]: https://www.bls.gov/opub/hom/oews/design.htm "OEWS Handbook of Methods: Design"
+[7]: https://www.bls.gov/opub/hom/oews/calculation.htm "OEWS Handbook of Methods: Calculation"
+[8]: https://www.bls.gov/opub/hom/oews/presentation.htm "OEWS Handbook of Methods: Presentation"
+[9]: https://www.bls.gov/opub/hom/oews/data.htm "OEWS Handbook of Methods: Data Sources"
+[10]: https://www.bls.gov/opub/hom/oews/history.htm "OEWS Handbook of Methods: History"

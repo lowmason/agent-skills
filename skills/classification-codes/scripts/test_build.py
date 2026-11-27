@@ -12,6 +12,11 @@ sources/ is populated.
 
 from __future__ import annotations
 
+import hashlib
+import re
+import urllib.request
+from pathlib import Path
+
 import polars as pl
 import pytest
 
@@ -466,7 +471,9 @@ def test_registry_names_are_unique_and_match_output_files():
   assert {'naics_2022', 'naics_2017', 'naics_2012', 'naics_2017_to_2022', 'naics_2012_to_2017',
           'soc_2018', 'soc_2010', 'soc_2010_to_2018',
           'census_occ_2018', 'census_occ_2018_to_soc_2018',
-          'census_occ_2010', 'census_occ_2010_to_soc_2010'} <= set(names)
+          'census_occ_2010', 'census_occ_2010_to_soc_2010',
+          'census_ind_2022', 'census_ind_2022_to_naics_2022',
+          'census_ind_2017', 'census_ind_2017_to_naics_2017'} <= set(names)
 
 
 def test_registry_requirements_are_registered_and_built_first():
@@ -617,6 +624,477 @@ def test_validate_census_expansion_reports_unclaimed_detailed_codes(census_occ_r
   assert len(problems) == 1 and '15-1254' in problems[0]
 
 
+# --------------------------------------------------------------------------------------------
+# Census industry codes (the ACS/CPS household-survey aggregation of NAICS)
+# --------------------------------------------------------------------------------------------
+
+NAICS_FOR_IND = [
+  ('21', 'Mining, Quarrying, and Oil and Gas Extraction'),
+  ('211', 'Oil and Gas Extraction'),
+  ('211120', 'Crude Petroleum Extraction'),
+  ('211130', 'Natural Gas Extraction'),
+  ('212114', 'Surface Coal Mining'),
+  ('213111', 'Drilling Oil and Gas Wells'),
+  ('23', 'Construction'),
+  ('236220', 'Commercial and Institutional Building Construction'),
+  ('31-33', 'Manufacturing'),
+  ('3118', 'Bakeries and Tortilla Manufacturing'),
+  ('311811', 'Retail Bakeries'),
+  ('311812', 'Commercial Bakeries'),
+  ('311830', 'Tortilla Manufacturing'),
+  ('333111', 'Farm Machinery and Equipment Manufacturing'),
+  ('333248', 'All Other Industrial Machinery Manufacturing'),
+  ('333415', 'Air-Conditioning and Warm Air Heating Equipment Manufacturing'),
+  ('333912', 'Air and Gas Compressor Manufacturing'),
+  ('92', 'Public Administration'),
+  ('921110', 'Executive Offices'),
+  ('921150', 'American Indian and Alaska Native Tribal Governments'),
+  ('922110', 'Courts'),
+  ('92811', 'National Security'),
+  ('928110', 'National Security'),
+  ('928120', 'International Affairs'),
+]
+
+
+def naics_frame(rows: list[tuple[str, str]]) -> pl.DataFrame:
+  return pl.DataFrame(
+    [(code, 2 if '-' in code else len(code), title) for code, title in rows],
+    schema=['code', 'level', 'title'],
+    orient='row',
+  )
+
+
+@pytest.fixture
+def naics_for_ind() -> pl.DataFrame:
+  return naics_frame(NAICS_FOR_IND)
+
+
+# (column 0, column 1, Census code, NAICS cell) — the code-list sheet's layout: sector headings
+# carry a code range and their title in column 0; 0770 is listed twice, its first row a heading.
+IND_ROWS = [
+  ('Agriculture, Forestry, Fishing and Hunting, and Mining', None, '0170-0490', '11-21'),
+  (None, 'Mining, Quarrying, and Oil and Gas Extraction', '0370-0490', '21'),
+  (None, 'Oil and gas extraction ', '0370', '211'),
+  (None, 'Coal mining ', '0380', '2121'),
+  (None, 'Not specified type of mining', '0480', 'Part of 21'),
+  (None, 'Support activities for mining ', '0490', '213'),
+  ('Construction', None, '0770', '23'),
+  (None, 'Construction (the cleaning of buildings and dwellings is incidental during construction '
+         'and immediately after construction)', '0770', '23'),
+  ('Manufacturing', None, '1070-3990', '31-33'),
+  (None, 'Retail bakeries ', '1190', '311811'),
+  (None, 'Bakeries and tortilla manufacturing, except retail bakeries ', '1270', '3118 exc. 311811'),
+  (None, 'Agricultural implement manufacturing ', '3070', '33311'),
+  (None, 'Machinery manufacturing, n.e.c. or not specified', '3291', '3332, 3334, 3339, Part of 333'),
+  ('Public Administration', None, '9370-9590', '92'),
+  (None, 'Executive offices and legislative bodies ', '9370', '92111, pt. 92115'),
+  (None, 'Justice, public order, and safety activities ', '9470', '922, pt. 92115'),
+  (None, 'National security and international affairs', '9590', '92812, pt. 92811'),
+  ('Military', None, '9670-9870', 'pt. 92811'),
+  (None, 'U. S. Army', '9670', 'pt. 92811'),
+  (None, 'U. S. Air Force', '9680', 'pt. 92811'),
+  (None, 'Unemployed, last worked 5 years ago or earlier or never worked', '9920', None),
+]
+
+# The 2017 list's claims on 928110, as published: 9590's prefix and the military codes' exact code.
+IND_2017_MILITARY = {'9590': '928', '9670': '928110', '9680': '928110'}
+
+
+def census_ind_raw(
+  vintage: int = 2022, cells: dict[str, str] | None = None, body: list[tuple] | None = None,
+) -> pl.DataFrame:
+  '''The code-list sheet with the vintage's own header wording; cells replaces the NAICS cell of
+  the named Census codes, and body replaces IND_ROWS.'''
+  cells = cells or {}
+  code_header = '2022 Census Industry Code' if vintage == 2022 else f'{vintage} Census Code'
+  rows = [
+    [f'{vintage} Census Industry Code List'],
+    ['U.S. Census Bureau'],
+    [None, f'Industry {vintage} Description', None, code_header, f'{vintage} NAICS Code'],
+    [None, f'The {vintage} census industry code list has 266 codes including 7 military codes. '],
+  ]
+  rows.extend([col0, col1, None, code, cells.get(code, cell)] for col0, col1, code, cell in body or IND_ROWS)
+  return raw_sheet(rows)
+
+
+def expand_ind(naics: pl.DataFrame, vintage: int = 2022, cells: dict[str, str] | None = None) -> pl.DataFrame:
+  census = build.parse_census_ind(census_ind_raw(vintage, cells), vintage=vintage, **{f'naics_{vintage}': naics})
+  return build.expand_census_ind(vintage=vintage, **{f'census_ind_{vintage}': census, f'naics_{vintage}': naics})
+
+
+def ind_pairs(frame: pl.DataFrame, vintage: int = 2022) -> dict[tuple[str, str], str]:
+  return {
+    (census, naics): via
+    for census, naics, via in frame.select(f'census_ind_{vintage}', f'naics_{vintage}', 'via').iter_rows()
+  }
+
+
+def inc(*prefixes: str) -> list[tuple[str, str]]:
+  return [(prefix, 'include') for prefix in prefixes]
+
+
+def part(*prefixes: str) -> list[tuple[str, str]]:
+  return [(prefix, 'partial') for prefix in prefixes]
+
+
+def exc(*prefixes: str) -> list[tuple[str, str]]:
+  return [(prefix, 'exclude') for prefix in prefixes]
+
+
+@pytest.mark.parametrize(
+  ('cell', 'expected'),
+  [
+    # one real cell for each shape the 2017 and 2022 lists use (digits written as 9)
+    ('111', inc('111')),                                                    # 999
+    ('1131, 1132', inc('1131', '1132')),                                    # 9999, 9999
+    ('1133', inc('1133')),                                                  # 9999
+    ('Part of 21', part('21')),                                             # Part of 99
+    ('23', inc('23')),                                                      # 99
+    ('311811', inc('311811')),                                              # 999999
+    ('3118 exc. 311811', inc('3118') + exc('311811')),                      # 9999 exc. 999999
+    ('Part of 311', part('311')),                                           # Part of 999
+    ('3132 exc. 31324', inc('3132') + exc('31324')),                        # 9999 exc. 99999
+    ('31411', inc('31411')),                                                # 99999
+    ('314 exc. 31411', inc('314') + exc('31411')),                          # 999 exc. 99999
+    ('31324, 3151', inc('31324', '3151')),                                  # 99999, 9999
+    ('32222,32223, 32229', inc('32222', '32223', '32229')),                 # no space after a comma
+    ('32412, 32419', inc('32412', '32419')),                                # 99999, 99999
+    ('332992, 332993, 332994', inc('332992', '332993', '332994')),          # 999999 x 3
+    ('3325, 3326, 3329 exc. 332992, 332993, 332994',
+     inc('3325', '3326', '3329') + exc('332992', '332993', '332994')),      # list exc. list
+    ('Part of 331 and 332', part('331', '332')),                            # Part of 999 and 999
+    ('3332, 3334, 3339, Part of 333', inc('3332', '3334', '3339') + part('333')),
+    ('3351, 3353, 3359', inc('3351', '3353', '3359')),                      # 9999 x 3
+    ('321991, 321992', inc('321991', '321992')),                            # 999999, 999999
+    ('3219 exc. 321991, 321992', inc('3219') + exc('321991', '321992')),    # 9999 exc. 999999, 999999
+    ('3399 exc. 33992, 33993', inc('3399') + exc('33992', '33993')),        # 9999 exc. 99999, 99999
+    ('Part of 31, 32, 33', part('31', '32', '33')),                         # Part of 99, 99, 99
+    ('Part of 44, 45', part('44', '45')),                                   # Part of 99, 99
+    ('4851, 4852, 4854, 4855, 4859 ', inc('4851', '4852', '4854', '4855', '4859')),  # trailing space
+    ('Pts. 2211, 2212', part('2211', '2212')),                              # Pts. 9999, 9999
+    ('Part of 22 ', part('22')),                                            # Part of 99 + trailing space
+    ('5111 exc. 51111 ', inc('5111') + exc('51111')),                       # exc. + trailing space
+    ('517 exc. 517311', inc('517') + exc('517311')),                        # 999 exc. 999999
+    ('521, 52211,52219', inc('521', '52211', '52219')),                     # 999, 99999,99999
+    ('523, 525', inc('523', '525')),                                        # 999, 999
+    ('53221, 532281, 532282, 532283, 532284, 532289, 5323',
+     inc('53221', '532281', '532282', '532283', '532284', '532289', '5323')),
+    ('5324, 533', inc('5324', '533')),                                      # 9999, 999
+    ('722 exc. 7224', inc('722') + exc('7224')),                            # 999 exc. 9999
+    ('812113, 81219', inc('812113', '81219')),                              # 999999, 99999
+    ('92111, 92112, 92114, pt. 92115', inc('92111', '92112', '92114') + part('92115')),
+    ('922, pt. 92115', inc('922') + part('92115')),                         # 999, pt. 99999
+    ('521, 52211', inc('521', '52211')),                                    # 999, 99999
+    ('92812, pt. 92811', inc('92812') + part('92811')),                     # 99999, pt. 99999
+    ('pt. 92811', part('92811')),                                           # pt. 99999
+    (None, []),                                                             # 9920: no mapping
+    ('  ', []),
+  ],
+)
+def test_parse_naics_cell_kinds(cell, expected):
+  assert build.parse_naics_cell(cell) == expected
+
+
+@pytest.mark.parametrize(
+  'cell',
+  ['3118 except 311811', 'pt 92811', '311-312', '3118 exc. 311811 exc. 311812', '3118,', 'See 3118',
+   '3118 exc. pt. 311811', 'exc. 311811', '3118 exc. 311811 and 311812'],
+)
+def test_parse_naics_cell_rejects_unknown_shapes(cell):
+  with pytest.raises(ValueError, match=re.escape(repr(cell))):
+    build.parse_naics_cell(cell)
+
+
+@pytest.mark.parametrize(('cell', 'expected'), [
+  ('Pt. 92811', part('92811')),
+  ('part of 21', part('21')),
+])
+def test_parse_naics_cell_partial_marker_spellings(cell, expected):
+  assert build.parse_naics_cell(cell) == expected
+
+
+def test_parse_census_ind_list_as_published(naics_for_ind):
+  frame = build.parse_census_ind(census_ind_raw(), vintage=2022, naics_2022=naics_for_ind)
+  assert frame.columns == ['census_ind', 'title', 'naics_cell']
+  assert frame['census_ind'].to_list() == [
+    '0370', '0380', '0480', '0490', '0770', '1190', '1270', '3070', '3291', '9370', '9470', '9590',
+    '9670', '9680', '9920',
+  ]
+  rows = {row['census_ind']: row for row in frame.iter_rows(named=True)}
+  assert rows['0370'] == {'census_ind': '0370', 'title': 'Oil and gas extraction', 'naics_cell': '211'}
+  assert rows['1270']['naics_cell'] == '3118 exc. 311811'
+  assert rows['3291']['naics_cell'] == '3332, 3334, 3339, Part of 333'
+  assert rows['9920'] == {
+    'census_ind': '9920', 'title': 'Unemployed, last worked 5 years ago or earlier or never worked', 'naics_cell': None,
+  }
+
+
+def test_parse_census_ind_keeps_one_row_per_repeated_code(naics_for_ind):
+  frame = build.parse_census_ind(census_ind_raw(), vintage=2022, naics_2022=naics_for_ind)
+  rows = frame.filter(pl.col('census_ind').eq('0770'))
+  assert rows.rows() == [('0770', 'Construction', '23')]   # the first row's title, from column 0
+
+
+def test_parse_census_ind_rejects_repeated_code_with_different_cells(naics_for_ind):
+  raw = census_ind_raw().with_columns(
+    pl.when(pl.col('column_1').str.starts_with('Construction (')).then(pl.lit('236')).otherwise(pl.col('column_4')).alias('column_4')
+  )
+  with pytest.raises(ValueError, match='0770'):
+    build.parse_census_ind(raw, vintage=2022, naics_2022=naics_for_ind)
+
+
+@pytest.mark.parametrize('second_cell', ['236', None])
+def test_parse_census_ind_rejects_repeated_code_with_and_without_a_cell(naics_for_ind, second_cell):
+  raw = census_ind_raw().with_columns(
+    pl.when(pl.col('column_1').str.starts_with('Construction (')).then(pl.lit(second_cell, dtype=pl.Utf8))
+    .otherwise(pl.col('column_4')).alias('column_4')
+  )
+  with pytest.raises(ValueError, match='0770'):
+    build.parse_census_ind(raw, vintage=2022, naics_2022=naics_for_ind)
+
+
+def test_parse_census_ind_sorts_codes(naics_for_ind):
+  # The sheet lists utilities (05xx-06xx) after transportation; the file is in code order.
+  body = [row for row in IND_ROWS if row[2] != '0480'] + [(None, 'Not specified type of mining', '0480', 'Part of 21')]
+  frame = build.parse_census_ind(census_ind_raw(body=body), vintage=2022, naics_2022=naics_for_ind)
+  assert frame['census_ind'].to_list()[:4] == ['0370', '0380', '0480', '0490']
+
+
+def test_parse_census_ind_keeps_cells_verbatim(naics_for_ind, tmp_path):
+  # The 2017 and 2022 lists publish 'Part of 22 ', '5111 exc. 51111 ' and '4851, ..., 4859 '.
+  cells = {'0380': '2121 ', '0480': ' Part of 21 '}
+  frame = build.parse_census_ind(census_ind_raw(cells=cells), vintage=2022, naics_2022=naics_for_ind)
+  stored = dict(frame.select('census_ind', 'naics_cell').iter_rows())
+  assert stored['0380'] == '2121 ' and stored['0480'] == ' Part of 21 '
+  frame.write_csv(tmp_path / 'census_ind_2022.csv')
+  assert '\n0380,Coal mining,2121 \n' in (tmp_path / 'census_ind_2022.csv').read_text()
+  from_disk = pl.read_csv(tmp_path / 'census_ind_2022.csv', infer_schema=False)
+  assert from_disk.filter(pl.col('census_ind').eq('0380'))['naics_cell'].item() == '2121 '
+  pairs = ind_pairs(build.expand_census_ind(vintage=2022, census_ind_2022=from_disk, naics_2022=naics_for_ind))
+  assert pairs[('0380', '212114')] == 'prefix' and pairs[('0480', '212114')] == 'partial'   # the expansion reads them
+
+
+def test_parse_census_ind_reads_the_2017_header(naics_for_ind):
+  frame = build.parse_census_ind(census_ind_raw(2017), vintage=2017, naics_2017=naics_for_ind)
+  assert frame.height == 15 and frame['census_ind'][0] == '0370'
+
+
+def test_parse_census_ind_zero_fills_codes(naics_for_ind, tmp_path):
+  numeric = {'0370': '370.0', '0380': '380', '0770': '770.0'}  # Excel numerics lose the zero
+  raw = census_ind_raw().with_columns(pl.col('column_3').replace(numeric))
+  frame = build.parse_census_ind(raw, vintage=2022, naics_2022=naics_for_ind)
+  assert frame['census_ind'].to_list()[:5] == ['0370', '0380', '0480', '0490', '0770']
+  assert frame['census_ind'].str.len_chars().eq(4).all()
+  frame.write_csv(tmp_path / 'census_ind_2022.csv')
+  assert '\n0370,' in (tmp_path / 'census_ind_2022.csv').read_text()   # a grep for 0370 finds it
+
+
+@pytest.mark.parametrize('cell', ['3118 except 311811', 'Part of 311 (pt.)', '311-312', 'See 3118'])
+def test_parse_census_ind_rejects_unknown_cell_shapes(naics_for_ind, cell):
+  with pytest.raises(ValueError, match=re.escape(repr(cell))) as error:
+    build.parse_census_ind(census_ind_raw(cells={'1270': cell}), vintage=2022, naics_2022=naics_for_ind)
+  assert '1270' in str(error.value)
+
+
+@pytest.mark.parametrize(('code', 'cell', 'prefix'), [
+  ('0380', '2129', '2129'),                       # an include prefix
+  ('1270', '3118 exc. 311819', '311819'),         # an exclusion
+  ('0480', 'Part of 24', '24'),                   # a partial prefix
+])
+def test_parse_census_ind_rejects_prefix_missing_from_naics(naics_for_ind, code, cell, prefix):
+  with pytest.raises(ValueError, match=prefix) as error:
+    build.parse_census_ind(census_ind_raw(cells={code: cell}), vintage=2022, naics_2022=naics_for_ind)
+  assert 'census_ind_2022' in str(error.value) and 'naics_2022' in str(error.value)
+
+
+@pytest.mark.parametrize('vintage', [2017, 2022])
+@pytest.mark.parametrize('cell', [None, '', '  '])
+def test_parse_census_ind_keeps_the_blank_cell_of_9920(naics_for_ind, vintage, cell):
+  # 9920 (unemployed, last worked 5 years ago or earlier or never worked) has no industry.
+  census = build.parse_census_ind(
+    census_ind_raw(vintage, cells={'9920': cell}), vintage=vintage, **{f'naics_{vintage}': naics_for_ind},
+  )
+  assert census.filter(pl.col('census_ind').eq('9920'))['naics_cell'].to_list() == [cell]
+  frame = build.expand_census_ind(
+    vintage=vintage, **{f'census_ind_{vintage}': census, f'naics_{vintage}': naics_for_ind},
+  )
+  assert frame.filter(pl.col(f'census_ind_{vintage}').eq('9920')).height == 0
+
+
+@pytest.mark.parametrize('vintage', [2017, 2022])
+@pytest.mark.parametrize('cell', [None, '', '  '])
+@pytest.mark.parametrize('code', [
+  '0380',   # its six-digit codes are still claimed by 0480 'Part of 21', so coverage would pass
+  '9670',   # a military code: mapped ('pt. 92811'), unlike 9920
+  '1190',   # an exact six-digit claim
+])
+def test_parse_census_ind_rejects_a_blank_cell_on_a_mapped_code(naics_for_ind, vintage, cell, code):
+  with pytest.raises(ValueError, match=rf'Census {code}\b.*NAICS cell is blank') as error:
+    build.parse_census_ind(
+      census_ind_raw(vintage, cells={code: cell}), vintage=vintage, **{f'naics_{vintage}': naics_for_ind},
+    )
+  assert f'census_ind_{vintage}' in str(error.value)
+
+
+def test_expand_census_ind_partitions_exact_and_prefix_claims(naics_for_ind):
+  frame = expand_ind(naics_for_ind)
+  assert frame.columns == ['census_ind_2022', 'census_title_2022', 'naics_2022', 'naics_title_2022', 'via']
+  pairs = ind_pairs(frame)
+  assert pairs[('1190', '311811')] == 'exact'      # a six-digit item
+  assert pairs[('0370', '211120')] == 'prefix' and pairs[('0370', '211130')] == 'prefix'
+  assert pairs[('0380', '212114')] == 'prefix'
+  assert pairs[('0770', '236220')] == 'prefix'     # a whole sector
+  assert pairs[('9370', '921110')] == 'prefix'     # a five-digit item is a prefix, not exact
+  assert pairs[('9590', '928120')] == 'prefix'
+  assert frame['naics_2022'].str.contains(r'^\d{6}$').all()   # 3118, 92811 and the sectors never appear
+  non_partial = frame.filter(pl.col('via').ne('partial'))
+  assert not non_partial['naics_2022'].is_duplicated().any()  # each code has at most one such claim
+  row = frame.filter(pl.col('census_ind_2022').eq('1190')).row(0, named=True)
+  assert row == {
+    'census_ind_2022': '1190', 'census_title_2022': 'Retail bakeries', 'naics_2022': '311811',
+    'naics_title_2022': 'Retail Bakeries', 'via': 'exact',
+  }
+  assert frame.rows() == frame.sort('census_ind_2022', 'naics_2022').rows()
+
+
+def test_expand_census_ind_applies_exclusions(naics_for_ind):
+  pairs = ind_pairs(expand_ind(naics_for_ind))
+  assert pairs[('1270', '311812')] == 'prefix' and pairs[('1270', '311830')] == 'prefix'
+  assert ('1270', '311811') not in pairs           # carved out by 'exc. 311811'
+  assert pairs[('1190', '311811')] == 'exact'      # another code's exclusion leaves its claim alone
+
+
+def test_expand_census_ind_applies_every_exclusion_in_a_cell(naics_for_ind):
+  pairs = ind_pairs(expand_ind(naics_for_ind, cells={'1270': '3118 exc. 311811, 311830', '0370': '211 exc. 21113'}))
+  assert {naics for census, naics in pairs if census == '1270'} == {'311812'}   # both carve-outs apply
+  assert {naics for census, naics in pairs if census == '0370'} == {'211120'}   # a five-digit carve-out
+
+
+def test_expand_census_ind_exclusions_apply_to_partial_items(naics_for_ind):
+  pairs = ind_pairs(expand_ind(naics_for_ind, cells={'0480': 'Part of 21 exc. 2121'}))
+  assert {naics for census, naics in pairs if census == '0480'} == {'211120', '211130', '213111'}
+
+
+def test_expand_census_ind_allows_shared_partial_claims(naics_for_ind):
+  frame = expand_ind(naics_for_ind)
+  pairs = ind_pairs(frame)
+  assert pairs[('9370', '921150')] == 'partial' and pairs[('9470', '921150')] == 'partial'
+  assert {census for census, naics in pairs if naics == '928110'} == {'9590', '9670', '9680'}
+  assert all(pairs[(census, '928110')] == 'partial' for census in ('9590', '9670', '9680'))
+  # a catch-all: 0480 'Part of 21' gets a partial row beside each specific claim in sector 21
+  assert {naics: via for (census, naics), via in pairs.items() if census == '0480'} == {
+    '211120': 'partial', '211130': 'partial', '212114': 'partial', '213111': 'partial',
+  }
+  assert pairs[('0370', '211120')] == 'prefix'
+  assert build.validate_census_ind_expansion(frame, vintage=2022, naics_2022=naics_for_ind) == []
+
+
+def test_expand_census_ind_prefix_wins_over_own_partial_item(naics_for_ind):
+  frame = expand_ind(naics_for_ind)
+  rows = frame.filter(pl.col('census_ind_2022').eq('3291'))
+  assert dict(rows.select('naics_2022', 'via').iter_rows()) == {
+    '333111': 'partial',                                          # only 'Part of 333' reaches it
+    '333248': 'prefix', '333415': 'prefix', '333912': 'prefix',   # 3332, 3334, 3339 beat 'Part of 333'
+  }
+  assert rows.height == 4
+  assert not frame.select('census_ind_2022', 'naics_2022').is_duplicated().any()
+
+
+def test_expand_census_ind_rejects_non_partial_double_claims(naics_for_ind):
+  cells = {'9370': '92111, 92115', '9470': '922, 92115'}
+  with pytest.raises(ValueError, match='921150') as error:
+    expand_ind(naics_for_ind, cells=cells)
+  assert '9370' in str(error.value) and '9470' in str(error.value)
+
+
+def test_expand_census_ind_skips_unmapped_codes(naics_for_ind):
+  census = build.parse_census_ind(census_ind_raw(), vintage=2022, naics_2022=naics_for_ind)
+  assert census.filter(pl.col('census_ind').eq('9920')).height == 1   # kept in the list
+  frame = build.expand_census_ind(vintage=2022, census_ind_2022=census, naics_2022=naics_for_ind)
+  assert frame.filter(pl.col('census_ind_2022').eq('9920')).height == 0
+  assert set(frame['census_ind_2022']) == set(census['census_ind']) - {'9920'}
+
+
+def test_validate_census_ind_expansion_reports_unclaimed_codes(naics_for_ind):
+  frame = expand_ind(naics_for_ind)
+  assert build.validate_census_ind_expansion(frame, vintage=2022, naics_2022=naics_for_ind) == []
+  extra = naics_frame(NAICS_FOR_IND + [('22', 'Utilities'), ('221122', 'Electric Power Distribution')])
+  problems = build.validate_census_ind_expansion(frame, vintage=2022, naics_2022=extra)
+  assert len(problems) == 1 and '221122' in problems[0]
+
+
+def test_validate_census_ind_expansion_reports_non_partial_double_claims(naics_for_ind):
+  frame = expand_ind(naics_for_ind)
+  doubled = pl.concat([
+    frame,
+    frame.filter(pl.col('census_ind_2022').eq('0370').and_(pl.col('naics_2022').eq('211120')))
+    .with_columns(census_ind_2022=pl.lit('0480')),
+  ])
+  problems = build.validate_census_ind_expansion(doubled, vintage=2022, naics_2022=naics_for_ind)
+  assert len(problems) == 1
+  assert '211120' in problems[0] and '0370' in problems[0] and '0480' in problems[0]
+
+
+def test_census_ind_2017_override_lets_928110_claims_share(naics_for_ind):
+  frame = expand_ind(naics_for_ind, vintage=2017, cells=IND_2017_MILITARY)
+  pairs = ind_pairs(frame, vintage=2017)
+  assert pairs[('9590', '928110')] == 'partial'
+  assert pairs[('9670', '928110')] == 'partial' and pairs[('9680', '928110')] == 'partial'
+  assert pairs[('9590', '928120')] == 'prefix'     # 9590's other 928 claim is untouched
+  assert build.validate_census_ind_expansion(frame, vintage=2017, naics_2017=naics_for_ind) == []
+  assert set(build.CENSUS_IND_PARTIAL_OVERRIDES[(2017, '928110')]) == {
+    '9590', '9670', '9680', '9690', '9770', '9780', '9790', '9870',
+  }
+
+
+def test_census_ind_2017_needs_the_override(naics_for_ind, monkeypatch):
+  monkeypatch.setattr(build, 'CENSUS_IND_PARTIAL_OVERRIDES', {})
+  with pytest.raises(ValueError, match='928110'):
+    expand_ind(naics_for_ind, vintage=2017, cells=IND_2017_MILITARY)
+
+
+@pytest.mark.parametrize(('vintage', 'cells', 'code'), [
+  (2022, IND_2017_MILITARY, '928110'),                                                   # another vintage
+  (2017, IND_2017_MILITARY | {'9370': '92111, 92115', '9470': '922, 92115'}, '921150'),  # another code
+  (2017, IND_2017_MILITARY | {'9370': '92111, 928110', '9470': '922, 928110'}, '928110'),  # unlisted claimants
+])
+def test_census_ind_override_applies_only_to_its_key(naics_for_ind, vintage, cells, code):
+  with pytest.raises(ValueError, match=code):
+    expand_ind(naics_for_ind, vintage=vintage, cells=cells)
+
+
+def census_ind_frame(height: int) -> pl.DataFrame:
+  return pl.DataFrame({'census_ind': [f'{index:04d}' for index in range(height)]})
+
+
+@pytest.mark.parametrize(('height', 'flagged'), [(229, True), (230, False), (320, False), (321, True)])
+def test_validate_census_ind_row_band(height, flagged):
+  problems = build.validate_census_ind(census_ind_frame(height), 2022)
+  if flagged:
+    assert len(problems) == 1 and 'outside the plausible 230-320 band' in problems[0]
+  else:
+    assert problems == []
+
+
+def test_validate_census_ind_flags_duplicates():
+  duplicated = census_ind_frame(230).with_columns(
+    pl.when(pl.col('census_ind').eq('0001')).then(pl.lit('0000')).otherwise(pl.col('census_ind')).alias('census_ind')
+  )
+  problems = build.validate_census_ind(duplicated, 2022)
+  assert len(problems) == 1 and '2 duplicated Census codes' in problems[0]
+
+
+def test_census_ind_builds_read_their_lists_and_expand_against_naics():
+  builds = {b.name: b for b in build.BUILDS}
+  for vintage, sheet in [(2017, '2017 Census Industry Code List'), (2022, '2022 Census Ind Code List ')]:
+    listed = builds[f'census_ind_{vintage}']
+    assert listed.sheet == sheet and listed.requires == (f'naics_{vintage}',)
+    assert listed.url.startswith('https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/')
+    expansion = builds[f'census_ind_{vintage}_to_naics_{vintage}']
+    assert expansion.url is None and expansion.requires == (f'census_ind_{vintage}', f'naics_{vintage}')
+    assert (f'census_ind_{vintage}_to_naics_{vintage}', f'naics_{vintage}', f'naics_{vintage}', 6) in build.REFERENTIAL_PAIRS
+
+
 def test_resolve_requires_prefers_this_runs_frames_then_disk(tmp_path, soc_for_census):
   soc_for_census.write_csv(tmp_path / 'soc_2018.csv')
   in_memory = {'soc_2018': soc_for_census.head(3)}
@@ -671,3 +1149,134 @@ def test_fetch_uses_cached_bls_copy_without_contact_email(tmp_path, monkeypatch)
   cached.write_bytes(b'not really a workbook')
   path, sha256, _retrieved = build.fetch('https://www.bls.gov/soc/2018/soc_structure_2018.xlsx', tmp_path, offline=False, refresh=False)
   assert path == cached and len(sha256) == 64
+
+
+# --------------------------------------------------------------------------------------------
+# Validator bands
+# --------------------------------------------------------------------------------------------
+
+
+def rows_frame(height: int) -> pl.DataFrame:
+  return pl.DataFrame({'code': [str(index) for index in range(height)]})
+
+
+@pytest.mark.parametrize(('height', 'flagged'), [(799, True), (800, False), (2000, False), (2001, True)])
+def test_validate_naics_concordance_row_band(height, flagged):
+  problems = build.validate_naics_concordance(rows_frame(height), 2017, 2022)
+  if flagged:
+    assert len(problems) == 1 and 'outside the plausible 800-2000 band' in problems[0]
+  else:
+    assert problems == []
+
+
+@pytest.mark.parametrize(('height', 'flagged'), [(699, True), (700, False), (1600, False), (1601, True)])
+def test_validate_soc_crosswalk_row_band(height, flagged):
+  problems = build.validate_soc_crosswalk(rows_frame(height), 2010, 2018)
+  if flagged:
+    assert len(problems) == 1 and 'outside the plausible 700-1600 band' in problems[0]
+  else:
+    assert problems == []
+
+
+def census_occ_frame(height: int, soc_level: str = 'detailed') -> pl.DataFrame:
+  return pl.DataFrame({
+    'census_occ': [f'{index:04d}' for index in range(height)],
+    'soc_level': [soc_level] * height,
+  })
+
+
+def test_validate_census_occ_flags_band_duplicates_and_levels():
+  assert build.validate_census_occ(census_occ_frame(450), 2018) == []
+  band = build.validate_census_occ(census_occ_frame(449), 2018)
+  assert len(band) == 1 and 'outside the plausible 450-700 band' in band[0]
+
+  duplicated = census_occ_frame(450).with_columns(
+    pl.when(pl.col('census_occ') == '0001').then(pl.lit('0000')).otherwise(pl.col('census_occ')).alias('census_occ')
+  )
+  problems = build.validate_census_occ(duplicated, 2018)
+  assert len(problems) == 1 and '2 duplicated Census codes' in problems[0]
+
+  odd_level = census_occ_frame(450).with_columns(
+    pl.when(pl.col('census_occ') == '0000').then(pl.lit('group')).otherwise(pl.col('soc_level')).alias('soc_level')
+  )
+  problems = build.validate_census_occ(odd_level, 2018)
+  assert len(problems) == 1 and 'outside' in problems[0]
+
+
+# --------------------------------------------------------------------------------------------
+# Offline fetch
+# --------------------------------------------------------------------------------------------
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+TEST_URL = 'https://www.census.gov/naics/2022NAICS/2022_NAICS_Structure.xlsx'
+
+
+def test_fetch_offline_without_cache_raises(tmp_path):
+  with pytest.raises(FileNotFoundError, match='--offline set but'):
+    build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+
+
+def test_fetch_offline_uses_cache_without_network(tmp_path, monkeypatch):
+  payload = b'cached workbook bytes'
+  cached = tmp_path / build.source_filename(TEST_URL)
+  cached.write_bytes(payload)
+
+  def refuse(*args, **kwargs):
+    raise AssertionError('offline fetch must not touch the network')
+
+  monkeypatch.setattr(urllib.request, 'urlopen', refuse)
+  path, sha256, _retrieved = build.fetch(TEST_URL, tmp_path, offline=True, refresh=False)
+  assert path == cached
+  assert sha256 == hashlib.sha256(payload).hexdigest()
+
+
+# --------------------------------------------------------------------------------------------
+# Documented counts match the committed data
+# --------------------------------------------------------------------------------------------
+
+
+def table_counts(skill_md: str) -> dict[str, int]:
+  '''The first number in the `rows` cell of each `data/*.csv` row of the `## Files` table.'''
+  counts = {}
+  for line in skill_md.split('## Files', 1)[1].splitlines():
+    cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+    match = re.fullmatch(r'`(data/[^`]+\.csv)`', cells[0]) if cells else None
+    if match is None or len(cells) < 2:
+      continue
+    counts[match.group(1)] = int(re.match(r'[\d,]+', cells[1]).group().replace(',', ''))
+  return counts
+
+
+def csv_height(relative: str) -> int:
+  return pl.read_csv(SKILL_DIR / relative, infer_schema=False).height
+
+
+def test_skill_table_counts_match_data():
+  skill_md = (SKILL_DIR / 'SKILL.md').read_text()
+  counts = table_counts(skill_md)
+  assert counts, 'no data/*.csv rows found in the SKILL.md Files table'
+  for relative, documented in counts.items():
+    actual = csv_height(relative)
+    assert documented == actual, f'SKILL.md {relative}: documents {documented} rows, file has {actual}'
+  for relative, label, level in [
+    ('data/naics_2022.csv', 'six-digit', '6'),
+    ('data/naics_2017.csv', 'six-digit', '6'),
+    ('data/naics_2012.csv', 'six-digit', '6'),
+    ('data/soc_2018.csv', 'detailed', 'detailed'),
+    ('data/soc_2010.csv', 'detailed', 'detailed'),
+  ]:
+    row = next(line for line in skill_md.splitlines() if f'`{relative}`' in line)
+    documented = int(re.search(rf'\(([\d,]+) {label}\)', row).group(1).replace(',', ''))
+    actual = pl.read_csv(SKILL_DIR / relative, infer_schema=False).filter(pl.col('level') == level).height
+    assert documented == actual, f'SKILL.md {relative}: documents {documented} {label}, file has {actual}'
+
+
+def test_manifest_rows_match_data():
+  checked = 0
+  for line in (SKILL_DIR / 'MANIFEST.md').read_text().splitlines():
+    cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+    if len(cells) > 1 and re.fullmatch(r'data/[^ ]+\.csv', cells[0]):
+      actual = csv_height(cells[0])
+      assert int(cells[1]) == actual, f'MANIFEST.md {cells[0]}: lists {cells[1]} rows, file has {actual}'
+      checked += 1
+  assert checked

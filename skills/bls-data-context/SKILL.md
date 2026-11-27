@@ -46,6 +46,7 @@ anatomy, flat-file schema, and lookup codes — or ingest.md when building a pip
 | **ECI** | *Change* in employer labor cost (fixed-weight index) | NCS establishment · index, Dec 2005=100 | Quarterly | Nation, region/division, 15 MSAs | [references/eci.md](references/eci.md) |
 | **ECEC** | *Level* of employer cost per hour ($) | NCS establishment | Quarterly (Mar/Jun/Sep/Dec) | Nation, region/division, 15 MSAs (**no state**) | [references/ecec.md](references/ecec.md) |
 | **CPS** | Employed/unemployed/NILF, unemployment rate, labor force | **Household** · **persons by residence** | Monthly | Nation, state | [references/cps.md](references/cps.md) |
+| **LAUS** | Labor force, employment, unemployment, unemployment rate | **Household** concepts · **persons by residence**, model-based | Monthly | State and sub-state areas | No reference of its own: [references/sae.md](references/sae.md) (OMB adoption, LAUS vs CES-SA) and [references/qcew.md](references/qcew.md) (LAUS vs QCEW) |
 
 ## The one frame underneath most of it
 
@@ -224,7 +225,7 @@ it points to the relevant `references/<program>.md`.
 | [references/sae.md](references/sae.md) | CES State & Area | State/metro estimation; SAM Gen3 small-area model; benchmark windows; SA two-step; ETL schema; OMB delineation adoption history for SAE and LAUS. |
 | [references/jolts.md](references/jolts.md) | JOLTS | Stock-vs-flow; rate denominators; 21-char series IDs; CES alignment; model-based state estimates. |
 | [references/bed.md](references/bed.md) | BED/BDM | Job-flow definitions; 28-char series IDs; dynamic firm sizing; death lag; flat-file schema. |
-| [references/oews.md](references/oews.md) | OEWS | Occupation×industry×geo scope limits; CES crosswalk; tidy schema; aggregation rules; OMB delineation per May vintage. |
+| [references/oews.md](references/oews.md) | OEWS | Occupation×industry×geo scope limits; panel design and reference periods; vintage comparability; series-ID field positions; flat files; measures; geography with OMB delineation per May vintage; industry scope and the CES crosswalk. |
 | [references/eci.md](references/eci.md) | ECI | Fixed-weight Laspeyres index; ECI-vs-ECEC; reweighting; seasonality; constant-dollar. |
 | [references/ecec.md](references/ecec.md) | ECEC | Cost-level concepts; benefit-cost-over-all-workers caveat; no state estimates; CPE bands. |
 | [references/cps.md](references/cps.md) | CPS | Household concepts; labor-force classification logic; rates/denominators; weights; CPS-vs-CES. |

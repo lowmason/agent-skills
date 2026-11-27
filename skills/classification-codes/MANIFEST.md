@@ -1,6 +1,6 @@
 # classification-codes data manifest
 
-Generated 2026-09-02T22:12:27+00:00 by scripts/build.py.
+Generated 2026-11-26T19:26:58+00:00 by scripts/build.py.
 sources/ holds the exact bytes each CSV was built from — commit it; Census and BLS overwrite
 files in place, so an unarchived source vintage is unrecoverable. `retrieved` is the time the
 cached source file was written.
@@ -19,5 +19,9 @@ cached source file was written.
 | data/census_occ_2018_to_soc_2018.csv | 867 | derived from census_occ_2018, soc_2018 |  |  |
 | data/census_occ_2010.csv | 540 | https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2010-occ-codes-with-crosswalk-from-2002-2011.xls | ebf7e6f31c0cda16c7c8518a23bfa13ca537105ba41c427f99dff155a68c2cc6 | 2026-09-02T22:10:28+00:00 |
 | data/census_occ_2010_to_soc_2010.csv | 840 | derived from census_occ_2010, soc_2010 |  |  |
+| data/census_ind_2022.csv | 266 | https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2022-Census-Industry-Code-List-with-Crosswalk.xlsx | c9d2e004b2735c3975f0768e7dac704df6d2e0b36b24d33f5dbc7109cab5628c | 2026-11-26T19:01:10+00:00 |
+| data/census_ind_2022_to_naics_2022.csv | 1650 | derived from census_ind_2022, naics_2022 |  |  |
+| data/census_ind_2017.csv | 271 | https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2017-industry-code-list-with-crosswalk.xlsx | 479161190aedc0a64529f930d34a21f18e1950609332defe4967e4e3f129c816 | 2026-11-26T19:01:10+00:00 |
+| data/census_ind_2017_to_naics_2017.csv | 1729 | derived from census_ind_2017, naics_2017 |  |  |
 
 No validation problems in the last run.
