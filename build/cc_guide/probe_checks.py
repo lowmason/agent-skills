@@ -917,20 +917,19 @@ def base_sighting(events: list[dict]) -> dict:
 
 
 def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, str]) -> dict:
-    '''The four worktree-isolation runs, read from their raw streams as booleans, place names and None, never a
-    path or tool output. `places` maps main, worktree and plain-worktree to absolute paths. In isolation, a step
-    is the first Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result:
-    whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both
-    ExitWorktree runs, ExitWorktree is split_at_keep's call: the first keep call that succeeded or was refused
-    with WT_NOOP_MARK, else the first keep call, and other_exit is the action of the first ExitWorktree call with
-    another action that succeeded. exited is whether its result is not an error, and exit_marked whether it holds
-    WT_NOOP_MARK; kept_before and kept_after, whether the first WT_LIST result before or after ExitWorktree has
-    the worktree's own block, None when that list never ran or its result is an error; locked_before and
-    locked_after, whether that block has a WT_LOCKED line, None unless kept_before or kept_after; pwd_after, the
-    place the first WT_PWD after ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether
-    its result holds WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error,
-    and has_pushed and has_unpushed read the first WT_LOG result after it, line by line. A value that no call
-    shows is None.'''
+    '''The four worktree-isolation runs, read from their raw streams as booleans, place names and None, never a path or
+    tool output. `places` maps main, worktree and plain-worktree to absolute paths. In isolation, a step is the first
+    Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result: whether it ran, its
+    result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both ExitWorktree runs,
+    ExitWorktree is split_at_keep's call: the first keep call that succeeded or was refused with WT_NOOP_MARK, else the
+    first keep call, and other_exit is the action of the first ExitWorktree call with another action that succeeded.
+    exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK; kept_before and
+    kept_after, whether the first WT_LIST result before or after ExitWorktree has the worktree's own block, None when
+    that list never ran or its result is an error; locked_before and locked_after, whether that block has a WT_LOCKED
+    line, None unless kept_before or kept_after; pwd_after, the place the first WT_PWD after ExitWorktree printed
+    (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether its result holds
+    WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error, and has_pushed and
+    has_unpushed read the first WT_LOG result after it, line by line. A value that no call shows is None.'''
     seen = {}
     for part in WT_PARTS:
         events = streams.get(part)
