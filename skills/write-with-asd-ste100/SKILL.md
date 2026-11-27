@@ -26,6 +26,7 @@ ASD-STE100 Simplified Technical English (STE) is the controlled English that the
 These rules apply in every mode. They outrank every style rule.
 
 - **Confidence.** Keep every hedge. "May have failed" stays "may have failed".
+- **Obligation.** Keep the strength of every obligation word, also in an imperative step. "Should" stays "should". Do not make it "must" or a bare command.
 - **Logic.** Keep negations, and/or conditions, order, actors, numbers, units, deadlines and exceptions.
 - **No new facts.** Add no fact that the source does not state.
 - **Literal text.** Leave code, commands, identifiers, paths, URLs, API fields and quoted errors unchanged.

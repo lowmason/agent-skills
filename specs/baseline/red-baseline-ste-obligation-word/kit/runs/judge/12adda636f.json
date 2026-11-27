@@ -1,0 +1,75 @@
+{
+ "case": "agent-tool-description",
+ "verdicts": {
+  "r1a277f": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve', so both hedges hold their strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "It restates only the source's facts and lists the gaps as flags instead of filling them."
+   },
+   "3": {
+    "pass": true,
+    "why": "The source has no obligation words, and the rewrite adds none."
+   }
+  },
+  "r6fca49": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve', so both hedges hold their strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "'Configured strategy' and 'if the tool does not resolve' restate the source and add no new fact."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  },
+  "r6128b0": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries' and 'may resolve' at the source's strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "'Shows' stands in for 'surface' and adds no new fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  },
+  "r653012": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries' and 'may resolve', and its note says so."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds nothing to the source and says outright that it added no strategy facts."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  },
+  "rdade9f": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'attempts' and 'may resolve' as written."
+   },
+   "2": {
+    "pass": true,
+    "why": "It restates only the source's content and adds no location or strategy details."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  }
+ }
+}

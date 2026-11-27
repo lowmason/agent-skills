@@ -1,0 +1,75 @@
+{
+ "case": "agent-error-message",
+ "verdicts": {
+  "r085339": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", turns \"possible mismatch\" into \"may be a mismatch\" and keeps \"could cause\", so every hedge holds its strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite states only the source's error, its possible cause and the client version, and it adds no action."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite has no obligation words, and the \"should\" in a note describes the source rather than adding an obligation."
+   }
+  },
+  "ra44a95": {
+   "1": {
+    "pass": true,
+    "why": "\"may have occurred\", \"may not match\" and \"could cause\" each keep the source's hedge strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no new fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "No obligation word appears in the rewrite."
+   }
+  },
+  "r37eb2a": {
+   "1": {
+    "pass": true,
+    "why": "All three hedges are kept: \"may have occurred\", \"may not match\" and \"could cause\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite repeats only what the source says, with no new action or condition."
+   },
+   "3": {
+    "pass": true,
+    "why": "No obligation words are added or changed."
+   }
+  },
+  "r51ab4c": {
+   "1": {
+    "pass": true,
+    "why": "\"may have occurred\", \"may not match\" and \"could cause\" keep each hedge at its strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewritten message adds no fact or action, and the linter remark is a note outside the rewrite."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite has no obligation words."
+   }
+  },
+  "r1f6af4": {
+   "1": {
+    "pass": false,
+    "why": "The source's \"could\" for the outdated client becomes \"may cause\", so that hedge's wording is not kept as the check requires."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no new fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "No obligation words appear in the rewrite."
+   }
+  }
+ }
+}

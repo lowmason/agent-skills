@@ -1,0 +1,75 @@
+{
+ "case": "agent-tool-description",
+ "verdicts": {
+  "rf33b06": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve', so both hedges stay at full strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "Every statement maps to the source, and its flags say outright that it added no strategy names or reporting location."
+   },
+   "3": {
+    "pass": true,
+    "why": "The source has no obligation words, and the rewrite adds none."
+   }
+  },
+  "r89b000": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve'."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact, condition or action, and 'shows' is a neutral rendering of 'surface'."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words such as must, shall or always."
+   }
+  },
+  "r434fb0": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve', and its note says why the attempt hedge matters."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite itself adds nothing, and the linter remark is a process note, not a claim about the tool."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  },
+  "r780738": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve'."
+   },
+   "2": {
+    "pass": true,
+    "why": "'The result depends on the strategy that is set' restates the source, and nothing new is added."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words to the rewrite."
+   }
+  },
+  "r17fafe": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'tries to synchronize' and 'may resolve'."
+   },
+   "2": {
+    "pass": true,
+    "why": "'Configured strategy' is a close paraphrase of 'the strategy that has been set', and no new facts appear."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  }
+ }
+}

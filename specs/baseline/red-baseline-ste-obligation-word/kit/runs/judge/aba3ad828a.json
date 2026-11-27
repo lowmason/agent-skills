@@ -1,0 +1,75 @@
+{
+ "case": "agent-error-message",
+ "verdicts": {
+  "r70c412": {
+   "1": {
+    "pass": true,
+    "why": "It keeps all three hedges: \"may have occurred\", \"possible cause\" and \"could cause\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite states only the error, the mismatch and the client-version cause, all of which the source gives."
+   },
+   "3": {
+    "pass": true,
+    "why": "Neither the rewrite nor the flags add any obligation word, and the source has none."
+   }
+  },
+  "r5afa5e": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", renders \"possible\" as \"may be\" at the same strength, and keeps \"could\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewritten message adds no fact, condition or action beyond the source."
+   },
+   "3": {
+    "pass": false,
+    "why": "The flags add the obligation words \"must\" (\"what the agent must do next\") and \"required\" (\"required client version\"), which the source does not have."
+   }
+  },
+  "rf3e295": {
+   "1": {
+    "pass": true,
+    "why": "All three hedges keep their strength: \"may have occurred\", \"may be\" and \"could\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds nothing beyond what the source states."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation word, and its flag avoids one by saying the agent \"does not know what to do next\"."
+   }
+  },
+  "r38d468": {
+   "1": {
+    "pass": true,
+    "why": "The hedges are kept as \"may have occurred\", \"may be\" and \"could\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no new fact, and the actions in the flag are given only as examples of what the source leaves out."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation word, since the quoted \"update the client\" only names an instruction the source lacks."
+   }
+  },
+  "r1983ef": {
+   "1": {
+    "pass": true,
+    "why": "All three hedges are kept at the same strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewritten message adds no fact, condition or action."
+   },
+   "3": {
+    "pass": false,
+    "why": "The flag adds \"must\" (\"what the agent must do next\"), an obligation word the source does not have."
+   }
+  }
+ }
+}

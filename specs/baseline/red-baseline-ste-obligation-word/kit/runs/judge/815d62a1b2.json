@@ -1,0 +1,35 @@
+{
+ "case": "doc-clean",
+ "verdicts": {
+  "r823089": {
+   "1": {
+    "pass": true,
+    "why": "It reports 9 findings before and 0 findings after."
+   }
+  },
+  "r7d8d94": {
+   "1": {
+    "pass": true,
+    "why": "It reports 9 findings (3 hard) before and 0 after."
+   }
+  },
+  "rbe6885": {
+   "1": {
+    "pass": true,
+    "why": "It reports 9 findings for the original and 1 advisory finding for the rewrite."
+   }
+  },
+  "rc5676b": {
+   "1": {
+    "pass": true,
+    "why": "It reports 9 findings before and 0 findings after."
+   }
+  },
+  "rcb852d": {
+   "1": {
+    "pass": true,
+    "why": "It reports 9 findings before and 1 after."
+   }
+  }
+ }
+}

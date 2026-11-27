@@ -1,0 +1,75 @@
+{
+ "case": "agent-tool-description",
+ "verdicts": {
+  "r5af8f8": {
+   "1": {
+    "pass": true,
+    "why": "\"Tries to\" keeps the attempt hedge and \"may resolve\" keeps the possibility hedge."
+   },
+   "2": {
+    "pass": true,
+    "why": "Turning \"otherwise\" into \"if the tool does not resolve the conflict\" is a fair paraphrase, the reply flags the ambiguity, and the rewrite adds no new facts."
+   },
+   "3": {
+    "pass": true,
+    "why": "The source has no obligation words and the rewrite adds none."
+   }
+  },
+  "r1b09d6": {
+   "1": {
+    "pass": true,
+    "why": "\"Tries to\" and \"may resolve\" keep both hedges at full strength."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite only restates the source, and it puts open questions in flags instead of making up answers."
+   },
+   "3": {
+    "pass": true,
+    "why": "The reply adds no obligation words such as must, shall or always."
+   }
+  },
+  "r09a75f": {
+   "1": {
+    "pass": true,
+    "why": "Both the attempt hedge (\"tries to\") and \"may\" are kept."
+   },
+   "2": {
+    "pass": true,
+    "why": "\"If the conflict is not resolved automatically\" is a fair paraphrase of \"otherwise\", and the rewrite adds no new facts."
+   },
+   "3": {
+    "pass": true,
+    "why": "The reply adds no obligation words."
+   }
+  },
+  "r0fdd05": {
+   "1": {
+    "pass": true,
+    "why": "\"Attempts to\" and \"may resolve\" keep the source's hedges word for word."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite follows the source closely and adds no facts, conditions or actions."
+   },
+   "3": {
+    "pass": true,
+    "why": "The reply adds no obligation words."
+   }
+  },
+  "rda3ad5": {
+   "1": {
+    "pass": true,
+    "why": "\"Tries to\" and \"may resolve\" are kept, and the notes say why."
+   },
+   "2": {
+    "pass": true,
+    "why": "The bullet list keeps the source's two outcomes and adds nothing; the gap about failed syncs is raised only as a flag."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite adds no obligation words, and \"always\" appears only in a note about the hedge, not as a command."
+   }
+  }
+ }
+}

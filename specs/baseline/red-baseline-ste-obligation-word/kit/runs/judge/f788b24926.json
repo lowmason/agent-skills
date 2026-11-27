@@ -1,0 +1,75 @@
+{
+ "case": "agent-error-message",
+ "verdicts": {
+  "re91e5c": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", gives the mismatch as \"may be\" the cause, and keeps \"could\" for the outdated client."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite repeats only what the source says, and the flags only comment on the source without adding facts about the error."
+   },
+   "3": {
+    "pass": true,
+    "why": "The source has no obligation words, and the rewrite adds none."
+   }
+  },
+  "rdaad48": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", says \"a possible cause\" for the mismatch, and keeps \"could\" for the outdated client."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no facts, conditions or actions, and the flags only point out what the source leaves out."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite has no obligation words; the only \"should\" is in a flag saying the source gives no instruction."
+   }
+  },
+  "rdbb339": {
+   "1": {
+    "pass": true,
+    "why": "All three hedges keep their strength: \"may have occurred\", \"may be\" a mismatch, and \"could cause\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds nothing, and the flags only list gaps in the source."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite has no obligation words; \"required\" appears only in a flag about a gap, not in the rewritten message."
+   }
+  },
+  "r5a2a2f": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", says the mismatch \"may be\" the cause, and keeps \"could\" for the outdated client."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds no new content, and the flags only describe what the source does not say."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite has no obligation words; \"should\" appears only in a flag describing the missing instruction."
+   }
+  },
+  "rd3b603": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"may have occurred\", gives the mismatch as \"may be\" the cause, and keeps \"could\" for the outdated client."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds nothing, and the flag says plainly that it did not add \"update the client\"."
+   },
+   "3": {
+    "pass": true,
+    "why": "The rewrite has no obligation words, and the source has none to keep."
+   }
+  }
+ }
+}

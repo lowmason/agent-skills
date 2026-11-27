@@ -2771,7 +2771,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → done 2026-10-19 (/deferred quick fix): --no-rules leaves the user-level rules out of a
       full Claude install, and --rule on Codex or Gemini prints a one-line notice. Tests in
       build/test_runtime_support.py, and README.md documents both.
-- [ ] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
+- [x] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
       (the `skill-r2` reading). In that re-run, 3 of the 5 `agent-instruction` replies
       turned "should" into a bare command or "must". The case's pre-registered checks cover
       the conditions and the "sometimes" hedge, not "should", so all five runs passed. The
@@ -2785,6 +2785,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       5 or more.
       → progress 2026-11-17 (owner ruling): go ahead. Add one line to `SKILL.md`'s meaning rules and a pre-registered obligation-word check to the kit's `cases.py`, then re-run the three agent cases.
       → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
+      → done 2026-11-27 (plan 114): `SKILL.md`'s meaning rules gain the **Obligation** line (commit `546181a`). The pre-registered obligation check passes at 5 of 5 in every treatment cell on Opus 5.5 and Sonnet 5.5; the control's Sonnet `agent-instruction` passed it at 1 of 5. The registered all-checks bar was missed on treatment `agent-instruction` Sonnet (2 of 5, a guessed actor and a sentence cap), and the owner accepted that under this item's done-when (plan 114 D9). Record: `specs/baseline/red-baseline-ste-obligation-word.md`. The actor-guess fault is filed → item: 114-ste-drift-and-obligation-word — 2026-11-27
 - [ ] Three review fixes have no test that would catch a regression (final review). They are
       the `python3` call in `references/agent-mode.md`, the kept "should" in
       `references/examples.md`, and the symbolic-link check in
@@ -2794,6 +2795,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
       → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
+      → progress 2026-11-27 (plan 114): the kit gained `doc-symlink` (a tracked link to a tracked target with uncommitted edits), and all four document cases ran on Opus 5.5 and Sonnet 5.5. `doc-symlink` passes its registered end-state checks (Opus 5/5, Sonnet 4/5), but 7 of its 14 reps wrote through the link into the dirty target first, so the owner left the symbolic-link part open (D11) and the step 3 wording is filed → item: 114-ste-drift-and-obligation-word — 2026-11-27. The `python3` call in `references/agent-mode.md` and the kept "should" in `references/examples.md` stay unreached: every agent rep opened `agent-mode.md` but had no shell, and no rep opened `examples.md`.
 - [x] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
       2026-10-31 read danyuchn/asd-ste100-skill through `255631a3` and prithivrajmu/asd-ste100
       through `058c1f58`. Size: quick-fix. Revisit if: a compare from `255631a3` (danyuchn) or
@@ -5499,6 +5501,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       whitespace when finding the first key. Then re-vendor, move the pin in `NOTICE` and both sources files, and add
       a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `a4905d92` to danyuchn's HEAD
       changes `_front_matter`, or the linter's indented-comment case is reported as fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. The compare from `70736273` leaves `_front_matter` (now line 1829) unchanged, and the item's reproduction still gives a `semicolon` finding at 2:13 with exit 1 on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 - [ ] **The re-vendored ste-lint.py lints a quoted front-matter description without decoding it (Codex [P2],
       carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1355-1360` (upstream danyuchn
       `a4905d92`) lints the scalar's source text, not its value. `description: 'It can''t have failed.'` gives a
@@ -5510,6 +5513,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       path. Then re-vendor, move the pin and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a
       compare from `a4905d92` to danyuchn's HEAD changes how `_front_matter` or `_scalar_pieces` reads a quoted
       value, or the quoted-description case is reported as fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. `_front_matter` and `_scalar_pieces` (now line 1794) are unchanged. The item's reproduction still gives `present-perfect` at 3:25 on both copies, and a quoted description split across a line break gives `present-perfect` at 4:10 on both, so the new wrapped-phrase pass adds nothing here. Not fixed upstream; the next compare starts from `d714e536`.
 
 ## 91-causal-design-heldout-eval — 2026-11-12
 - [ ] **recommend-causal-design asks for an outcome-observation node that plan 91's reading rules count as an import
@@ -6040,7 +6044,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       case-sensitive file system, and the weekly job's 3.13 pass no longer lists `build` as failed.
       → progress 2026-11-17 (/deferred quick fix): fixed in `7642a19` and `f05293c`. The case suffix now comes from `differs_only_in_case` in `build/check_links.py`, which reads the directory listings, not `path.exists()`, and needs one name to differ in case. A case-sensitive APFS disk image reproduced the 2 CI failures first, and `test_check_links.py` passed 14 of 14 there at `7642a19` and passes 15 of 15 on this Mac at `f05293c`. The weekly job reads `main`, so the item stays open until its first 3.13 pass after the merge, by the owner's ruling at the branch's Step 4b review.
       → retired 2026-11-26: the done-when is met. The weekly job's 3.13 pass in run 45125177458 (2026-11-23) no longer lists `build` as failed. It lists three kit suites instead, a new failure → item: deferred-2026-11-26-parallel (no plan; /deferred pass, branch claude/deferred-task-parallelization-414a9a) — 2026-11-26
-- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+- [x] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-17 read
       danyuchn/asd-ste100-skill through `70736273` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
       re-vendored `scripts/ste-lint.py` at `70736273`. Size: quick-fix. Revisit if: a compare from `70736273`
@@ -6048,6 +6052,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       references/) or a LICENSE.
       → triggered 2026-11-27: danyuchn HEAD is `d714e536`, and its `65c8ab6e` changes `scripts/ste-lint.py` (it skips bare URLs and finds phrases that a line break splits); prithivrajmu HEAD is still `cf9787b6`.
       → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
+      → done 2026-11-27 (plan 114): danyuchn's compare `70736273...d714e536` has 2 commits. `65c8ab6e` (#72, Anton, `v-anton`) changes only `scripts/ste-lint.py`: it skips bare URLs and finds phrases that a line break splits. `d714e536` (#73) adds a version to `.claude-plugin/plugin.json`, which the skill does not adapt. No rule-set file or LICENSE changed, and prithivrajmu is still at `cf9787b6`. The owner chose to re-vendor: `scripts/ste-lint.py` is byte-identical to `d714e536` (blob `0b48290f`, mode kept 100644), in commit `0c2eb44`. Two new tests failed on the `70736273` copy, and the suite passes under 3.13 and `/usr/bin/python3` 3.9.6. NOTICE and both sources files move the pin and credit #72. The linter counts of `SKILL.md` and the rule do not change. The next review is filed → item: 114-ste-drift-and-obligation-word — 2026-11-27
 
 ## claude/deferred-a35864 Step 4b review — 2026-11-17
 - [ ] **The re-vendored ste-lint.py skips the prose after an unclosed fence in a list item (Codex [P2] at
@@ -6063,6 +6068,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to
       danyuchn's HEAD changes how the main pass ends a fence opened on a list-marker line, or the case is reported
       fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. The main-pass fence code moved from lines 1977-1980 to 2024-2027 with no change, and the item's reproduction still gives no finding on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 - [ ] **The re-vendored ste-lint.py reads a semicolon inside a multi-line code span as prose (Codex [P2] at
       `12c6bac`, carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:271-276` (upstream
       danyuchn `70736273`, from the commit of the same name) never lets a backtick after a backslash, or inside
@@ -6075,6 +6081,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to danyuchn's HEAD
       changes how a backtick after a backslash or in autolink-like text is read inside an open span, or the case
       is reported fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. #72 fills autolink ranges after `_gfm_autolinks`, but `_run_in_autolink` (line 246) and the span scan (lines 271-276) are unchanged. The item's reproduction, and the same span closed by a backtick inside `<https://x.io/`>`, both still give a `semicolon` finding at 2:5 with exit 1 on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 
 ## cc-guide-2.1.326-worktree-isolation (no plan; /cc-guide pass and the worktree-isolation owner ruling, branch claude/keen-khorana-08c3a1) — 2026-11-17
 - [ ] Watch the probe-backed facts of the guide's worktree-isolation section with a registered probe.
@@ -6549,3 +6556,30 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: after `uv run python install.py all --companions` on the owner's Mac, `agy agents`, Codex `/agents`
       and Claude Code `/agents` each list the same agents as before, with no `LICENSE-superpowers` entry and no
       startup warning, and the result is noted here.
+
+## 114-ste-drift-and-obligation-word — 2026-11-27
+- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+      `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-27 (plan 114) read
+      danyuchn/asd-ste100-skill through `d714e536` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
+      re-vendored `scripts/ste-lint.py` at `d714e536`. Size: quick-fix. Revisit if: a compare from `d714e536`
+      (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.
+- [ ] **Agent-mode rewrites guess an actor that the source does not name (plan 114, D9).** In plan 114's
+      micro-test, Sonnet 5.5 named "the upstream job" as the producer of partial artifacts in 2 of 5 treatment
+      `agent-instruction` replies, where the source is passive, and "the system" as the processing actor in 2 of 5
+      control `agent-error-message` replies. `skills/write-with-asd-ste100/SKILL.md`'s **Unknown actors** rule already
+      says "Do not guess an actor", so the guess comes from context the rep reads as an actor. It would take one
+      wording change to that rule, micro-tested against a control on both models with the kit at
+      `specs/baseline/red-baseline-ste-obligation-word/kit/` (record: `specs/baseline/red-baseline-ste-obligation-word.md`,
+      section 5). A wording change to measured text needs the owner's go-ahead. Size: plan. Done when: the
+      `agent-instruction` and `agent-error-message` cases pass the no-additions check at 4 of 5 or more on both models.
+- [ ] **Step 3 of `references/document-rewrite.md` lets an agent write through a symbolic link first (plan 114, D11).**
+      In plan 114's `doc-symlink` case, 7 of 14 reps (Opus 5.5 and Sonnet 5.5) rewrote `docs/guide.md`, a tracked link,
+      in place, which changed the link's dirty target `docs/manual.md`. Most ran the step's three checks as one `&&`
+      chain. On a link `test ! -L` fails, the chain stops and prints nothing, and the rep read the silence as an empty
+      status. Six restored the target, and one lost the uncommitted edit. The step lists the commands in one block and
+      says "Run all three commands", but not how to read a failed first command. It would take one wording change (for
+      example, run each check alone and read its exit status) and a re-run of `doc-symlink` on both models with the kit
+      above, plus a mechanical check that the target is never written. A wording change to measured text needs the
+      owner's go-ahead. Size: plan. Done when: at most 1 of 10 `doc-symlink` reps writes through the link, read from
+      the tool calls, and the case still passes at 4 of 5.
