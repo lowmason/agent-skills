@@ -8,6 +8,7 @@
   "kept_before": true,
   "kept_after": true,
   "locked_after": false,
+  "other_exit": null,
   "steps": {
    "control": {
     "ran": true,
@@ -40,6 +41,7 @@
   "broken": null,
   "exit_refused": true,
   "exit_marked": true,
+  "other_exit": null,
   "pwd_after": "plain-worktree"
  },
  "base-no-remote": {

@@ -814,11 +814,25 @@ def split_at(events: list[dict], tool: str) -> tuple[tuple[str, str] | None, lis
 
 
 def split_at_keep(events: list[dict]) -> tuple[tuple[str, str] | None, list, list]:
-    '''split_at for ExitWorktree calls whose action is WT_KEEP: the first that succeeded, else the first, so a
-    stray call the harness refused before ToolSearch loaded the tool is not the step.'''
+    '''split_at for ExitWorktree calls whose action is WT_KEEP: the first that succeeded or whose refusal carries
+    WT_NOOP_MARK, else the first, so a stray call the harness refused before ToolSearch loaded the tool is not
+    the step, and a later keep cannot hide a No-op.'''
     keeps = [c for c in positioned_calls(events, EXIT_TOOL) if c[2].get('action') == WT_KEEP]
-    succeeded = [c for c in keeps if call_failed(events, (c[1], tool_result_text(events, c[1]))) is False]
-    return split_around(events, succeeded or keeps)
+    answered = [c for c in keeps if keep_answered(events, c[1])]
+    return split_around(events, answered or keeps)
+
+
+def keep_answered(events: list[dict], tid: str) -> bool:
+    '''Whether an ExitWorktree call succeeded, or was refused with WT_NOOP_MARK, the CLI's own answer to keep.'''
+    text = tool_result_text(events, tid)
+    return text is not None and (not call_is_error(events, tid) or WT_NOOP_MARK in text)
+
+
+def other_exit(events: list[dict]) -> str | None:
+    '''The action of the first ExitWorktree call with an action other than WT_KEEP that succeeded, or None.'''
+    ran = [given for _, tid, given in positioned_calls(events, EXIT_TOOL)
+           if given.get('action') != WT_KEEP and call_failed(events, (tid, tool_result_text(events, tid))) is False]
+    return str(ran[0].get('action')) if ran else None
 
 
 def split_around(events: list[dict], marks: list) -> tuple[tuple[str, str] | None, list, list]:
@@ -882,13 +896,14 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
             'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
             'pwd_after': pwd_after(events, after, places),
             'locked_before': locked_before, 'kept_before': kept_before, 'kept_after': kept_after,
-            'locked_after': locked_after, 'steps': steps}
+            'locked_after': locked_after, 'other_exit': other_exit(events), 'steps': steps}
 
 
 def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
     exit_call, _, after = split_at_keep(events)
     refused = call_failed(events, exit_call)
     return {'exit_refused': refused, 'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
+            'other_exit': other_exit(events),
             'pwd_after': pwd_after(events, after, places)}
 
 
@@ -906,12 +921,13 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
     path or tool output. `places` maps main, worktree and plain-worktree to absolute paths. In isolation, a step
     is the first Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result:
     whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both
-    ExitWorktree runs, ExitWorktree is split_at_keep's call: the first keep call that succeeded, else the first
-    keep call. exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK;
-    kept_before and kept_after, whether the first WT_LIST result before or after ExitWorktree has the worktree's
-    own block, None when that list never ran or its result is an error; locked_before and locked_after, whether
-    that block has a WT_LOCKED line, None unless kept_before or kept_after; pwd_after, the place the first WT_PWD after
-    ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether
+    ExitWorktree runs, ExitWorktree is split_at_keep's call: the first keep call that succeeded or was refused
+    with WT_NOOP_MARK, else the first keep call, and other_exit is the action of the first ExitWorktree call with
+    another action that succeeded. exited is whether its result is not an error, and exit_marked whether it holds
+    WT_NOOP_MARK; kept_before and kept_after, whether the first WT_LIST result before or after ExitWorktree has
+    the worktree's own block, None when that list never ran or its result is an error; locked_before and
+    locked_after, whether that block has a WT_LOCKED line, None unless kept_before or kept_after; pwd_after, the
+    place the first WT_PWD after ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether
     its result holds WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error,
     and has_pushed and has_unpushed read the first WT_LOG result after it, line by line. A value that no call
     shows is None.'''
@@ -927,7 +943,8 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
 
 def worktree_errors(sightings: dict) -> list[str]:
     '''Why the runs prove nothing: a run broke, a step never ran, a step was refused without the isolation
-    mark or an ExitWorktree without WT_NOOP_MARK (refused for another reason), the list before ExitWorktree did
+    mark or an ExitWorktree without WT_NOOP_MARK (refused for another reason), an ExitWorktree with another
+    action than keep succeeded, the list before ExitWorktree did
     not show the worktree, or a base run never
     entered a worktree or logged no WT_PUSHED.'''
     errors = [f"{part}: the run broke: {sightings[part]['broken']}" for part in WT_PARTS if sightings[part]['broken']]
@@ -946,6 +963,8 @@ def worktree_errors(sightings: dict) -> list[str]:
         ('isolation', f'{WT_PWD} after {EXIT_TOOL}', isolation['pwd_after']),
         ('noop', EXIT_TOOL, noop['exit_refused']),
         ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
+    errors += [f'{part}: {EXIT_TOOL} ran with action {sightings[part]["other_exit"]}, not {WT_KEEP}'
+               for part in ('isolation', 'noop') if sightings[part]['other_exit'] is not None]
     if isolation['kept_before'] is False:
         errors.append(f'isolation: {WT_LIST} before {EXIT_TOOL} did not list the worktree, so its lock reading proves '
                       'nothing')

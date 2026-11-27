@@ -32,7 +32,7 @@ from pathlib import Path
 import probe_checks
 from probe_checks import (ENTER_TOOL, EXIT_TOOL, WT_CONTROL, WT_GIT_SUBSHELL, WT_LIST, WT_LOG, WT_MAIN,
                           WT_PARTS, WT_PLAIN, WT_PLAIN_SUBSHELL, WT_PUSHED, WT_PWD, WT_UNPUSHED, Verdict)
-from probe_process import PROBE_TIMEOUT, Invocation, Probe, Read, claude_args
+from probe_process import GIT_ROUTING, PROBE_TIMEOUT, Invocation, Probe, Read, claude_args
 from state import ERROR, SetupError
 
 WORKTREE_TURNS = 20
@@ -46,7 +46,6 @@ GONE, GONE_ORIGIN = 'gone', 'gone-origin.git'
 NO_GLOBAL_GIT = {'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1'}
 GIT_IDENTITY = ('-c', 'user.name=probe', '-c', 'user.email=probe@example.invalid', '-c', 'commit.gpgsign=false')
 RUN_ENV = {'CLAUDE_CODE_DISABLE_ADVISOR_TOOL': '1', **NO_GLOBAL_GIT}
-DROPPED_ENV = ('GIT_',)  # a caller's GIT_DIR or GIT_WORK_TREE would aim the runs' git at its own repository
 ALLOW = ('Bash', 'ExitWorktree', 'EnterWorktree', 'ToolSearch')
 PREAMBLE = ('Do these steps in order. Run each command with the Bash tool, one call for each command, exactly as '
             'written, and do not retry a command in another form. If the {tool} tool is not loaded, load it with '
@@ -149,7 +148,7 @@ def prepare_worktrees(scratch: Path, claude: str, repo: Path) -> list[Invocation
                                          mode='default', allow=ALLOW,
                                          extra=('--strict-mcp-config',
                                                 *(('--worktree', WORKTREE_NAME) if name == 'isolation' else ()))),
-                       RUN_ENV, PROBE_TIMEOUT, cwd=cwds[name], drop_prefixes=DROPPED_ENV)
+                       RUN_ENV, PROBE_TIMEOUT, cwd=cwds[name], drop_prefixes=GIT_ROUTING)
             for name in WT_PARTS]
 
 

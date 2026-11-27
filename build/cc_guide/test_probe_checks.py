@@ -1298,10 +1298,11 @@ def test_the_recorded_shape_gives_these_sightings(tmp_path):
     base = {'broken': None, 'entered': True, 'has_pushed': True}
     assert pc.worktree_sightings(wt_streams(places), places) == {
         'isolation': {'broken': None, 'exited': True, 'exit_marked': False, 'pwd_after': 'main', 'locked_before': True,
-                      'kept_before': True, 'kept_after': True, 'locked_after': False,
+                      'kept_before': True, 'kept_after': True, 'other_exit': None, 'locked_after': False,
                       'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
                                 'plain_subshell': ran, 'main_git_after': ran}},
-        'noop': {'broken': None, 'exit_refused': True, 'exit_marked': True, 'pwd_after': 'plain-worktree'},
+        'noop': {'broken': None, 'exit_refused': True, 'exit_marked': True, 'other_exit': None,
+                 'pwd_after': 'plain-worktree'},
         'base-no-remote': {**base, 'has_unpushed': True}, 'base-failed-fetch': {**base, 'has_unpushed': False}}
 
 
@@ -1598,3 +1599,54 @@ def test_a_list_before_exit_worktree_without_the_worktree_is_an_error(tmp_path):
     assert pc.assess_worktree_isolation(sightings) == (
         ERROR, 'isolation: git worktree list --porcelain before ExitWorktree did not list the worktree, so its lock '
                'reading proves nothing')
+
+
+def test_a_noop_no_op_keep_then_a_successful_keep_reads_the_no_op(tmp_path):
+    '''Codex P2, round 2: the first keep call that succeeded or carries the No-op mark is the step, so a later
+    successful keep, after the model entered a worktree of its own, does not hide the No-op.'''
+    places = wt_places(tmp_path)
+    events = wt_stream(WT_LOAD_EXIT, wt_exit(WT_NO_OP, True), wt_bash('pwd', places['plain-worktree']),
+                       ('EnterWorktree', {'name': 'probe'}, 'Created worktree', None),
+                       wt_exit(WT_EXITED.format(where=places['worktree'], main=places['plain-worktree']), None))
+    sightings = pc.worktree_sightings(wt_streams(places, noop=events), places)
+    assert (sightings['noop']['exit_refused'], sightings['noop']['exit_marked']) == (True, True)
+    assert pc.assess_worktree_isolation(sightings) == (PASS, WT_PASS)
+
+
+def test_an_unmarked_stray_keep_then_a_no_op_keep_reads_the_no_op(tmp_path):
+    '''The CLI refusing keep with its own No-op text after a stray pre-ToolSearch call is fact 2 changed.'''
+    places = wt_places(tmp_path)
+    calls = [(name, given, WT_NO_OP if name == 'ExitWorktree' else body, True if name == 'ExitWorktree' else is_error)
+             for name, given, body, is_error in wt_isolation_calls(places)]
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=wt_stream(wt_exit(WT_NOT_LOADED, True), *calls)),
+                                      places)
+    assert (sightings['isolation']['exited'], sightings['isolation']['exit_marked']) == (False, True)
+    outcome, said = pc.assess_worktree_isolation(sightings)
+    assert outcome == DIVERGES
+    assert 'isolation: ExitWorktree was refused' in said.split('; ')
+
+
+@pytest.mark.parametrize('part', ['isolation', 'noop'])
+def test_a_successful_exit_worktree_with_another_action_is_an_error(tmp_path, part):
+    '''Opus, round 2: a remove the model ran, then a keep the CLI refuses, must not read as the CLI's doing.'''
+    places = wt_places(tmp_path)
+    removed = ('ExitWorktree', {'action': 'remove'}, 'Removed the worktree.', None)
+    if part == 'isolation':
+        calls = wt_isolation_calls(places)
+        at = next(n for n, c in enumerate(calls) if c[0] == 'ExitWorktree')
+        events = wt_stream(*calls[:at], removed, wt_exit(WT_NO_OP, True), *calls[at + 1:])
+    else:
+        events = wt_stream(WT_LOAD_EXIT, removed, wt_exit(WT_NO_OP, True), wt_bash('pwd', places['plain-worktree']))
+    sightings = pc.worktree_sightings(wt_streams(places, **{part: events}), places)
+    assert sightings[part]['other_exit'] == 'remove'
+    outcome, said = pc.assess_worktree_isolation(sightings)
+    assert outcome == ERROR
+    assert f'{part}: ExitWorktree ran with action remove, not keep' in said.split('; ')
+
+
+def test_a_refused_exit_worktree_with_another_action_is_not_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    calls = wt_isolation_calls(places)
+    at = next(n for n, c in enumerate(calls) if c[0] == 'ExitWorktree')
+    refused = ('ExitWorktree', {'action': 'remove'}, WT_NOT_LOADED, True)
+    assert wt_verdict(places, isolation=wt_stream(*calls[:at], refused, *calls[at:])) == (PASS, WT_PASS)

@@ -31,6 +31,7 @@ SCRUBBED_ENV = frozenset({'CLAUDE_CODE_EFFORT_LEVEL'})
 # DIVERGES from agent-model-pins can be read against them (owner ruling, 2026-10-31).
 ALIAS_REMAPS = ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL', 'ANTHROPIC_DEFAULT_HAIKU_MODEL',
                 'ANTHROPIC_DEFAULT_FABLE_MODEL')
+GIT_ROUTING = ('GIT_',)  # inherited names such as GIT_DIR and GIT_WORK_TREE aim git at the caller's repository
 BUDGET_USD = '0.50'  # --max-budget-usd for one probe invocation
 PROBE_TIMEOUT = 600  # seconds for one probe invocation
 
@@ -66,9 +67,11 @@ class Probe(NamedTuple):
     reads_commands: bool = False
 
 
-def inherited_env() -> dict[str, str]:
-    '''The caller's environment less SCRUBBED_ENV: what every run starts from.'''
-    return {name: value for name, value in os.environ.items() if name not in SCRUBBED_ENV}
+def inherited_env(drop_prefixes: tuple[str, ...] = ()) -> dict[str, str]:
+    '''The caller's environment less SCRUBBED_ENV and less each name starting with one of drop_prefixes: what
+    every run starts from.'''
+    return {name: value for name, value in os.environ.items()
+            if name not in SCRUBBED_ENV and not name.startswith(drop_prefixes)}
 
 
 def inherited_remaps() -> list[str]:
@@ -90,7 +93,7 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     invocation adds, and runs from its cwd under `cwd`. After a normal exit, a run with sweep
     set has its group swept with SIGKILL, so a background child it left
     behind does not outlive the probe.'''
-    env = {name: value for name, value in inherited_env().items() if not name.startswith(inv.drop_prefixes)} | inv.env
+    env = inherited_env(inv.drop_prefixes) | inv.env
     with out.open('wb') as stdout, err.open('wb') as stderr:
         proc = None
         try:

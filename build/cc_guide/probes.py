@@ -32,8 +32,8 @@ import probe_worktrees
 from check import due_probes
 from docs import version_key
 from probe_checks import Verdict
-from probe_process import (PROBE_TIMEOUT, Execute, Invocation, Probe, Read, claude_args, execute, inherited_remaps,
-                           term_as_exit)
+from probe_process import (GIT_ROUTING, PROBE_TIMEOUT, Execute, Invocation, Probe, Read, claude_args, execute,
+                           inherited_env, inherited_remaps, term_as_exit)
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
@@ -634,7 +634,10 @@ def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
 
 
 def inside_a_repo(path: Path) -> bool:
-    proc = subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'], cwd=path, capture_output=True, text=True)
+    '''Whether git calls `path` part of a work tree, with no inherited GIT_ variable, since a git hook's GIT_DIR
+    would make git call any folder its repository's work tree.'''
+    proc = subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'], cwd=path, capture_output=True, text=True,
+                          env=inherited_env(GIT_ROUTING))
     return proc.returncode == 0 and proc.stdout.strip() == 'true'
 
 

@@ -1265,6 +1265,17 @@ def test_a_scratch_folder_inside_a_work_tree_is_an_error_and_is_removed(tmp_path
     assert scratch_folders(work / 'tmp') == []
 
 
+def test_an_inherited_git_dir_does_not_make_a_scratch_folder_read_as_inside_a_repo(tmp_path, monkeypatch):
+    '''A git hook exports GIT_DIR for its own repository; git would then call any folder that repository's work
+    tree, so every probe would read ERROR before it ran.'''
+    other = tmp_path / 'other'
+    other.mkdir()
+    subprocess.run(['git', 'init', '-q'], cwd=other, check=True, capture_output=True)
+    (tmp_path / 'scratch').mkdir()
+    monkeypatch.setenv('GIT_DIR', str(other / '.git'))
+    assert not probes.inside_a_repo(tmp_path / 'scratch')
+
+
 def test_scratch_is_removed_after_an_error_and_after_a_timeout(tmp_path, monkeypatch):
     tmp = tmp_path / 'tmp'
     tmp.mkdir()
