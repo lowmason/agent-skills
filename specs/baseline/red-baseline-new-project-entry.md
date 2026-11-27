@@ -10050,7 +10050,10 @@ that Task 6 reads, and it re-runs every case that the changed passage can reach.
    clause D (items as table rows, 5 reps).
 2. The `BASE113` arm also misses, so the run does not show that plan 113's edits caused the miss. The §5 Parking
    paragraph is the same at `2e91b05`, `BASE113` and `T-final` (a script compared it).
-3. With the other Date and Table items readings together, each arm passes 5 of 5.
+3. On the other Date reading alone (a placeholder heading passes C), `T-final` passes 3 of 5, at the bar, and `BASE113`
+   stays at 2 of 5. So the `T-final` miss rests on the Date reading of record. At `BASE113`, the other Table items
+   reading alone gives 3 of 5. The other Date reading with the other Item by description reading gives `T-final` 5 of
+   5. The other Date reading with the other Table items reading gives `BASE113` 5 of 5.
 4. Three of the four placeholder reps name the three-week gap between the frame date and the run day. At `2e91b05`
    the gap was four days.
 
