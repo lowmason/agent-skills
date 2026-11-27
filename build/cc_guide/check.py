@@ -3,6 +3,7 @@ selected blocks with the baseline, list each section's untriaged releases
 and the files citing it, and report what is due (drift spec R6). For
 `--hook` (R6.10), notice.py turns the report into the session-start notice;
 packets.py builds R6.11's packets from these parts.'''
+import contextlib
 import hashlib
 import http.client
 import json
@@ -180,7 +181,11 @@ def swap_latest(cache: Path, generation: Path) -> None:
     old generation or the new one, never neither. A real latest/ folder, as
     caches before plan 109 hold, is first renamed aside as a generation: a
     one-time migration with a short gap. Then prune every generation but the
-    new one and the one it replaced, which a reader may have just resolved.'''
+    new one and the one it replaced, which a reader may have just resolved.
+    Touch the replaced one first: prune_generations ages a folder by its
+    mtime, so one last written over STAGING_GRACE ago would go in the next
+    swap, however soon that comes. One already gone, as a hand-made dangling
+    link leaves, is skipped.'''
     link = cache / LATEST
     keep = {generation}
     if link.is_symlink():
@@ -192,6 +197,9 @@ def swap_latest(cache: Path, generation: Path) -> None:
     temp = cache / f'.{LATEST}-{secrets.token_hex(TEMP_NAME_BYTES)}'
     temp.symlink_to(generation.name)
     os.replace(temp, link)
+    for replaced in keep - {generation}:
+        with contextlib.suppress(FileNotFoundError):
+            os.utime(replaced)
     prune_generations(cache, keep, time.time())
 
 
