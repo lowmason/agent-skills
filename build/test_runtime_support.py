@@ -1315,3 +1315,45 @@ def test_pointed_licenses_reads_only_license_lines_in_order_without_repeats(tmp_
   assert install.pointed_licenses(source) == ['LICENSE-b-two', 'LICENSE-a', 'LICENSE-c']
   source.write_text('---\nname: x\n---\nbody\n')
   assert install.pointed_licenses(source) == []
+
+
+def test_each_agent_license_is_installed_once_across_agents(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  (root / 'agents').mkdir(parents=True)
+  texts = {'a': ['one', 'two'], 'b': ['one'], 'c': ['other']}
+  for word in ('one', 'two', 'other'):
+    (root / f'LICENSE-{word}').write_text('text\n')
+  for agent, words in texts.items():
+    (root / 'agents' / f'{agent}.md').write_text(
+      '---\n' + ''.join(f'# license: MIT. See LICENSE-{word}.\n' for word in words) + '---\n'
+    )
+  monkeypatch.setattr(install, 'REPO', root)
+  agents = install.file_items(root / 'agents', '.md', tmp_path / 'dest')
+  items = install.agent_license_items(agents, tmp_path / 'dest')
+  assert [(item.source.name, item.destination) for item in items] == [
+    (f'LICENSE-{word}', tmp_path / 'dest' / f'LICENSE-{word}') for word in ('one', 'two', 'other')
+  ]
+
+
+def test_missing_license_refusal_names_the_agent_relative_to_the_repository(
+  tmp_path, monkeypatch, capsys
+):
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  make_skill(root)
+  (root / 'agents').mkdir()
+  (root / 'agents' / 'x.md').write_text('---\n# license: MIT. LICENSE-gone.\n---\n')
+  monkeypatch.setattr(install, 'REPO', root)
+  assert install.main(['claude', '--home', str(tmp_path / 'home')]) == 1
+  assert capsys.readouterr().err == (
+    'install: agents/x.md: license pointer names LICENSE-gone, '
+    'which is not a file at the repository root\n'
+  )
+
+
+def test_pointed_licenses_ignores_a_license_marker_inside_a_line(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  source = tmp_path / 'x.md'
+  source.write_text('---\ndescription: tag # license: LICENSE-mid\n---\n')
+  assert install.pointed_licenses(source) == []
