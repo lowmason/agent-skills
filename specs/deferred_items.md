@@ -2276,7 +2276,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
       (a)–(c) land, with the new tests passing on both interpreters. → done in plan 61
-- [ ] Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5
+- [x] Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5
       and its Decision 10, found 2026-10-03; re-verified 2026-10-18: `data/` holds
       `census_occ_*` files only, and no spec scopes IND out). CPS has used the 2022 Census
       industry classification since January 2025 (`skills/bls-data-context/references/cps.md:309`),
@@ -2291,6 +2291,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Size: design. Done when: the owner picks a path and it lands.
       → progress 2026-11-17 (owner ruling): bundle path. Mirror the OCC pattern in `scripts/build.py` with `census_ind_2017`, `census_ind_2022` and a NAICS expansion, and update the file table and recipes (a plan, and the description change needs a micro-test).
       → planned 2026-11-26: specs/plans/111-codes-and-bls-reference-skills.md
+      → done 2026-11-26 (plan 111)
 - [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
       rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
       bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census
@@ -2298,7 +2299,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       notice (still "TBD" on bls.gov/soc/2028 when the audit read it,
       `revision-process.md:154`). A rebuild should land the count test from the H3 item in this
       section first. Size: plan. Revisit if: any of those three publications appears.
-- [ ] Add tests for the classification-codes and geographic-codes builds (audit-3-10-26 H3, found
+- [x] Add tests for the classification-codes and geographic-codes builds (audit-3-10-26 H3, found
       2026-10-03; re-verified 2026-10-18, all three parts open). (a) Three validators have no
       test: `validate_naics_concordance` (`skills/classification-codes/scripts/build.py:380`),
       `validate_soc_crosswalk` (`:581`) and `validate_census_occ` (`:651`); write RED-first
@@ -2317,7 +2318,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       archive, so there is nothing left to sequence around. The line anchors above still hold
       on 2026-11-15.
       → planned 2026-11-26: specs/plans/111-codes-and-bls-reference-skills.md
-- [ ] Clean up bls-data-context's OEWS reference and research residue (audit-3-10-26 B4,
+      → done 2026-11-26 (plan 111)
+- [x] Clean up bls-data-context's OEWS reference and research residue (audit-3-10-26 B4,
       found 2026-10-03; parts (8) to (10) of the audit_1_3_26 P2-tier item in this section).
       The three parts left that item when the skill was archived on 2026-10-27, before the
       owner picked its keepers on 2026-10-31, so no ruling covers them. The skill came back
@@ -2332,6 +2334,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       dropped.
       → progress 2026-11-17 (owner ruling): keepers are (8), (9) and (10), all three. (8) Rewrite `references/oews.md` from a downloader build-spec into a reference with panel, vintage and series-ID anatomy. (9) Remove the research-session residue at `qcew.md:5`, `cps.md:547` and `oews.md:45`. (10) LAUS gets a selector row in `SKILL.md`, or leaves the description (a description change needs a micro-test).
       → planned 2026-11-26: specs/plans/111-codes-and-bls-reference-skills.md
+      → done 2026-11-26 (plan 111)
 - [x] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
       only grows (audit-3-10-26 B1 and B6, found 2026-10-03; re-verified 2026-10-18 — no
       commit has touched `skills/writing-plans/references/deferred-backlog.md`,
@@ -6490,3 +6493,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan (lane 3 of the 2026-11-26 pass, with the `build/run_suites.py` items). Done when: the weekly job's
       3.13 pass lists none of the three kit suites as failed.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
+
+## 111-codes-and-bls-reference-skills — 2026-11-26
+- [ ] Put the Census industry (IND) counts in `skills/classification-codes/SKILL.md` prose under the count test
+      (final review of plan 111, owner ruled defer). The NAICS-semantics prose (`SKILL.md`, lines near 170-172)
+      states 271 and 266 codes and 1,057 and 1,012 six-digit codes. Task 1's `test_skill_table_counts_match_data`
+      covers the `## Files` table and the listed parenthetical counts only, so these numbers can drift after a
+      rebuild with no test failing. They are correct today. Size: quick-fix. Done when: a count test in
+      `skills/classification-codes/scripts/test_build.py` fails when one of these four numbers drifts.
+- [ ] Add a note to `skills/classification-codes/SKILL.md` on bridging Census IND 2017 codes to 2022 codes (final
+      review of plan 111, owner ruled defer). The bundled 2022 workbook carries an IND crosswalk, and plan 111 (F7)
+      kept it out of the data files. A join through `naics_2017_to_2022` is possible but is not described.
+      Size: quick-fix. Done when: SKILL.md says how to bridge IND 2017 and 2022, or the owner rules that no note is wanted.

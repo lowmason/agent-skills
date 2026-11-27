@@ -837,3 +837,25 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "**Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers" (deferred by 107-writing-skills-improvements).
+
+## 111-codes-and-bls-reference-skills — 2026-11-26
+Plan: specs/plans/completed/111-codes-and-bls-reference-skills.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 2, owner): a six-digit NAICS code may carry one exact or prefix claim plus any number of partial claims. Two or more non-partial claims stop the build, except the named 928110 override. Inside one Census code, prefix beats partial. This amends F5's double-claim sentence — without it the catch-all codes (3990 "Part of 31, 32, 33") break the build — the build would stop on 539 (2017) and 507 (2022) codes if wrong.
+- Ruling (Task 2, owner): a named constant `CENSUS_IND_PARTIAL_OVERRIDES`, keyed on vintage 2017 and NAICS 928110, treats the eight 2017 claims on 928110 (9590's prefix `928` and the seven military codes' exact `928110`) as shared partial claims, as Census did in its 2022 list — the 2017 expansion would not build if wrong.
+- Ruling (Task 5): the kept OMB body ("Each May vintage is an independent cross-section") stays as it is, and section 2 of `oews.md` explains the two senses of "independent" — the plan freezes that body and `ces.md` points into it — a reader of the body alone may take the vintages as independent samples.
+- Ruling (Task 5): the reference-index cell for `oews.md` in `skills/bls-data-context/SKILL.md` was changed, although the brief limits SKILL.md to the selector table — the Global Constraints allow the file and the cell promised a schema the rewrite removed — an agent would look for a schema that is gone.
+- Ruling (Task 5): `oews.md` states both industry-detail claims, the Handbook's (selected 5- and 6-digit levels) and `oe.txt`'s (sector, 3-, 4- and 5-digit), with their sources, and says they differ — one source would be trusted without the other's wording if wrong.
+- Deviation (Task 2): the data broke F5, as the two rulings above say. Review Focus 2's armed-forces note is wrong for the real files: only code 9920 is unmapped. The 2017 sheet says 270 codes and the build finds 271. Source: plan, Task 2.
+- Deviation (Task 2): `naics_cell` is stored as published, trailing spaces included, as the Interfaces block says. Source: plan, Task 2.
+- Deviation (Task 3): the kit test grew to 162 tests with 126 mutants. Rule 5 also voids a search whose glob, root or result reaches a quarantined file, and the write-up registers readings beyond the brief (a `--max-turns` or budget end is normal), which the owner accepted before any rep. Source: plan, Task 3.
+- Deviation (Task 4): the trigger test passed on both models with 108 of 108 valid reps at $15.00. It shows no loss and cannot show a gain, because `old` already loaded on every should-load rep. Source: plan, Task 4.
+- Deviation (Task 5): the owner chose the built-in browser pane for the BLS sources, with no email export. Source: plan, Task 5.
+- Deviation (final review): a blank NAICS cell on a mapped Census industry code now stops the build (`CENSUS_IND_UNMAPPED`, 9920 only), `oews.md`'s government-census line was narrowed to what the Handbook says, two `cps.md` residue labels were reworded, and `oews.md` gained a footnote note. Source: ledger, final review and gate.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 111-codes-and-bls-reference-skills.
+
+Closed earlier deferred items:
+- "Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5" (deferred by audit-3-10-26 routing).
+- "Add tests for the classification-codes and geographic-codes builds (audit-3-10-26 H3, found" (deferred by audit-3-10-26 routing).
+- "Clean up bls-data-context's OEWS reference and research residue (audit-3-10-26 B4," (deferred by audit-3-10-26 routing).
