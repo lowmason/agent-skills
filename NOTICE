@@ -11,10 +11,20 @@ installer) therefore keeps the notice the MIT license requires. The root files
 are canonical, and build/check_provenance.py checks that every copy is
 byte-identical to its root file.
 
+Two agent definitions are adapted from superpowers: agents/code-reviewer.md and
+agents/task-reviewer.md. An agent installs as a single file. So each of the
+two, and each of its generated adapters under runtimes/, carries one
+`# license:` comment line that points to LICENSE-superpowers. When install.py
+installs the agents, it puts LICENSE-superpowers in the same agents directory.
+build/check_provenance.py checks the pointers (AGENT_LICENSES). The other
+agents under agents/ are original works by Lowell Mason under this
+repository's MIT license.
+
 Files under runtimes/ are mechanically generated format adapters for the
 canonical agents/*.md and commands/*.md sources. They reproduce the source
 instruction bodies without changing their provenance or license; each adapter
-inherits the attribution and license of its canonical source. The adapter
+inherits the attribution and license of its canonical source. An adapter of
+a superpowers-derived agent also carries its source's `# license:` line. The adapter
 generator, installer, runtime entrypoint files, and compatibility documentation
 are original works by Lowell Mason under this repository's MIT license.
 
@@ -580,6 +590,10 @@ Changes from upstream:
     It names the sections of this repo's Claude Code guide that the file
     rests on, so a docs change flags it for review
     (specs/completed/claude-code-drift-automation-spec.md, R4). No parsed field changed.
+  - agents/code-reviewer.md and agents/task-reviewer.md gained one
+    `# license:` YAML comment above the `# cc-guide:` line on 2026-11-27
+    (plan 112). It points to LICENSE-superpowers, which install.py now
+    installs beside the agents. No parsed field and no body text changed.
   - Five fixes were later adopted FROM upstream (plan 50, 2026-10-18),
     each read at the upstream commit named here and each shown failing
     here, by a test or a probe, before it was ported. 6015d37 and c8921b5
