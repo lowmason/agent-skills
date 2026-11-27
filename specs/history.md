@@ -837,3 +837,35 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "**Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers" (deferred by 107-writing-skills-improvements).
+
+## 109-cc-guide-fetch-notice-and-probes — 2026-11-26
+Plan: specs/plans/completed/109-cc-guide-fetch-notice-and-probes.md · Spec: specs/completed/claude-code-drift-automation-spec.md (retired)
+
+Differences from the design:
+- Ruling: plan Step 5's "passes unchanged" claim for test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again is wrong; the one-line read-through-link change is kept — the old saved path is now a kept generation, no assertion loosened — if wrong, nothing lost (Mutant 4 still catches it).
+- Ruling: reviewer's note that cli.py rebaseline/packets.load resolve latest more than once — not a Task 1 finding; Task 2 fixes exactly this — if wrong, Task 2's own test fails.
+- Ruling: Task 2 state.py copy_to_snapshot source param and 2 extra packets tests are outside the brief's file list but inside lane and needed for D11 — kept — if wrong, revert the param and copy re-resolves latest.
+- Ruling: reviewer's Declined-to-judge (404 page also left out; legacy real latest/ renamed aside) — parked, not spec-wording defects — if wrong, a later spec touch-up.
+- Ruling: Task 6 review Important 1 (a parent that skips a PAYLOAD_AGENTS dispatch gets a finding that does not name the parent; brief lists only 3 check_parent conditions) — extend the check as the reviewer proposes, in assess_agent_payload before the empty-log check, since Plan Review Focus 4 and the plan Goal require ERROR naming the parent and the three-condition list is silent, not exclusive — if wrong, one extra ERROR branch to delete.
+- Ruling, contradicts spec (Task 8): `explore-override` reads the canary tokens and marks that subagents echo from their own context, while spec R10.5 says "Never assert on the model's prose." The lines are random tokens the subagent was told to echo, and a subagent's context shows only in its output, so the plan's design stays and a docstring clause names the exception. The owner ruled on 2026-11-26 to keep the probe and amend R10.5, so the spec now carries an owner-tagged exception (926b44f) — the owner would have had Task 8 reverted if wrong.
+- Ruling: final Important 1 (packets.group_docs re-resolves latest_docs and calls copy_to_snapshot with no source; plan Task 2 Step 3 exempted a nonexistent `snapshot_pages`) — fix: group_docs reads the generation load pinned — if wrong, a verify packet could snapshot newer pages under an older head.
+- Ruling: final Important 3 (probe registration commits 570f640 and 395b5d3 precede their PROBES row commits a7fbe3e and b232910; five commits fail the fixture tests) — accept the split, no history rewrite; main's tip is what check and the notice read — if wrong, a bisect through those 5 commits hits a red suite.
+- Ruling: Codex P1 (SIGKILL by logged pid after a 5 s poll could hit a reused pid) — decline: the brief prescribes os.kill(pid, 0) polling, the window is 5 s, pid reuse needs a pid-space wrap, pids 0, 1 and own are excluded — if wrong, an unrelated same-user process is killed once.
+- Ruling: Codex P2 (legacy-latest migration race: two overlapping first checks with a head move) — decline: a one-time migration, needs two checks and a changelog move in the same minutes; the result is stale pages under an old head until the next head move — if wrong, one stale fetch.
+- Ruling: Codex P2 (prune grace runs from the generation's mtime, not from the replacement time) — decline: a reader must pin a generation older than an hour and see two swaps during one millisecond-scale read — if wrong, a reader errors once and the next run recovers.
+- Ruling: Codex P2 (teardown hook's 120 s life can end before a slow successful turn, giving a false DIVERGES) — decline: the probe turn is one short reply; a false DIVERGES stops and reports to the owner, never a silent pass — if wrong, one re-run.
+- Deviation (Task 1): Step 5's claim that `test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again` passes unchanged was wrong. It saved a generation path that the swap now keeps, so one line reads through the link. Fix round 1 added `test_the_swap_never_leaves_latest_missing` and `test_a_live_swap_prunes_on_the_wall_clock`: the atomic flip and the grace through a live swap had no test. Source: plan, Task 1.
+- Deviation (Task 2): Task 2 also gave `state.copy_to_snapshot` an optional `source` and added two packets tests (D11). Step 3 exempted `packets.py:249` as `snapshot_pages`, but that line is inside `group_docs`, which still re-resolved `latest`. The final review found it, and commit ef52e5a fixed it with three tests. Source: plan, Task 2.
+- Deviation (Task 4): Step 7's mutant was applied as `due['blocks'] = 0` outside the `if docs is not None:` block, a stand-in that the new assertion also catches for the plan's mutant. Source: plan, Task 4.
+- Deviation (Task 6): the controller ran Step 7 live after review and committed the `PROBES.md` row apart (4d71bb5). Review added `check_dispatched`, an ERROR naming the parent when it never dispatches a `PAYLOAD_AGENTS` type, beyond `check_parent`'s three conditions, and a mutant for the obedient-parent path. Source: plan, Task 6.
+- Deviation (Task 7): fix round 1 added a test for the model-conflict ERROR under the `Agent` matcher. Source: plan, Task 7.
+- Deviation (Task 8): the controller ran the live Step 6 between Steps 5 and 7, so the registration commit (570f640) precedes the row commit (a7fbe3e). The implementer added `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=300000` per rep and a rep-count guard, neither in the plan. Review added canary-leak rows for one Agent call. The owner ruled on 2026-11-26 that spec R10.5 excepts `explore-override` (926b44f). Source: plan, Task 8.
+- Deviation (Task 9): the same split (registration 395b5d3, row b232910). The implementer added the `startup` matcher, a third replay case and a PermissionError test. Review added a test that a `hook_started` event gives no outcome. Source: plan, Task 9.
+- Deferred: 4 items. Source: specs/deferred_items.md, § 109-cc-guide-fetch-notice-and-probes.
+
+Closed earlier deferred items:
+- "Test-coverage gaps in the drift notice (plan 49 task reviews; left at the completion" (deferred by 49-claude-code-drift-automation).
+- "Write `latest/` as a whole, not page by page (plan 51 final review, Minor; the owner chose to" (deferred by 51-claude-code-drift-automation).
+- "Two Stage 5 probe candidates from the 2026-10-20 rulings, where the docs are silent." (deferred by cc-drift-upkeep-2026-10-20).
+- "The `agent-payload` probe cannot tell a parent session that disobeyed its prompt from real drift" (deferred by 69-agent-payload-probe).
+- "Review Minors from plan 69's final review (code, triaged defer). `first_by_type` in" (deferred by 69-agent-payload-probe).

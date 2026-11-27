@@ -1,5 +1,7 @@
 # cc_guide fetch, notice and probes Implementation Plan
 
+**Status: COMPLETE (2026-11-26)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close lane 2 of the 2026-11-26 `/deferred` pass: `check` swaps `latest/` in whole, the drift notice's test gaps get tests, the `agent-payload` probe tells a disobedient parent from drift, and two Stage 5 probes are registered and run.
@@ -68,7 +70,7 @@ Item: section `51-claude-code-drift-automation`, "Write `latest/` as a whole, no
   - `prune_generations(cache: Path, keep: set[Path], now_epoch: float) -> None`
   - `STAGING_GRACE = 3600` (seconds)
 
-- [ ] **Step 1: Write the failing tests** in `test_check.py`. Delete `test_a_new_head_is_recorded_only_after_every_page_is_written` (D6). Add these, using the file's `serving` and `NOW`:
+- [x] **Step 1: Write the failing tests** in `test_check.py`. Delete `test_a_new_head_is_recorded_only_after_every_page_is_written` (D6). Add these, using the file's `serving` and `NOW`:
 
 ```python
 def test_a_check_that_fails_partway_leaves_latest_as_it_was(tmp_path, docs_dir, monkeypatch):
@@ -115,12 +117,12 @@ def test_a_legacy_latest_folder_is_migrated_to_a_generation(tmp_path, docs_dir):
     # the head was unchanged, so the pages were seeded: the fetch log holds changelog and llms only
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build/cc_guide && uv run --with pytest python -m pytest -q test_check.py -k 'generation or latest or partway or legacy or pruning'`
 Expected: FAIL (`state` has no `LATEST`, `latest_dir` or `GENERATION_PREFIX`).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
   - Add the `state.py` names from Interfaces. Point `fetch_record(cache)` and `read_fetch(cache)` at `latest_dir(cache)`.
   - In `live_docs`:
     1. Read `previous` from `read_fetch(cache)`.
@@ -137,19 +139,21 @@ Expected: FAIL (`state` has no `LATEST`, `latest_dir` or `GENERATION_PREFIX`).
   - `prune_generations`: `shutil.rmtree` every `GENERATION_PREFIX` folder in `keep`'s complement whose mtime is at least `STAGING_GRACE` before `now_epoch`.
   - `prime_cache` writes a generation folder and links `latest` to it, so fixtures match a live check. Add a `legacy: bool = False` parameter that keeps the old real-folder layout for the migration test.
 
-- [ ] **Step 4: Update `test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cache_files`.** `rglob` does not follow the link, so assert the written set with the generation name read from `os.readlink(cache / state.LATEST)` in place of `latest`, plus the `latest` link itself (`p.is_symlink()`).
+- [x] **Step 4: Update `test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cache_files`.** `rglob` does not follow the link, so assert the written set with the generation name read from `os.readlink(cache / state.LATEST)` in place of `latest`, plus the `latest` link itself (`p.is_symlink()`).
 
-- [ ] **Step 5: Run the whole suite**
+- [x] **Step 5: Run the whole suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS. In particular, `test_a_failed_page_fetch_exits_two_without_comparing_that_page`, `test_a_404_removes_the_stale_copy_and_reads_as_a_missing_page` and `test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again` pass unchanged (D4). Fix any other test that lists cache paths through `rglob` in the same way as Step 4, and name each one in the report.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/cc_guide/state.py build/cc_guide/check.py build/cc_guide/cc_fixtures.py build/cc_guide/test_check.py
 git commit -m "fix(cc-guide): build each fetch in its own generation and swap latest to it"
 ```
+
+> Deviation: Step 5's claim that `test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again` passes unchanged was wrong. It saved a generation path that the swap now keeps, so one line reads through the link. Fix round 1 added `test_the_swap_never_leaves_latest_missing` and `test_a_live_swap_prunes_on_the_wall_clock`: the atomic flip and the grace through a live swap had no test.
 
 ### Task 2: readers pin one generation
 
@@ -161,48 +165,50 @@ git commit -m "fix(cc-guide): build each fetch in its own generation and swap la
 **Interfaces:**
 - Consumes: `state.latest_dir`, `state.read_fetch_at`, `state.fetch_record_in` (Task 1).
 
-- [ ] **Step 1: Write the failing test** `test_rebaseline_head_hashes_the_generation_whose_record_it_read` in `test_cli.py`:
+- [x] **Step 1: Write the failing test** `test_rebaseline_head_hashes_the_generation_whose_record_it_read` in `test_cli.py`:
   1. Prime a cache at head 2.1.902 (`prime_cache`).
   2. Monkeypatch `cli.read_fetch_at` with a wrapper that returns the real record, then runs `check.live_docs` at head 2.1.903 with an edited page. That flips the link between the two reads.
   3. Run `baseline rebaseline <group> --head 2.1.902`. Assert it exits 0, and that the stored hash is the 2.1.902 page's.
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `cd build/cc_guide && uv run --with pytest --with pyyaml python -m pytest -q test_cli.py::test_rebaseline_head_hashes_the_generation_whose_record_it_read`
 Expected: FAIL (`cli` has no `read_fetch_at`).
 
-- [ ] **Step 3: Implement.** In `run_baseline`'s rebaseline branch:
+- [x] **Step 3: Implement.** In `run_baseline`'s rebaseline branch:
   1. Resolve `root = latest_dir(cache)` once.
   2. Read the record with `read_fetch_at(root)`.
   3. Pass `root / 'docs'` to `baseline.rebaseline`.
 
   Make the same change in `packets.load`: one `root` for `read_fetch_at`, `offline_docs` and `releases_of`'s path. `packets.py:249` (`snapshot_pages`) keeps `latest_docs`.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/cli.py build/cc_guide/packets.py build/cc_guide/test_cli.py
 git commit -m "fix(cc-guide): read a fetch's record and pages from one generation"
 ```
 
+> Deviation: Task 2 also gave `state.copy_to_snapshot` an optional `source` and added two packets tests (D11). Step 3 exempted `packets.py:249` as `snapshot_pages`, but that line is inside `group_docs`, which still re-resolved `latest`. The final review found it, and commit ef52e5a fixed it with three tests.
+
 ### Task 3: amend the drift spec (Layout, R6.3, R6.4)
 
 **Files:**
 - Modify: `specs/completed/claude-code-drift-automation-spec.md:5-9, 269, 646-662`
 
-- [ ] **Step 1: Add after the `**Amended 2026-11-15**` paragraph (line 9), as its own paragraph:**
+- [x] **Step 1: Add after the `**Amended 2026-11-15**` paragraph (line 9), as its own paragraph:**
 
 ```markdown
 **Amended 2026-11-26** by plan 109 (`specs/plans/109-cc-guide-fetch-notice-and-probes.md`): `check` writes each
 fetch into its own generation folder and swaps the `latest` symlink to it at once (Layout, R6.3, R6.4).
 ```
 
-- [ ] **Step 2: Replace line 269**
+- [x] **Step 2: Replace line 269**
 
 Replace: `  - `latest/docs/`: the last fetch;`
 With:
@@ -212,7 +218,7 @@ With:
     and `fetch.json`; the swap keeps the generation it replaced (owner, plan 109, 2026-11-17);
 ```
 
-- [ ] **Step 3: Replace R6.3's first sentence pair.** Replace the text from `Fetch \`changelog.md\` and \`llms.txt\` on every run.` through `on another ref's manifest, maps it again.` with:
+- [x] **Step 3: Replace R6.3's first sentence pair.** Replace the text from `Fetch \`changelog.md\` and \`llms.txt\` on every run.` through `on another ref's manifest, maps it again.` with:
 
 ```markdown
 Fetch `changelog.md` and `llms.txt` on every run. When the changelog head matches the last fetch's, the new
@@ -222,7 +228,7 @@ generation. `fetch.json` records one head for a whole generation, and a page car
 would vouch for old text when a later run, on another ref's manifest, maps it again (owner, plan 109, 2026-11-17).
 ```
 
-- [ ] **Step 4: Replace R6.4's second and third sentences.** Replace from `Pages are written` through `names a finished fetch.` with:
+- [x] **Step 4: Replace R6.4's second and third sentences.** Replace from `Pages are written` through `names a finished fetch.` with:
 
 ```markdown
 Each run writes its pages, `changelog.md`, `llms.txt` and `fetch.json` (the fetch time and changelog head) into a
@@ -236,12 +242,12 @@ resolves the link once and reads both from that generation (owner, plan 109, 202
 
   Leave the rest of R6.4 (`Every session and checkout shares this…`) and the status line as they are.
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `uv run python build/check_links.py && uv run python build/cc_guide/cli.py lint`
 Expected: `0 broken`. `lint` prints no new `STALE` line for the spec.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/completed/claude-code-drift-automation-spec.md
@@ -257,36 +263,38 @@ Item: section `49-claude-code-drift-automation`, "Test-coverage gaps in the drif
 
 These tests cover working code, so none fails first. Each step names a **mutant**: a one-line source change that must turn the new test red. Apply the mutant, run the test and see FAIL, revert the mutant, and see PASS. Record each pair in the task report.
 
-- [ ] **Step 1: A FetchError through the CLI.** Add `test_check_hook_turns_a_failed_fetch_into_the_error_notice`:
+- [x] **Step 1: A FetchError through the CLI.** Add `test_check_hook_turns_a_failed_fetch_into_the_error_notice`:
   - Setup: `cli.main([... 'check', '--hook', '--run', 'r1'], fetch=<a fetch that raises FetchError('…: timed out') for the changelog>)`, with no `--docs`, after `notice.record_check(cache, 0, earlier, 'r0')`.
   - Assert: exit 2; `capsys` empty; `shown(cache).startswith('cc-guide · check failed: ')` and names the URL; the record has `exit == 2` and `ok_epoch == int(earlier.timestamp())`.
   - Mutant: in `notice.after_check`, change `if code == 2:` to `if code == 3:`.
-- [ ] **Step 2: No cache.** Add `test_check_hook_with_no_cache_writes_nothing_and_prints_nothing`:
+- [x] **Step 2: No cache.** Add `test_check_hook_with_no_cache_writes_nothing_and_prints_nothing`:
   - Setup: monkeypatch `cli.default_cache` to raise `RuntimeError`, and run `cli.main(['check', '--hook', '--run', 'r1'])` with `isolated_home`.
   - Assert: exit 2; `capsys` empty; no file under the isolated home.
   - Mutant: in `hook_failure`, drop `if cache is not None:` so it calls `after_failure(None, …)`. The test must fail on the traceback output.
-- [ ] **Step 3: The double `OSError` pass.** Add `test_check_hook_failure_that_cannot_write_is_silent`, parametrized over a SetupError and a crash, as the existing tests raise them:
+- [x] **Step 3: The double `OSError` pass.** Add `test_check_hook_failure_that_cannot_write_is_silent`, parametrized over a SetupError and a crash, as the existing tests raise them:
   - Setup: monkeypatch `notice.after_failure` to raise `OSError`.
   - Assert: exit 2 and `capsys` empty.
   - Mutant: change `except OSError:` to `except ValueError:`.
-- [ ] **Step 4: The spy's directory.** In `test_check_hook_renames_the_record_into_place_after_the_notice_and_its_digest`, record `(Path(dst).parent, Path(dst).name)` and assert that the three written names arrive in order, each with `parent == cache`.
+- [x] **Step 4: The spy's directory.** In `test_check_hook_renames_the_record_into_place_after_the_notice_and_its_digest`, record `(Path(dst).parent, Path(dst).name)` and assert that the three written names arrive in order, each with `parent == cache`.
   - Mutant: in `notice.replace`, write to `path.with_name('x' + path.name)`. Today's name filter would miss it.
-- [ ] **Step 5: A real setup error.** In the same test, replace the `setup-error` param's patched `cli.check` with a real one: `cli.REPO` monkeypatched to a `fixture_repo` that has no manifest, as `test_check_hook_turns_a_setup_error_into_the_error_line` builds it.
+- [x] **Step 5: A real setup error.** In the same test, replace the `setup-error` param's patched `cli.check` with a real one: `cli.REPO` monkeypatched to a `fixture_repo` that has no manifest, as `test_check_hook_turns_a_setup_error_into_the_error_line` builds it.
   - Mutant: none. The param must still pass, and the test report shows its message is `state.MANIFEST: not found in main`.
-- [ ] **Step 6: Rename** `test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record` to `test_check_hook_prints_nothing_and_leaves_the_notice_and_the_record`. It reads only final contents; the order is pinned by the Step 4 test.
-- [ ] **Step 7: The audit-only report.** In `test_a_failed_fetch_still_runs_the_audit_due_rule`, add `assert set(report['due']) == {'lint', 'audit'}`.
+- [x] **Step 6: Rename** `test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record` to `test_check_hook_prints_nothing_and_leaves_the_notice_and_the_record`. It reads only final contents; the order is pinned by the Step 4 test.
+- [x] **Step 7: The audit-only report.** In `test_a_failed_fetch_still_runs_the_audit_due_rule`, add `assert set(report['due']) == {'lint', 'audit'}`.
   - Mutant: move the `due.update({...})` block out of `if docs is not None:` with `findings = []`.
-- [ ] **Step 8: Run the suite**
+- [x] **Step 8: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, with each mutant reverted (`git diff --stat` shows test files only).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add build/cc_guide/test_cli.py build/cc_guide/test_check.py
 git commit -m "test(cc-guide): pin check --hook's fetch-error, no-cache and write-failure paths"
 ```
+
+> Deviation: Step 7's mutant was applied as `due['blocks'] = 0` outside the `if docs is not None:` block, a stand-in that the new assertion also catches for the plan's mutant.
 
 ### Task 5: `notice.sh show` and `refresh` test gaps
 
@@ -295,28 +303,28 @@ Item: the same section 49 item (the `test_notice_sh.py` part). Use the same muta
 **Files:**
 - Test: `build/cc_guide/test_notice_sh.py`
 
-- [ ] **Step 1: Digest before notice.** Add `test_show_reads_the_digest_before_the_notice`, parametrized over `SHELLS`:
+- [x] **Step 1: Digest before notice.** Add `test_show_reads_the_digest_before_the_notice`, parametrized over `SHELLS`:
   - Setup: put a `cat` stub first on `PATH` that logs `$1` and then execs `/bin/cat`, as the `mv` stub in `test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache` does.
   - Assert: the logged order of `notice.digest` and `notice.json` is digest first.
   - Mutant: swap `notice.sh:29` and `:30`.
-- [ ] **Step 2: `mv -f`.** In `test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache` and `test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache`, assert `args[0] == '-f'`.
+- [x] **Step 2: `mv -f`.** In `test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache` and `test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache`, assert `args[0] == '-f'`.
   - Mutant: drop `-f` at `notice.sh:35`, then at `:116`.
-- [ ] **Step 3: Empty-notice path guard.** In `test_show_prints_nothing_before_any_check_or_when_nothing_is_due`, after the empty notice, write a real notice to the same `cache_of(tmp_path)` and assert `shown(...)` prints it. This proves the quiet run read that path.
+- [x] **Step 3: Empty-notice path guard.** In `test_show_prints_nothing_before_any_check_or_when_nothing_is_due`, after the empty notice, write a real notice to the same `cache_of(tmp_path)` and assert `shown(...)` prints it. This proves the quiet run read that path.
   - Mutant: change `notice.sh:23`'s `cc-guide` to `cc-guidex`.
-- [ ] **Step 4: No-`HOME` path guard.** In `test_show_without_home_and_an_unknown_subcommand_both_exit_zero`, write a notice to `cache_of(tmp_path)` first. Assert that the run without `HOME` is quiet, and a run with `HOME=tmp_path` shows it.
+- [x] **Step 4: No-`HOME` path guard.** In `test_show_without_home_and_an_unknown_subcommand_both_exit_zero`, write a notice to `cache_of(tmp_path)` first. Assert that the run without `HOME` is quiet, and a run with `HOME=tmp_path` shows it.
   - Mutant: as in Step 3.
-- [ ] **Step 5: Over `SHELLS`.** Parametrize over `SHELLS`, passing `shell=shell` to every `sh(...)`, in:
+- [x] **Step 5: Over `SHELLS`.** Parametrize over `SHELLS`, passing `shell=shell` to every `sh(...)`, in:
   - `test_show_still_prints_when_it_cannot_record_the_day` (the failed-redirect case)
   - `test_show_without_home_and_an_unknown_subcommand_both_exit_zero` (its first call runs `[shell, str(SCRIPT), 'show']`)
   - `test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache`
   
   Mutant: none. Both shells must pass. Report each shell that `SHELLS` held on this machine.
-- [ ] **Step 6: Run the suite**
+- [x] **Step 6: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, with mutants reverted (`git diff --stat` shows `test_notice_sh.py` only).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/cc_guide/test_notice_sh.py
@@ -347,20 +355,20 @@ Item: section `69-agent-payload-probe`, "The `agent-payload` probe cannot tell a
   - `assess_agent_payload(events, payload_file: dict) -> Verdict`.
 - Produces, in `probes.py`: `collect_payload` copies the raw logs into `run_dir`, then writes `payloads.json` from `payload_file` over `run_dir`'s `payloads-<folder>.raw.jsonl`. `rebuild_payloads(run_dir: Path) -> None` is that second half alone.
 
-- [ ] **Step 1: Write the failing tests** in `test_probe_checks.py`:
+- [x] **Step 1: Write the failing tests** in `test_probe_checks.py`:
   - `test_trim_block_keeps_a_dispatch_model`: a `tool_use` with input `{'subagent_type': 'general-purpose', 'model': 'haiku', 'prompt': 'x'}` trims to input `{'subagent_type': 'general-purpose', 'model': 'haiku'}`.
   - `test_a_parent_that_skips_the_control_model_is_error_not_diverges`: in `payload_run()`'s events, drop the parent's control `model`, and make the payloads match. Assert `outcome == ERROR` and the finding starts `the parent session sent general-purpose with no model`.
   - `test_a_parent_that_gives_a_builtin_a_model_is_error`: the same for `claude-code-guide` with `model: 'sonnet'`.
   - `test_an_empty_trimmed_log_names_the_stage_that_dropped_it`: with `logged == {'any': 2, 'agent': 2}` and `payloads == []`, the finding is `the PreToolUse hooks logged 4 payloads, and trim_payload kept none of them (a renamed subagent_type, a moved tool_input, or payloads that carry agent_id)`. With `logged == {'any': 0, 'agent': 0}`, the finding stays `the PreToolUse hooks logged no subagent dispatch`.
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build/cc_guide && uv run --with pytest python -m pytest -q test_probe_checks.py -k 'trim_block or parent or empty_trimmed'`
 Expected: FAIL.
 
-- [ ] **Step 3: Implement.** In `assess_agent_payload`, the order is: `broken()`, `check_parent()`, the empty-log check from `payload_file['logged']`, `check_payloads()`, then the served-model checks as today. Change `collect_payload` and `assess_payload` to the new `payloads.json` shape, and update `test_probes.py`'s `collect_payload` test to assert it.
+- [x] **Step 3: Implement.** In `assess_agent_payload`, the order is: `broken()`, `check_parent()`, the empty-log check from `payload_file['logged']`, `check_payloads()`, then the served-model checks as today. Change `collect_payload` and `assess_payload` to the new `payloads.json` shape, and update `test_probes.py`'s `collect_payload` test to assert it.
 
-- [ ] **Step 4: Re-save the fixtures from the 2026-11-26 raw run** (no spend):
+- [x] **Step 4: Re-save the fixtures from the 2026-11-26 raw run** (no spend):
 
 ```bash
 cd build/cc_guide
@@ -370,25 +378,27 @@ uv run python -c "import probes, sys; from pathlib import Path; r = Path(sys.arg
 
   Expected: it prints two fixture paths. `git diff probe_streams/` shows `model` in the control's `tool_use` input, `claude_code_version` 2.1.330, and the new `logged` key. Only the `agent-payload` streams carry a `model` input, so no other fixture changes (checked at planning: `grep` over the raw runs under `probes/`).
 
-- [ ] **Step 5: Add replay cases** to `test_probe_replay.py` with `edited()`:
+- [x] **Step 5: Add replay cases** to `test_probe_replay.py` with `edited()`:
   - the control's `tool_use` input without `model` gives ERROR, finding starting `the parent session`;
   - `claude-code-guide`'s input with `model: 'sonnet'` gives ERROR.
 
-- [ ] **Step 6: Run the suite**
+- [x] **Step 6: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, `test_the_recorded_run_passes[agent-payload]` included.
 
-- [ ] **Step 7: Live run (D7, one invocation).** Run the Global Constraints command with `--only agent-payload`.
+- [x] **Step 7: Live run (D7, one invocation).** Run the Global Constraints command with `--only agent-payload`.
   Expected: `agent-payload: PASS: dispatches reach PreToolUse as Agent…`. If it is not PASS, stop (Global Constraints).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add build/cc_guide/probe_checks.py build/cc_guide/probes.py build/cc_guide/probe_streams/agent-payload.* \
   build/cc_guide/test_probe_checks.py build/cc_guide/test_probes.py build/cc_guide/test_probe_replay.py build/cc_guide/PROBES.md
 git commit -m "fix(cc-guide): agent-payload reports a disobedient parent as ERROR, not drift"
 ```
+
+> Deviation: the controller ran Step 7 live after review and committed the `PROBES.md` row apart (4d71bb5). Review added `check_dispatched`, an ERROR naming the parent when it never dispatches a `PAYLOAD_AGENTS` type, beyond `check_parent`'s three conditions, and a mutant for the obedient-parent path.
 
 ### Task 7: plan 69's review Minors
 
@@ -398,7 +408,7 @@ Item: section `69-agent-payload-probe`, "Review Minors from plan 69's final revi
 - Modify: `build/cc_guide/probe_checks.py:25-36, 228-266, 300-308`
 - Test: `build/cc_guide/test_probe_checks.py`, `build/cc_guide/test_probes.py:582-596`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
   1. `test_two_payloads_of_one_type_with_different_inputs_are_error`: two `general-purpose` payloads under one matcher, with models `haiku` and `None`, give ERROR, with a finding naming `general-purpose`. Fixes "first is arbitrary".
   2. `test_a_control_model_normalised_to_a_full_id_passes`: control payload model `claude-haiku-5-5` gives no DIVERGES from `check_payloads`. Fixes the normalisation false alarm. The guard's `decide()` checks only that a model is present.
   3. `test_the_model_checks_read_the_agent_matcher_payload`: the `*` payload holds the control model and the `Agent` payload lacks it. That gives DIVERGES.
@@ -406,29 +416,31 @@ Item: section `69-agent-payload-probe`, "Review Minors from plan 69's final revi
   5. `test_the_three_agent_strings_tie_to_the_hook`: `pc.DISPATCH_TOOLS[0] == pc.GUARDED_TOOL == pc.GUARD_MATCHER == guard.AGENT_TOOL`. Extend the test at `:252`.
   6. `bad_payload` in `test_probes.py`: parametrize over both log folders (`any`, `agent`).
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build/cc_guide && uv run --with pytest python -m pytest -q test_probe_checks.py test_probes.py -k 'two_payloads or normalised or agent_matcher or two_haiku or agent_strings or payload_probe_reads'`
 Expected: tests 1–4 FAIL. Tests 5 and 6 may pass, since they pin constants and coverage.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
   - `first_by_type` becomes `by_type(payloads, matcher) -> dict[str | None, list[dict]]`. `check_payloads` returns ERROR when one type holds payloads whose `model` values differ.
   - The model checks read the `GUARD_MATCHER` payloads.
   - The control check asks for a non-empty `model`, and its finding names the value.
   - The served check is `served[agent] <= served[CONTROL_AGENT]`.
   - Define `DISPATCH_TOOLS = (GUARDED_TOOL, 'Task')` and `GUARD_MATCHER = GUARDED_TOOL`.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, the agent-payload replay included.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/probe_checks.py build/cc_guide/test_probe_checks.py build/cc_guide/test_probes.py
 git commit -m "fix(cc-guide): agent-payload reads the guard's payload and tolerates a normalised model"
 ```
+
+> Deviation: fix round 1 added a test for the model-conflict ERROR under the `Agent` matcher.
 
 ### Task 8: probe `explore-override`
 
@@ -449,7 +461,7 @@ Item: section `cc-drift-upkeep-2026-10-20 (…)`, "Two Stage 5 probe candidates"
   - `assess_explore_override(sightings: list[dict]) -> Verdict`.
 - Produces, in `probes.py`: `prepare_explore`, `collect_explore` (writes `sightings.json`, a list with one entry per rep), `assess_explore`.
 
-- [ ] **Step 1: Write the failing unit tests** in `test_probe_checks.py`, on hand-built sightings:
+- [x] **Step 1: Write the failing unit tests** in `test_probe_checks.py`, on hand-built sightings:
   - `test_explore_override_passes_when_explore_reads_claude_md_and_skips_git_status`: every rep has `Explore` `{'mark': True, 'claude_md': True, 'git_status': False}` and the control all True. Finding: `Explore override read CLAUDE.md and got no git-status snapshot in 3 of 3 reps; the control got both`.
   - `test_explore_override_diverges_when_one_valid_rep_differs`: rep 2's `Explore` has `git_status: True`. DIVERGES, naming rep 2.
   - `test_explore_override_voids_a_rep_whose_subagent_called_a_tool`: `tool_calls['Explore'] == 1` gives ERROR naming the rep, when no rep diverges.
@@ -458,12 +470,12 @@ Item: section `cc-drift-upkeep-2026-10-20 (…)`, "Two Stage 5 probe candidates"
   
   Verdict precedence: DIVERGES when any valid rep differs from PASS; else ERROR when any rep is void (broken, leaked, a tool call, a missing mark, or a control missing a canary); else PASS.
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build/cc_guide && uv run --with pytest python -m pytest -q test_probe_checks.py -k explore`
 Expected: FAIL (`explore_sightings` not defined).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
   - `prepare_explore` builds the scratch folder:
     1. `git init -q`.
     2. Two random canaries (`secrets.token_hex(4)`, prefixed `cm-` and `gs-`), written to `scratch / 'canaries.json'`.
@@ -474,7 +486,7 @@ Expected: FAIL (`explore_sightings` not defined).
   - `--setting-sources project` keeps the user's agents out, including this repo's installed `agents/explore.md`. The agent-payload probe relies on the same rule. The mark proves which definition served.
   - Register `'explore-override': Probe(prepare_explore, collect_explore, assess_explore, {'sightings.json': 'explore-override.sightings.json'})`.
 
-- [ ] **Step 4: Register in `manifest.toml`**
+- [x] **Step 4: Register in `manifest.toml`**
 
 ```toml
 [[probe]]
@@ -485,12 +497,12 @@ sections = ['subagents.isolation', 'subagents.models']
 files = ['agents/explore.md']
 ```
 
-- [ ] **Step 5: Add a `run_probe` test** `test_the_explore_probe_reads_its_run_like_a_live_one` in `test_probes.py`, with `FakeRuns` streams built by the Step 1 helpers. Expect PASS through `run_probe('explore-override', …)`.
+- [x] **Step 5: Add a `run_probe` test** `test_the_explore_probe_reads_its_run_like_a_live_one` in `test_probes.py`, with `FakeRuns` streams built by the Step 1 helpers. Expect PASS through `run_probe('explore-override', …)`.
 
-- [ ] **Step 6: Live run (D7, 3 invocations).** Use `--only explore-override`.
+- [x] **Step 6: Live run (D7, 3 invocations).** Use `--only explore-override`.
   Expected: `explore-override: PASS: …`. If it is not PASS, stop.
 
-- [ ] **Step 7: Save fixtures and add replay cases**
+- [x] **Step 7: Save fixtures and add replay cases**
 
 ```bash
 cd build/cc_guide && uv run python -c "import probes, sys; from pathlib import Path; print(probes.save_fixtures(Path(sys.argv[1]), 'explore-override', Path('probe_streams')))" <raw output folder from Step 6>
@@ -498,12 +510,12 @@ cd build/cc_guide && uv run python -c "import probes, sys; from pathlib import P
 
   In `test_probe_replay.py`, add two cases on the fixture: `Explore` `git_status` set True in one rep gives DIVERGES, and the control's `claude_md` set False gives ERROR.
 
-- [ ] **Step 8: Run the suite and the lints**
+- [x] **Step 8: Run the suite and the lints**
 
 Run: `uv run python build/run_suites.py cc_guide && bash build/run_commit_lints.sh`
 Expected: PASS; `commit lints passed`.
 
-- [ ] **Step 9: Commit** (the registration and its row together)
+- [x] **Step 9: Commit** (the registration and its row together)
 
 ```bash
 git add build/cc_guide/probes.py build/cc_guide/probe_checks.py build/cc_guide/manifest.toml build/cc_guide/PROBES.md \
@@ -511,6 +523,8 @@ git add build/cc_guide/probes.py build/cc_guide/probe_checks.py build/cc_guide/m
   build/cc_guide/test_probes.py build/cc_guide/test_probe_replay.py
 git commit -m "feat(cc-guide): probe explore-override (Stage 5 candidate a)"
 ```
+
+> Deviation: the controller ran the live Step 6 between Steps 5 and 7, so the registration commit (570f640) precedes the row commit (a7fbe3e). The implementer added `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=300000` per rep and a rep-count guard, neither in the plan. Review added canary-leak rows for one Agent call. The owner ruled on 2026-11-26 that spec R10.5 excepts `explore-override` (926b44f).
 
 ### Task 9: probe `async-teardown`
 
@@ -524,7 +538,7 @@ Item: the same Stage 5 item, part (b). PASS encodes 2.1.304's observed behavior.
   - `assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict`. The `log` lines are `start <pid>`, then any signal names in order, then `gone` or `alive`.
 - Produces, in `probes.py`: `TEARDOWN_WAIT = 5` (seconds), `TEARDOWN_HOOK`, `prepare_teardown`, `collect_teardown`, `assess_teardown`.
 
-- [ ] **Step 1: Write the failing unit tests** in `test_probe_checks.py`:
+- [x] **Step 1: Write the failing unit tests** in `test_probe_checks.py`:
   - `test_async_teardown_passes_on_term_then_gone`: log `['start 41', 'TERM', 'gone']`. PASS, finding `the async SessionStart hook got TERM first at teardown and was gone within 5 s`.
   - `test_async_teardown_diverges` parametrized:
     - `['start 41', 'HUP', 'gone']`: another signal first.
@@ -533,12 +547,12 @@ Item: the same Stage 5 item, part (b). PASS encodes 2.1.304's observed behavior.
   - `test_async_teardown_is_error_when_the_hook_never_started`: log `[]`.
   - `test_async_teardown_reads_a_cancelled_hook_response_when_the_stream_has_one`. A `SessionStart` `hook_response` with an `outcome` other than `cancelled` gives DIVERGES. None in the stream is no finding.
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build/cc_guide && uv run --with pytest python -m pytest -q test_probe_checks.py -k async_teardown`
 Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
   - `TEARDOWN_HOOK` is a `/bin/sh` script taking the log path. It does the following:
     1. Appends `start $$` to the log.
     2. Sets one trap per signal in `TEARDOWN_SIGNALS`, each one `printf '<NAME>\n' >> "$log"` and nothing else, so it keeps running.
@@ -554,7 +568,7 @@ Expected: FAIL.
     4. Writes `teardown.log` to `run_dir`.
   - Register `'async-teardown': Probe(prepare_teardown, collect_teardown, assess_teardown, {'teardown.jsonl': 'async-teardown.jsonl', 'teardown.log': 'async-teardown.log'})`.
 
-- [ ] **Step 4: Register in `manifest.toml`**
+- [x] **Step 4: Register in `manifest.toml`**
 
 ```toml
 [[probe]]
@@ -565,19 +579,19 @@ sections = ['hooks.pitfalls']
 files = ['build/cc_guide/notice.sh']
 ```
 
-- [ ] **Step 5: Add `test_the_teardown_probe_reads_its_run_like_a_live_one`** in `test_probes.py`, with a `FakeRuns` side effect that writes the log lines. Expect PASS.
+- [x] **Step 5: Add `test_the_teardown_probe_reads_its_run_like_a_live_one`** in `test_probes.py`, with a `FakeRuns` side effect that writes the log lines. Expect PASS.
 
-- [ ] **Step 6: Live run (D7, 1 invocation).** Use `--only async-teardown`.
+- [x] **Step 6: Live run (D7, 1 invocation).** Use `--only async-teardown`.
   Expected: `async-teardown: PASS: …`. If it is not PASS, stop.
 
-- [ ] **Step 7: Save fixtures** with the Task 8 Step 7 command and id `async-teardown`. Add replay cases: `TERM` replaced by `HUP` gives DIVERGES, and an empty log gives ERROR.
+- [x] **Step 7: Save fixtures** with the Task 8 Step 7 command and id `async-teardown`. Add replay cases: `TERM` replaced by `HUP` gives DIVERGES, and an empty log gives ERROR.
 
-- [ ] **Step 8: Run the suite and the lints**
+- [x] **Step 8: Run the suite and the lints**
 
 Run: `uv run python build/run_suites.py cc_guide && bash build/run_commit_lints.sh`
 Expected: PASS; `commit lints passed`.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add build/cc_guide/probes.py build/cc_guide/probe_checks.py build/cc_guide/manifest.toml build/cc_guide/PROBES.md \
@@ -586,5 +600,7 @@ git add build/cc_guide/probes.py build/cc_guide/probe_checks.py build/cc_guide/m
 git commit -m "feat(cc-guide): probe async-teardown (Stage 5 candidate b)"
 ```
 
-- [ ] **Step 10: Check the notice stays quiet.** Run `uv run python build/cc_guide/cli.py check --worktree` from the repo root.
+- [x] **Step 10: Check the notice stays quiet.** Run `uv run python build/cc_guide/cli.py check --worktree` from the repo root.
   Expected: the `probes:` line names neither new probe.
+
+> Deviation: the same split (registration 395b5d3, row b232910). The implementer added the `startup` matcher, a third replay case and a PermissionError test. Review added a test that a `hook_started` event gives no outcome.
