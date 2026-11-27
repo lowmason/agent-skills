@@ -1,5 +1,7 @@
 # STE Drift Review and Obligation-Word Rule Implementation Plan
 
+**Status: COMPLETE (2026-11-27)** — executed via executing-plans; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Re-vendor danyuchn's `ste-lint.py` at `d714e536`, add one obligation-word line to `write-with-asd-ste100`'s meaning rules and measure it against a control, add the tracked-symlink document case, and recheck four linter items against the new upstream diff.
@@ -116,6 +118,7 @@ Case set:
 - Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/control/` (scrubbed reps, sheets, judge results, verdicts)
 
 - [x] **Step 1: Run** the three agent cases in arm `control`, 5 reps on each model (30 reps). Replace any void rep under a new rep number.
+  > Deviation: with `--tools ""`, Opus reps wrote tool calls as text and two hit the output limit; the owner gave agent reps the Read tool (D8, kit amendment 1), and the first 5 reps were set aside.
 - [x] **Step 2: Score:** judges, mechanical flags, a hand reading of every flag before opening the key. Run the tally. Expected (the gap): `agent-instruction` fails the obligation check on at least one model.
 - [x] **Step 3: Apply D4.** If the control passes the obligation check at 4 of 5 or better on both models, stop and ask the owner whether the line still ships.
 - [x] **Step 4: Commit** `test(write-with-asd-ste100): score the control arm`.
@@ -144,6 +147,7 @@ Case set:
 - Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/docs/`
 
 - [x] **Step 1: Run** `doc-clean`, `doc-dirty`, `skill-md` and `doc-symlink` on the treatment arm, 5 reps on each model (40 reps).
+  > Deviation: the final review applied the plan's V3 (D10, kit amendment 2): 4 `doc-symlink` reps were void for writing to `/tmp`, and 4 replacements ran.
 - [x] **Step 2: Score** with the mechanical checks, judges and hand reading. Expected: each case passes at 4 of 5 or better on both models. A failure follows Task 4 Step 5's rule, with the wording fix in `references/document-rewrite.md`.
 - [x] **Step 3: Commit** `test(write-with-asd-ste100): run the document cases`.
 
