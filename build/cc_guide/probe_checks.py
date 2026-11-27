@@ -768,7 +768,7 @@ WT_FINDING = ('a $(...) naming git was refused and HERE=$(pwd) ran; ExitWorktree
               'remote kept it')
 
 
-def tool_calls(events: list[dict], name: str) -> list[tuple[tuple[int, int], str, dict]]:
+def positioned_calls(events: list[dict], name: str) -> list[tuple[tuple[int, int], str, dict]]:
     '''(position, tool-use id, input) for each call of the named tool, in stream order. A position is the
     event's index and the block's index in it, so calls before and after another call can be told apart.'''
     return [((n, k), block.get('id'), block.get('input') or {})
@@ -787,7 +787,7 @@ def first_run(events: list[dict], calls: list, command: str) -> tuple[str, str] 
     return None
 
 
-def failed(events: list[dict], tid: str) -> bool:
+def call_is_error(events: list[dict], tid: str) -> bool:
     return any(tool_result_errors(events, [tid]))
 
 
@@ -800,7 +800,7 @@ def place_of(text: str, places: dict[str, str]) -> str:
 def split_at(events: list[dict], tool: str) -> tuple[tuple[str, str] | None, list, list]:
     '''The first call of `tool` as (id, result text or None), or None, and the Bash calls before and after it.
     With no such call, every Bash call is before it.'''
-    bash, marks = tool_calls(events, 'Bash'), tool_calls(events, tool)
+    bash, marks = positioned_calls(events, 'Bash'), positioned_calls(events, tool)
     if not marks:
         return None, bash, []
     at, tid, _ = marks[0]
@@ -811,7 +811,7 @@ def call_failed(events: list[dict], call: tuple[str, str] | None) -> bool | None
     '''Whether a call's result (from split_at) is an error, or None when there is no call or no result.'''
     if call is None or call[1] is None:
         return None
-    return failed(events, call[0])
+    return call_is_error(events, call[0])
 
 
 def pwd_after(events: list[dict], after: list, places: dict[str, str]) -> str | None:
@@ -830,12 +830,11 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
     for step, command in WT_STEPS.items():
         command = WT_MAIN_GIT.format(main=places[WT_MAIN]) if command == WT_MAIN_GIT else command
         run = first_run(events, after if step in WT_AFTER_STEPS else before, command)
-        steps[step] = WT_NOT_RUN if run is None else {
-            'ran': True, 'refused': failed(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}
+        steps[step] = dict(WT_NOT_RUN) if run is None else {
+            'ran': True, 'refused': call_is_error(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}
     refused = call_failed(events, exit_call)
     return {'exited': None if refused is None else not refused, 'pwd_after': pwd_after(events, after, places),
-            'locked_before': locked(events, before), 'locked_after': locked(events, after),
-            'steps': steps}
+            'locked_before': locked(events, before), 'locked_after': locked(events, after), 'steps': steps}
 
 
 def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
