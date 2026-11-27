@@ -2,7 +2,10 @@ import re
 from pathlib import Path
 
 from check_provenance import (
+    AGENT_LICENSES,
     BUNDLED_LICENSES,
+    REPO,
+    agent_license_violations,
     bundled_license_violations,
     claude_md_originals,
     find_binary_assets,
@@ -181,3 +184,73 @@ def test_real_repo_originals_are_in_sync():
     missing, extra = originals_mismatch(claude_md_originals(claude_md), notice_originals(notice))
     assert missing == []
     assert extra == []
+
+
+POINTER = '# license: MIT. Full text: LICENSE-x.'
+AGENT_TABLE = {'LICENSE-x': ('adapted',)}
+ADAPTED_SURFACES = (
+    'agents/adapted.md',
+    'runtimes/codex/agents/adapted.toml',
+    'runtimes/gemini/agents/adapted.md',
+)
+OWN_SURFACES = tuple(s.replace('adapted', 'own') for s in ADAPTED_SURFACES)
+
+
+def _agent_text(surface, pointed):
+    pointer = f'{POINTER}\n' if pointed else ''
+    if surface.endswith('.toml'):
+        return f'# generated\n{pointer}name = "a"\n'
+    return f'---\nname: a\n{pointer}# cc-guide: x @1\n---\n\nBody.\n'
+
+
+def _agent_tree(tmp_path, pointed):
+    '''A repo with root LICENSE-x and agents `adapted` and `own`, each with
+    all three surfaces; the surfaces named in pointed carry POINTER.'''
+    (tmp_path / 'LICENSE-x').write_text(ROOT_TEXT['LICENSE-x'])
+    for surface in ADAPTED_SURFACES + OWN_SURFACES:
+        path = tmp_path / surface
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_agent_text(surface, surface in pointed))
+    return tmp_path
+
+
+def test_agent_licenses_clean_when_every_surface_points(tmp_path):
+    repo = _agent_tree(tmp_path, pointed=ADAPTED_SURFACES)
+    assert agent_license_violations(repo, AGENT_TABLE) == []
+
+
+def test_agent_licenses_report_a_missing_pointer(tmp_path):
+    pointed = tuple(s for s in ADAPTED_SURFACES if s != 'runtimes/codex/agents/adapted.toml')
+    repo = _agent_tree(tmp_path, pointed=pointed)
+    assert agent_license_violations(repo, AGENT_TABLE) == [
+        'runtimes/codex/agents/adapted.toml: no license pointer naming LICENSE-x, '
+        'which AGENT_LICENSES maps to adapted']
+
+
+def test_agent_licenses_report_an_unmapped_pointer(tmp_path):
+    repo = _agent_tree(tmp_path, pointed=ADAPTED_SURFACES + ('agents/own.md',))
+    assert agent_license_violations(repo, AGENT_TABLE) == [
+        'agents/own.md: license pointer names LICENSE-x, which AGENT_LICENSES does not map to own']
+
+
+def test_agent_licenses_report_a_pointer_in_the_body(tmp_path):
+    pointed = tuple(s for s in ADAPTED_SURFACES if s != 'agents/adapted.md')
+    repo = _agent_tree(tmp_path, pointed=pointed)
+    with (repo / 'agents' / 'adapted.md').open('a') as f:
+        f.write(f'{POINTER}\n')
+    assert agent_license_violations(repo, AGENT_TABLE) == [
+        'agents/adapted.md: license pointer outside the frontmatter, where the model reads it',
+        'agents/adapted.md: no license pointer naming LICENSE-x, which AGENT_LICENSES maps to adapted']
+
+
+def test_agent_licenses_report_a_bad_table(tmp_path):
+    repo = _agent_tree(tmp_path, pointed=())
+    assert agent_license_violations(repo, {'LICENSE-y': ('ghost',)}) == [
+        'AGENT_LICENSES: LICENSE-y is not a root license file',
+        'AGENT_LICENSES: LICENSE-y names ghost, which is not an agent in agents/']
+
+
+def test_agent_licenses_table_matches_notice():
+    notice = (REPO / 'NOTICE').read_text()
+    distilled = re.findall(r'agents/([a-z-]+)\.md is a read-only agent definition distilled', notice)
+    assert sorted(distilled) == sorted(AGENT_LICENSES['LICENSE-superpowers'])
