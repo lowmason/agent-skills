@@ -219,6 +219,18 @@ workbooks also carry a Census-to-Census crosswalk sheet, but it lists every code
 and so cannot express the splits and merges its own "Occ Code Changes" sheet describes in
 prose; it is not bundled. Bridge Census vintages through SOC instead (see SKILL.md).
 
+**Census industry codes bridge 2017 to 2022 through NAICS.** Each IND list aggregates one NAICS
+vintage, so the bridge is a three-hop join: `census_ind_2017_to_naics_2017` →
+`naics_2017_to_2022` (route by `link_type`) → `census_ind_2022_to_naics_2022`. Keep
+`via != 'partial'` on both expansions first, or the catch-all rows fan every code out. Computed
+from `data/`: 249 of the 271 codes in 2017 then reach exactly one 2022 code, and six reach more
+than one. The 2022 retail theme above causes most of the spread: `5593` Electronic shopping and
+mail-order houses reaches 26 codes and `5690` Other direct selling establishments reaches 24.
+The other 16 have only `partial` rows or none: the "Not specified" catch-alls, `0590`, the
+military codes and `9920`. Allocate the split codes; do not take the first match. The 2022
+workbook also carries Census's own IND crosswalk, but `data/` does not bundle it (the build's
+scope names only the two lists and their NAICS expansions).
+
 **A revision can outgrow the code pattern.** The 2018 SOC added enough physician specialties
 that broad group `29-1210` Physicians ran past `29-1219`: `29-1221` through `29-1229` are its
 members too, and no `29-1220` exists. The bundled `parent_code` follows the sheet's nesting, so

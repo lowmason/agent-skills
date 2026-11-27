@@ -6554,7 +6554,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       rebuild with no test failing. They are correct today. Size: quick-fix. Done when: a count test in
       `skills/classification-codes/scripts/test_build.py` fails when one of these four numbers drifts.
       → done 2026-11-27 (/deferred quick fix): `test_skill_census_ind_prose_counts_match_data` reads the four numbers from the prose and checks them against the IND list heights, the six-digit codes each expansion claims and the NAICS level-6 counts; it failed when 266 or 1,012 was changed by one.
-- [ ] Add a note to `skills/classification-codes/SKILL.md` on bridging Census IND 2017 codes to 2022 codes (final
+- [x] Add a note to `skills/classification-codes/SKILL.md` on bridging Census IND 2017 codes to 2022 codes (final
       review of plan 111, owner ruled defer). The bundled 2022 workbook carries an IND crosswalk, and plan 111 (F7)
       kept it out of the data files. A join through `naics_2017_to_2022` is possible but is not described.
       Size: quick-fix. Done when: SKILL.md says how to bridge IND 2017 and 2022, or the owner rules that no note is wanted.
+      → done 2026-11-27 (/deferred quick fix): SKILL.md points to `references/revision-process.md`, which now gives the three-hop bridge `census_ind_2017_to_naics_2017` → `naics_2017_to_2022` → `census_ind_2022_to_naics_2022`, with counts read from `data/` (249 of 271 codes reach one 2022 code, six reach more, 16 have only `partial` rows or none) and a line that the workbook's own IND crosswalk is not bundled.

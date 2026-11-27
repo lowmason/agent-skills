@@ -136,7 +136,7 @@ A Census code is coarser than SOC, so this join multiplies rows: a person coded 
 two rows (`15-1242`, `15-1243`). Aggregate back to Census codes for counts; use the expansion
 for *membership* questions. Bridging a 2010-coded panel to 2018 Census codes is a three-hop
 join through SOC — `census_occ_2010_to_soc_2010` → `soc_2010_to_2018` (route by `link_type`)
-→ `census_occ_2018_to_soc_2018` — and stays many-to-many wherever SOC split.
+→ `census_occ_2018_to_soc_2018` — and stays many-to-many wherever SOC split. Census IND codes bridge 2017 to 2022 through NAICS the same way: `references/revision-process.md`.
 
 ## NAICS semantics
 
