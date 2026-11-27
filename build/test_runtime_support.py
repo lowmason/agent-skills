@@ -1185,7 +1185,8 @@ def test_license_pointers_ignore_a_license_line_in_the_body(tmp_path):
   source = two_pointer_source(tmp_path, body='# license: in the body\ntext\n')
   assert sync.license_pointers(source) == [POINTER, SECOND_POINTER]
   assert '# license: in the body' not in sync.render_gemini_agent(source).partition('\n---\n\n')[0]
-  assert sync.render_codex_agent(source).count('# license:') == 2
+  codex_lines = sync.render_codex_agent(source).splitlines()
+  assert [line for line in codex_lines if line.startswith('# license:')] == [POINTER, SECOND_POINTER]
 
 
 def test_both_adapters_carry_every_pointer_in_order(tmp_path):
