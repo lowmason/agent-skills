@@ -917,6 +917,8 @@ def test_is_hook_reads_the_command_line_of_the_pid(tmp_path, monkeypatch):
         assert written(log)
         assert probes.is_hook(proc.pid, tmp_path / probes.TEARDOWN_SCRIPT)
         assert not probes.is_hook(proc.pid, tmp_path / 'other-hook.sh')
+        # Another probe's hook has the same file name in its own scratch directory.
+        assert not probes.is_hook(proc.pid, tmp_path / 'other-scratch' / probes.TEARDOWN_SCRIPT)
     assert not probes.is_hook(gone_pid(), tmp_path / probes.TEARDOWN_SCRIPT)
 
     def no_ps(*args, **kwargs):
