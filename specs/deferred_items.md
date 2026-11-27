@@ -2782,6 +2782,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       pre-registered check covers obligation words and the three agent cases pass it at 4 of
       5 or more.
       → progress 2026-11-17 (owner ruling): go ahead. Add one line to `SKILL.md`'s meaning rules and a pre-registered obligation-word check to the kit's `cases.py`, then re-run the three agent cases.
+      → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
 - [ ] Three review fixes have no test that would catch a regression (final review). They are
       the `python3` call in `references/agent-mode.md`, the kept "should" in
       `references/examples.md`, and the symbolic-link check in
@@ -2790,6 +2791,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
+      → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
 - [x] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
       2026-10-31 read danyuchn/asd-ste100-skill through `255631a3` and prithivrajmu/asd-ste100
       through `058c1f58`. Size: quick-fix. Revisit if: a compare from `255631a3` (danyuchn) or
@@ -6043,6 +6045,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
       → triggered 2026-11-27: danyuchn HEAD is `d714e536`, and its `65c8ab6e` changes `scripts/ste-lint.py` (it skips bare URLs and finds phrases that a line break splits); prithivrajmu HEAD is still `cf9787b6`.
+      → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
 
 ## claude/deferred-a35864 Step 4b review — 2026-11-17
 - [ ] **The re-vendored ste-lint.py skips the prose after an unclosed fence in a list item (Codex [P2] at
