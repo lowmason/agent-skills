@@ -88,6 +88,7 @@ def test_prepare_builds_the_four_repos_and_their_invocations(built):
     for inv in invocations:
         text = prompt_of(inv)
         assert 'exactly as written' in text and 'ToolSearch' in text and 'one call' in text
+        assert 'with the Bash tool' in text and 'do not retry a command in another form' in text
 
 
 def test_the_repos_hold_what_each_run_reads(built):
