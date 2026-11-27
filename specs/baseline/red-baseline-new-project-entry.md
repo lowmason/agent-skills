@@ -8425,7 +8425,7 @@ Stop: $30.00 total. Per-rep cap: $1.00.
 | Task 2 (control, 4 cases, 5 reps each, no VOID rerun) | 4 calls, 20 reps | $20.00 ($5.00 per case call) | $2.0676 | $2.0851 |
 | Task 3 (skill text) | none | $0.00 | $0.00 | |
 | Task 4 (additive treatment at `T`, 4 cases, and the `T-r1` round, 3 cases, 5 reps each, no VOID rerun) | 7 calls, 35 reps | $35.00 ($5.00 per case call) | $3.8365 | $5.9216 |
-| Task 5 (guards) | | | | |
+| Task 5 (guards at `T-final`, 10 cases, and the `BASE113` re-run of dr-park-ranked, 5 reps each, no VOID rerun) | 11 calls, 55 reps | $55.00 ($5.00 per case call) | $5.0295 | $10.9511 |
 | Task 6 (V3 runs) | | | | |
 
 The Actual and Running total cells sum each rep's `total_cost_usd`. The Task 1 row rounds $0.0174 to $0.02, and the
@@ -8439,6 +8439,11 @@ Running total after Task 4: $5.9216 of $30 ($5.92). The sum of `total_cost_usd` 
 rep file is empty or unreadable, so none counts at its cap. At most two calls ran at once, and before each call the
 running total plus the worst case of every call still running and of the new call stayed under $30. The largest such
 sum was $15.2112. These figures match the "Plan 113 treatment summary and spend" section, below.
+
+Running total after Task 5: $10.9511 of $30 ($10.95). The sum of `total_cost_usd` over Task 5's 55 reps is $5.0295. No
+rep file is empty or unreadable, so none counts at its cap. At most two calls ran at once, and before each call the
+running total plus the worst case of every call still running and of the new call stayed under $30. The largest such
+sum was $20.3032. These figures match the "Plan 113 guards summary and spend" section, below.
 
 ## Plan 113: control
 
@@ -9300,3 +9305,762 @@ skill commit is `T-r1` (`2bd982d`).
 $0.9326, dr-folded-req $1.3357, dr-provisional-alone $0.2915, dr-provisional-only $0.2840, dr-provisional-ask r1 $0.4278,
 dr-provisional-only r1 $0.2822 and dr-provisional-alone r1 $0.2826. Running total: $5.9216 of $30. The largest pre-call
 sum was $15.2112.
+
+## Plan 113: guards
+
+Task 5 runs the ten guard cases at `T-final` = `2bd982d` (`2bd982d03fab6d46422252b2c63b413407298a61`), the last skill
+commit (`T-r1`, Task 4's wording round). A guard is an existing case that the new text could regress. Each guard is
+compared with the earlier arm that the plan's Task 5 table names, and the guard bar needs at least that arm's PASS count
+minus one (plan 78's Bars, as plan 113's Global Constraints give them). Each case ran 5 reps. A rep is one fresh
+`claude -p` run with no tools.
+
+This section holds the run. Each case's scores go in its own section, with the case's comparison arm, its readings of
+record and the guard verdict. Results on the readings of record:
+
+- Nine guards meet their bars: dr-quality-suggest, dr-spec-column, dr-research-depth, dr-resume-rerank,
+  dr-rerank-second, dr-stop-track, dr-resume-marker, dr-resume-blocked and dr-resume-legacy. Each passes 5 of 5.
+- **dr-park-ranked misses its bar**: 1 of 5 at `T-final`, where the guard needs 3. Its re-run at `BASE113` passes 2 of 5,
+  so it misses there too. Every fail is in a conformance clause. No wording round ran. The case goes to the owner
+  ("Plan 113 guards summary and spend", Owner gate).
+- No reply asks about any item as if it were provisional (no false trigger).
+
+**Checks before any rep.**
+
+- `git log -1 --format=%h -- skills/` printed `2bd982d`, and `git diff --stat 2bd982d HEAD -- skills/` printed nothing
+  at the build (HEAD `6f41a9c`), so no skill file differs from `T-final`.
+- `claude --version` printed `2.1.323 (Claude Code)`, the version of Task 1's isolation probe, so the probe still holds.
+- A case-insensitive grep of the ten prompts and the manifest for `red-baseline`, `plan 7[89]`, `plan 85`,
+  `plan 11[23]`, `micro-test`, `task-<N>` and `quarantine` (the quarantine) found 0 hits in the manifest and in nine
+  prompts. `dr-spec-column` has 7 hits of `quarantine`, at lines 870, 922, 966, 999, 1003, 1086 and 1179. All seven sit
+  inside the sec-edgar spec, which the prompt reads verbatim from line 698 to line 1233, so they are exempt.
+- The case-repository reads (the sec-edgar spec for dr-spec-column, and the four ces-revisions files for
+  dr-research-depth) have the same sha256 as the reads in `treatment/deferred-73f7dae-MANIFEST.txt`. The sec-edgar spec
+  is at `22c6767f`, with sha256 `c43fa455…`.
+- Each prompt was also built at its comparison arm's commit (into `/tmp/plan113-work/t5-check/<sha>/`) and at
+  `BASE113` (into `/tmp/plan113-work/t5-base/`, ready for a `-p113-base` re-run). A script compared each pair. Every
+  changed line is a line of the derive-roadmap skill text. No fixture line, task line, case-repository line or skill
+  listing line changed. The table splits each comparison's diff at `BASE113`.
+
+| Comparison commit | Cases | Comparison to `BASE113` | `BASE113` to `T-final` |
+|---|---|---|---|
+| `73f7dae` | dr-quality-suggest, dr-spec-column, dr-research-depth | removes 3 lines, adds 1: the `175bf83` removal (below) | removes 11, adds 27: plan 113's edits 1 to 4 and the `T-r1` round |
+| `59df779` | dr-resume-rerank, dr-rerank-second | removes 9, adds 10: `73f7dae`'s §4 commit sentence, the `175bf83` removal and `e885184`'s `Spec`-cell clause | the same 11 and 27 |
+| `2e91b05` | dr-stop-track, dr-park-ranked, dr-resume-legacy | removes 9, adds 11: the three changes above and `59df779`'s Outcomes-row sentence | the same 11 and 27 |
+| `5f52dfc` | dr-resume-marker, dr-resume-blocked | removes 27, adds 83: plan 85's edits (`2e91b05`, `59df779`, `e885184`), `73f7dae` and the `175bf83` removal | the same 11 and 27 |
+
+The `175bf83` removal (2026-11-17, a `/deferred` triage) took this sentence out of §5's Ask bullet: "A later quality
+that this resume finds for the first time, bound for a research track's Ranked list, joins the same question in §4's
+form." Plan 85's guards cited that sentence to extend the One closing request reading to the re-rank guards. So each
+resume guard's comparison spans that removal and plan 113's edits (plan 113, Open for plan review item 5). Where a
+reply suggests a later quality at a resume, the case section records it, unscored.
+
+**Build.**
+
+```
+CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 2bd982d /tmp/plan113-work/t5 dr-quality-suggest dr-spec-column dr-research-depth dr-resume-rerank dr-rerank-second dr-stop-track dr-park-ranked dr-resume-marker dr-resume-blocked dr-resume-legacy
+```
+
+It printed `wrote 10 prompts to /tmp/plan113-work/t5`. Its `MANIFEST.txt` is copied to `treatment/p113-t5-MANIFEST.txt`.
+It shows `budget 1.00` for every case. Prompt hashes (sha256): `dr-quality-suggest` `e80e79ab…`, `dr-spec-column`
+`e23183cc…`, `dr-research-depth` `2bc29556…`, `dr-resume-rerank` `c04c48eb…`, `dr-rerank-second` `43a2375b…`,
+`dr-stop-track` `62ad32e2…`, `dr-park-ranked` `16f800e2…`, `dr-resume-marker` `adee76b3…`, `dr-resume-blocked`
+`b1ae6979…` and `dr-resume-legacy` `76c021a8…`. The `BASE113` build of the same ten cases printed `wrote 10 prompts to
+/tmp/plan113-work/t5-base`. Its `MANIFEST.txt` is copied to `treatment/p113-t5-base-MANIFEST.txt`. Only its
+`dr-park-ranked` prompt (`55f07ce9…`) ran.
+
+**Reps.** Each case ran with `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh
+/tmp/plan113-work/t5/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p113 1 5 claude-opus-5-5
+1.00`, as a background shell command, at most two cases at a time. Before each call, the running total plus the worst
+case of every call still running and of the new call ($5.00 each) stayed under $30. After each case, every rep JSON was
+checked for `result_index` and an `origin` key (micro-test Channel 7), and `show_reps.py` ran over that case's folder
+alone. Each case's replies were read in full from that output.
+
+**Scores.** Each rep was scored clause by clause, by hand, from its full reply, by the case's committed rule. A clause
+count gives the number of the 5 scored reps that pass it. Each failed clause gets a verbatim quote. A script checked
+that each quote from a rep in these sections is in that rep's `result` text.
+
+**Readings applied.** Each guard keeps its readings of record from its own earlier sections (plan 85, Open for plan
+review item 3, and the record sections that the plan's Task 5 table names). The readings in "Plan 113: control" belong
+to the four plan 113 cases and do not apply here. Second asks in the one question is one of them, so no guard is scored
+by it. Other readings go under "Other readings" and never count toward a bar.
+
+- *dr-quality-suggest.* The `73f7dae` pass's readings: One closing request for clause C, the narrow Placed, not
+  suggested for clause B, and the controller's treatment rulings for clauses D and E (Plan 85: treatment, Task 4).
+- *dr-spec-column.* The Separator reading of record (a semicolon between refs is a separator, not a word).
+- *dr-research-depth and dr-resume-legacy.* The committed rule and its notes. For dr-resume-legacy, a go-ahead question
+  on the audit, or a later question on the exits of an unmet requirement, is not a re-ranking question.
+- *dr-resume-rerank.* Plan 79's one-question reading (one question that gives its default and then its alternatives is
+  one question), with the One closing request reading and its position condition, as `T7` applied it: clause C passes
+  when the closing approve-or-amend request comes after any extra ask and takes it in.
+- *dr-rerank-second.* Plan 79's one-question reading, Review by table for clause A, and One closing request in the
+  wording of the four-case readings list of "Plan 85: guards" (clause C passes when the quality request sits inside the
+  closing approve-or-amend request). `T7` passed rep5's "In the same answer" form.
+- *dr-stop-track.* Plan 79's Date (a heading dated 2026-11-06 or with the run day passes clause C, a `<date>`
+  placeholder heading fails), Item by description, Stage 2's live feed, the inline-fields reading for clause D and the
+  Conditional handoff reading for clause E. Name is an other reading.
+- *dr-park-ranked.* The inline-fields reading of record, Table items, Item by description, Date (clause B passes any
+  date, a placeholder included, and clause C is read as for dr-stop-track) and Stage 2's live feed. Clause A counts
+  described items, as plan 79's control did.
+- *dr-resume-marker.* Carried citation.
+- *dr-resume-blocked.* Pending bullet and plan 79's one-question reading.
+- *Date.* The run day of these reps is 2026-11-27. A heading dated with the run day passes the clauses that read a
+  heading date, as plan 79's Date reading says.
+
+**False trigger (recorded, unscored).** No guard fixture holds an item marked `suggested, not approved`. For each of
+the seven guards that open an existing roadmap (dr-resume-rerank, dr-rerank-second, dr-stop-track, dr-park-ranked,
+dr-resume-marker, dr-resume-blocked and dr-resume-legacy), the case section records whether any reply asks the partner
+to approve or decline an item as if it were provisional, or holds a handoff for such an item. Any such ask is a false
+trigger. Where a false trigger also fails a clause, such as a "Next:" line held back, the clause scores it as written.
+For the three guards that write a roadmap file (dr-quality-suggest, dr-spec-column and dr-research-depth), every rep was
+searched for `suggested, not approved`, as `T7`'s leak check did.
+
+### Plan 113 guard: dr-resume-rerank
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-resume-rerank-p113/`.
+Task `STEP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2860.
+
+Plan 4 shipped the core stage of a research track. The partner says "Resume the roadmap." Clause A (bar): no completion
+review starts, and the roadmap is not parked or retired. Clause C (bar): one question that asks for a re-ranking or the
+approval of a proposed next stage, with a default. Clause B (conformance): the reply reports the core's finding and its
+measured cost. Clause D (conformance): no new stage entry is written before the answer.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (`T7` 5 of 5). Clause C: 5 of 5 (`T7` 4 of 5). Clause B: 5 of 5 (`T7` 5 of 5). Clause D: 5 of 5 (`T7` 5
+of 5). PASS: 5 of 5 (`T7` 4 of 5).
+
+Compared with "Plan 85: final-review fixes", `T7` (`59df779`): PASS 4 of 5. The guard needs at least 4 − 1 = 3.
+
+- A. No rep starts a completion review. Each offers stopping the track only as an alternative. Rep3: "If you stop it,
+  O2–O4 go to `specs/deferred_items.md` and the roadmap stays live."
+- C. Every rep asks one approve-or-amend question with a default and its alternatives, and asks nothing else. Every rep
+  proposes O2 as the next stage. Reps 1, 2 and 4 propose the order O2, O4, O3, and reps 3 and 5 keep O2, O3, O4. Rep2:
+  "Do you approve this, or would you amend it (a different order, a different item to promote, or stopping Track A,
+  which parks its remaining items in `specs/deferred_items.md`)?" Each reply has one question mark. No rep has an extra
+  ask, so the position condition of One closing request reaches no rep.
+- B. Every rep reports the 3.1 m level with the steep rise above it, and the 22-minute, 1.8 GB fit.
+- D. No rep writes a stage entry. Rep4 says inside its question what the promoted stage's entry would name, which is a
+  proposed stage, not an entry. Rep1: "Once you answer, I'll add the promoted stage entry, commit it on `main`, and give
+  you the handoff line."
+- The `175bf83` removal. No rep suggests a later quality. At `T` and `T7` every rep suggested scheduling at the re-rank,
+  and the borderline calls and the fails of those arms came from the quality ask or from a side request beside it.
+- O3's cost basis. Reps 1, 3 and 5 say that Stage 1 may already span several locks, each as a statement, not an ask.
+  Rep3: "The findings don't say whether the 1.8 GB covers one lock or several, so the 14× basis is uncertain." `T` rep3
+  failed C on an ask about that point, and `T7` rep2 on that ask and the quality ask.
+- False trigger: none. No rep asks about any item as if it were provisional, and no rep names the label.
+
+Other readings: none changes a count. By question marks, each rep has one. No rep has a second ask inside its question
+block. Plan 79's one-question reading alone also gives 5 of 5.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 3).
+
+Running total: $6.2076 of $30.
+
+### Plan 113 guard: dr-rerank-second
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-rerank-second-p113/`.
+Task `STEP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3206.
+
+A second re-rank question, after Stage 2 (the 7-day outlook) is ticked and stamped. Clause A (bar): no completion review
+starts, and the roadmap is neither parked nor retired. Clause B (bar): the reply reports Stage 2's finding and its
+measured cost. Clause C (bar): one question that asks for a re-ranking of O3 and O4 or the approval of a proposed next
+stage from them, with a default. Clause D (conformance): no new stage entry is written before the answer, and O2 is not
+offered again.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass (borderline, alternatives) | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (`T7` 5 of 5). Clause B: 5 of 5 (`T7` 5 of 5). Clause C: 5 of 5 (`T7` 5 of 5). Clause D: 5 of 5 (`T7` 5
+of 5). PASS: 5 of 5 (`T7` 5 of 5).
+
+Compared with "Plan 85: final-review fixes", `T7` (`59df779`): PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. No rep starts a completion review, and no rep gives a table over the Outcomes list (Review by table). Each offers a
+  stop only as an alternative. Rep2: "The roadmap therefore waits on that list rather than going to the completion
+  review."
+- B. Every rep gives the 81% and the one false alarm in 9, and the 14 minutes a day on one small VM with 0.3 GB of
+  forecasts.
+- C. Every rep asks one approve-or-amend question with a default. Reps 2 to 5 keep O3, then O4, and promote O3. Rep1
+  promotes O4 and ranks O3 behind it. Reps 1, 2, 3 and 5 have one question mark each. Rep4 passes, borderline (one
+  question that closes with its alternatives, plan 79's one-question reading): "Do you approve promoting O3 next with O4
+  kept second? Or would you like to amend: promote O4 first, re-order, or stop Track A?"
+- D. No rep writes a stage entry before the answer, and no rep offers O2 again. Rep5: "I'll hand off nothing until you
+  answer."
+- The `175bf83` removal. No rep suggests a later quality. At `T` and `T7` every rep suggested scheduling, and the One
+  closing request calls of those arms came from that quality ask. Here no rep has an ask that the reading would reach.
+- False trigger: none. Rep3 checks for the label and finds none: "No unticked stages remain, and there are no
+  `suggested, not approved` items." No rep asks about any item as if it were provisional.
+- Not scored. Reps 3, 4 and 5 say that O3's cost note may overstate the cost, because Stage 1 drew on several locks or
+  may have. Rep3 proposes to correct O3's cost note as part of its default.
+
+Other readings. Each question-marked sentence read as its own question: rep4 fails C, and PASS is 4 of 5, still met.
+Review by table and One closing request reach no rep.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+Running total: $6.5282 of $30.
+
+### Plan 113 guard: dr-stop-track
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-stop-track-p113/`.
+Task `STEP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3323.
+
+The partner answers "Stop Track A" in a roadmap with two tracks. Clause A (bar): the reply appends to
+`specs/deferred_items.md` one item each for O2, O3 and O4, and none for Stage 2 or O5. Clause B (bar): the roadmap stays
+live. Clause C (conformance): the items sit under one dated heading. Clause D (conformance): each item has a `Size:` line
+and a `Done when:` line. Clause E (conformance): no completion review starts, and a "Next:" line hands off Stage 2 to
+writing-plans and plans nothing.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass (inline fields) | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass (inline fields) | pass | yes |
+| 5 | pass | pass | pass | pass (inline fields) | pass | yes |
+
+Clause A: 5 of 5 (`2e91b05` 5 of 5). Clause B: 5 of 5 (`2e91b05` 5 of 5). Clause C: 5 of 5 (`2e91b05` 5 of 5). Clause D:
+5 of 5 (`2e91b05` 5 of 5). Clause E: 5 of 5 (`2e91b05` 5 of 5). PASS: 5 of 5 (`2e91b05` 5 of 5).
+
+Compared with "Plan 85 guard: dr-stop-track" (`2e91b05`): PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. Every rep writes three items, one each for O2, O3 and O4, as the content of an append to
+  `specs/deferred_items.md`, and none for Stage 2 or O5. Reps 1 and 3 write them as a file-content block, and reps 2, 4
+  and 5 as bullets inside the append step.
+- B. Every rep keeps the roadmap in `specs/`, replaces only the body of the Track A Ranked list, and commits. None marks
+  it PARKED, and Stage 2's entry stays. Rep4: "Stages, outcomes and stamps stay unchanged." Rep1 also appends "A stopped
+  2026-11-06 after Stage 1." to the Tracks line, which no clause scores.
+- C. Every rep heads the section `## lock-closures-roadmap — 2026-11-06`.
+- D. Every item has a `Size:` and a `Done when:` that names its outcome. Reps 1 and 3 put each field on its own line.
+  Reps 2, 4 and 5 write each item as one bullet with both fields inline, which passes by the inline-fields reading.
+  Rep4's O4 item: "Size: about a day, one static map page. Done when: a closure-history map of the canal's locks is
+  published for boat operators." Rep5 says "I'll fill in the remaining fields to match the schema." and writes each item
+  with both fields, so Item by description does not fail D.
+- E. Every rep ends with "Next: /clear (or a fresh session), then writing-plans on Stage 2 of
+  `specs/lock-closures-roadmap.md`", with no condition, scopes the plan to O5 and plans nothing. No rep starts a
+  completion review.
+- Stage 2's live feed. Every rep counts it as met, and none asks about it. Reps 2, 3 and 5 add that no stage is to
+  produce it. Rep3: "It counts as met, and the receiving session checks it."
+- False trigger: none. No rep asks about any item as if it were provisional, and no rep holds the handoff for one. Rep1
+  states the new handoff gate with nothing open: "No other questions are open, so after the commit I hand off Stage 2."
+- Date (not scored beyond C). Rep5 closes with an ask about the date: "My environment reports 2026-11-27, so tell me if
+  you want the later date instead." No clause scores it, and its "Next:" line stands with no condition.
+
+Other readings:
+
+- The other inline-fields reading (a `Size:` and a `Done when:` on one line are not two lines). Reps 2, 4 and 5 fail D.
+  D and PASS are then 2 of 5, **below the guard bar of 4**. At `2e91b05` no rep wrote its fields inline, so that reading
+  changed no count there. The verdict rests on the inline-fields reading of record.
+- Name: every heading carries the stem, so no effect. Conditional handoff: no "Next:" line is conditional. Item by
+  description: every rep writes its items.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4). By the other inline-fields reading, PASS is 2 of 5, and the
+guard is missed.
+
+Running total: $6.8605 of $30.
+
+### Plan 113 guard: dr-spec-column
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-spec-column-p113/`.
+Task `ROADMAP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $1.2287.
+
+The partner ranks the eleven outcomes of the sec-edgar spec in the order given, as one known-progression track, and asks
+for the roadmap. Clause A (bar): the Outcomes table has a column of spec refs, and every outcome row's cell in it holds at
+least one § or R ref. Clause B (bar): every cell of that column holds refs only. Clause C (conformance): the column is
+headed Spec and comes right after the Outcome column.
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass (borderline, Separator) | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass (borderline, Separator) | pass | yes |
+| 4 | pass | pass (borderline, Separator) | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (`73f7dae` 5 of 5). Clause B: 5 of 5 (`73f7dae` 5 of 5). Clause C: 5 of 5 (`73f7dae` 5 of 5). PASS: 5 of
+5 (`73f7dae` 5 of 5, on the Separator reading).
+
+Compared with "/deferred pass: results at `73f7dae`": PASS 5 of 5, on the Separator reading. The guard needs at least
+5 − 1 = 4.
+
+- A and C. Every table has the header `| # | Outcome | Spec | Track | Rank | Cost (estimate; basis) |` and 11 rows, O1
+  to O11. Each Spec cell holds an R number and at least one § number.
+- B. No cell holds a section title, a requirement title or requirement text. Reps 2 and 5 separate every ref with a
+  comma. Rep2's O3: "§4.4–§4.6, R3". Rep5's O1: "R1, §2.1, §4.2". Reps 1, 3 and 4 pass, borderline (Separator). Each
+  puts a semicolon after `§3 R<n>`, and rep3 also between § numbers. Rep1's O1: "§3 R1; §2.1, §4.2". Rep3's O1: "§3 R1;
+  §2.1; §4.2". Rep4's O1: "§3 R1; §4.2".
+- The new text (not scored). Every rep's Completion section carries the evidence rule of the new §6 sentence. Rep2: "A
+  stage stamp alone is not evidence." Reps 2 to 5 add that every R number is cited, so no uncited requirement is left.
+  Rep1 keeps the audit of uncited requirements as a step. No rep writes `suggested, not approved`.
+- The commit step (recorded, as in the `73f7dae` pass). Every rep ties the commit to the partner's approval. Rep4: "do
+  you approve this partition, or want changes, before I commit it on `main` and hand off Stage 1?"
+- Not scored. Reps 1, 2, 4 and 5 add an Open questions section. Rep5's Stage 2 `Consumes` carries a placeholder
+  citation, "(plan <id>, Handoff)".
+
+Other readings. The closed-list Separator (only a comma between refs): reps 1, 3 and 4 fail B, and PASS is 2 of 5. At
+`73f7dae` that reading gave 4 of 5, so on it the guard (at least 3) would be missed. At `T8` it gave 1 of 5. The reading
+of record is Separator.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+Running total: $8.0892 of $30.
+
+### Plan 113 guard: dr-park-ranked
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-park-ranked-p113/`.
+Task `STEP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3545.
+
+The partner answers "Park the whole roadmap" in the same roadmap. Clause A (bar): the reply appends four items to
+`specs/deferred_items.md`, one each for Stage 2, O2, O3 and O4. Clause B (bar): the roadmap moves to `specs/completed/`
+and is marked PARKED with the date and "1 of 2 stages complete". Clause C (conformance): the items sit under one heading
+`## <roadmap name> — 2026-11-06`. Clause D (conformance): each item has a `Size:` line and a `Done when:` line. Clause E
+(conformance): no completion review starts, and no stage is handed off.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass (borderline, items described) | pass | pass (borderline, the date named in the reply) | fail (Table items) | pass | no |
+| 3 | pass | pass | fail (placeholder date) | pass (inline fields) | pass | no |
+| 4 | pass | pass | fail (placeholder date) | pass | pass | no |
+| 5 | pass (borderline, items described) | pass | pass | fail (Table items) | pass | no |
+
+Clause A: 5 of 5 (`2e91b05` 5 of 5). Clause B: 5 of 5 (`2e91b05` 5 of 5). Clause C: 3 of 5 (`2e91b05` 4 of 5). Clause D:
+3 of 5 (`2e91b05` 4 of 5). Clause E: 5 of 5 (`2e91b05` 5 of 5). PASS: 1 of 5 (`2e91b05` 4 of 5).
+
+Compared with "Plan 85 guard: dr-park-ranked" (`2e91b05`): PASS 4 of 5. The guard needs at least 4 − 1 = 3.
+
+- A. Every rep parks four items: Stage 2 (the notices) and O2, O3 and O4. Reps 1, 3 and 4 write each item's text. Reps
+  2 and 5 give the four items as rows of a table and describe the append. Clause A counts described items, as plan 79's
+  control and the `2e91b05` arm (its rep2) did. Rep5: "append the dated section with the 4 items, each self-contained
+  with Size: and Done when:".
+- B. Every rep moves the roadmap with `git mv` to `specs/completed/` and adds a PARKED line with "1 of 2 stages
+  complete". Reps 1 and 5 date it 2026-11-06. Reps 2, 3 and 4 write `PARKED (<date>)`. Clause B passes any date, so they
+  pass.
+- C. Reps 1 and 5 use `## lock-closures-roadmap — 2026-11-06`. Reps 3 and 4 fail: each heading is a placeholder that
+  the `date` command is to fill, and each says that the environment gives 2026-11-27. Quote (C, rep3): "The items go
+  under `## lock-closures-roadmap — <date>`". Quote (C, rep4): "The parked stamp and the section heading will use
+  whatever `date` returns." That is the Date reading's placeholder fail, as `2e91b05` rep2. Rep2 writes the same
+  placeholder in its steps, and then names the date it will use: "I'll stamp the section heading and the PARKED line
+  with **2026-11-06** unless you tell me otherwise." It passes, borderline.
+- D. Rep1 writes each item as a block with `Size:` and `Done when:` lines, and rep4 as a numbered item with each field
+  as its own sub-bullet. Rep3 writes each item as one bullet with both fields inline, which passes by the inline-fields
+  reading. Reps 2 and 5 fail (Table items). Each gives a table with a `Done when` column and no `Size` column or label,
+  and leaves the item text to a later step. Quote (D, rep2): "Each item will be self-contained, with a `Size:` drawn
+  from its cost note and a `Done when:` as in the table above." Quote (D, rep5): "I'll set the final `Size:` values to
+  fit the schema's scale once I've read it."
+- E. No rep starts a completion review or hands off a stage. Rep4: "After this the roadmap is parked and there is no
+  next stage to hand off." Every rep closes the open O2 question first. Rep1: "This closes the open O2 question: nothing
+  gets promoted, and no stage is handed off."
+- Stage 2's live feed. No rep treats it as unmet or asks about it. Reps 3 and 4 carry it into the Stage 2 item.
+- False trigger: none. No rep asks about any item as if it were provisional.
+- Date (not scored beyond C). Reps 2, 3 and 4 say that the environment gives 2026-11-27, the run day, three weeks after
+  the frame's 2026-11-06. At `2e91b05` the gap was four days (2026-11-10), and one rep (rep2) used a placeholder heading.
+  Rep2 here asks the partner to confirm the date, and reps 4 and 5 each add a small ask (rep4 a diff review, rep5
+  whether the findings file moves). No clause scores those asks.
+
+Other readings:
+
+- Date, the other reading (a placeholder heading passes C). Reps 3 and 4 pass C. PASS is then 3 of 5 (reps 1, 3 and 4),
+  at the guard bar. Rep2's C read the other way (its placeholder fails) changes no count, because rep2 fails D.
+- Table items, the other reading (a table row under Size and Done-when columns writes the item's text). Neither table
+  has a Size column, so reps 2 and 5 still fail D. Item by description's other reading (a reply that says what an item
+  will hold passes D): reps 2 and 5 pass D. With the other Date reading as well, PASS is 5 of 5.
+- The other inline-fields reading (a `Size:` and a `Done when:` on one line are not two lines). Rep3 fails D. PASS stays
+  1 of 5, because rep3 already fails C.
+- Clause A, the strict reading (only an item written in a tool call or as file content counts). Reps 2 and 5 fail A. A
+  is then 3 of 5, and PASS stays 1 of 5.
+
+**Guard verdict at `T-final`: MISSED** (PASS 1 of 5; the guard needs 3). Every fail is in conformance clauses C and D.
+Both bar clauses pass in 5 of 5. The fails come from a placeholder date heading (reps 3 and 4) and table items (reps 2
+and 5). Neither passage changed in plan 113: the Parking rule and the deferred-item form are the same at `2e91b05`,
+`BASE113` and `T-final` (Checks before any rep). By the plan, the case re-runs at `BASE113` first ("Plan 113 guard:
+dr-park-ranked at `BASE113`", below).
+
+Running total: $8.4437 of $30.
+
+### Plan 113 guard: dr-research-depth
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-research-depth-p113/`.
+Task `ROADMAP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6870.
+
+The partner confirms two research tracks and ranks them. Clause A (bar): each track commits exactly one stage, and every
+other outcome of the track sits in a ranked list. Clause B (bar): each committed stage's Exit names a cost of the real
+run to measure and record. Clause C (conformance): the two tracks stay separate. Clause D (conformance): each stage entry
+names what it leaves out. Clause E (conformance): each committed stage's Produces names a file that records the result
+and the measured cost.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass (borderline) | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Every clause: 5 of 5 (`73f7dae` 5 of 5). PASS: 5 of 5 (`73f7dae` 5 of 5).
+
+Compared with "/deferred pass: results at `73f7dae`": PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. Every rep commits Stage 1 (Track A, O1) and Stage 2 (Track B, O6), and keeps O3 and O2, and O4 and O5, in the two
+  Ranked lists in the partner's order. The Outcomes table of every rep holds O1 to O6 only. No later quality is a stage
+  entry, a Ranked-list item or an Outcomes row.
+- B. Each committed stage's Exit has the findings file record the measured cost of the real run. Rep1's Stage 1: "The
+  same file records the measured cost of the real run: assembly time, data volume and fit time." Rep5's Stage 2: "it
+  records the measured time to hand-build the series and the wall-clock time of the real fit." Rep3 passes, borderline.
+  Its Exit ties "recorded in the findings file" to the estimate, and then lists "measured cost — time to assemble the
+  calendar and vintages, and wall-clock time of the real fit" with no word of its own for the record. An Exit item is a
+  condition for finishing the stage, and the clause asks for a cost to measure and record, so it passes, as `T7` rep4's
+  "records" without "measured" did.
+- C, D and E pass in every rep. Each Stage 2 consumes Stage 1's vintage panel, and no entry mixes the two tracks'
+  outcomes. Each entry has a `Leaves out` field. Each `Produces` names `specs/ces-revisions-stage-<N>-findings.md`.
+- Later qualities (not scored). Every rep suggests qualities in the message, each with a reason and the outcome line it
+  would become, and asks the partner to approve and rank each one or decline it. Rep1: "Do you approve this partition,
+  and will you approve and rank, or decline, each suggested quality:". Each roadmap names the qualities only in a
+  `Leaves out` entry, in the interim form `suggested, see the approval question`. No rep writes `suggested, not
+  approved`.
+
+| Rep | Qualities suggested in the message |
+|---|---|
+| 1 | validation suite (Track A); validation suite (Track B); source traceability (Track B) |
+| 2 | full validation suite (each track); source traceability (Track B) |
+| 3 | full validation suite (Track A); covariate source traceability (Track B) |
+| 4 | full validation suite (Track A); source traceability for hand-built covariates (Track B) |
+| 5 | full validation suite and vintage manifest (Track A); covariate source traceability and full validation suite (Track B) |
+
+- The commit step (recorded, as in the `73f7dae` pass). No rep commits before approval. Reps 1 to 4 tie the commit to
+  the answer. Rep3: "I'll commit the roadmap once you answer." Rep5 says nothing about a commit.
+- Not scored. Reps 2 and 5 date the `Source` line with the run day, 2026-11-27. Rep3's message gives the two qualities
+  the numbers O7 and O8, in the message only. Rep4's Stage 2 `Consumes` carries a placeholder citation, "(plan <id>,
+  Handoff, once Stage 1 ships)". Every Completion section carries the evidence rule of the new §6 sentence.
+
+Other readings. Rep3's B read strictly (the Exit must say that the cost is recorded): rep3 fails B, and PASS is 4 of 5,
+still met.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+Running total: $9.1307 of $30.
+
+### Plan 113 guard: dr-quality-suggest
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder
+`treatment/dr-quality-suggest-p113/`. Task `ROADMAP_ASK_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4504.
+
+The partner ranks the four outcomes of one research track. The earlier message named traceability as a quality to place.
+Clause A (bar): the roadmap file holds no Ranked-list item, no O-number and no Outcomes row for traceability. Clause B
+(bar): the message after the file suggests traceability, with a reason that this project will need it, and asks the
+partner to approve it and, if approved, to give its place in Track A's ranking. Clause C (conformance): the approval of
+the partition and the request about traceability are one question. Clause D (conformance): the first stage's `Leaves out`
+names traceability as suggested or as waiting on the partner's answer. Clause E (conformance): the suggestion gives, in
+plain words, the outcome line that traceability would become.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass (borderline) | pass | pass | yes |
+| 2 | pass | pass | pass (borderline) | pass | pass | yes |
+| 3 | pass | pass | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass (borderline) | pass | pass | yes |
+| 5 | pass | pass | pass (borderline) | pass | pass | yes |
+
+Every clause: 5 of 5 (`73f7dae` 5 of 5). PASS: 5 of 5 (`73f7dae` 5 of 5).
+
+Compared with "/deferred pass: results at `73f7dae`": PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. Each roadmap names traceability only in Stage 1's `Leaves out`, as `traceability: suggested, see the approval
+  question`. No Ranked-list item, O-number or Outcomes row holds it, and no rep writes `suggested, not approved`. Reps 1
+  to 4 give it the number O5 in the message only, which the reading note passes.
+- B. Each message gives the board's question as the reason. Each asks the partner to approve traceability and give its
+  place among O2, O3 and O4, or to decline it. Rep4: "In the same answer, please say whether to add the following
+  quality and, if so, where it ranks among O2, O3 and O4." No rep has placed it in the file, so the narrow Placed, not
+  suggested reading reaches no rep. Rep1's approval point says "It goes in the Ranked list as an O5." and then asks "If
+  you approve it, say where it ranks among O2, O3 and O4."
+- C. Each message holds one approval request that takes the quality in, each borderline, as in the `73f7dae` pass. Reps
+  2 and 5 carry three question marks under one label or in one bold block, the form that Plan 85 Task 4 reps 2 and 5
+  had and that passed. Rep2: "Do you also approve O5 (traceability) as an outcome, and if so, where should it rank
+  against O2, O3 and O4? Or do you decline it?" Rep3 asks for one answer: "The same answer also settles one quality I'd
+  suggest:". Rep4 uses "In the same answer". Rep1 puts the quality inside its one question, and then invites other
+  changes, among them a track of its own for O4: "You can also amend anything else in the same answer."
+- D. Every roadmap's `Leaves out` reads `traceability: suggested, see the approval question`.
+- E. Each message gives the outcome line in plain words. Rep5: "For every closure estimate, a record of the gauge
+  readings it was fitted on."
+- The commit step (recorded). No rep commits before approval, and every rep ties the commit to the answer. Rep5: "I've
+  drafted `specs/lock-closures-roadmap.md` (above) and will commit it on `main` once you approve."
+- Not scored. Rep3's Stage 1 covers one lock. Every Completion section carries the evidence rule of the new §6
+  sentence.
+
+Other readings. By question marks, reps 2 and 5 fail C, and PASS is 3 of 5 (`73f7dae` 1 of 5 on that reading). If "In
+the same answer" or "The same answer also settles" is a second ask, reps 3 and 4 fail C, and PASS is 3 of 5 (`73f7dae` 3
+of 5 on that reading). Both readings together: 1 of 5 (rep1), against 0 of 5 at `73f7dae`. On each other reading, PASS
+is below the guard bar of 4, but not below the comparison arm's count on that same reading.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+Running total: $9.5811 of $30.
+
+### Plan 113 guard: dr-resume-marker
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-resume-marker-p113/`.
+Task `STEP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3101.
+
+Stage 3's entry already cites plan 3's Handoff, marked "Resolved at resume, 2026-10-12". Only plan 5's Handoff bullet is
+new. Clause A (bar): the reply amends the `Consumes` of Stage 3 and Stage 4 from plan 5's bullet, citing plan 5,
+Handoff. Clause B (bar): no amendment re-applies or restates plan 3's bullet. Clause C (conformance): the reply commits
+the amendments and hands off Stage 3 with a "Next:" line, and plans nothing.
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass (borderline, carried citation) | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass (borderline, carried citation) | pass | yes |
+
+Clause A: 5 of 5 (round 3 5 of 5). Clause B: 5 of 5 (round 3 5 of 5). Clause C: 5 of 5 (round 3 5 of 5). PASS: 5 of 5
+(round 3 5 of 5).
+
+Compared with "Plan 79 Task 3 round 3: dr-resume-marker" (`5f52dfc`): PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. Every rep amends both entries to `occupancy_by_hour` and cites "plan 5, Handoff" with a Resolved marker dated
+  2026-11-06. Rep2: "Stage 2's `occupancy_by_hour` table (plan 5, Handoff; Resolved at resume, 2026-11-06)". Reps 3 and
+  4 write "Stage 2's hourly occupancy table, shipped as `occupancy_by_hour`".
+- B. Every rep says that plan 3's point is already in Stage 3 and changes nothing for it. Reps 1 and 5 write the whole
+  Stage 3 line with plan 3's citation carried over unchanged, "(plan 3, Handoff; Resolved at resume, 2026-10-12)", which
+  passes by Carried citation. Reps 2, 3 and 4 show only the changed part.
+- C. Every rep commits on `main`, ends with "Next: /clear (or a fresh session), then brainstorming on Stage 3 of
+  `specs/parking-occupancy-spec-roadmap.md`" and plans nothing. Every rep gives the ticked producers as the reason that
+  the inputs are met. Rep5: "Stages 1 and 2 are ticked, so every `Consumes` of Stages 3 and 4 is met."
+- False trigger: none. Reps 2 and 4 check for the label, find none, and still hand off Stage 3. Rep2: "No items are
+  marked `suggested, not approved`." Rep4: "There are no suggested items." No rep holds the handoff for a provisional
+  item.
+- Dates (not scored). Every rep dates the new marker 2026-11-06. Reps 1, 2 and 4 say that the environment gives
+  2026-11-27 and offer to change the date. Rep2: "If the real date is the 27th, tell me and I'll correct both stamps
+  before you launch the next session."
+- Not scored. Reps 1 and 2 give the commit a subject that names the resume, because the earlier commits are all "update
+  the roadmap". Reps 1, 3 and 4 leave Stage 2's ticked `Produces` as it is and say why.
+
+Other readings. Carried citation: reps 1 and 5 fail B on the other reading, so B and PASS are 3 of 5, below the guard bar
+of 4. Round 3 is also 3 of 5 on that reading.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+Running total: $9.8912 of $30.
+
+### Plan 113 guard: dr-resume-blocked
+
+Additive in `cases.py`, read as a guard here. Texts at `2bd982d` (`T-final`). Folder `treatment/dr-resume-blocked-p113/`.
+Task `STEP_TASK`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4120.
+
+Plan 5's Handoff says that `occupancy_hourly` was not built, and Stage 3 and Stage 4 consume it. Plan 3's bullet is still
+pending. Clause A (bar): the reply hands off no stage before the answer. Clause B (bar): one question that names the
+unmet `Consumes` and the stages that it blocks, with a proposed default. Clause C (conformance): the default adds a stage
+that produces it, or amends the `Consumes`. Clause D (conformance): no completion review starts, and nothing is parked.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass (borderline, date aside) | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline, date aside) | pass | pass | yes |
+| 5 | pass | pass (borderline, date aside) | pass | pass | yes |
+
+Every clause: 5 of 5 (round 3 5 of 5). PASS: 5 of 5 (round 3 5 of 5).
+
+Compared with "Plan 79 Task 3 round 3: dr-resume-blocked" (`5f52dfc`): PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. No rep writes a "Next:" line that names a stage. Rep3: "No unticked stage has all its `Consumes` met, so I can't
+  hand anything off yet." Every rep applies plan 3's pending bullet as an amendment and holds the commit for the answer
+  (Pending bullet).
+- B. Each rep asks one approve-or-amend question that names `occupancy_hourly` and Stages 3 and 4, with a default and
+  the other way as its alternative. Each reply has one question mark. Rep1: "Do you approve my proposed default, or want
+  to amend it?" Reps 2, 4 and 5 pass, borderline (a date aside). Each also asks, outside its question, about the date of
+  plan 3's marker. Rep4: "I used the later date; tell me if the other is right." Round 3 rep5 had the same aside ("I used
+  2026-11-07 above; tell me if you want the other date.") and passed B, so on the reading of record the aside is not a
+  second question.
+- C. Every default adds a stage, before Stages 3 and 4, that produces `occupancy_hourly`. Rep2 numbers it Stage 5 and
+  orders it first.
+- D. No rep starts a completion review or parks the roadmap. Reps 3, 4 and 5 name the completion audit only as a later
+  check of R4. Rep3: "R4 will also be re-checked on evidence in the completion audit, whatever Stage 2's stamp says."
+- The `T3-r3` rule at work. Each rep reads plan 5's "was not built" as Handoff evidence that the input is missing. No rep
+  calls `occupancy_hourly` met.
+- False trigger: none. No rep asks about any item as if it were provisional, and no rep names the label.
+- Dates (not scored). Reps 1, 2 and 3 date plan 3's marker 2026-11-06, and reps 4 and 5 date it 2026-11-27, the run day.
+
+Other readings:
+
+- The date aside read as a second question. Reps 2, 4 and 5 fail B, and PASS is 2 of 5, **below the guard bar of 4**.
+  Round 3 is 4 of 5 on that reading (its rep5).
+- One question, the other reading (an ask inside an alternative is a second ask). Rep1's "If you prefer that, tell me
+  what they should read instead." fails B. PASS is then 4 of 5, still met. With the date-aside reading as well, PASS is
+  1 of 5 (rep3).
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4). The verdict rests on the date aside read as round 3 read it.
+
+Running total: $10.3032 of $30.
+
+### Plan 113 guard: dr-resume-legacy
+
+Non-regression (guard). Texts at `2bd982d` (`T-final`). Folder `treatment/dr-resume-legacy-p113/`. Task `STEP_TASK`.
+Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2838.
+
+The roadmap is in the older format and every stage is ticked. Plan 5's Handoff reads `None`. The partner says "Resume the
+roadmap." The guard rule: the reply goes to the completion review. It says every stage is complete, starts or proposes
+the audit over the spec's requirements (R1 to R6), and asks no re-ranking question.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (`2e91b05` 5 of 5). Compared with "Plan 85 guard: dr-resume-legacy" (`2e91b05`): 5
+of 5. The guard needs at least 5 − 1 = 4.
+
+- Every rep reconciles with no amendment, says that all three stages are ticked and that no Ranked list waits, goes to
+  the completion review (§6) and lists the reads of the audit over R1 to R6. Each singles out R3, which entered the
+  roadmap as implemented-differently.
+- No rep asks a re-ranking question. Each says that an unmet requirement will come to the partner later with its two
+  exits, a later question on the audit, as in every earlier arm. Rep4: "I'll bring any such case to you as one
+  question." Rep3 promises the filled table "with any open questions batched alongside it".
+- The new text. Every rep carries the evidence rule of the new §6 sentence into its audit over R1 to R6. Rep2: "A stamp
+  names no requirement, so each verdict needs a path:line or a test name, plus the plan that built it." No rep looks for
+  uncited requirements, because the older format has no Outcomes list and no `Spec` cell.
+- False trigger: none. Rep2 notes the label's absence: "There are no `suggested, not approved` items, so there is no
+  Ask."
+
+Other readings: none changes a count.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+Running total: $10.5870 of $30.
+
+### Plan 113 guard: dr-park-ranked at `BASE113`
+
+The guard missed at `T-final`, so it re-ran at `BASE113` (`171e763`), as the plan says (Open for plan review item 5). The
+re-run shows whether plan 113's edits caused the miss. Folder `treatment/dr-park-ranked-p113-base/`. The prompt is
+`/tmp/plan113-work/t5-base/dr-park-ranked.txt` (sha256 `55f07ce9…`). Against the `T-final` prompt, its diff removes 11
+lines and adds 27, all of them plan 113's edits. The run was `bash
+specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan113-work/t5-base/dr-park-ranked.txt
+specs/baseline/red-baseline-new-project-entry/treatment/dr-park-ranked-p113-base 1 5 claude-opus-5-5 1.00`. Scored reps:
+rep1 to rep5. No VOID rep. Spend: $0.3643. The clauses and readings are those of "Plan 113 guard: dr-park-ranked".
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass (borderline, items described) | pass | fail (placeholder date) | fail (Table items) | pass | no |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass (borderline, items described) | pass | pass (borderline, the date named in the reply) | fail (Table items) | pass | no |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass (borderline, items described) | pass | fail (placeholder date) | fail (Table items) | pass | no |
+
+Clause A: 5 of 5. Clause B: 5 of 5. Clause C: 3 of 5. Clause D: 2 of 5. Clause E: 5 of 5. PASS: 2 of 5, **below the guard
+bar of 3**.
+
+- A and B pass in every rep. Reps 2 and 4 write the four items in full. Reps 1, 3 and 5 give them as table rows, which
+  clause A counts as described items. Every rep moves the roadmap to `specs/completed/` with a PARKED line and "1 of 2
+  stages complete".
+- C. Reps 2 and 4 head the section `## lock-closures-roadmap — 2026-11-06`. Reps 1 and 5 fail: each heading is a
+  placeholder that `date` is to fill. Quote (C, rep5): "I'll use whatever `date` returns for the section header and the
+  PARKED marker." Rep1 writes "This adds one section, `## lock-closures-roadmap — <date>`" after a `date +%F` call. Rep3
+  passes, borderline. It names the run day for its placeholder: "I'll use **2026-11-27** for `<date>` unless you say
+  otherwise." The Date reading passes a heading dated with the run day.
+- D. Reps 1, 3 and 5 fail (Table items). Each gives the items as rows of a table under Size and Done-when columns. Quote
+  (D, rep3): "I'll fit the four items to its exact fields rather than the table above." Rep2 writes each item as a block
+  with `Size:` and `Done when:` lines, and rep4 as a bullet with each field as its own sub-bullet.
+- E. No rep starts a completion review or hands off a stage.
+
+Other readings. Date, the other reading: reps 1 and 5 pass C, and PASS stays 2 of 5, because both fail D. Table items, the
+other reading (a table row under Size and Done-when columns writes the item's text): reps 1, 3 and 5 pass D, and PASS is
+3 of 5 (reps 2, 3 and 4), at the bar. Both other readings together: 5 of 5.
+
+| Arm | Text | PASS | C fails (placeholder heading) | D fails |
+|---|---|---|---|---|
+| "Plan 85 guard: dr-park-ranked" | `2e91b05` | 4 of 5 | rep2 | rep2 (Item by description) |
+| this re-run | `BASE113` | 2 of 5 | reps 1 and 5 | reps 1, 3 and 5 (Table items) |
+| "Plan 113 guard: dr-park-ranked" | `T-final` | 1 of 5 | reps 3 and 4 | reps 2 and 5 (Table items) |
+
+**Result.** The `BASE113` arm misses the guard bar as well (2 of 5; the guard needs 3). So the run does not show that plan
+113's edits caused the miss. Every fail sits in a conformance clause, and both bar clauses pass in all 10 reps of the two
+arms. The fails come from two forms that the Parking rule does not govern and that no commit since `2e91b05` changed: a
+placeholder date heading (4 of the 10 reps), and items given as table rows (5 of the 10). Three of the four reps that
+use the placeholder say that the environment gives 2026-11-27, three weeks after the frame's 2026-11-06. By the plan's
+Bars, a guard below its bar gets one wording round with the case's rule unchanged, and then an owner ruling. By the
+controller's instruction for this task, no wording round started. The case goes to the owner at Task 5 Step 2 (below).
+
+Running total: $10.9513 of $30.
+
+### Plan 113 guards summary and spend
+
+`show_reps.py` ran over each folder after its last rep. The eleven folders hold 55 reps, none VOID. Every rep has
+`result_index` 0 and no `origin` key, and `show_reps.py` shows one turn, one model (`claude-opus-5-5`) and `success` for
+each. No rep file is empty or unreadable, so none counts at its cap. There was no VOID rerun, and no `.err` file was
+left. No rep JSON was rewritten.
+
+| Case | Comparison arm | Arm PASS | Guard needs | PASS at `T-final` | Verdict |
+|---|---|---|---|---|---|
+| dr-quality-suggest | `73f7dae` | 5 of 5 | 4 | 5 of 5 | met |
+| dr-spec-column | `73f7dae` | 5 of 5 | 4 | 5 of 5 | met |
+| dr-research-depth | `73f7dae` | 5 of 5 | 4 | 5 of 5 | met |
+| dr-resume-rerank | `T7` (`59df779`) | 4 of 5 | 3 | 5 of 5 | met |
+| dr-rerank-second | `T7` (`59df779`) | 5 of 5 | 4 | 5 of 5 | met |
+| dr-stop-track | `2e91b05` | 5 of 5 | 4 | 5 of 5 | met |
+| dr-park-ranked | `2e91b05` | 4 of 5 | 3 | 1 of 5 (`BASE113` 2 of 5) | **missed**: to the owner |
+| dr-resume-marker | round 3 (`5f52dfc`) | 5 of 5 | 4 | 5 of 5 | met |
+| dr-resume-blocked | round 3 (`5f52dfc`) | 5 of 5 | 4 | 5 of 5 | met |
+| dr-resume-legacy | `2e91b05` | 5 of 5 | 4 | 5 of 5 | met |
+
+Nine guards meet their bars on the readings of record. dr-park-ranked misses at `T-final` and again at `BASE113`. Its
+fails are all in conformance clauses C and D, and both of its bar clauses pass in all 10 reps.
+
+- False triggers: none. No rep of the seven guards that open an existing roadmap asks about any item as if it were
+  provisional, and no rep holds a handoff for one. Four reps say that no such item is open and then go on by their flow
+  (dr-rerank-second rep3, dr-resume-marker reps 2 and 4, dr-resume-legacy rep2). No rep of the three roadmap-writing
+  guards writes `suggested, not approved`.
+- The `175bf83` removal. No rep of the seven guards that open an existing roadmap suggests a later quality. At `T` and
+  `T7` every rep of dr-resume-rerank and dr-rerank-second suggested scheduling, and the borderline calls of those arms
+  came from that ask.
+- The new §6 sentence (not scored). Every rep of dr-resume-legacy and of the three roadmap-writing guards carries its
+  evidence rule: a path:line or a test name, and the stage plan that built it. No rep runs the audit of uncited
+  requirements where no `Spec` cell exists.
+- Readings that decide a met verdict. On its other reading, each of these guards falls below its bar: dr-stop-track
+  (inline fields, 2 of 5), dr-resume-marker (Carried citation, 3 of 5, the same as round 3), dr-resume-blocked (the date
+  aside as a second question, 2 of 5), dr-spec-column (the closed-list Separator, 2 of 5) and dr-quality-suggest
+  (question marks, or "the same answer" as a second ask, 3 of 5 each, not below the comparison arm's count on the same
+  reading). Each case section gives the reading and its quote.
+- Date. The run day, 2026-11-27, is three weeks after the frame's 2026-11-06. Replies of dr-park-ranked, dr-stop-track,
+  dr-resume-marker and dr-resume-blocked name the gap, and some ask about it. The gap reaches dr-park-ranked's clause C
+  (placeholder headings), and dr-resume-blocked's clause B on its other reading.
+
+**Owner gate (Task 5 Step 2).** dr-park-ranked is below its guard bar at `T-final` (1 of 5) and at `BASE113` (2 of 5).
+It needs 3. By the Bars, the next step is one wording round with the case's rule unchanged, and then an owner ruling.
+The controller's instruction stopped this task before any wording round: a skill commit after `T-final` changes the text
+that Task 6 reads, and it re-runs every case that the changed passage can reach. The facts for the ruling:
+
+1. Both bar clauses (A and B) pass in all 10 reps. Every fail is in clause C (a placeholder date heading, 4 reps) or
+   clause D (items as table rows, 5 reps).
+2. The `BASE113` arm also misses, so the run does not show that plan 113's edits caused the miss. The §5 Parking
+   paragraph is the same at `2e91b05`, `BASE113` and `T-final` (a script compared it).
+3. With the other Date and Table items readings together, each arm passes 5 of 5.
+4. Three of the four placeholder reps name the three-week gap between the frame date and the run day. At `2e91b05`
+   the gap was four days.
+
+**Spend.** Task 5 cost $5.0295 over 55 reps: $4.6652 for the 50 guard reps and $0.3643 for the `BASE113` re-run. Per
+folder: dr-resume-rerank $0.2860, dr-spec-column $1.2287, dr-rerank-second $0.3206, dr-stop-track $0.3323,
+dr-park-ranked $0.3545, dr-research-depth $0.6870, dr-quality-suggest $0.4504, dr-resume-marker $0.3101,
+dr-resume-blocked $0.4120, dr-resume-legacy $0.2838 and dr-park-ranked at `BASE113` $0.3643. Running total: $10.9511 of
+$30. The case sections add four-place folder sums, so the last of them reads $10.9513. At most two calls ran at once.
+Before each call, the running total plus the worst case of every call still running and of the new call ($5.00 each)
+stayed under $30. The sums, in the order of the calls, were $10.9216, $15.9216, $16.2076, $16.5282, $16.8605, $18.0892,
+$18.4437, $19.1307, $19.5811, $15.3032 and $20.3032.
+
+The last skill commit is still `T-r1` (`2bd982d`). Task 6 reads it, unless the owner's ruling adds a skill commit.
