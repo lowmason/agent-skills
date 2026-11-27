@@ -6042,6 +6042,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       re-vendored `scripts/ste-lint.py` at `70736273`. Size: quick-fix. Revisit if: a compare from `70736273`
       (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
+      → triggered 2026-11-27: danyuchn HEAD is `d714e536`, and its `65c8ab6e` changes `scripts/ste-lint.py` (it skips bare URLs and finds phrases that a line break splits); prithivrajmu HEAD is still `cf9787b6`.
 
 ## claude/deferred-a35864 Step 4b review — 2026-11-17
 - [ ] **The re-vendored ste-lint.py skips the prose after an unclosed fence in a list item (Codex [P2] at
@@ -6392,6 +6393,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "the newest committed kit", which is now this kit. Size: quick-fix. Revisit if: a new directory under
       `specs/baseline/` holds a copy of `run_trigger_reps.sh` or `triggers.py`. Then decide whether a rep that
       loaded before the void counts, and say so in the new record.
+      → triggered 2026-11-27: plan 111 committed copies of both files in `specs/baseline/red-baseline-codes-description/kit/`, and its record does not rule on a rep that loaded before the void.
 - [x] **Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers
       "a single-shot subagent if you don't have API access". That rep inherits the user's instruction files, so
       it conflicts with `references/micro-tests.md` (a new directory, instruction files off) and with the guide
