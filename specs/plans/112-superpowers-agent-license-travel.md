@@ -36,7 +36,13 @@
 
 ## Decisions
 
-None.
+Owner answers at plan review, 2026-11-27 (a `/deferred` pass):
+
+- **D1.** The five other agents (`debugger`, `docs-writer`, `explore`, `security-auditor`, `test-runner`) are the owner's original work, so NOTICE may say so (F5).
+- **D2.** The pointer line in Global Constraints is approved as written (F1).
+- **D3.** The owner's own `LICENSE` does not travel with the two agents (F2, the 11-17 ruling).
+- **D4.** The docs scope of F5 (NOTICE, README's License section, one CLAUDE.md sentence) is approved.
+- **D5.** Review Focus 1 gets a live check on the owner's Mac, because neither `codex` nor `agy` is installed in the planning container. After Task 3, with `install.py all --companions` run on that machine, start `codex` and `agy` once each and confirm that neither loads `LICENSE-superpowers` as an agent nor warns about it. Record the result, with each CLI's version, in the completion report. The executing session asks the owner to run it, or attaches the owner's machine if the owner allows. It is a completion gate: the plan does not complete until it is recorded.
 
 ### Defaults for owner review
 

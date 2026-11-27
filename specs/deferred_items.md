@@ -659,37 +659,6 @@
       indentation test, a message of its own for trailing whitespace, one decoding on both read
       paths, and `newline=''` in the `cite` write. Size: quick-fix. Revisit if: a tracked CRLF
       file or a citation line with trailing whitespace appears.
-- [x] An HTML-form citation can sit above a rules file's frontmatter (plan 43's final review,
-      issue 5). `guide.py` (near line 269) decides whether a file has frontmatter from its
-      content, not its kind, so a `rules/*.md` file with `<!-- cc-guide: ... -->` on line 1 passes
-      as "Markdown without frontmatter", pushing its frontmatter off line 1 and silently
-      dropping its `paths:` scoping. `build/check_frontmatter.py` reports a missing frontmatter
-      block for skills, agents and commands only; nothing checks rules or `.claude/**`. Fix:
-      refuse the HTML form for the R4.1 first-row kinds (`SKILL.md`, `agents/`, `commands/`,
-      `rules/`, `.claude/skills|agents`), with a test. Size: quick-fix. Done when: `lint` reports
-      an HTML-form citation in any of those kinds.
-      → done in plan 44 (Task 4): `citation_slot` refuses the HTML form for the frontmatter
-      kinds (`guide.FRONTMATTER_KINDS`), with tests.
-- [x] A citation in on-demand Markdown lints clean (plan 43's final review, issue 7). The
-      amended drift spec R4.1 says Markdown a skill loads on demand (`references/`, or beside
-      `SKILL.md`) carries no citation of its own, because the skill's `SKILL.md` citation covers
-      it, but an HTML-form citation in a `references/*.md` file lints clean. Size: quick-fix.
-      Done when: `lint` flags a citation in on-demand Markdown, or the owner records that the
-      convention is deliberately unenforced. Raise it in Stage 3's `files` batches if the
-      duplicate citations appear first.
-      → done in plan 44 (Task 4): `lint` flags a citation in the Markdown a skill loads on
-      demand (`guide.SKILL_MARKDOWN`); a README or INSTALL file still cites itself.
-- [x] `baseline cite` stamps files `lint` never reads (plan 43, Task 5's review). `cli.py`
-      (`run_baseline`'s `cite` branch, near line 202) resolves each name with `tree.require`,
-      which reads any working-tree file, so an untracked file or one under R4.2's excluded trees
-      (`specs/`, `runtimes/`, `review/`, `.claude/worktrees/`) is stamped and no lint or check
-      ever reads the stamp. Duplicates are removed by argument text, not by resolved path
-      (`rules/x.md` with its `.claude/` symlink prints two `stamped` lines), and the
-      outside-the-repo test covers an absolute path only. Fix: refuse a path `citing_files`
-      would skip, deduplicate on `repo_path(name)`, add a `../x` case. Size: quick-fix. Done
-      when: `cite` refuses a file the lint's scan would skip, with a test.
-      → done in plan 44 (Task 4): `cite` refuses a file the lint never reads and stamps a
-      symlink and its target once, deduplicating on `repo_path`, with tests.
 - [x] Style and typing minors in the citation code (plan 43's per-task and final reviews).
       `build/cc_guide/state.py:92`: a non-UTF-8 tracked file name raises `UnicodeDecodeError`
       from the `git grep` decode, not a `cc-guide:` `SetupError`. `state.py:78`: `exclude` has no
@@ -710,17 +679,6 @@
       follows it; `import guide` is at module level; `summary()`'s comprehension names its
       variable `name`; `CLAUDE.md`'s long comment line is reflowed (187 lines). The double parse
       is re-deferred below, under the 2026-10-13 /deferred pass.
-- [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
-      decision (a), 2026-10-12). `specs/completed/claude-code-drift-automation-spec.md` R5 (near lines
-      523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
-      `build/cc_guide/lint.py` now treats a three-part label newer than the cached changelog's
-      newest release as a `note:` on stderr (exit unchanged), and any other unlisted token,
-      such as `2.1.902.1`, as a violation whatever the head; the `lint` help in
-      `build/cc_guide/cli.py` (lines 13-15) could say "three-part". Size: quick-fix. Done when:
-      R5 records the note rule and the three-part limit, and the help matches.
-      → done 2026-10-12 (direct quick fix, branch docs/drift-r5-label-note): R5 records the
-      note rule and the three-part limit, the `lint` help says "three-part" and that any other
-      unlisted label is a violation, and `test_cli.py` pins the wording.
 
 ## 44-claude-code-drift-automation — 2026-10-13
 - [x] Run drift Stage 3's first jobs (plan 44's Live run). After plan 44 merges, from a fresh
@@ -3170,6 +3128,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `NOTICE`. Size: design. Done when: each installed superpowers-derived agent carries or
       points to the superpowers notice, and `install.py` installs that notice with it.
       → progress 2026-11-17 (owner ruling): `install.py` installs `LICENSE-superpowers` beside the agents, and each superpowers-derived agent carries a one-line pointer to it.
+      → planned 2026-11-27: specs/plans/112-superpowers-agent-license-travel.md
 - [x] Split and rewrite writing-skills against the guide (residual rewrite from plan 53's
       "Splitting writing-skills", Out of scope). Plan 72 completed the body split, removed
       `writing-skills-late-critical-headings` and updated the body-warning test and
@@ -5113,6 +5072,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       unruled. The item stays open: its `Done when:` still needs the Echo ruling or a wording change, and the
       independent runs. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary, Owner ruling).
       → progress 2026-11-17 (owner ruling): no Echo. The reading of record stands: the phrase next to an order calls the order stages, and plan 78's round 2 rep5 verdict stands. The `Done when:` still needs the independent runs.
+      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -5381,6 +5341,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quality when no other question is open, and what it does with a `suggested, not approved` item, and a
       case covers each path with a control run.
       → progress 2026-11-17 (owner ruling): narrow this item to its second gap. The resume half of R7 is dropped (the spec is amended), and the §5 sentence quoted above is gone, so a resume no longer adds a later quality to any question. Done when now needs only: §5 says what a resume does with a `suggested, not approved` item, and a case covers that path with a control run.
+      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
 - [x] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
       `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
@@ -5409,6 +5370,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       R12 as the spec wrote it, and it exits by a new stage or a written deferral. Size: design. Done when: §6
       says how the review treats a folded requirement, and a case on a spec-sourced roadmap shows the
       behavior with a control run.
+      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
 
 ## superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 - [x] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
@@ -6320,7 +6282,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       prepare-handoff names `specs/handoff-briefs/`, and the commit lints pass.
 
 ## 103-worktree-skills-cc-guide-fixes — 2026-11-22
-- [ ] **Align the guide's "kept worktree" sentence with the desktop page (plan 103 completion gate, owner ruling
+- [x] **Align the guide's "kept worktree" sentence with the desktop page (plan 103 completion gate, owner ruling
       2026-11-22).** `specs/guides/claude-code-customization-guide.md` line 255 says "a kept worktree is removed
       about 30 days later". The desktop page (https://code.claude.com/docs/en/desktop, "Keep uncommitted changes
       when a session is archived") says the worktree "stays on disk with its changes" and that Desktop removes it
@@ -6334,6 +6296,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quick-fix. Done when: guide line 255 says what the page says, and the owner has ruled whether the skill,
       rule and NOTICE sentences also name the "last open" arm.
       → progress 2026-11-27 (/deferred pass): guide line 255 now says what the desktop page says (checked against https://code.claude.com/docs/en/desktop.md on 2026-11-27): the worktree stays on disk with its changes, and for a local session Desktop removes it about 30 days after the archive or the user's last open, whichever is later; `baseline accept subagents.worktrees --substantive` and `baseline stamp` recorded it, and `cli.py lint` and `check_conformance.py` pass. Still open: the owner's ruling on whether the skill, rule and NOTICE sentences also name the "last open" arm.
+      → done 2026-11-27 (/deferred quick fix): guide line 255 matches the desktop page (progress note above); the owner ruled on 2026-11-27 that the skill, rule and NOTICE sentences stay as they are.
 - [x] **Check whether `queued_turn_count` in a rep's JSON shows a peer turn (plan 103 Task 1 observation).** The
       rep JSON of Claude Code 2.1.323 holds a `queued_turn_count` field, 0 in every rep that the plan 103 kit ran.
       The kit's void rule reads only `result_index` and `origin`, the two fields that the 2026-11-18
@@ -6346,8 +6309,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-27 (/deferred quick fix): it shows nothing. On Claude Code 2.1.332, one busy no-tools Sonnet rep (the review-kit flags, `--tools ""` with `--strict-mcp-config`, under `env -i`) got one unique marker by name with `SendMessage`; the marker arrived as an extra turn (`result` quotes it, `result_index` 1, `origin.kind` "peer", `num_turns` 1), and `queued_turn_count` stayed 0, so the kit's void rule keeps reading `result_index` and `origin` only ($0.044; the rep JSON stayed in the session scratchpad, uncommitted, since `origin` holds the sender's session details; the marker went by name to the probe's own session, so it could not reach another lane's rep).
 
 ## cc-guide-files-pass-e3 (no plan; /cc-guide files pass, branch claude/cc-guide-files-e3-62cb58) — 2026-11-22
-- [ ] **Add a guide statement that `/clear` keeps the current model (E3 files pass, owner ruling 2026-11-22: guide addition).** `skills/writing-plans/SKILL.md` line 260 says that `/clear` keeps the current model. The guide's `lean.model-routing` section says that a typed `/model` saves its choice as the default for new sessions. It says nothing about `/clear` and the model, so the verifier rated the sentence not covered. The guide is a docs-checked file that the `/cc-guide` refresh edits, so the E3 pass did not edit it. Size: quick-fix. Done when: the `lean.model-routing` section of `specs/guides/claude-code-customization-guide.md` states, with a docs source, whether `/clear` keeps the session's model, and `cli.py lint` and `check_conformance.py` pass.
+- [x] **Add a guide statement that `/clear` keeps the current model (E3 files pass, owner ruling 2026-11-22: guide addition).** `skills/writing-plans/SKILL.md` line 260 says that `/clear` keeps the current model. The guide's `lean.model-routing` section says that a typed `/model` saves its choice as the default for new sessions. It says nothing about `/clear` and the model, so the verifier rated the sentence not covered. The guide is a docs-checked file that the `/cc-guide` refresh edits, so the E3 pass did not edit it. Size: quick-fix. Done when: the `lean.model-routing` section of `specs/guides/claude-code-customization-guide.md` states, with a docs source, whether `/clear` keeps the session's model, and `cli.py lint` and `check_conformance.py` pass.
       → progress 2026-11-27 (/deferred pass): no docs page settles it, so the guide is unchanged. Searched on 2026-11-27: `commands.md` (the `/clear` row: a new conversation with empty context), `model-config.md` (`/model`, the picker's `s` key, "A new session starts on a different model than you picked", resumed sessions), `interactive-mode.md` and `costs.md` (`/clear` starts a new session), and a grep of `llms-full.txt` for `/clear` near `model`. The nearest lines are indirect: the gateway page's beta-retry table names "new conversations on the model the rejected request named, including after `/clear`", and the hooks page says the `model` input field can be omitted after `/clear`. Neither says whether a model picked for the session only (`s`, `--model`) survives `/clear`. Still open: a docs source, or a probe if the owner wants one instead.
+      → done 2026-11-27 (/deferred quick fix): no docs page settles it, so on the owner's 2026-11-27 ruling a probe on Claude Code 2.1.332 did: a session launched with `--model claude-haiku-5-5`, and one switched to Sonnet 5.5 with the picker's s key, each answered on that model after `/clear` (the account default is Opus 5.5); `lean.model-routing` now states this as probe-backed, and `cli.py lint` and `check_conformance.py` pass.
 - [ ] **Check that `skills/tech-debt/SKILL.md` still works as a background fork (E3 files pass, 2026-11-22).** The skill sets `context: fork` and no `background` key, and its steps run a Bash sweep and `marimo` commands. The guide's `background` row says that a fork runs in the background by default (since 2.1.218) and gets the narrower tool set of background subagents, and that a skill whose steps need another tool sets `background: false`. The verifier rated the skill's frontmatter not covered, because no guide sentence says which tools a background subagent lacks. The owner first ruled "guide addition" on a wrong premise from the E3 pass, which said that the guide lacks the default. The guide has it. The repo lint (`HOST_KEYS` in `build/check_frontmatter.py`) rejects a `background` key, so a fix by frontmatter also needs a lint change. Size: design. Done when: a run of the skill in an interactive session, or the docs, shows whether its Bash sweep and `marimo` steps work under the background tool set, and the owner has ruled one of: no change, a `background` key plus a lint change, or a guide statement on which tools a background fork lacks.
 - [ ] **Narrow the `WorktreeCreate` and `--worktree` words in `skills/using-git-worktrees/SKILL.md` line 65 (E3 files pass, owner ruling 2026-11-22: hold).** Line 65 lists `EnterWorktree`, `WorktreeCreate`, a `/worktree` command and a `--worktree` flag as ways that the running session might already have to create a worktree. The guide says that `WorktreeCreate` is a hook, not a tool, and that `--worktree` is a flag that a session starts with, so a running session cannot use either one to create a worktree. Fix: drop those two names from the list, or say what each one is. The skill is adapted from superpowers, so the fix needs a `NOTICE` bullet and a `writing-skills` micro-test, which is why the E3 pass held the file and did not restamp it. Size: plan. Done when: line 65 names only ways that a running session can create a worktree, the `NOTICE` bullet is in, a micro-test shows that the new wording does not change what a session does, and `baseline cite` has stamped the file.
 - [ ] **Correct the rework-cost claim in `skills/subagent-driven-development/references/model-selection.md` line 13 (E3 files pass, owner ruling 2026-11-22: hold).** The file says that a model that takes 2-3× the turns, or needs a re-dispatch, costs more than the tier above it. The guide lists Haiku 5.5 at a fortieth of Opus 5.5's price and a twentieth of Sonnet 5.5's, so on the Anthropic API a cheap-tier model with 3× the turns still costs less than the standard tier. The claim may still hold for time and review effort, but not for price. The paragraph ties it to the two defaults in `SKILL.md`, so the fix must keep that reasoning sound. Fix: say that rework costs time and review effort, and that the cheap tier is cheaper per token by a wide margin. The skill is adapted from superpowers, so the fix needs a `NOTICE` bullet and a `writing-skills` micro-test, which is why the E3 pass held the file and did not restamp it. Size: plan. Done when: line 13 states a claim that matches the guide's prices, the `NOTICE` bullet is in, a micro-test shows that the model choices in a dispatch do not change, and `baseline cite` has stamped the file.
@@ -6400,13 +6364,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       file in `skills/writing-skills/` and plans a guard run.
 
 ## 107-writing-skills-improvements — 2026-11-24
-- [ ] **Raise item 2's Sonnet GREEN from 3/5 to the bar of 4 (plan 107, ruling at Task 4).** The T2 GREEN run
+- [x] **Raise item 2's Sonnet GREEN from 3/5 to the bar of 4 (plan 107, ruling at Task 4).** The T2 GREEN run
       for the trigger test gave Opus 5/5 and Sonnet 3/5 against a bar of 4. It shipped as measured, under the
       owner's "last retry" limit (see `specs/baseline/red-baseline-writing-skills-tests.md`, T2). The text in
       `skills/writing-skills/references/discovery.md` `### 6. Test triggering` is correct but is not proven on
       Sonnet to the plan's bar. Size: quick-fix. Done when: a wording change to that section, run RED first or
       under an owner waiver, gives Sonnet at least 4 of 5 on T2 `new` and Opus stays at 4 or more, or the owner
       records that 3 of 5 is enough.
+      → done 2026-11-27 (/deferred quick fix): the owner recorded on 2026-11-27 that 3 of 5 is enough, by the § 6 rule that a difference of one load is no change.
 - [ ] **Write item 10's rename procedure once a case can show the loss (plan 105 spec, item 10; plan 107, owner
       ruling at Task 5).** R3's control passed 10 of 10 on the old text, so RED was null and the owner dropped
       the text. Spec item 10 stays open in `specs/completed/writing-skills-improvements.md`. Size: design. Done when: a

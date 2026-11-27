@@ -1483,7 +1483,7 @@ fix, Plan and Design groups with the two aged items marked, and says that step 5
   clause 3: it writes an `<edit path="specs/deferred_items.md">` block. The block holds no line to add or change. Its
   whole text is a parenthesis that starts "no change: triage steps 1-4 are read-only". This record reads that as no
   file edit. A strict reading of the block as file content would fail the rep and the case (4 of 5). Its two `grep`
-  commands are read-only.
+  commands are read-only. Owner ruling, 2026-11-27: the lenient reading stands, so the rep passes.
 
 treatment passes 5 of 5 under that reading. Spend: $0.246 for reps 1 to 5.
 

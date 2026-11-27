@@ -1,8 +1,8 @@
 # derive-roadmap: provisional items and folded requirements — Design Spec
 
-**Status:** DRAFT (2026-11-27). The design came from a brainstorming session on 2026-11-27, opened by a `/deferred`
-Design pick. Decisions D1 and D2 are the owner's, from that session. Text marked *(designer's call)* is the
-designer's choice.
+**Status:** DRAFT (2026-11-27), for owner review. The design came from a brainstorming session on 2026-11-27,
+opened by a `/deferred` Design pick. Decisions D1 and D2 are the owner's, from that session, and so is D2's one-path
+form after the builder check. Text marked *(designer's call)* is the designer's choice.
 
 Two gaps in `skills/derive-roadmap/`, both found in plan 85's final review, and one open re-run from plan 79. First,
 a provisional roadmap marks a suggested later quality `suggested, not approved`, and no rule ever asks the owner to
@@ -29,12 +29,17 @@ Three items in `specs/deferred_items.md`:
   conscious deferral with a written why. Rejected: (A) a new stage field that records folded spec refs, which adds a
   format field and more cases; (C) forbidding the fold at §4, which adds friction at the checkpoint. R12's purpose,
   to catch a requirement dropped with no record, stays.
-- **D2. The checkpoint asks about provisional items, with a resume fallback** (option A of two). When the §4
-  checkpoint runs on a provisional roadmap, its ONE question also asks the owner, for each `suggested, not approved`
-  item, to approve and rank it, or to decline it. The answer is recorded as an approval or a decline is recorded
-  today (`references/roadmap-format.md`, Ranked list). If a §5 resume finds an item still marked
-  `suggested, not approved`, the Ask carries it; when nothing else is open, the item opens the Ask by itself.
-  Rejected: (B) a resume rule only, which lets the checkpoint approve a partition while the label stays.
+- **D2. The first session that can ask settles every provisional item** (option A of two, in its one-path form).
+  The owner first picked A: the §4 checkpoint asks about each `suggested, not approved` item, with a §5 resume
+  fallback. The builder check then found that a provisional roadmap carries the roadmap header, so entry rule 1
+  sends every later session on it to §5, Resume, and no rule sends it back to §4. The checkpoint and the fallback
+  are therefore one path, and the owner took that form (2026-11-27): a §5 resume that finds any
+  `suggested, not approved` item puts each one in the Ask's ONE question, to approve with a rank or to decline. When
+  nothing else is open, the items open the Ask by themselves. Nothing is handed off and nothing is promoted before
+  the answer. The label on each item is the marker; no new field. The answer is recorded as an approval or a decline
+  is recorded today (`references/roadmap-format.md`, Ranked list). Rejected: (B) a resume rule that leaves the
+  partition approvable while the label stays; a new "provisional" marker with an entry rule that routes such a file
+  to §4, which adds a format field (a non-goal).
 
 ## Goals, non-goals and anti-goals
 
@@ -59,37 +64,41 @@ Three items in `specs/deferred_items.md`:
 
 ## Requirements
 
-- **R1 (D2, checkpoint).** §4: on a provisional roadmap, the one approval question also covers each
-  `suggested, not approved` item: approve with a rank, or decline. On approval the item drops the label and is an
-  ordinary outcome; on a decline its Outcomes row, O-number and list item go and the stage's `Leaves out` entry
-  reads `<quality>: declined, <YYYY-MM-DD>`, as the existing decline rule says. *(designer's call: whether a declined
-  item's O-number is reused is left to the builder, see Left to the builder)*
-- **R2 (D2, resume fallback).** §5: a resume that finds an item marked `suggested, not approved` puts it in the
-  Ask's one question with the same approve-and-rank-or-decline choice. When the resume has nothing else to ask, the
-  item opens the Ask by itself. Nothing is handed off before the answer.
-- **R3 (goal 2).** Until the answer, a `suggested, not approved` item is not promoted and not counted as an outcome
-  in §5 or §6.
-- **R4 (D1).** §6: for a roadmap whose `Source` is a spec, each numbered spec requirement that no outcome's `Spec`
-  cell cites goes through the gap rubric with evidence, as the other requirements do. Met needs cited evidence
-  (stage stamp, plan, or Handoff). Unmet exits by a new stage or a written deferral.
+- **R1 (D2).** §5: a resume that finds any item marked `suggested, not approved` puts each one in the Ask's ONE
+  question: approve with a rank, or decline. When the resume has nothing else to ask, the items open the Ask by
+  themselves. Nothing is handed off before the answer. On approval the item drops the label and is an ordinary
+  outcome. On a decline its Outcomes row and list item go, and the stage's `Leaves out` entry reads
+  `<quality>: declined, <YYYY-MM-DD>`, as the existing decline rule says.
+- **R2 (goal 2).** Until the answer, a `suggested, not approved` item is not promoted and not counted as an outcome
+  in §5 or §6. A research track whose committed stages are all ticked and whose Ranked list holds only such items
+  counts as waiting on its Ranked list (§5). Its one question asks the owner to approve and rank each item first,
+  and only then proposes the next stage, so the owner's single answer settles both. *(designer's call)*
+- **R3 (D1).** §6: for a roadmap whose `Source` is a spec, each numbered spec requirement that no outcome's `Spec`
+  cell cites goes through the gap rubric with evidence, as the other requirements do. Met needs the rubric's own
+  evidence, a path:line or a test name (`references/gap-rubric.md`), and the verdict names the stage plan that built
+  it. A stage stamp alone is not enough, since a stamp names no requirement. Unmet exits by a new stage or a written
+  deferral. *(designer's call: the evidence standard)*
 
 ## Verification
 
 All micro-tests use plan 78's kit (`specs/baseline/red-baseline-new-project-entry/kit/`), its runner, record and
 bars (4 of 5 per case).
 
-- **V1 (R1).** A new case: an interactive checkpoint on a provisional roadmap that holds one `suggested, not
-  approved` item. The reply's one question asks to approve and rank it, or decline it. Control at this plan's base,
-  then treatment.
-- **V2 (R2, R3).** A new case: a resume of a roadmap whose stages give no Ask, with one `suggested, not approved`
-  item. The reply opens the Ask with that item and hands nothing off before the answer. Control, then treatment.
-- **V3 (R4).** A new case: a spec-sourced roadmap at §6, with one requirement folded into a stage (no outcome cites
-  it) and a stage plan that implemented it, and a second uncited requirement with no evidence. The reply marks the
-  first met with the plan cited and the second unmet with the two exits. Control, then treatment.
-- **V4 (item 5095).** Two independent five-rep `dr-tracks` runs and one `dr-known-progression-79` run at the final
+- **V1 (R1, R2).** Two new fixtures, one case each, each with a control at this plan's base and then a treatment.
+  (a) The first interactive resume of a provisional roadmap that also has other changes to ask about, with one
+  `suggested, not approved` item: the one question covers the item (approve with a rank, or decline) beside the
+  other changes. (b) A resume whose stages give no Ask, with one such item: the item opens the Ask by itself. In
+  both, nothing is handed off or promoted before the answer.
+- **V2 (R3).** A new case: a spec-sourced roadmap at §6, with one requirement folded into a stage (no outcome cites
+  it) and a stage plan and code file that implemented it, and a second uncited requirement with no evidence. The
+  reply marks the first met with a path:line or test name and the plan cited, and the second unmet with the two
+  exits. Control, then treatment.
+- **V3 (item 5095).** Two independent five-rep `dr-tracks` runs and one `dr-known-progression-79` run at the final
   text, each at 4 of 5 or better, scored by the readings of record (Provenance on bytes; no Echo). *(designer's
-  call: these double as guards for this spec's edits)*
-- **V5 (guards).** Non-regression re-runs of the cases that read text this spec changes: at least
+  call: these double as guards for this spec's edits)* A run below its bar is recorded and goes to the owner. The
+  plan does not reword §7 or `references/new-project-entry.md`, which this spec does not change, and item 5095 then
+  stays open. *(designer's call)*
+- **V4 (guards).** Non-regression re-runs of the cases that read text this spec changes: at least
   `dr-quality-suggest`, `dr-spec-column`, `dr-resume-rerank`, `dr-resume-marker` and `dr-resume-blocked`. The plan
   names the full set from the edits it makes.
 
@@ -106,9 +115,9 @@ bars (4 of 5 per case).
 
 ## Left to the builder
 
-- The exact wording of R1 to R4, and which file holds each rule. Follow the existing split: steps in `SKILL.md`,
+- The exact wording of R1 to R3, and which file holds each rule. Follow the existing split: steps in `SKILL.md`,
   the rules behind them in `references/roadmap-format.md`.
-- The fixtures, pass rules and leak words of V1 to V3.
+- The fixtures, pass rules and leak words of V1 and V2.
 - Whether a declined item's O-number is freed or burned. *(designer's call: burned, so O-numbers in history never
   change meaning, unless the builder finds a rule that says otherwise)*
 - The spend stop for the plan's micro-tests. *(designer's call: $30, as plans 79 and 85)*

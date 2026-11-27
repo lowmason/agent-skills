@@ -2429,6 +2429,50 @@ declined as YAGNI (zero instances in a one-page wiki).
       where the home is tracked"; the retired spec's R4.3 row carries the
       `(owner, 2026-10-11)` tag.
 
+## 43-claude-code-drift-automation — 2026-10-12
+- [x] An HTML-form citation can sit above a rules file's frontmatter (plan 43's final review,
+      issue 5). `guide.py` (near line 269) decides whether a file has frontmatter from its
+      content, not its kind, so a `rules/*.md` file with `<!-- cc-guide: ... -->` on line 1 passes
+      as "Markdown without frontmatter", pushing its frontmatter off line 1 and silently
+      dropping its `paths:` scoping. `build/check_frontmatter.py` reports a missing frontmatter
+      block for skills, agents and commands only; nothing checks rules or `.claude/**`. Fix:
+      refuse the HTML form for the R4.1 first-row kinds (`SKILL.md`, `agents/`, `commands/`,
+      `rules/`, `.claude/skills|agents`), with a test. Size: quick-fix. Done when: `lint` reports
+      an HTML-form citation in any of those kinds.
+      → done in plan 44 (Task 4): `citation_slot` refuses the HTML form for the frontmatter
+      kinds (`guide.FRONTMATTER_KINDS`), with tests.
+- [x] A citation in on-demand Markdown lints clean (plan 43's final review, issue 7). The
+      amended drift spec R4.1 says Markdown a skill loads on demand (`references/`, or beside
+      `SKILL.md`) carries no citation of its own, because the skill's `SKILL.md` citation covers
+      it, but an HTML-form citation in a `references/*.md` file lints clean. Size: quick-fix.
+      Done when: `lint` flags a citation in on-demand Markdown, or the owner records that the
+      convention is deliberately unenforced. Raise it in Stage 3's `files` batches if the
+      duplicate citations appear first.
+      → done in plan 44 (Task 4): `lint` flags a citation in the Markdown a skill loads on
+      demand (`guide.SKILL_MARKDOWN`); a README or INSTALL file still cites itself.
+- [x] `baseline cite` stamps files `lint` never reads (plan 43, Task 5's review). `cli.py`
+      (`run_baseline`'s `cite` branch, near line 202) resolves each name with `tree.require`,
+      which reads any working-tree file, so an untracked file or one under R4.2's excluded trees
+      (`specs/`, `runtimes/`, `review/`, `.claude/worktrees/`) is stamped and no lint or check
+      ever reads the stamp. Duplicates are removed by argument text, not by resolved path
+      (`rules/x.md` with its `.claude/` symlink prints two `stamped` lines), and the
+      outside-the-repo test covers an absolute path only. Fix: refuse a path `citing_files`
+      would skip, deduplicate on `repo_path(name)`, add a `../x` case. Size: quick-fix. Done
+      when: `cite` refuses a file the lint's scan would skip, with a test.
+      → done in plan 44 (Task 4): `cite` refuses a file the lint never reads and stamps a
+      symlink and its target once, deduplicating on `repo_path`, with tests.
+- [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
+      decision (a), 2026-10-12). `specs/completed/claude-code-drift-automation-spec.md` R5 (near lines
+      523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
+      `build/cc_guide/lint.py` now treats a three-part label newer than the cached changelog's
+      newest release as a `note:` on stderr (exit unchanged), and any other unlisted token,
+      such as `2.1.902.1`, as a violation whatever the head; the `lint` help in
+      `build/cc_guide/cli.py` (lines 13-15) could say "three-part". Size: quick-fix. Done when:
+      R5 records the note rule and the three-part limit, and the help matches.
+      → done 2026-10-12 (direct quick fix, branch docs/drift-r5-label-note): R5 records the
+      note rule and the three-part limit, the `lint` help says "three-part" and that any other
+      unlisted label is a violation, and `test_cli.py` pins the wording.
+
 ## Aged-backlog acknowledgements (to 2026-10-12) — 2026-10-12
 - 2026-09-08 — finished `feat/snippet-gate-repo-wide` with 1 item aged >45d,
   carried on the same reason the owner gave earlier the same session for the same
