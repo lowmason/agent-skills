@@ -1650,3 +1650,15 @@ def test_a_refused_exit_worktree_with_another_action_is_not_an_error(tmp_path):
     at = next(n for n, c in enumerate(calls) if c[0] == 'ExitWorktree')
     refused = ('ExitWorktree', {'action': 'remove'}, WT_NOT_LOADED, True)
     assert wt_verdict(places, isolation=wt_stream(*calls[:at], refused, *calls[at:])) == (PASS, WT_PASS)
+
+
+def test_with_only_unmarked_refused_keep_calls_the_first_is_the_split(tmp_path):
+    '''With no keep call that succeeded or carries the No-op mark, the first keep call is the step, so the steps
+    after it, though before a later refused keep, read as never run before it.'''
+    places = wt_places(tmp_path)
+    calls = [(name, given, WT_NOT_LOADED if name == 'ExitWorktree' else body, True if name == 'ExitWorktree'
+              else is_error) for name, given, body, is_error in wt_isolation_calls(places)]
+    outcome, said = wt_verdict(places, isolation=wt_stream(wt_exit(WT_NOT_LOADED, True), *calls))
+    assert outcome == ERROR
+    assert {'isolation: control never ran', 'isolation: ExitWorktree was refused without the No-op mark'} <= set(
+        said.split('; '))
