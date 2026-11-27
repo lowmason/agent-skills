@@ -157,3 +157,14 @@ def test_an_agent_case_scores_the_final_message_and_a_document_case_scores_every
     assert kit.reply_text(recs, final=True) == 'Consume the artifact.'
     assert kit.reply_text(recs).startswith('I should read')
     assert len(cases.obligation_flags(kit.reply_text(recs, final=True), cases.AGENT_SOURCES['C'])) == 1
+
+
+def test_flag_ids_stay_unique_when_new_reps_add_flags(tmp_path):
+    env = kit_env(tmp_path, 'Consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '2', '--jobs', '2').returncode == 0
+    assert run_kit(env, 'flags').returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-sonnet-5-5', '--good', '2', '--jobs', '2').returncode == 0
+    assert run_kit(env, 'flags').returncode == 0
+    ids = [r['flag'] for r in kit.read_tsv(tmp_path / 'runs' / 'flags.tsv', kit.FLAG_FIELDS)]
+    assert len(ids) == 4 and len(set(ids)) == 4

@@ -536,9 +536,15 @@ def cmd_flags(_args) -> int:
         if r['status'] == 'good' and r['rep'] in good_reps(r['arm'], r['case'], r['model']):
             rows += rep_flags(r['rep'], case_set.BY_ID[r['case']])
     random.Random('ste114-flags').shuffle(rows)
-    for n, row in enumerate(rows, start=1):
+    # A kept row keeps its id. A new row takes the next id after every id in use, so no two rows share one.
+    used = [int(r['flag'][1:]) for r in old.values() if r.get('flag', '')[1:].isdigit()]
+    next_id = max(used, default=0) + 1
+    for row in rows:
         prev = old.get((row['rep'], row['check'], row['detail']), {})
-        row.update(flag=prev.get('flag') or f'f{n:03d}', verdict=prev.get('verdict', ''), reason=prev.get('reason', ''))
+        if not prev.get('flag'):
+            prev = {**prev, 'flag': f'f{next_id:03d}'}
+            next_id += 1
+        row.update(flag=prev['flag'], verdict=prev.get('verdict', ''), reason=prev.get('reason', ''))
     write_tsv(FLAGS, FLAG_FIELDS, rows)
     print(f'{len(rows)} flags, {sum(1 for r in rows if not r["verdict"])} unread')
     return 0

@@ -44,3 +44,39 @@ judge control agent-error-message claude-opus-5-5	0.0439
 judge control agent-error-message claude-sonnet-5-5	0.0416
 judge control agent-instruction claude-opus-5-5	0.0414
 judge control agent-instruction claude-sonnet-5-5	0.0439
+rep r0226a8	0.0665
+rep r1b2820	0.0681
+rep r8bb20e	0.0695
+rep r22abf7	0.0686
+rep r1b0740	0.0753
+rep rf33b06	0.0326
+rep r780738	0.0331
+rep r17fafe	0.0329
+rep r434fb0	0.0350
+rep r89b000	0.0344
+rep rd3b603	0.0636
+rep rdbb339	0.0645
+rep rdaad48	0.0648
+rep re91e5c	0.0651
+rep r5a2a2f	0.0660
+rep r51ab4c	0.0310
+rep r37eb2a	0.0307
+rep r1f6af4	0.0314
+rep ra44a95	0.0322
+rep r085339	0.0350
+rep rc31646	0.0658
+rep re778ed	0.0666
+rep r475e8a	0.0667
+rep r023c85	0.0660
+rep r839413	0.0680
+rep r5d7c88	0.0311
+rep re3a2c0	0.0327
+rep r70df1b	0.0326
+rep re092db	0.0339
+rep r8254bc	0.0340
+judge treatment agent-tool-description claude-opus-5-5	0.0385
+judge treatment agent-tool-description claude-sonnet-5-5	0.0394
+judge treatment agent-error-message claude-opus-5-5	0.0475
+judge treatment agent-error-message claude-sonnet-5-5	0.0454
+judge treatment agent-instruction claude-opus-5-5	0.0367
+judge treatment agent-instruction claude-sonnet-5-5	0.0445

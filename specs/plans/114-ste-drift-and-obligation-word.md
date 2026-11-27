@@ -47,6 +47,7 @@
 - **D6** (planner, for plan review, 2026-11-27): the new line names "should", a word of the `agent-instruction` source. The item names "should" as its example, so the overlap check records it and allows it. Applied in: Task 4.
 - **D7** (owner, plan review, 2026-11-27): approve as written, with D3 to D6 standing. Execute inline in the planning session (executing-plans). Applied in: all tasks.
 - **D8** (owner, execution, 2026-11-27): "Give agent reps Read". With `--tools ""`, 4 of 5 Opus 5.5 control reps wrote tool calls as text, and 2 ran to the output limit (about $3.40 each). Agent reps now get the Read tool, and they are scored on their final message. The first 5 reps are set aside. Applied in: Task 2 (kit amendment 1), Tasks 3 to 5.
+- **D9** (owner, execution, 2026-11-27): "Accept, file an item". Treatment `agent-instruction` on Sonnet failed the all-checks bar at 2 of 5, on a guessed actor (2 reps) and a 21-word note (1 rep), while every treatment cell passed the obligation check 5 of 5. [33] is met by its own done-when, the registry's all-checks bar is recorded as missed on that cell, and the actor-guess fault, which the control shows too, gets a new deferred item. No wording fix and no re-run. Applied in: Task 4, Task 6, completion.
 
 ---
 
@@ -121,17 +122,17 @@ Case set:
 - Modify: `skills/write-with-asd-ste100/SKILL.md` (`## Meaning rules`, after the **Confidence** bullet)
 - Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/treatment/`
 
-- [ ] **Step 1: Add the line,** exact copy:
+- [x] **Step 1: Add the line,** exact copy:
 
 ```markdown
 - **Obligation.** Keep the strength of every obligation word, also in an imperative step. "Should" stays "should". Do not make it "must" or a bare command.
 ```
 
-- [ ] **Step 2: Check the line.** The linter on `SKILL.md` adds no finding to Task 1's after-count. The overlap check (words of the three agent sources in the new line) is recorded; "should" is allowed (D6). `uv run --with pyyaml python build/check_frontmatter.py` and `build/run_commit_lints.sh` pass.
-- [ ] **Step 3: Commit** `feat(write-with-asd-ste100): keep the strength of obligation words`.
-- [ ] **Step 4: Freeze the treatment arm** from that commit (Task 2 Step 5), and run the three agent cases, 5 reps on each model.
-- [ ] **Step 5: Score** as in Task 3. Expected: every agent case passes every check at 4 of 5 or better on both models. A case that fails gets one wording fix and a re-run of that case. A second failure goes to the owner.
-- [ ] **Step 6: Commit** `test(write-with-asd-ste100): score the treatment arm`.
+- [x] **Step 2: Check the line.** The linter on `SKILL.md` adds no finding to Task 1's after-count. The overlap check (words of the three agent sources in the new line) is recorded; "should" is allowed (D6). `uv run --with pyyaml python build/check_frontmatter.py` and `build/run_commit_lints.sh` pass.
+- [x] **Step 3: Commit** `feat(write-with-asd-ste100): keep the strength of obligation words`.
+- [x] **Step 4: Freeze the treatment arm** from that commit (Task 2 Step 5), and run the three agent cases, 5 reps on each model.
+- [x] **Step 5: Score** as in Task 3. Expected: every agent case passes every check at 4 of 5 or better on both models. A case that fails gets one wording fix and a re-run of that case. A second failure goes to the owner.
+- [x] **Step 6: Commit** `test(write-with-asd-ste100): score the treatment arm`.
 
 ### Task 5: Document cases
 
@@ -171,6 +172,19 @@ Upstream fixed none of the four. Linter counts, `70736273` and `d714e536` alike:
 **Task 2 (2026-11-27).** The kit has 16 no-model tests (`ste-obligation-kit` suite). Each of 8 deliberate breaks in `kit.py` (the scrub, the origin void, the denial void, the symlink target check, the environment, the arm field in the sheet, the cross-session deny list, the unread-flag rule) made one test fail. The ported cases equal the 2026-10-18 kit's prompts, checks, caps and fixtures. `control` froze at `4168d2a`: `SKILL.md` SHA-256 `e85c795e…`, rule `223a232c…`. Both probes on `claude-sonnet-5-5` saw only the rule, the skill prompt and the planned tools (none, or `Bash`, `Edit`, `Read`, `Write`), no memory, no other session and no user name. The init records list the CLI's bundled skills (`deep-research`, `dataviz` and others), but no rep has the Skill tool, and neither probe named them. The probes cost $0.06.
 
 **Task 3 (2026-11-27).** Under D8, the control arm ran 30 good reps with no void, plus 6 judge calls. The provisional tally (every unread flag a fail): `agent-instruction` passes the obligation check on Opus 5 of 5 and on Sonnet 1 of 5, and `agent-error-message` on Opus 3 of 5. So the control does not pass on both models, and D4 does not stop the line. Spend after Task 3: $8.98.
+
+**Task 4 (2026-11-27).** The line is commit `546181a`. Linter on `SKILL.md`: 2 violations (1 hard), 1365 words, the same count as before. Overlap with the agent sources, function words aside: "should" only (D6). `treatment` froze at `546181a`: `SKILL.md` SHA-256 `78a2731a…`, the rule unchanged. 30 good reps, no void, 6 judge calls. The blind reading of all 17 flags of both arms gave 14 `count` and 3 `justified` (judge errors: "could" read as weaker than "may", and "must" or "required" inside a `Flag:` note). Tally, all checks and then the obligation check:
+
+| Case | Model | control | treatment |
+|---|---|---|---|
+| `agent-tool-description` | Opus | 5/5 (obl. 5/5) | 5/5 (5/5) |
+| `agent-tool-description` | Sonnet | 5/5 (5/5) | 5/5 (5/5) |
+| `agent-error-message` | Opus | 5/5 (5/5) | 5/5 (5/5) |
+| `agent-error-message` | Sonnet | 3/5 (5/5) | 5/5 (5/5) |
+| `agent-instruction` | Opus | 5/5 (5/5) | 5/5 (5/5) |
+| `agent-instruction` | Sonnet | 1/5 (1/5) | 2/5 FAIL (5/5) |
+
+> Deviation: treatment `agent-instruction` on Sonnet missed the all-checks bar (2 of 5) on a guessed actor and a sentence cap, not on the obligation check. The owner chose to accept it and file an item (D9), so Step 5's wording fix and re-run did not run.
 
 ## Completion notes for the protocol
 
