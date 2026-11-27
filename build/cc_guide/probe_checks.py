@@ -755,6 +755,7 @@ WT_PUSHED, WT_UNPUSHED = 'probe: pushed', 'probe: unpushed'  # the base runs' co
 WT_ISOLATION_MARK = 'isolated in the worktree'  # in the harness's refusal of a command that leaves the worktree
 WT_NOOP_MARK = 'No-op'  # in ExitWorktree's refusal in a session that EnterWorktree did not start
 WT_LOCKED = 'locked'  # a porcelain line in a locked worktree's block
+WT_BLOCK = 'worktree '  # the porcelain line that opens a worktree's block, before its path
 WT_PARTS = ('isolation', 'noop', 'base-no-remote', 'base-failed-fetch')
 WT_BASE_PARTS = ('base-no-remote', 'base-failed-fetch')
 WT_NO_REMOTE, WT_FAILED_FETCH = WT_BASE_PARTS
@@ -842,9 +843,33 @@ def pwd_after(events: list[dict], after: list, places: dict[str, str]) -> str | 
     return None if run is None else place_of(run[1], places)
 
 
-def locked(events: list[dict], calls: list) -> bool | None:
+def worktree_block(text: str, path: str) -> list[str] | None:
+    '''The lines of the porcelain block whose worktree is `path` (compared by realpath, as place_of does), or None.'''
+    for chunk in re.split(r'\n\s*\n', text):
+        lines = chunk.strip().splitlines()
+        if lines and lines[0].startswith(WT_BLOCK) and (
+                os.path.realpath(lines[0][len(WT_BLOCK):]) == os.path.realpath(path)):
+            return lines
+    return None
+
+
+def is_locked(block: list[str] | None) -> bool:
+    return block is not None and any(line.startswith(WT_LOCKED) for line in block)
+
+
+def locked(events: list[dict], calls: list, path: str) -> bool | None:
     run = first_run(events, calls, WT_LIST)
-    return None if run is None else any(line.startswith(WT_LOCKED) for line in run[1].splitlines())
+    return None if run is None else is_locked(worktree_block(run[1], path))
+
+
+def kept_and_locked(events: list[dict], after: list, path: str) -> tuple[bool | None, bool | None]:
+    '''Whether the first WT_LIST after ExitWorktree, when it succeeded, has the worktree's block, and then whether
+    that block is locked; None for what it does not show.'''
+    run = first_run(events, after, WT_LIST)
+    if run is None or call_is_error(events, run[0]):
+        return None, None
+    block = worktree_block(run[1], path)
+    return block is not None, None if block is None else is_locked(block)
 
 
 def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
@@ -856,10 +881,12 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
         steps[step] = dict(WT_NOT_RUN) if run is None else {
             'ran': True, 'refused': call_is_error(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}
     refused = call_failed(events, exit_call)
+    kept_after, locked_after = kept_and_locked(events, after, places['worktree'])
     return {'exited': None if refused is None else not refused,
             'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
             'pwd_after': pwd_after(events, after, places),
-            'locked_before': locked(events, before), 'locked_after': locked(events, after), 'steps': steps}
+            'locked_before': locked(events, before, places['worktree']), 'kept_after': kept_after,
+            'locked_after': locked_after, 'steps': steps}
 
 
 def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
@@ -885,8 +912,10 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
     whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both
     ExitWorktree runs, ExitWorktree is split_at_keep's call: the first keep call that succeeded, else the first
     keep call. exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK;
-    locked_before and locked_after, whether the first WT_LIST
-    result before or after ExitWorktree has a WT_LOCKED line; pwd_after, the place the first WT_PWD after
+    kept_after, whether the first WT_LIST result after ExitWorktree has the worktree's own block, None when that
+    list never ran or its result is an error; locked_before and locked_after, whether the worktree's own block in
+    the first WT_LIST result before or after ExitWorktree has a WT_LOCKED line (locked_after: None unless
+    kept_after); pwd_after, the place the first WT_PWD after
     ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether
     its result holds WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error,
     and has_pushed and has_unpushed read the first WT_LOG result after it, line by line. A value that no call
@@ -917,7 +946,7 @@ def worktree_errors(sightings: dict) -> list[str]:
     errors += [f'{part}: {what} never ran' for part, what, value in (
         ('isolation', f'{EXIT_TOOL} {WT_KEEP}', isolation['exited']),
         ('isolation', f'{WT_LIST} before {EXIT_TOOL}', isolation['locked_before']),
-        ('isolation', f'{WT_LIST} after {EXIT_TOOL}', isolation['locked_after']),
+        ('isolation', f'{WT_LIST} after {EXIT_TOOL}', isolation['kept_after']),
         ('isolation', f'{WT_PWD} after {EXIT_TOOL}', isolation['pwd_after']),
         ('noop', EXIT_TOOL, noop['exit_refused']),
         ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
@@ -945,6 +974,7 @@ def worktree_differences(sightings: dict) -> list[str]:
               *([] if isolation['pwd_after'] == WT_MAIN else
                 [f"isolation: pwd after {EXIT_TOOL} was {isolation['pwd_after']}, not {WT_MAIN}"]),
               *([] if isolation['locked_before'] else [f'isolation: the worktree was not locked before {EXIT_TOOL}']),
+              *([] if isolation['kept_after'] else [f'isolation: {EXIT_TOOL} {WT_KEEP} removed the worktree']),
               *([f'isolation: the worktree was still locked after {EXIT_TOOL}'] if isolation['locked_after'] else []),
               *([] if noop['exit_refused'] else [f'noop: {EXIT_TOOL} was not refused']),
               *([] if noop['pwd_after'] == WT_PLAIN else

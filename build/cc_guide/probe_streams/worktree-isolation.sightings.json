@@ -2,8 +2,10 @@
  "isolation": {
   "broken": null,
   "exited": true,
+  "exit_marked": false,
   "pwd_after": "main",
   "locked_before": true,
+  "kept_after": true,
   "locked_after": false,
   "steps": {
    "control": {

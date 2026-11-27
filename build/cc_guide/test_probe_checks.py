@@ -1298,7 +1298,7 @@ def test_the_recorded_shape_gives_these_sightings(tmp_path):
     base = {'broken': None, 'entered': True, 'has_pushed': True}
     assert pc.worktree_sightings(wt_streams(places), places) == {
         'isolation': {'broken': None, 'exited': True, 'exit_marked': False, 'pwd_after': 'main', 'locked_before': True,
-                      'locked_after': False,
+                      'kept_after': True, 'locked_after': False,
                       'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
                                 'plain_subshell': ran, 'main_git_after': ran}},
         'noop': {'broken': None, 'exit_refused': True, 'exit_marked': True, 'pwd_after': 'plain-worktree'},
@@ -1522,3 +1522,55 @@ def test_with_no_successful_keep_call_the_first_keep_call_is_read(tmp_path):
     outcome, said = wt_verdict(places, isolation=wt_stream(*refused))
     assert outcome == DIVERGES
     assert 'isolation: ExitWorktree was refused' in said.split('; ')
+
+
+def wt_with_lists(places, before, after):
+    '''The recorded isolation calls with the two worktree lists' results swapped for `before` and `after`, each
+    (result text, is_error).'''
+    calls, seen = [], 0
+    for name, given, body, is_error in wt_isolation_calls(places):
+        if given.get('command') == WT_LIST:
+            body, is_error = (before, after)[seen]
+            seen += 1
+        calls.append((name, given, body, is_error))
+    return wt_stream(*calls)
+
+
+def test_a_list_after_exit_worktree_without_the_worktree_means_keep_removed_it(tmp_path):
+    '''A list with no block for the probe worktree has no lock line either; that is no proof the lock went.'''
+    places = wt_places(tmp_path)
+    gone = f"worktree {places['main']}\nHEAD abc\nbranch refs/heads/main\n"
+    events = wt_with_lists(places, (wt_list(places, True), False), (gone, False))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
+    assert (sightings['isolation']['kept_after'], sightings['isolation']['locked_after']) == (False, None)
+    assert pc.assess_worktree_isolation(sightings) == (DIVERGES, 'isolation: ExitWorktree keep removed the worktree')
+
+
+def test_a_failed_list_after_exit_worktree_is_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_with_lists(places, (wt_list(places, True), False), ('fatal: not a git repository', True))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
+    assert (sightings['isolation']['kept_after'], sightings['isolation']['locked_after']) == (None, None)
+    assert pc.assess_worktree_isolation(sightings) == (
+        ERROR, 'isolation: git worktree list --porcelain after ExitWorktree never ran')
+
+
+def test_a_lock_counts_only_in_the_probe_worktrees_own_block(tmp_path):
+    places = wt_places(tmp_path)
+    main_locked = wt_list(places, False).replace('branch refs/heads/main\n', 'branch refs/heads/main\nlocked\n')
+    assert wt_verdict(places, isolation=wt_with_lists(places, (main_locked, False), (wt_list(places, False), False))) \
+        == (DIVERGES, 'isolation: the worktree was not locked before ExitWorktree')
+    assert wt_verdict(places, isolation=wt_with_lists(places, (wt_list(places, True), False), (main_locked, False))) \
+        == (PASS, WT_PASS)
+
+
+def test_the_worktrees_block_is_found_through_a_symlink(tmp_path):
+    real = tmp_path / 'real'
+    (real / 'main').mkdir(parents=True)
+    (tmp_path / 'link').symlink_to(real)
+    places = {'main': str(real / 'main'), 'worktree': str(real / 'main' / '.claude' / 'worktrees' / 'probe'),
+              'plain-worktree': str(real / 'wt-plain')}
+    shown = {**places, 'worktree': str(tmp_path / 'link' / 'main' / '.claude' / 'worktrees' / 'probe')}
+    events = wt_with_lists(places, (wt_list(shown, True), False), (wt_list(shown, False), False))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
+    assert (sightings['isolation']['locked_before'], sightings['isolation']['kept_after']) == (True, True)
