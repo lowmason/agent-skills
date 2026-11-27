@@ -166,7 +166,9 @@ that bears on the skill.
     three agent-facing examples (Examples A to C of
     examples/before-after.md: a tool description, an error message and an
     inter-agent instruction) are test cases in the skill's test record, not
-    skill text.
+    skill text. Their Before texts are copied unchanged into
+    specs/baseline/red-baseline-ste-obligation-word/kit/cases.py, as test
+    cases of plan 114's micro-test record.
   - prithivrajmu/asd-ste100 (MIT, Copyright (c) 2026 Dustin Yuchen Teng and
     Copyright (c) 2026 Prithiv M U; commit
     d93237679681a74873bdee4f1a7869f728968dbd, 2026-10-17). Adapted: the 80%

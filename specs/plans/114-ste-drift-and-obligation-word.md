@@ -194,9 +194,11 @@ Upstream fixed none of the four. Linter counts, `70736273` and `d714e536` alike:
 
 A second reading, not registered, from each `doc-symlink` rep's tool calls: 7 of 10 reps wrote through the link into the dirty `docs/manual.md` before they took the copy branch. Most ran step 3's three checks as one `&&` chain. On a link, `test ! -L` fails, the chain stops and prints nothing, and the rep read the silence as an empty status. Six of the seven saw the changed `manual.md`, restored its dirty bytes and wrote the copy. The seventh (Sonnet `r141a4d`) left `manual.md` changed and wrote no copy, which is the one registered fail. Only 3 of 10 reps took the copy branch with no write through the link. The registered verdict stands. The wording defect in `references/document-rewrite.md` step 3 gets a new deferred item.
 
+**Final review (2026-11-27).** code-reviewer (Opus) and Codex (`Codex reviewed 3f8c9da`). Fixed in one pass, each with a test that failed first: the plan's V3 (D10, 4 `doc-symlink` reps void and replaced, `doc-symlink` still Opus 5/5 and Sonnet 4/5), the account-name redaction (D12), a fail-closed judge table, an empty final message as V1, and a lock on the spend ledger. Task 2's mutant step ran in the fix pass: 37 mutants caught, 1 withdrawn, and both test files fail to load on the revert. The plan file was restored after a bad tick edit. Spend: $14.76.
+
 ## Completion notes for the protocol
 
 - [119]: tick `→ done` with the compare, the re-vendor commit and the pin, and append a new watch item for the next drift review, from `d714e536` (danyuchn) and `cf9787b6` (prithivrajmu).
-- [33]: tick when Task 4's tally passes.
-- [34]: tick for the symlink case when Task 5's `doc-symlink` passes. The other two fixes stay unreached: append one item for them, or ask the owner whether to drop them.
+- [33]: tick under D9: the obligation check passes at 5 of 5 in every treatment cell. The registered all-checks rule was not met on treatment `agent-instruction` Sonnet (2 of 5); D9 replaced it with the item's done-when.
+- [34]: do not tick (D11). `doc-symlink` passes its registered checks, but 7 of 14 reps wrote through the link first. Re-note [34] with that result and file a wording item for step 3 of `references/document-rewrite.md`. The other two fixes stay unreached: carry them in the re-note.
 - [105], [106], [120], [121]: tick only on Task 1 Step 6 evidence. Otherwise write a dated `→ progress` note naming the compare range, the untouched functions, the repro result, and that the next compare starts from `d714e536`.
