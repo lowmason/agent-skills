@@ -1357,3 +1357,22 @@ def test_pointed_licenses_ignores_a_license_marker_inside_a_line(tmp_path, monke
   source = tmp_path / 'x.md'
   source.write_text('---\ndescription: tag # license: LICENSE-mid\n---\n')
   assert install.pointed_licenses(source) == []
+
+
+@pytest.mark.parametrize('runtime', sorted(AGENT_DIRS))
+def test_installed_agent_license_names_match_no_agent_file_pattern(monkeypatch, tmp_path, runtime):
+  install = load_install(monkeypatch)
+  directory, suffix = AGENT_SOURCES[sorted(AGENT_DIRS).index(runtime)]
+  agents = install.file_items(REPO / directory, suffix, tmp_path)
+  items = install.agent_license_items(agents, tmp_path)
+  assert [item.destination for item in items] == [tmp_path / 'LICENSE-superpowers']
+  for item in items:
+    assert item.destination.name == item.source.name
+    assert not item.destination.name.endswith(('.md', '.toml'))
+
+
+def test_pointed_licenses_stops_a_name_before_a_file_suffix(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  source = tmp_path / 'x.md'
+  source.write_text('---\n# license: MIT. See LICENSE-demo.md and LICENSE-two.toml.\n---\n')
+  assert install.pointed_licenses(source) == ['LICENSE-demo', 'LICENSE-two']
