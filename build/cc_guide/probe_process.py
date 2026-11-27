@@ -1,11 +1,12 @@
+# cc-guide: subagents.frontmatter lean.model-routing @2.1.326
 '''Process control for a probe run (drift spec R10.4): the environment a run
 starts from, the claude command line, one run in its own process group with
 stdin closed, its stop on a timeout or a signal, and the stop signals that are
 held or turned into SystemExit while probes run. The stdin and process-group
 facts come from the drift spec, not the guide. Two comments rest on guide
 sections: SCRUBBED_ENV on subagents.frontmatter and ALIAS_REMAPS on
-lean.model-routing. This file carries no cc-guide citation line yet, so the
-drift lint does not track them here; a /cc-guide files pass adds one.'''
+lean.model-routing, which the citation line names, so the drift lint tracks
+them here.'''
 import contextlib
 import json
 import os
