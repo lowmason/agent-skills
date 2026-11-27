@@ -3,6 +3,7 @@
 check to exit 0 (drift spec R5, R6.1, R7; Validation 1).'''
 import io
 import json
+import os
 import shutil
 import sys
 from datetime import date, datetime, timedelta, timezone
@@ -1400,14 +1401,17 @@ def test_binaries_exits_two_when_no_claude_is_found(tmp_path, monkeypatch, capsy
 
 @pytest.fixture
 def claude_on_path(tmp_path, isolated_home, monkeypatch):
-    '''A claude that prints its version, alone on PATH, with no Desktop app
-    bundle under the isolated home.'''
-    claude = tmp_path / 'bin' / 'claude'
-    claude.parent.mkdir()
-    claude.write_text("#!/bin/sh\necho '2.1.303 (Claude Code)'\n")
-    claude.chmod(0o755)
-    monkeypatch.setenv('PATH', str(claude.parent))
-    return claude
+    '''A claude that prints its version, then one that prints none, on PATH
+    in that order, with no Desktop app bundle under the isolated home.'''
+    found = []
+    for folder, body in (('bin1', "echo '2.1.303 (Claude Code)'"), ('bin2', 'echo hello')):
+        claude = tmp_path / folder / 'claude'
+        claude.parent.mkdir()
+        claude.write_text(f'#!/bin/sh\n{body}\n')
+        claude.chmod(0o755)
+        found.append(claude)
+    monkeypatch.setenv('PATH', os.pathsep.join(str(c.parent) for c in found))
+    return found
 
 
 @pytest.fixture
@@ -1418,8 +1422,9 @@ def no_default_cache(monkeypatch):
 
 
 def test_binaries_prints_each_candidate_and_exits_zero(tmp_path, claude_on_path, capsys):
+    first, second = claude_on_path
     assert main(tmp_path / 'cache', 'binaries') == 0
-    assert capsys.readouterr() == (f'2.1.303  {claude_on_path}  (PATH)\n', '')
+    assert capsys.readouterr() == (f'2.1.303  {first}  (PATH)\nversion unknown  {second}  (PATH)\n', '')
 
 
 def test_binaries_never_computes_the_cache(claude_on_path, no_default_cache):
