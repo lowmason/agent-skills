@@ -3,6 +3,7 @@ configuration), baseline.json (tool state) and PROBES.md, read from the
 working tree or a commit (drift spec R2, R6.1, Layout).'''
 import fnmatch
 import json
+import os
 import re
 import subprocess
 import tomllib
@@ -470,13 +471,31 @@ def default_cache() -> Path:
     return Path.home() / '.cache' / 'agent-skills' / 'cc-guide'
 
 
+LATEST = 'latest'             # the link naming the current generation (plan 109, D3)
+GENERATION_PREFIX = 'latest.'  # each fetch's generation folder: latest.<suffix>/ holding docs/ and fetch.json
+
+
+def latest_dir(cache: Path) -> Path:
+    '''The current generation folder, read from the latest link once, so a
+    caller that reads fetch.json and pages under one result reads one fetch,
+    even when a check swaps the link meanwhile. A legacy real latest/ folder,
+    or a cache with no fetch yet, is cache/latest itself.'''
+    link = cache / LATEST
+    return cache / os.readlink(link) if link.is_symlink() else link
+
+
 def latest_docs(cache: Path) -> Path:
-    return cache / 'latest' / 'docs'
+    return latest_dir(cache) / 'docs'
+
+
+def fetch_record_in(root: Path) -> Path:
+    '''A generation's fetch time and changelog head, beside its docs/ (R6.4).'''
+    return root / 'fetch.json'
 
 
 def fetch_record(cache: Path) -> Path:
-    '''The last fetch's time and changelog head, beside latest/docs (R6.4).'''
-    return cache / 'latest' / 'fetch.json'
+    '''The last fetch's record, in the current generation.'''
+    return fetch_record_in(latest_dir(cache))
 
 
 def read_utf8(path: Path) -> str:
@@ -489,9 +508,15 @@ def read_utf8(path: Path) -> str:
 
 
 def read_fetch(cache: Path) -> dict | None:
-    '''The last fetch's record (R6.4), or None before the first fetch. A
-    record that does not parse, or names no changelog head, is a SetupError.'''
-    path = fetch_record(cache)
+    '''The last fetch's record (R6.4), from the current generation.'''
+    return read_fetch_at(latest_dir(cache))
+
+
+def read_fetch_at(root: Path) -> dict | None:
+    '''The fetch record of the generation at root, or None before the first
+    fetch. A record that does not parse, or names no changelog head, is a
+    SetupError.'''
+    path = fetch_record_in(root)
     if not path.is_file():
         return None
     try:
@@ -571,15 +596,17 @@ def same_blocks(held: bytes, body: bytes) -> bool:
         return False
 
 
-def copy_to_snapshot(cache: Path, release: str, files: dict[str, str]) -> Path:
-    '''Copy latest/docs files into <release>/docs, returning that directory.
+def copy_to_snapshot(cache: Path, release: str, files: dict[str, str], source: Path | None = None) -> Path:
+    '''Copy latest/docs files, or those of the `source` docs folder when a caller
+    pinned one generation, into <release>/docs, returning that directory.
     `files` maps the name a message gives each file to its cache file name.
     A file already there that cuts into other blocks is never overwritten,
     since another group's `snapshot` may name it; one with the same blocks
     takes the new bytes, which the verifier greps (owner, 2026-10-20). Every
     file is checked before any is written.'''
     target = writable_snapshot(cache, release)
-    copies = [(label, target / name, (latest_docs(cache) / name).read_bytes()) for label, name in files.items()]
+    source = source or latest_docs(cache)
+    copies = [(label, target / name, (source / name).read_bytes()) for label, name in files.items()]
     for label, held, body in copies:
         if held.is_file() and (old := held.read_bytes()) != body and not same_blocks(old, body):
             raise SetupError(f'{label}: {held} already holds different text, which another group may have '

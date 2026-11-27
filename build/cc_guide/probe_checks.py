@@ -2,7 +2,9 @@
 '''The probe assertions (drift spec R10.2, R10.5): pure functions over a probe
 run's raw stream-json events and the side files the run leaves, each giving
 an outcome and a one-line finding. They read event fields, never the model's
-prose. Tests replay them against streams recorded from our own probe runs
+prose, with one exception: the explore-override probe reads the canary tokens
+and marks that each subagent echoes from its own context, never free prose.
+Tests replay them against streams recorded from our own probe runs
 (R12.6), cut down and scrubbed by scrub_events before they are committed.
 
 PASS means the behaviour matches the guide. DIVERGES means it does not.
@@ -22,7 +24,6 @@ WITHOUT_BASH_TOOLS = frozenset({'Read'}) | GREP_GLOB
 SUPPORTED_PLATFORMS = ('darwin', 'linux')
 STOP_LOG = ['false', 'true', 'true']
 STOP_EXITS = [2, 2, 0]
-DISPATCH_TOOLS = ('Agent', 'Task')  # the subagent tool's name, and its older one
 HAIKU_AGENTS = ('Explore', 'test-runner')
 REVIEWER, REVIEWER_EFFORT = 'code-reviewer', 'xhigh'
 PIN_AGENTS = (*HAIKU_AGENTS, REVIEWER)
@@ -30,10 +31,12 @@ PIN_AGENTS = (*HAIKU_AGENTS, REVIEWER)
 # decide() take the tool's name, decide() reads tool_input's model and subagent_type, and it lets a model-less call
 # through for the built-ins in its BUILTIN_PINNED. test_probe_checks.py holds these to the hook's own constants.
 GUARDED_TOOL = 'Agent'  # the hook's AGENT_TOOL
+DISPATCH_TOOLS = (GUARDED_TOOL, 'Task')  # the subagent tool's name, and its older one
 HAIKU_BUILTINS = ('claude-code-guide',)  # the hook's BUILTIN_PINNED: plan 63 saw each run on Haiku with no model passed
 CONTROL_AGENT, CONTROL_MODEL = 'general-purpose', 'haiku'  # dispatched beside them, passing its model
 PAYLOAD_AGENTS = (CONTROL_AGENT, *HAIKU_BUILTINS)
-ANY_MATCHER, GUARD_MATCHER = '*', 'Agent'  # the two logging hooks; the second is hooks/README.md's install matcher
+ANY_MATCHER, GUARD_MATCHER = '*', GUARDED_TOOL  # the two logging hooks; the second is hooks/README.md's install matcher
+PAYLOAD_LOGS = {'any': ANY_MATCHER, 'agent': GUARD_MATCHER}  # each hook's log folder -> its matcher
 SYNTHETIC = '<synthetic>'  # the model Claude Code records on a message it made itself, such as an API error
 GUARD_MARKER = 'readonly-agent-guard:'
 # hooks/probe-readonly-guard.sh's three checks: the command each asks for, and
@@ -150,15 +153,25 @@ def assess_stop_continuation(events: list[dict] | None, log: list[str]) -> Verdi
     return Verdict(PASS, shown)
 
 
+def dispatch_blocks(events: list[dict]) -> list[dict]:
+    '''The main session's subagent calls, as tool_use blocks in stream order.'''
+    return [block for e in events if e.get('type') == 'assistant' and not e.get('parent_tool_use_id')
+            for block in (e.get('message') or {}).get('content') or []
+            if block.get('type') == 'tool_use' and block.get('name') in DISPATCH_TOOLS]
+
+
 def dispatches(events: list[dict]) -> dict[str, str]:
     '''The main session's subagent calls: tool-use id -> subagent type.'''
-    out = {}
-    for e in events:
-        if e.get('type') != 'assistant' or e.get('parent_tool_use_id'):
-            continue
-        for block in (e.get('message') or {}).get('content') or []:
-            if block.get('type') == 'tool_use' and block.get('name') in DISPATCH_TOOLS:
-                out[block.get('id')] = (block.get('input') or {}).get('subagent_type')
+    return {block.get('id'): (block.get('input') or {}).get('subagent_type') for block in dispatch_blocks(events)}
+
+
+def requested_models(events: list[dict]) -> dict[str, list[str | None]]:
+    '''The main session's subagent calls: subagent type -> the model input of
+    each call of that type, None for a call that passes none, in stream order.'''
+    out: dict[str, list[str | None]] = {}
+    for block in dispatch_blocks(events):
+        given = block.get('input') or {}
+        out.setdefault(given.get('subagent_type'), []).append(given.get('model'))
     return out
 
 
@@ -225,53 +238,111 @@ def trim_payload(payload, matcher: str) -> dict | None:
             'subagent_type': tool_input['subagent_type'], 'model': tool_input.get('model')}
 
 
-def first_by_type(payloads: list[dict], matcher: str) -> dict[str, dict]:
-    '''The first payload of each subagent type that the hook with this matcher logged.'''
-    found: dict[str, dict] = {}
+def payload_file(raw: dict[str, list[str]]) -> dict:
+    '''payloads.json, from each log folder's raw lines, one payload a line:
+    how many payloads each hook logged, and the main session's dispatches
+    cut by trim_payload, by matcher and then subagent type. The counts tell
+    hooks that logged nothing from payloads that trim_payload dropped. A
+    line that is not JSON raises ValueError.'''
+    kept = [p for folder, lines in raw.items()
+            for p in (trim_payload(json.loads(line), PAYLOAD_LOGS[folder]) for line in lines) if p is not None]
+    kept.sort(key=lambda p: (p['matcher'], str(p['subagent_type'])))
+    return {'logged': {folder: len(lines) for folder, lines in raw.items()}, 'payloads': kept}
+
+
+def check_parent(events: list[dict]) -> Verdict | None:
+    '''ERROR when the parent session did not send what probes.PAYLOAD_PROMPT
+    asks: the control with model CONTROL_MODEL, each built-in in
+    HAIKU_BUILTINS with no model, and each type once. A payload then holds
+    the parent's choice, not Claude Code's, so the payload checks would
+    report the parent as drift. None when the parent obeyed.'''
+    sent = requested_models(events)
+    for agent in PAYLOAD_AGENTS:
+        models = sent.get(agent, [])
+        if len(models) > 1:
+            return Verdict(ERROR, f'the parent session dispatched {agent} {len(models)} times, but its prompt '
+                                  'asks for one dispatch of each type')
+        wanted = CONTROL_MODEL if agent == CONTROL_AGENT else None
+        if models and models[0] != wanted:
+            got = 'no model' if models[0] is None else f'model {models[0]!r}'
+            asked = 'no model' if wanted is None else f'model {wanted!r}'
+            return Verdict(ERROR, f'the parent session sent {agent} with {got}, but its prompt asks for {asked}')
+    return None
+
+
+def check_dispatched(events: list[dict], payloads: list[dict]) -> Verdict | None:
+    '''ERROR when the parent session never dispatched a type in
+    PAYLOAD_AGENTS: no main-session call of the stream names it, and no
+    payload does. A payload counts, so a dispatch tool Claude Code renames,
+    which the stream's calls no longer show, still reaches check_payloads
+    as drift. None when each type was dispatched.'''
+    sent = set(requested_models(events)) | {p.get('subagent_type') for p in payloads}
+    for agent in PAYLOAD_AGENTS:
+        if agent not in sent:
+            return Verdict(ERROR, f'the parent session never dispatched {agent}, but its prompt asks for one '
+                                  'dispatch of each type')
+    return None
+
+
+def by_type(payloads: list[dict], matcher: str) -> dict[str | None, list[dict]]:
+    '''Each subagent type's payloads that the hook with this matcher logged, in order.'''
+    found: dict[str | None, list[dict]] = {}
     for p in payloads:
         if p.get('matcher') == matcher:
-            found.setdefault(p.get('subagent_type'), p)
+            found.setdefault(p.get('subagent_type'), []).append(p)
     return found
 
 
 def check_payloads(payloads: list[dict]) -> Verdict | None:
     '''The payload half of agent-payload: a verdict when the payloads decide
     one, else None. A dispatch that reaches PreToolUse under another tool
-    name, or that the Agent matcher misses, never reaches the guard. A
-    control payload without its model, or a model on a dispatch sent with
-    none, changes what decide() reads.'''
-    if not payloads:
-        return Verdict(ERROR, 'the PreToolUse hooks logged no subagent dispatch')
-    seen = first_by_type(payloads, ANY_MATCHER)
-    renamed = sorted({str(p.get('tool_name')) for p in seen.values()} - {GUARDED_TOOL})
+    name, or that the Agent matcher misses, never reaches the guard. Two
+    payloads of one type with different models, under one matcher, leave no
+    payload to read: ERROR. The model checks read the Agent matcher's
+    payloads, the ones the guard gets. A control payload without a model,
+    or a model on a dispatch sent with none, changes what decide() reads.
+    check_parent has already shown that the parent sent those models.'''
+    seen = by_type(payloads, ANY_MATCHER)
+    renamed = sorted({str(p.get('tool_name')) for group in seen.values() for p in group} - {GUARDED_TOOL})
     if renamed:
         return Verdict(DIVERGES, f"a subagent dispatch reaches PreToolUse as {', '.join(renamed)}, not {GUARDED_TOOL}")
     for agent in PAYLOAD_AGENTS:
         if agent not in seen:
             return Verdict(ERROR, f'no PreToolUse payload dispatches {agent}')
-    matched = first_by_type(payloads, GUARD_MATCHER)
+    matched = by_type(payloads, GUARD_MATCHER)
     missed = [agent for agent in PAYLOAD_AGENTS if agent not in matched]
     if missed:
         return Verdict(DIVERGES, f"the {GUARD_MATCHER} matcher did not fire for {', '.join(missed)}")
-    control = seen[CONTROL_AGENT]
-    if control.get('model') != CONTROL_MODEL:
+    for matcher, groups in ((ANY_MATCHER, seen), (GUARD_MATCHER, matched)):
+        for agent in PAYLOAD_AGENTS:
+            models = {p.get('model') for p in groups[agent]}
+            if len(models) > 1:
+                return Verdict(ERROR, f'the {matcher} hook logged {len(groups[agent])} {agent} payloads with '
+                                      f"different models ({', '.join(sorted(map(str, models)))}), so none is first")
+    control = matched[CONTROL_AGENT][0]
+    if not control.get('model'):
         keys = ', '.join(control.get('input_keys') or [])
         return Verdict(DIVERGES, f"the {CONTROL_AGENT} dispatch passed model {CONTROL_MODEL!r}, but its payload holds "
                                  f"model {control.get('model')!r} (tool_input keys: {keys})")
     for agent in HAIKU_BUILTINS:
-        if seen[agent].get('model'):
+        if matched[agent][0].get('model'):
             return Verdict(DIVERGES, f"a dispatch sent with no model ({agent}) arrives with model "
-                                     f"{seen[agent]['model']!r}, so the guard would pass a model-less dispatch of "
-                                     'any type')
+                                     f"{matched[agent][0]['model']!r}, so the guard would pass a model-less dispatch "
+                                     'of any type')
     return None
 
 
-def assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Verdict:
+def assess_agent_payload(events: list[dict] | None, payload_file: dict) -> Verdict:
     '''agent-payload: hooks/dispatch-model-guard.py's inputs stay as plan 63
-    saw them on Claude Code 2.1.304. `payloads` holds the main session's
-    dispatch payloads, cut by trim_payload, from two PreToolUse hooks: one
-    matches every tool, the other matches Agent as the guard's install
-    does. check_payloads reads them first, so a renamed tool is named
+    saw them on Claude Code 2.1.304. `payload_file` is payloads.json:
+    `logged` counts the payloads each of two PreToolUse hooks logged, one
+    matching every tool, the other matching Agent as the guard's install
+    does, and `payloads` holds the main session's dispatch payloads among
+    them, cut by trim_payload. check_parent reads the stream's Agent calls
+    first, so a parent that did not send what its prompt asks is ERROR, not
+    drift, and check_dispatched then names a type the parent never
+    dispatched. An empty `payloads` is ERROR, named by whether the hooks
+    logged anything. check_payloads reads them next, so a renamed tool is named
     before any message is looked for. Then each subagent's model is read
     from its forwarded messages. The control, which passes model haiku,
     must not be served the session model (the init event's), or a pin
@@ -284,6 +355,16 @@ def assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Ver
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
+    payloads = payload_file.get('payloads') or []
+    verdict = check_parent(events) or check_dispatched(events, payloads)
+    if verdict:
+        return verdict
+    if not payloads:
+        logged = sum((payload_file.get('logged') or {}).values())
+        if logged:
+            return Verdict(ERROR, f'the PreToolUse hooks logged {logged} payloads, and trim_payload kept none of '
+                                  'them (a renamed subagent_type, a moved tool_input, or payloads that carry agent_id)')
+        return Verdict(ERROR, 'the PreToolUse hooks logged no subagent dispatch')
     verdict = check_payloads(payloads)
     if verdict:
         return verdict
@@ -309,7 +390,7 @@ def assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Ver
     for agent in HAIKU_BUILTINS:
         if session in served[agent]:
             wrong.append(f'{agent} was served the session model {session}')
-        elif served[agent] != served[CONTROL_AGENT]:
+        elif not served[agent] <= served[CONTROL_AGENT]:
             wrong.append(f"{agent} was served {', '.join(sorted(served[agent]))}, not the {control} the "
                          f'{CONTROL_MODEL} control was served')
     if wrong:
@@ -484,10 +565,144 @@ def assess_compaction_cut(compact: list[dict] | None, cut: dict[str, dict] | Non
     return Verdict(PASS, f'compaction kept {seen}, at least the register window {window}')
 
 
+# explore-override: a project agent named Explore, which overrides the built-in, and a custom control agent, each
+# told to answer from its context alone with its mark, the CLAUDE.md canary word and the files its git status lists.
+# A mark shows which definition served, and a canary, drawn per run, can reach an answer only through the agent's
+# context (owner ruling B2, 2026-10-20; Stage 5 probe candidate (a)).
+EXPLORE_AGENT, EXPLORE_MARK = 'Explore', 'EXPLORE-OVERRIDE'
+CANARY_AGENT, CANARY_MARK = 'canary-control', 'CANARY-CONTROL'
+EXPLORE_MARKS = {EXPLORE_AGENT: EXPLORE_MARK, CANARY_AGENT: CANARY_MARK}
+EXPLORE_REPS = 3
+CANARY_NAMES = {'claude_md': 'CLAUDE.md', 'git_status': 'git-status'}  # canaries.json key -> its name in a finding
+
+
+def explore_sightings(events: list[dict] | None, canaries: dict[str, str]) -> dict:
+    '''One explore-override rep, read from its raw stream: why the run
+    broke, or None; whether a canary leaked into an input of the parent's
+    Agent calls; and, for each agent, how many tool_use blocks its forwarded
+    messages hold and whether their text holds its mark and each canary.
+    The parent loads CLAUDE.md and the git status too, so only the messages
+    forwarded under a dispatch of that agent's type count. An agent the
+    parent never dispatched has no text, so it sees nothing.'''
+    stream = events or []
+    leaked = any(value in json.dumps(block.get('input') or {}) for block in dispatch_blocks(stream)
+                 for value in canaries.values())
+    sent = dispatches(stream)
+    tool_calls, seen = {}, {}
+    for agent, mark in EXPLORE_MARKS.items():
+        ids = {tid for tid, kind in sent.items() if kind == agent}
+        blocks = [block for e in stream if e.get('type') == 'assistant' and e.get('parent_tool_use_id') in ids
+                  for block in (e.get('message') or {}).get('content') or [] if isinstance(block, dict)]
+        said = '\n'.join(str(block.get('text') or '') for block in blocks if block.get('type') == 'text')
+        tool_calls[agent] = sum(block.get('type') == 'tool_use' for block in blocks)
+        seen[agent] = {'mark': mark in said, **{key: canaries[key] in said for key in CANARY_NAMES}}
+    return {'broken': broken(events), 'leaked': leaked, 'tool_calls': tool_calls, 'seen': seen}
+
+
+def explore_void(sighting: dict) -> str | None:
+    '''Why a rep proves nothing, or None: the run broke, a canary leaked
+    into the parent's Agent call, an agent called a tool (it may have read
+    the canary instead of being given it), an agent gave no mark (another
+    definition served, or it ignored its instructions), or the control
+    missed a canary, so a canary the override missed proves nothing.'''
+    if sighting.get('broken'):
+        return f"the run broke: {sighting['broken']}"
+    if sighting.get('leaked'):
+        return 'the parent passed a canary in an Agent call'
+    calls, seen = sighting.get('tool_calls') or {}, sighting.get('seen') or {}
+    for agent in EXPLORE_MARKS:
+        if calls.get(agent):
+            return f'{agent} made {calls[agent]} tool call(s), so its answer may not come from its context alone'
+    for agent, mark in EXPLORE_MARKS.items():
+        if not (seen.get(agent) or {}).get('mark'):
+            return f'{agent} did not give its mark {mark}'
+    missed = [name for key, name in CANARY_NAMES.items() if not seen[CANARY_AGENT].get(key)]
+    if missed:
+        return f"the control missed the {' and '.join(missed)} {'canary' if len(missed) == 1 else 'canaries'}"
+    return None
+
+
+def explore_differences(seen: dict) -> list[str]:
+    '''How the override's sightings differ from what 2.1.304 showed:
+    CLAUDE.md read, as custom agents read it, and no git-status snapshot,
+    as the built-in gets none.'''
+    return [*([] if seen.get('claude_md') else ['did not read CLAUDE.md']),
+            *(['got a git-status snapshot'] if seen.get('git_status') else [])]
+
+
+def assess_explore_override(sightings: list[dict]) -> Verdict:
+    '''explore-override: in every rep the override reads CLAUDE.md and gets
+    no git-status snapshot, while the control gets both. DIVERGES when a
+    valid rep differs, naming each such rep; else ERROR when a rep is void
+    (explore_void), naming each; else PASS. A count of sightings other than
+    EXPLORE_REPS, none included, is ERROR, never a pass.'''
+    if len(sightings) != EXPLORE_REPS:
+        return Verdict(ERROR, f'expected {EXPLORE_REPS} reps, found {len(sightings)}')
+    void, differ = [], []
+    for n, sighting in enumerate(sightings, start=1):
+        why = explore_void(sighting)
+        if why:
+            void.append(f'rep {n}: {why}')
+            continue
+        wrong = explore_differences(sighting['seen'][EXPLORE_AGENT])
+        if wrong:
+            differ.append(f"rep {n}: the Explore override {' and '.join(wrong)}")
+    if differ:
+        return Verdict(DIVERGES, '; '.join(differ))
+    if void:
+        return Verdict(ERROR, '; '.join(void))
+    return Verdict(PASS, f'Explore override read CLAUDE.md and got no git-status snapshot in {EXPLORE_REPS} of '
+                         f'{EXPLORE_REPS} reps; the control got both')
+
+
+# async-teardown: an async SessionStart hook still running when claude -p ends, registered as notice.sh's refresh is.
+# The refresh traps HUP, INT and TERM, so the signal claude sends such a hook first decides whether that trap runs
+# (owner ruling on the G7 gap, 2026-10-20; Stage 5 probe candidate (b)). PASS encodes what 2.1.304 showed: TERM
+# first, and the hook gone soon after.
+TEARDOWN_SIGNALS = ('TERM', 'HUP', 'INT')  # the probe hook's traps, each of which only logs its name
+TEARDOWN_FIRST = 'TERM'
+TEARDOWN_WAIT = 5  # seconds probes.collect_teardown waits for the hook to go once claude -p has ended
+TEARDOWN_START_RE = re.compile(r'start ([0-9]+)')  # the hook's first log line, with its pid
+TEARDOWN_GONE, TEARDOWN_ALIVE = 'gone', 'alive'  # the line collect_teardown adds after its wait
+CANCELLED = 'cancelled'  # the outcome claude -p finalizes such a hook with (guide, hooks.pitfalls)
+NO_TRAP_RUNS = ", so notice.sh's trap never runs"  # a hook that got none of TEARDOWN_SIGNALS
+
+
+def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
+    '''async-teardown: the hook's log holds its start line, then each
+    signal it got, in order, then gone or alive. PASS when TERM came first
+    and the hook was gone within TEARDOWN_WAIT seconds, and no SessionStart
+    hook_response in the stream has an outcome other than cancelled; a
+    stream with none is no finding. A broken run, a log with no start line,
+    and a log that holds another line or does not end in gone or alive are
+    ERROR.'''
+    why = broken(events)
+    if why:
+        return Verdict(ERROR, why)
+    if not log or not TEARDOWN_START_RE.fullmatch(log[0]):
+        return Verdict(ERROR, 'the async SessionStart hook never started')
+    if log[-1] not in (TEARDOWN_GONE, TEARDOWN_ALIVE):
+        return Verdict(ERROR, 'the teardown log does not end in gone or alive')
+    signals, gone = log[1:-1], log[-1] == TEARDOWN_GONE
+    stray = next((line for line in signals if line not in TEARDOWN_SIGNALS), None)
+    if stray is not None:
+        return Verdict(ERROR, f'the teardown log holds {stray!r} between its start line and its end')
+    got = f'got {signals[0]} first' if signals else f"got none of {', '.join(TEARDOWN_SIGNALS)}"
+    end = f'was gone within {TEARDOWN_WAIT} s' if gone else f'was still running {TEARDOWN_WAIT} s after claude -p ended'
+    shown = f"the async SessionStart hook {got} at teardown and {end}{'' if signals else NO_TRAP_RUNS}"
+    other = [e.get('outcome') for e in events if e.get('type') == 'system' and e.get('subtype') == 'hook_response'
+             and e.get('hook_event') == 'SessionStart' and e.get('outcome') != CANCELLED]
+    if other:
+        shown += f"; the stream's SessionStart hook_response reads {' and '.join(map(str, other))}, not {CANCELLED}"
+    if signals[:1] == [TEARDOWN_FIRST] and gone and not other:
+        return Verdict(PASS, shown)
+    return Verdict(DIVERGES, shown)
+
+
 def _trim_block(block: dict) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
-        kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'command')}
+        kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'model', 'command')}
         name = block.get('name')
         if isinstance(name, str) and name.startswith(MCP_PREFIX):
             name = MCP_MARK  # a call to an MCP tool names a server the recording machine has installed

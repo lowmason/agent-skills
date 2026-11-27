@@ -81,10 +81,34 @@ def unmarked(event):
 
 
 def payloads_with(edit) -> dict[str, str]:
-    '''The recorded payload log with `edit` applied to each payload; an edit that returns None drops the payload.'''
+    '''The recorded payloads.json with `edit` applied to each payload; an edit that returns None drops the payload.
+    The logged counts stay as recorded.'''
     probe = probes.PROBE_RUNS['agent-payload']
     saved = json.loads((FIXTURES / probe.fixtures['payloads.json']).read_text(encoding='utf-8'))
-    return {'payloads.json': json.dumps([p for p in (edit(dict(q)) for q in saved) if p is not None])}
+    kept = [p for p in (edit(dict(q)) for q in saved['payloads']) if p is not None]
+    return {'payloads.json': json.dumps({**saved, 'payloads': kept})}
+
+
+def requesting(agent: str, model: str | None):
+    '''An edit that makes the parent's dispatch of `agent` pass `model`, or no model for None.'''
+    def edit(event):
+        if event.get('type') == 'assistant' and not event.get('parent_tool_use_id'):
+            for block in event['message']['content']:
+                if block.get('type') == 'tool_use' and block['input'].get('subagent_type') == agent:
+                    block['input'].pop('model', None)
+                    block['input'].update({'model': model} if model else {})
+        return event
+    return edit
+
+
+def without_dispatch(*agents: str):
+    '''An edit that drops the parent's calls of each of `agents`.'''
+    def edit(event):
+        if event.get('type') == 'assistant' and not event.get('parent_tool_use_id'):
+            event['message']['content'] = [b for b in event['message']['content'] if not (
+                b.get('type') == 'tool_use' and b['input'].get('subagent_type') in agents)]
+        return event
+    return edit
 
 
 def served_by(agent: str, model: str) -> dict[str, str]:
@@ -113,7 +137,31 @@ def without_digit(measures):
     return {kind: measure for kind, measure in measures.items() if kind != 'digit'}
 
 
+def sightings_with(rep: int, agent: str, **seen) -> dict[str, str]:
+    '''The recorded explore-override sightings.json with `seen` replacing fields of `agent`'s sightings in rep `rep`,
+    counted from 1.'''
+    probe = probes.PROBE_RUNS['explore-override']
+    saved = json.loads((FIXTURES / probe.fixtures['sightings.json']).read_text(encoding='utf-8'))
+    saved[rep - 1]['seen'][agent].update(seen)
+    return {'sightings.json': json.dumps(saved)}
+
+
 # The register's window, which compaction-cut reads; the first case keeps one character fewer.
+def teardown_log_with(old: str, new: str) -> dict[str, str]:
+    '''The recorded async-teardown log with each `old` line replaced by `new`.'''
+    probe = probes.PROBE_RUNS['async-teardown']
+    lines = (FIXTURES / probe.fixtures['teardown.log']).read_text(encoding='utf-8').splitlines()
+    return {'teardown.log': ''.join(f'{new if line == old else line}\n' for line in lines)}
+
+
+def outcome(value: str):
+    def edit(event):
+        if event.get('subtype') == 'hook_response':
+            event['outcome'] = value
+        return event
+    return edit
+
+
 CUT_WINDOW = probes.register_window()
 
 
@@ -146,7 +194,25 @@ CUT_WINDOW = probes.register_window()
     ('agent-payload', lambda: served_by('general-purpose', 'claude-sonnet-5-5'), ERROR,
      'the general-purpose control with model haiku was served the session model claude-sonnet-5-5, so a pin '
      'cannot be told from it'),
-    ('agent-payload', lambda: {'payloads.json': '[]'}, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    ('agent-payload', lambda: {'payloads.json': json.dumps({'logged': {'any': 0, 'agent': 0}, 'payloads': []})},
+     ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    ('agent-payload', lambda: {'payloads.json': None}, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    ('agent-payload', lambda: payloads_with(lambda p: None), ERROR,
+     'the PreToolUse hooks logged 4 payloads, and trim_payload kept none of them (a renamed subagent_type, a moved '
+     'tool_input, or payloads that carry agent_id)'),
+    # A parent that does not send what its prompt asks is ERROR, never drift: the payloads would show its choice.
+    ('agent-payload', lambda: edited('agent-payload', 'dispatch.jsonl', requesting('general-purpose', None)), ERROR,
+     "the parent session sent general-purpose with no model, but its prompt asks for model 'haiku'"),
+    ('agent-payload', lambda: edited('agent-payload', 'dispatch.jsonl', requesting('claude-code-guide', 'sonnet')),
+     ERROR, "the parent session sent claude-code-guide with model 'sonnet', but its prompt asks for no model"),
+    # A parent that never dispatches a type is named, not the hooks or trim_payload.
+    ('agent-payload', lambda: {**edited('agent-payload', 'dispatch.jsonl', without_dispatch('claude-code-guide')),
+                               **payloads_with(lambda p: None if p['subagent_type'] == 'claude-code-guide' else p)},
+     ERROR, 'the parent session never dispatched claude-code-guide, but its prompt asks for one dispatch of each type'),
+    ('agent-payload', lambda: {
+        **edited('agent-payload', 'dispatch.jsonl', without_dispatch(*probe_checks.PAYLOAD_AGENTS)),
+        'payloads.json': json.dumps({'logged': {'any': 1, 'agent': 0}, 'payloads': []})},
+     ERROR, 'the parent session never dispatched general-purpose, but its prompt asks for one dispatch of each type'),
     # compaction-cut's cases pin their findings too. The recorded run, a header of 159 characters, kept more than the window.
     ('compaction-cut', lambda: cut_measures(keeping(CUT_WINDOW - 1)), DIVERGES,
      f'compaction keeps {CUT_WINDOW - 1} body characters of the prose probe skill (by characters; 159 characters '
@@ -156,6 +222,20 @@ CUT_WINDOW = probes.register_window()
      'no re-attached copy of cut-probe-digit after the compact boundary'),
     ('compaction-cut', lambda: edited('compaction-cut', 'cut.jsonl', drop('compact_boundary')), ERROR,
      'the /compact run emitted no compact_boundary event'),
+    # explore-override's cases pin their findings: a valid rep where the override got a git-status snapshot, and a
+    # rep that proves nothing, since the control missed the CLAUDE.md canary.
+    ('explore-override', lambda: sightings_with(2, 'Explore', git_status=True), DIVERGES,
+     'rep 2: the Explore override got a git-status snapshot'),
+    ('explore-override', lambda: sightings_with(3, 'canary-control', claude_md=False), ERROR,
+     'rep 3: the control missed the CLAUDE.md canary'),
+    # async-teardown's cases pin their findings: another signal first, a hook that never started, and the recorded
+    # SessionStart hook_response finalized as something other than cancelled.
+    ('async-teardown', lambda: teardown_log_with('TERM', 'HUP'), DIVERGES,
+     'the async SessionStart hook got HUP first at teardown and was gone within 5 s'),
+    ('async-teardown', lambda: {'teardown.log': ''}, ERROR, 'the async SessionStart hook never started'),
+    ('async-teardown', lambda: edited('async-teardown', 'teardown.jsonl', outcome('success')), DIVERGES,
+     "the async SessionStart hook got TERM first at teardown and was gone within 5 s; the stream's SessionStart "
+     'hook_response reads success, not cancelled'),
 ])
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())

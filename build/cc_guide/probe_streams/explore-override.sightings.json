@@ -1,0 +1,62 @@
+[
+ {
+  "broken": null,
+  "leaked": false,
+  "tool_calls": {
+   "Explore": 0,
+   "canary-control": 0
+  },
+  "seen": {
+   "Explore": {
+    "mark": true,
+    "claude_md": true,
+    "git_status": false
+   },
+   "canary-control": {
+    "mark": true,
+    "claude_md": true,
+    "git_status": true
+   }
+  }
+ },
+ {
+  "broken": null,
+  "leaked": false,
+  "tool_calls": {
+   "Explore": 0,
+   "canary-control": 0
+  },
+  "seen": {
+   "Explore": {
+    "mark": true,
+    "claude_md": true,
+    "git_status": false
+   },
+   "canary-control": {
+    "mark": true,
+    "claude_md": true,
+    "git_status": true
+   }
+  }
+ },
+ {
+  "broken": null,
+  "leaked": false,
+  "tool_calls": {
+   "Explore": 0,
+   "canary-control": 0
+  },
+  "seen": {
+   "Explore": {
+    "mark": true,
+    "claude_md": true,
+    "git_status": false
+   },
+   "canary-control": {
+    "mark": true,
+    "claude_md": true,
+    "git_status": true
+   }
+  }
+ }
+]

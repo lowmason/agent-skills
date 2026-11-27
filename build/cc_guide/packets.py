@@ -24,7 +24,8 @@ from docs import CHANGELOG, Release, page_file, version_key
 from guide import read_citations, sections
 from lint import stale_citations
 from state import (BASELINE, MANIFEST, Manifest, SetupError, Source, baselined_text, citing_files, copy_to_snapshot,
-                   covered_files, group_terms, latest_docs, parse_baseline, parse_manifest, read_fetch, snapshot_text)
+                   covered_files, group_terms, latest_dir, parse_baseline, parse_manifest, read_fetch_at,
+                   snapshot_text)
 
 INDEX = 'index.json'
 REPORT = 'report.md'
@@ -59,13 +60,14 @@ def load(source: Source, cache: Path, now: datetime) -> World:
     manifest = parse_manifest(source.require(MANIFEST))
     state = parse_baseline(source.require(BASELINE))
     guide = source.require(manifest.guide)
-    record = read_fetch(cache)
+    root = latest_dir(cache)  # one resolution: the record and the pages come from one fetch
+    record = read_fetch_at(root)
     if record is None:
         raise SetupError('no latest fetch: run check --worktree first')
-    docs = offline_docs(manifest, latest_docs(cache))
+    docs = offline_docs(manifest, root / 'docs')
     terms = group_terms(manifest, guide)
     findings, _ = compare(manifest, state, terms, docs, partial(snapshot_text, cache))
-    releases = releases_of(docs.changelog, str(latest_docs(cache) / CHANGELOG))
+    releases = releases_of(docs.changelog, str(root / 'docs' / CHANGELOG))
     return World(source, cache, manifest, state, guide, terms, docs, releases, findings, record['changelog_head'], now)
 
 
@@ -243,11 +245,13 @@ def triage(world: World, out: Path, through: str | None, size: int = RANGE) -> P
 
 
 def group_docs(world: World, groups: list[str]) -> Path:
-    '''R8.5's snapshot: the groups' cached pages copied from latest/ to the
-    head release's snapshot, which the verifier greps.'''
+    '''R8.5's snapshot: the groups' cached pages copied, from the generation
+    `load` pinned and not from a latest/ a check may since have swapped, to
+    the head release's snapshot, which the verifier greps.'''
+    pinned = Path(world.docs.origin)
     names = {page: page_file(page) for gid in groups for page in world.manifest.groups[gid].pages
-             if (latest_docs(world.cache) / page_file(page)).is_file()}
-    return copy_to_snapshot(world.cache, world.head, names)
+             if (pinned / page_file(page)).is_file()}
+    return copy_to_snapshot(world.cache, world.head, names, source=pinned)
 
 
 def section_list(world: World, sids: list[str], notes: dict[str, list[str]]) -> tuple[dict, list[str]]:

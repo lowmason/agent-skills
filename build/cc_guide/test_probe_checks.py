@@ -4,6 +4,7 @@ Code 2.1.303, 2026-10-20), and the fixture scrubber (drift spec R10.2,
 R10.5, R12.6).'''
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -168,12 +169,23 @@ def payload_log(changes=None):
     return log
 
 
-def payload_run(served=None):
+def saved(payloads, logged=None):
+    '''payloads.json as collect_payload writes it: by default each hook
+    logged one payload for each trimmed payload of its matcher.'''
+    counts = {'any': sum(p['matcher'] == pc.ANY_MATCHER for p in payloads),
+              'agent': sum(p['matcher'] == pc.GUARD_MATCHER for p in payloads)}
+    return {'logged': counts if logged is None else logged, 'payloads': payloads}
+
+
+def payload_run(served=None, requested=None):
     '''A parent on Sonnet that dispatches the haiku control and each pinned
-    built-in in one message, each forwarding one message from the model
-    given for it.'''
+    built-in in one message, as PAYLOAD_PROMPT asks, each forwarding one
+    message from the model given for it. requested maps an agent type to
+    the model its dispatch passes instead; None passes no model.'''
     served = {agent: 'claude-haiku-5-5' for agent in pc.PAYLOAD_AGENTS} | (served or {})
-    sent = [tool_use(f'toolu_{n}', 'Agent', subagent_type=agent, prompt='p')
+    requested = {pc.CONTROL_AGENT: pc.CONTROL_MODEL} | (requested or {})
+    sent = [tool_use(f'toolu_{n}', 'Agent', subagent_type=agent, prompt='p',
+                     **({'model': requested[agent]} if requested.get(agent) else {}))
             for n, agent in enumerate(pc.PAYLOAD_AGENTS)]
     forwarded = [assistant({'type': 'text', 'text': 'OK'}, parent=f'toolu_{n}', model=served[agent])
                  for n, agent in enumerate(pc.PAYLOAD_AGENTS)]
@@ -220,7 +232,187 @@ def payload_run(served=None):
                 'served')),
 ])
 def test_agent_payload(events, payloads, verdict):
-    assert pc.assess_agent_payload(events, payloads) == verdict
+    assert pc.assess_agent_payload(events, saved(payloads)) == verdict
+
+
+def test_two_payloads_of_one_type_with_different_inputs_are_error():
+    payloads = [*payload_log(), {**payload_log()[0], 'model': None}]
+    verdict = pc.check_payloads(payloads)
+    assert verdict.outcome == ERROR and 'general-purpose' in verdict.finding
+
+
+def test_two_agent_matcher_payloads_of_one_type_with_different_models_are_error():
+    log = payload_log()
+    extra = {**next(p for p in log if p['matcher'] == pc.GUARD_MATCHER and p['subagent_type'] == 'claude-code-guide'),
+             'model': 'sonnet'}
+    verdict = pc.check_payloads([*log, extra])
+    assert verdict.outcome == ERROR and 'claude-code-guide' in verdict.finding and pc.GUARD_MATCHER in verdict.finding
+
+
+def test_a_control_model_normalised_to_a_full_id_passes():
+    payloads = payload_log({pc.CONTROL_AGENT: {'model': 'claude-haiku-5-5'}})
+    assert pc.check_payloads(payloads) is None
+
+
+def test_the_model_checks_read_the_agent_matcher_payload():
+    '''The guard installs on the Agent matcher, so its payload decides.'''
+    payloads = [p if p['matcher'] == pc.ANY_MATCHER or p['subagent_type'] != pc.CONTROL_AGENT
+                else {**p, 'model': None} for p in payload_log()]
+    verdict = pc.check_payloads(payloads)
+    assert verdict.outcome == DIVERGES and verdict.finding.startswith('the general-purpose dispatch passed model')
+    builtin = [p if p['matcher'] == pc.ANY_MATCHER or p['subagent_type'] != 'claude-code-guide'
+               else {**p, 'model': 'inherit'} for p in payload_log()]
+    assert pc.check_payloads(builtin).outcome == DIVERGES
+
+
+def test_a_control_served_two_haiku_ids_still_matches_a_builtin_served_one():
+    served = {pc.CONTROL_AGENT: 'claude-haiku-5-5', 'claude-code-guide': 'claude-haiku-5-5'}
+    events = payload_run(served)
+    extra = assistant({'type': 'text', 'text': 'OK'}, parent='toolu_0', model='claude-haiku-4-5')
+    events = [*events[:-1], extra, events[-1]]
+    assert pc.assess_agent_payload(events, saved(payload_log())).outcome == PASS
+
+
+def test_trim_block_keeps_a_dispatch_model():
+    block = tool_use('toolu_1', 'Agent', subagent_type='general-purpose', model='haiku', prompt='x')
+    assert pc._trim_block(block)['input'] == {'subagent_type': 'general-purpose', 'model': 'haiku'}
+
+
+def test_a_parent_that_skips_the_control_model_is_error_not_diverges():
+    '''A payload shows what the parent sent, so a control sent with no model
+    is the parent's doing, not drift.'''
+    payloads = payload_log({pc.CONTROL_AGENT: {'model': None,
+                                               'input_keys': ['description', 'prompt', 'subagent_type']}})
+    verdict = pc.assess_agent_payload(payload_run(requested={pc.CONTROL_AGENT: None}), saved(payloads))
+    assert verdict.outcome == ERROR
+    assert verdict.finding.startswith('the parent session sent general-purpose with no model')
+
+
+def test_a_parent_that_gives_a_builtin_a_model_is_error():
+    payloads = payload_log({'claude-code-guide': {'model': 'sonnet',
+                                                  'input_keys': ['description', 'model', 'prompt', 'subagent_type']}})
+    verdict = pc.assess_agent_payload(payload_run(requested={'claude-code-guide': 'sonnet'}), saved(payloads))
+    assert verdict.outcome == ERROR
+    assert verdict.finding.startswith("the parent session sent claude-code-guide with model 'sonnet'")
+
+
+def test_an_empty_trimmed_log_names_the_stage_that_dropped_it():
+    dropped = pc.assess_agent_payload(payload_run(), {'logged': {'any': 2, 'agent': 2}, 'payloads': []})
+    assert dropped == (ERROR, 'the PreToolUse hooks logged 4 payloads, and trim_payload kept none of them (a '
+                              'renamed subagent_type, a moved tool_input, or payloads that carry agent_id)')
+    nothing = pc.assess_agent_payload(payload_run(), {'logged': {'any': 0, 'agent': 0}, 'payloads': []})
+    assert nothing == (ERROR, 'the PreToolUse hooks logged no subagent dispatch')
+
+
+def dispatched_twice(agent):
+    '''payload_run's events with a second dispatch of `agent`, sent with the model the prompt asks for.'''
+    events = payload_run()
+    given = {'model': pc.CONTROL_MODEL} if agent == pc.CONTROL_AGENT else {}
+    return [*events[:2], assistant(tool_use('toolu_9', 'Agent', subagent_type=agent, prompt='p', **given)),
+            *events[2:]]
+
+
+@pytest.mark.parametrize('events, finding', [
+    (payload_run(requested={pc.CONTROL_AGENT: 'sonnet'}),
+     "the parent session sent general-purpose with model 'sonnet', but its prompt asks for model 'haiku'"),
+    # Any model on a built-in is the parent's choice, Haiku included: the prompt passes it none.
+    (payload_run(requested={'claude-code-guide': 'haiku'}),
+     "the parent session sent claude-code-guide with model 'haiku', but its prompt asks for no model"),
+    (dispatched_twice(pc.CONTROL_AGENT),
+     'the parent session dispatched general-purpose 2 times, but its prompt asks for one dispatch of each type'),
+    (dispatched_twice('claude-code-guide'),
+     'the parent session dispatched claude-code-guide 2 times, but its prompt asks for one dispatch of each type'),
+])
+def test_a_parent_that_strays_from_its_prompt_is_error(events, finding):
+    assert pc.assess_agent_payload(events, saved(payload_log())) == (ERROR, finding)
+
+
+def test_the_parent_is_read_after_a_broken_run_and_before_an_empty_log():
+    stray = payload_run(requested={pc.CONTROL_AGENT: None})
+    assert pc.assess_agent_payload(stray[:-1], saved(payload_log())) == (ERROR, 'no result event')
+    assert pc.assess_agent_payload(stray, {'logged': {'any': 2, 'agent': 2}, 'payloads': []}) == (
+        ERROR, "the parent session sent general-purpose with no model, but its prompt asks for model 'haiku'")
+
+
+def test_an_empty_log_counts_every_hook_and_reads_no_counts_as_none():
+    '''payloads.json without counts is what assess_payload reads for a missing file.'''
+    one_hook = pc.assess_agent_payload(payload_run(), {'logged': {'any': 3, 'agent': 0}, 'payloads': []})
+    assert one_hook.finding.startswith('the PreToolUse hooks logged 3 payloads, and trim_payload kept none')
+    assert pc.assess_agent_payload(payload_run(), {}) == (ERROR, 'the PreToolUse hooks logged no subagent dispatch')
+
+
+def test_requested_models_reads_the_main_session_calls_in_stream_order():
+    '''Both dispatch tool names count, a call made inside a subagent does
+    not, and a call that passes no model reads None.'''
+    events = [init(), assistant(tool_use('toolu_1', 'Agent', subagent_type='general-purpose', model='haiku')),
+              assistant(tool_use('toolu_2', 'Task', subagent_type='general-purpose'),
+                        tool_use('toolu_3', 'Agent', subagent_type='claude-code-guide', model='opus')),
+              assistant(tool_use('toolu_4', 'Agent', subagent_type='claude-code-guide', model='sonnet'),
+                        parent='toolu_1'),
+              assistant(tool_use('toolu_5', 'Read', file_path='a.py')), result()]
+    assert pc.requested_models(events) == {'general-purpose': ['haiku', None], 'claude-code-guide': ['opus']}
+
+
+def test_payload_file_counts_every_logged_line_and_sorts_what_trim_payload_keeps():
+    def line(agent, **given):
+        return json.dumps({'tool_name': 'Agent', 'tool_input': {'subagent_type': agent, **given}})
+    raw = {'agent': [line('general-purpose', model='haiku'), line('claude-code-guide')],
+           'any': [line('general-purpose', model='haiku'),
+                   json.dumps({'tool_name': 'Read', 'tool_input': {'file_path': 'a.py'}}), line('claude-code-guide')]}
+    saved_file = pc.payload_file(raw)
+    assert saved_file['logged'] == {'agent': 2, 'any': 3}
+    assert [(p['matcher'], p['subagent_type']) for p in saved_file['payloads']] == [
+        ('*', 'claude-code-guide'), ('*', 'general-purpose'), ('Agent', 'claude-code-guide'),
+        ('Agent', 'general-purpose')]
+
+
+def without_type(events, agent):
+    '''events with the parent's call of `agent` sent with no subagent_type.'''
+    for e in events:
+        for block in e.get('message', {}).get('content', []) if not e.get('parent_tool_use_id') else []:
+            if block.get('type') == 'tool_use' and block['input'].get('subagent_type') == agent:
+                del block['input']['subagent_type']
+    return events
+
+
+NEVER = 'the parent session never dispatched {}, but its prompt asks for one dispatch of each type'
+CONTROL_ONLY = [init(), assistant(tool_use('toolu_0', 'Agent', subagent_type=pc.CONTROL_AGENT, model=pc.CONTROL_MODEL,
+                                           prompt='p')),
+                assistant({'type': 'text', 'text': 'OK'}, parent='toolu_0', model='claude-haiku-5-5'), result()]
+NO_DISPATCH = [init(), assistant(tool_use('toolu_r', 'Read', file_path='a.py')), result()]
+
+
+@pytest.mark.parametrize('events, payload_file, agent', [
+    # The parent skips claude-code-guide: the hooks miss nothing, so the hook check must not take the blame.
+    (CONTROL_ONLY, saved([p for p in payload_log() if p['subagent_type'] == pc.CONTROL_AGENT]), 'claude-code-guide'),
+    # The control sent with no subagent_type: trim_payload drops its payloads, and the stream names no type.
+    (without_type(payload_run(), pc.CONTROL_AGENT),
+     saved([p for p in payload_log() if p['subagent_type'] != pc.CONTROL_AGENT], logged={'any': 2, 'agent': 2}),
+     pc.CONTROL_AGENT),
+    # The parent dispatches nothing and calls another tool, which the * hook logs: trim_payload is not to blame.
+    (NO_DISPATCH, {'logged': {'any': 1, 'agent': 0}, 'payloads': []}, pc.CONTROL_AGENT),
+])
+def test_a_parent_that_never_dispatches_a_type_is_error_naming_the_parent(events, payload_file, agent):
+    assert pc.assess_agent_payload(events, payload_file) == (ERROR, NEVER.format(agent))
+
+
+def test_a_renamed_dispatch_tool_still_diverges_though_the_stream_shows_no_agent_call():
+    '''A payload of the type counts as a dispatch, so a tool Claude Code
+    renames is named as drift, not as a parent that never dispatched.'''
+    events = payload_run()
+    for block in events[1]['message']['content']:
+        block['name'] = 'Delegate'
+    payloads = [{**p, 'tool_name': 'Delegate'} for p in payload_log()]
+    assert pc.requested_models(events) == {}
+    assert pc.assess_agent_payload(events, saved(payloads)) == (
+        DIVERGES, 'a subagent dispatch reaches PreToolUse as Delegate, not Agent')
+
+
+def test_a_stray_model_is_named_before_a_missing_dispatch():
+    events = [init(), assistant(tool_use('toolu_0', 'Agent', subagent_type=pc.CONTROL_AGENT, model='sonnet')),
+              result()]
+    assert pc.assess_agent_payload(events, saved([])) == (
+        ERROR, "the parent session sent general-purpose with model 'sonnet', but its prompt asks for model 'haiku'")
 
 
 def test_trim_payload_keeps_a_main_session_dispatch_and_drops_the_rest():
@@ -249,7 +441,7 @@ def test_the_payload_probe_checks_what_the_dispatch_guard_reads():
     spec = importlib.util.spec_from_file_location('dispatch_model_guard', GUARD)
     guard = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(guard)
-    assert guard.AGENT_TOOL == pc.GUARDED_TOOL == pc.GUARD_MATCHER
+    assert pc.DISPATCH_TOOLS[0] == pc.GUARDED_TOOL == pc.GUARD_MATCHER == guard.AGENT_TOOL
     assert guard.BUILTIN_PINNED == frozenset(pc.HAIKU_BUILTINS)
 
 
@@ -409,6 +601,265 @@ COMPACT_OK = [init(), {'type': 'system', 'subtype': 'compact_boundary'}, result(
 ])
 def test_assess_compaction_cut(compact, cut, verdict):
     assert pc.assess_compaction_cut(compact, cut, 20000) == verdict
+
+
+# explore-override: the project agent named Explore, the control, their marks, and the canaries a run draws, fixed
+# here. The two canaries share their hex part, as a fixed token_hex gives them, and differ by their prefixes.
+EXPLORE, CONTROL = 'Explore', 'canary-control'
+MARKS = {EXPLORE: 'EXPLORE-OVERRIDE', CONTROL: 'CANARY-CONTROL'}
+CANARIES = {'claude_md': 'cm-0a1b2c3d', 'git_status': 'gs-0a1b2c3d'}
+EXPLORE_IDS = {EXPLORE: 'toolu_e', CONTROL: 'toolu_c'}
+
+
+def text(words):
+    return {'type': 'text', 'text': words}
+
+
+def answer(agent, claude_md=True, git_status=True, mark=True):
+    '''An agent's three-line answer: its mark, or its name without the mark; the CLAUDE.md canary or NONE; and the
+    untracked files its git status lists, or NONE.'''
+    return '\n'.join([MARKS[agent] if mark else agent, CANARIES['claude_md'] if claude_md else 'NONE',
+                      f"CLAUDE.md, canaries.json, {CANARIES['git_status']}.txt" if git_status else 'NONE'])
+
+
+def explore_run(explore=None, control=None, prompt='Follow your instructions.', **given):
+    '''A parent that dispatches the Explore override and the control in one message, each forwarding one message:
+    explore's and control's blocks, by default the answers PASS expects. given adds fields to each Agent call.'''
+    explore = explore or [text(answer(EXPLORE, git_status=False))]
+    control = control or [text(answer(CONTROL))]
+    sent = [tool_use(tid, 'Agent', subagent_type=agent, prompt=prompt, **given) for agent, tid in EXPLORE_IDS.items()]
+    forwarded = [assistant(*explore, parent=EXPLORE_IDS[EXPLORE]), assistant(*control, parent=EXPLORE_IDS[CONTROL])]
+    return [init(), assistant(*sent), *forwarded, assistant(text('DONE')), result()]
+
+
+def sighting(explore=None, control=None, **fields):
+    '''One rep's sightings as explore_sightings gives them, by default the rep PASS expects. explore and control
+    replace fields of each agent's sightings, and fields replace the rep's own.'''
+    seen = {EXPLORE: {'mark': True, 'claude_md': True, 'git_status': False, **(explore or {})},
+            CONTROL: {'mark': True, 'claude_md': True, 'git_status': True, **(control or {})}}
+    return {'broken': None, 'leaked': False, 'tool_calls': {EXPLORE: 0, CONTROL: 0}, 'seen': seen, **fields}
+
+
+def test_explore_override_passes_when_explore_reads_claude_md_and_skips_git_status():
+    assert pc.assess_explore_override([sighting() for _ in range(3)]) == (
+        PASS, 'Explore override read CLAUDE.md and got no git-status snapshot in 3 of 3 reps; the control got both')
+
+
+@pytest.mark.parametrize('explore, finding', [
+    ({'git_status': True}, 'rep 2: the Explore override got a git-status snapshot'),
+    ({'claude_md': False}, 'rep 2: the Explore override did not read CLAUDE.md'),
+    ({'claude_md': False, 'git_status': True},
+     'rep 2: the Explore override did not read CLAUDE.md and got a git-status snapshot'),
+])
+def test_explore_override_diverges_when_one_valid_rep_differs(explore, finding):
+    assert pc.assess_explore_override([sighting(), sighting(explore), sighting()]) == (DIVERGES, finding)
+
+
+def test_a_diverging_rep_outranks_a_void_one_and_each_diverging_rep_is_named():
+    void = sighting(tool_calls={EXPLORE: 1, CONTROL: 0})
+    assert pc.assess_explore_override([void, sighting(), sighting({'git_status': True})]) == (
+        DIVERGES, 'rep 3: the Explore override got a git-status snapshot')
+    assert pc.assess_explore_override([sighting({'claude_md': False}), sighting(), sighting({'git_status': True})]) == (
+        DIVERGES, 'rep 1: the Explore override did not read CLAUDE.md; rep 3: the Explore override got a git-status '
+                  'snapshot')
+
+
+@pytest.mark.parametrize('agent', [EXPLORE, CONTROL])
+@pytest.mark.parametrize('explore', [{}, {'git_status': True}])
+def test_explore_override_voids_a_rep_whose_subagent_called_a_tool(agent, explore):
+    '''A subagent that read a file may have found a canary there, not in its context, so the rep proves nothing:
+    ERROR, whether its sightings would pass or diverge.'''
+    rep = sighting(explore, tool_calls={EXPLORE: 0, CONTROL: 0, agent: 1})
+    assert pc.assess_explore_override([rep, sighting(), sighting()]) == (
+        ERROR, f'rep 1: {agent} made 1 tool call(s), so its answer may not come from its context alone')
+
+
+@pytest.mark.parametrize('rep, why', [
+    (sighting(control={'claude_md': False}), 'the control missed the CLAUDE.md canary'),
+    (sighting(control={'git_status': False}), 'the control missed the git-status canary'),
+    (sighting(control={'claude_md': False, 'git_status': False}), 'the control missed the CLAUDE.md and git-status '
+                                                                    'canaries'),
+    (sighting({'mark': False}), 'Explore did not give its mark EXPLORE-OVERRIDE'),
+    # The built-in Explore answering in the override's place gives no mark, and its NONEs prove nothing.
+    (sighting({'mark': False, 'claude_md': False}), 'Explore did not give its mark EXPLORE-OVERRIDE'),
+    (sighting(control={'mark': False}), 'canary-control did not give its mark CANARY-CONTROL'),
+    (sighting(leaked=True), 'the parent passed a canary in an Agent call'),
+    (sighting({'git_status': True}, leaked=True), 'the parent passed a canary in an Agent call'),
+    (sighting(broken='no result event'), 'the run broke: no result event'),
+])
+def test_explore_override_is_error_when_the_control_misses_a_canary_or_a_mark_is_absent(rep, why):
+    assert pc.assess_explore_override([sighting(), rep, sighting()]) == (ERROR, f'rep 2: {why}')
+
+
+def test_explore_override_names_every_void_rep():
+    reps = [sighting(leaked=True), sighting(), sighting(broken='no init event')]
+    assert pc.assess_explore_override(reps) == (
+        ERROR, 'rep 1: the parent passed a canary in an Agent call; rep 3: the run broke: no init event')
+
+
+@pytest.mark.parametrize('reps', [0, 2, 4])
+def test_explore_override_needs_one_sighting_for_each_rep(reps):
+    '''No sightings at all, as a missing sightings.json reads, must not pass for want of a diverging rep.'''
+    assert pc.assess_explore_override([sighting() for _ in range(reps)]) == (ERROR, f'expected 3 reps, found {reps}')
+
+
+def parent_echo():
+    '''The parent loads CLAUDE.md and the git status too, so its own text can hold both canaries and both marks.'''
+    events = explore_run(explore=[text(answer(EXPLORE, claude_md=False, git_status=False))])
+    return [*events[:-1], assistant(text(' '.join([*CANARIES.values(), *MARKS.values()]))), events[-1]]
+
+
+def split_answer():
+    '''The Explore override's answer over two forwarded messages: the mark, then the CLAUDE.md canary.'''
+    events = explore_run(explore=[text(MARKS[EXPLORE])])
+    return [*events[:2], assistant(text(CANARIES['claude_md']), parent=EXPLORE_IDS[EXPLORE]), *events[2:]]
+
+
+def never_dispatched(agent):
+    '''The parent's call of `agent` dropped; the message forwarded under its id stays, matching no dispatch.'''
+    events = explore_run()
+    sent = [b for b in events[1]['message']['content'] if b['input']['subagent_type'] != agent]
+    return [events[0], assistant(*sent), *events[2:]]
+
+
+def leaked_into(agent, canary):
+    '''explore_run's events with `canary` in the prompt of the parent's call of `agent` alone; the other call says
+    only "Follow your instructions."'''
+    events = explore_run()
+    for block in events[1]['message']['content']:
+        if block['input']['subagent_type'] == agent:
+            block['input']['prompt'] += f' The word is {CANARIES[canary]}.'
+    return events
+
+
+NO_SIGHTING = {'mark': False, 'claude_md': False, 'git_status': False}
+
+
+@pytest.mark.parametrize('events, expected', [
+    (explore_run(), sighting()),
+    (parent_echo(), sighting({'claude_md': False})),
+    (split_answer(), sighting()),
+    # A canary in any field of a parent's Agent call leaks.
+    (explore_run(prompt=f"Follow your instructions. The word is {CANARIES['claude_md']}."), sighting(leaked=True)),
+    (explore_run(description=f"{CANARIES['git_status']}.txt"), sighting(leaked=True)),
+    # Each tool_use block in an agent's forwarded messages counts; the parent's own Agent calls do not.
+    (explore_run(explore=[tool_use('toolu_r1', 'Read', file_path='CLAUDE.md'),
+                          tool_use('toolu_r2', 'Read', file_path='canaries.json'),
+                          text(answer(EXPLORE, git_status=False))]),
+     sighting(tool_calls={EXPLORE: 2, CONTROL: 0})),
+    (explore_run(control=[tool_use('toolu_r', 'Read', file_path='CLAUDE.md'), text(answer(CONTROL))]),
+     sighting(tool_calls={EXPLORE: 0, CONTROL: 1})),
+    # A mark is matched exactly: an agent's own name is not its mark.
+    (explore_run(control=[text(answer(CONTROL, mark=False))]), sighting(control={'mark': False})),
+    (explore_run(explore=[text(answer(EXPLORE, git_status=False, mark=False))]), sighting({'mark': False})),
+    (never_dispatched(EXPLORE), sighting(NO_SIGHTING)),
+    (never_dispatched(CONTROL), sighting(control=NO_SIGHTING)),
+    (explore_run()[:-1], sighting(broken='no result event')),
+    (None, sighting(NO_SIGHTING, NO_SIGHTING, broken='no stream-json events')),
+    # A canary in one of the two Agent calls leaks, whichever call it is.
+    (leaked_into(CONTROL, 'claude_md'), sighting(leaked=True)),
+    (leaked_into(EXPLORE, 'git_status'), sighting(leaked=True)),
+])
+def test_explore_sightings_reads_marks_canaries_and_leaks_from_the_raw_stream(events, expected):
+    assert pc.explore_sightings(events, CANARIES) == expected
+
+
+TEARDOWN_PASS = 'the async SessionStart hook got TERM first at teardown and was gone within 5 s'
+TEARDOWN_HUP = 'the async SessionStart hook got HUP first at teardown and was gone within 5 s'
+NO_SIGNAL = 'the async SessionStart hook got none of TERM, HUP, INT at teardown'
+NO_TRAP = ", so notice.sh's trap never runs"
+NOTICE_SH = Path(__file__).resolve().with_name('notice.sh')
+
+
+def hook_response(event, outcome):
+    return {'type': 'system', 'subtype': 'hook_response', 'hook_event': event, 'hook_name': f'{event}:startup',
+            'outcome': outcome}
+
+
+def teardown_run(*outcomes, event='SessionStart'):
+    return [init(), *[hook_response(event, o) for o in outcomes], assistant({'type': 'text', 'text': 'OK'}), result()]
+
+
+def test_async_teardown_passes_on_term_then_gone():
+    assert pc.assess_async_teardown(teardown_run(), ['start 41', 'TERM', 'gone']) == (PASS, TEARDOWN_PASS)
+
+
+@pytest.mark.parametrize('log, finding', [
+    # Another signal first.
+    (['start 41', 'HUP', 'gone'], TEARDOWN_HUP),
+    # No catchable signal, so notice.sh's trap never runs.
+    (['start 41', 'gone'], f'{NO_SIGNAL} and was gone within 5 s{NO_TRAP}'),
+    # The hook outlived teardown.
+    (['start 41', 'TERM', 'alive'],
+     'the async SessionStart hook got TERM first at teardown and was still running 5 s after claude -p ended'),
+])
+def test_async_teardown_diverges(log, finding):
+    assert pc.assess_async_teardown(teardown_run(), log) == (DIVERGES, finding)
+
+
+def test_async_teardown_is_error_when_the_hook_never_started():
+    assert pc.assess_async_teardown(teardown_run(), []) == (ERROR, 'the async SessionStart hook never started')
+
+
+def test_async_teardown_reads_a_cancelled_hook_response_when_the_stream_has_one():
+    log = ['start 41', 'TERM', 'gone']
+    assert pc.assess_async_teardown(teardown_run('cancelled'), log) == (PASS, TEARDOWN_PASS)
+    assert pc.assess_async_teardown(teardown_run('success'), log) == (
+        DIVERGES, f"{TEARDOWN_PASS}; the stream's SessionStart hook_response reads success, not cancelled")
+    assert pc.assess_async_teardown(teardown_run(), log) == (PASS, TEARDOWN_PASS)
+
+
+@pytest.mark.parametrize('log, verdict', [
+    # TERM first decides, whatever comes after it; any other signal first diverges.
+    (['start 41', 'TERM', 'HUP', 'INT', 'gone'], (PASS, TEARDOWN_PASS)),
+    (['start 41', 'HUP', 'TERM', 'gone'], (DIVERGES, TEARDOWN_HUP)),
+    (['start 41', 'INT', 'gone'],
+     (DIVERGES, 'the async SessionStart hook got INT first at teardown and was gone within 5 s')),
+    # No signal and still running: the finding names both.
+    (['start 41', 'alive'], (DIVERGES, f'{NO_SIGNAL} and was still running 5 s after claude -p ended{NO_TRAP}')),
+])
+def test_async_teardown_reads_the_first_signal_and_how_the_hook_ended(log, verdict):
+    assert pc.assess_async_teardown(teardown_run(), log) == verdict
+
+
+@pytest.mark.parametrize('log, finding', [
+    (['gone'], 'the async SessionStart hook never started'),
+    (['TERM', 'gone'], 'the async SessionStart hook never started'),
+    (['start', 'TERM', 'gone'], 'the async SessionStart hook never started'),
+    (['start 41'], 'the teardown log does not end in gone or alive'),
+    (['start 41', 'TERM'], 'the teardown log does not end in gone or alive'),
+    # A second start line means the hook ran twice, so its signals cannot be told apart.
+    (['start 41', 'start 42', 'TERM', 'gone'], "the teardown log holds 'start 42' between its start line and its end"),
+])
+def test_async_teardown_is_error_on_a_log_of_another_shape(log, finding):
+    assert pc.assess_async_teardown(teardown_run(), log) == (ERROR, finding)
+
+
+def test_async_teardown_reads_every_session_start_hook_response_and_no_other():
+    log = ['start 41', 'TERM', 'gone']
+    assert pc.assess_async_teardown(teardown_run('success', event='Stop'), log) == (PASS, TEARDOWN_PASS)
+    assert pc.assess_async_teardown(teardown_run('cancelled', 'success'), log) == (
+        DIVERGES, f"{TEARDOWN_PASS}; the stream's SessionStart hook_response reads success, not cancelled")
+
+
+def test_async_teardown_reads_no_outcome_from_a_hook_started_event():
+    '''The live stream also holds the hook's hook_started event, which has no outcome: only hook_response counts.'''
+    started = {'type': 'system', 'subtype': 'hook_started', 'hook_event': 'SessionStart',
+               'hook_name': 'SessionStart:startup'}
+    events = [started, *teardown_run('cancelled')]
+    assert pc.assess_async_teardown(events, ['start 41', 'TERM', 'gone']) == (PASS, TEARDOWN_PASS)
+
+
+@pytest.mark.parametrize('events, why', [(None, 'no stream-json events'), (teardown_run()[:-1], 'no result event')])
+def test_async_teardown_is_error_when_the_run_broke(events, why):
+    assert pc.assess_async_teardown(events, ['start 41', 'TERM', 'gone']) == (ERROR, why)
+
+
+def test_the_teardown_signals_are_the_ones_notice_sh_traps():
+    assert pc.TEARDOWN_SIGNALS == ('TERM', 'HUP', 'INT')
+    traps = re.findall(r"^\s*trap '[^']*' ([A-Z ]+?)\s*(?:#.*)?$", NOTICE_SH.read_text(encoding='utf-8'), re.MULTILINE)
+    signals = [set(t.split()) for t in traps if t.strip() != 'EXIT']
+    assert signals and all(s == set(pc.TEARDOWN_SIGNALS) for s in signals)
 
 
 def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():

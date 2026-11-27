@@ -8,6 +8,8 @@ this file is itself a fence.
 import json
 import os
 import subprocess
+import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -577,9 +579,19 @@ def drift_repo(root, folder):
                                state.BASELINE: state.dump_baseline(fixture_state(folder))})
 
 
-def prime_cache(cache, folder, head: str = '2.1.902') -> None:
-    '''A cache whose latest/ holds folder's files, as a live check leaves it.'''
+def prime_cache(cache, folder, head: str = '2.1.902', legacy: bool = False) -> None:
+    '''A cache as a live check leaves it: a new generation folder holding
+    folder's files under docs/ and a fetch record, with the latest link
+    swapped to it. With legacy, latest/ is a real folder instead, as caches
+    hold from before plan 109.'''
     import state
-    write_tree(state.latest_docs(cache), {p.name: p.read_text(encoding='utf-8') for p in folder.iterdir()})
-    state.fetch_record(cache).write_text(json.dumps({'fetched_at': '2026-10-04T12:00:00+00:00',
-                                                      'changelog_head': head}) + '\n')
+    cache.mkdir(parents=True, exist_ok=True)
+    link = cache / state.LATEST
+    root = link if legacy else Path(tempfile.mkdtemp(prefix=state.GENERATION_PREFIX, dir=cache))
+    write_tree(root / 'docs', {p.name: p.read_text(encoding='utf-8') for p in folder.iterdir()})
+    state.fetch_record_in(root).write_text(json.dumps({'fetched_at': '2026-10-04T12:00:00+00:00',
+                                                       'changelog_head': head}) + '\n')
+    if not legacy:
+        temp = cache / '.latest-primed'
+        temp.symlink_to(root.name)
+        os.replace(temp, link)
