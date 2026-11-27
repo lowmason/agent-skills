@@ -6334,7 +6334,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quick-fix. Done when: guide line 255 says what the page says, and the owner has ruled whether the skill,
       rule and NOTICE sentences also name the "last open" arm.
       → progress 2026-11-27 (/deferred pass): guide line 255 now says what the desktop page says (checked against https://code.claude.com/docs/en/desktop.md on 2026-11-27): the worktree stays on disk with its changes, and for a local session Desktop removes it about 30 days after the archive or the user's last open, whichever is later; `baseline accept subagents.worktrees --substantive` and `baseline stamp` recorded it, and `cli.py lint` and `check_conformance.py` pass. Still open: the owner's ruling on whether the skill, rule and NOTICE sentences also name the "last open" arm.
-- [ ] **Check whether `queued_turn_count` in a rep's JSON shows a peer turn (plan 103 Task 1 observation).** The
+- [x] **Check whether `queued_turn_count` in a rep's JSON shows a peer turn (plan 103 Task 1 observation).** The
       rep JSON of Claude Code 2.1.323 holds a `queued_turn_count` field, 0 in every rep that the plan 103 kit ran.
       The kit's void rule reads only `result_index` and `origin`, the two fields that the 2026-11-18
       peer-session-inbound-probe recorded (item "Test whether a message sent to a busy no-tools `claude -p` rep
@@ -6343,6 +6343,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       no-tools rep, one unique marker sent to it by name, run only while no kit runs) records the field in the
       JSON, and this item's tick note says whether the field changed and the kit's void rule uses it or the note
       says it shows nothing.
+      → done 2026-11-27 (/deferred quick fix): it shows nothing. On Claude Code 2.1.332, one busy no-tools Sonnet rep (the review-kit flags, `--tools ""` with `--strict-mcp-config`, under `env -i`) got one unique marker by name with `SendMessage`; the marker arrived as an extra turn (`result` quotes it, `result_index` 1, `origin.kind` "peer", `num_turns` 1), and `queued_turn_count` stayed 0, so the kit's void rule keeps reading `result_index` and `origin` only ($0.044; the rep JSON stayed in the session scratchpad, uncommitted, since `origin` holds the sender's session details; the marker went by name to the probe's own session, so it could not reach another lane's rep).
 
 ## cc-guide-files-pass-e3 (no plan; /cc-guide files pass, branch claude/cc-guide-files-e3-62cb58) — 2026-11-22
 - [ ] **Add a guide statement that `/clear` keeps the current model (E3 files pass, owner ruling 2026-11-22: guide addition).** `skills/writing-plans/SKILL.md` line 260 says that `/clear` keeps the current model. The guide's `lean.model-routing` section says that a typed `/model` saves its choice as the default for new sessions. It says nothing about `/clear` and the model, so the verifier rated the sentence not covered. The guide is a docs-checked file that the `/cc-guide` refresh edits, so the E3 pass did not edit it. Size: quick-fix. Done when: the `lean.model-routing` section of `specs/guides/claude-code-customization-guide.md` states, with a docs source, whether `/clear` keeps the session's model, and `cli.py lint` and `check_conformance.py` pass.
