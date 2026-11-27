@@ -2,7 +2,7 @@
 
 ## Source pages reviewed
 
-Primary pages provided by the user:
+Primary pages:
 
 - BLS Handbook of Methods - QCEW Concepts: https://www.bls.gov/opub/hom/cew/concepts.htm
 - BLS Handbook of Methods - QCEW Data Sources: https://www.bls.gov/opub/hom/cew/data.htm

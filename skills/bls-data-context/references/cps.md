@@ -544,8 +544,6 @@ User-requested sources examined:
 - [BLS-HOM-DESIGN] BLS Handbook of Methods, CPS Design: https://www.bls.gov/opub/hom/cps/design.htm
 - [BLS-HOM-CALCULATION] BLS Handbook of Methods, CPS Calculation: https://www.bls.gov/opub/hom/cps/calculation.htm
 - [BLS-HOM-PRESENTATION] BLS Handbook of Methods, CPS Presentation: https://www.bls.gov/opub/hom/cps/presentation.htm
-- [CENSUS-TP66-USER-URL] User-supplied TP66 URL: https://www.census.gov/prod/2006pubs/tp-66.pdf
-  - Retrieval note: this URL returned 404 during this review. The official Census copy examined is [CENSUS-TP66-OFFICIAL].
 - [CENSUS-TP66-OFFICIAL] Census/BLS, Current Population Survey: Design and Methodology, Technical Paper 66, October 2006: https://www2.census.gov/programs-surveys/cps/methodology/tp-66.pdf
 - [CENSUS-METHODOLOGY] Census CPS methodology: https://www.census.gov/programs-surveys/cps/technical-documentation/methodology.html
 - [CENSUS-QUESTIONNAIRES] Census CPS questionnaires: https://www.census.gov/programs-surveys/cps/technical-documentation/questionnaires.html

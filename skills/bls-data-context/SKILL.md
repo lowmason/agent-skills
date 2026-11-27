@@ -46,6 +46,7 @@ anatomy, flat-file schema, and lookup codes — or ingest.md when building a pip
 | **ECI** | *Change* in employer labor cost (fixed-weight index) | NCS establishment · index, Dec 2005=100 | Quarterly | Nation, region/division, 15 MSAs | [references/eci.md](references/eci.md) |
 | **ECEC** | *Level* of employer cost per hour ($) | NCS establishment | Quarterly (Mar/Jun/Sep/Dec) | Nation, region/division, 15 MSAs (**no state**) | [references/ecec.md](references/ecec.md) |
 | **CPS** | Employed/unemployed/NILF, unemployment rate, labor force | **Household** · **persons by residence** | Monthly | Nation, state | [references/cps.md](references/cps.md) |
+| **LAUS** | Labor force, employment, unemployment, unemployment rate | **Household** concepts · **persons by residence**, model-based | Monthly | State and sub-state areas | No reference of its own: [references/sae.md](references/sae.md) (OMB adoption, LAUS vs CES-SA) and [references/qcew.md](references/qcew.md) (LAUS vs QCEW) |
 
 ## The one frame underneath most of it
 
