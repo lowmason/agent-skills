@@ -536,7 +536,7 @@ Use these rules in examples:
 
 ## 16. Source map
 
-User-requested sources examined:
+Sources examined:
 
 - [BLS-HOM-OVERVIEW] BLS Handbook of Methods, CPS Overview: https://www.bls.gov/opub/hom/cps/home.htm
 - [BLS-HOM-CONCEPTS] BLS Handbook of Methods, CPS Concepts: https://www.bls.gov/opub/hom/cps/concepts.htm
@@ -552,7 +552,7 @@ User-requested sources examined:
 - [BLS-DOC-SA] BLS CPS technical documentation, seasonal adjustment anchor: https://www.bls.gov/cps/documentation.htm#sa
 - [BLS-HTGM] BLS, How the Government Measures Unemployment: https://www.bls.gov/cps/cps_htgm.htm
 
-Linked official sources used for current context from the requested pages:
+Linked official sources used for current context:
 
 - [BLS-2025-SAMPLE-REDESIGN] BLS, Redesign of the Sample for the Current Population Survey: https://www.bls.gov/cps/methods/sample_redesign_2025.htm
 - [BLS-2025-SHUTDOWN-CPS] BLS, 2025 federal government shutdown impact on the Current Population Survey (page last modified March 11, 2026; read 2026-10-19): https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm

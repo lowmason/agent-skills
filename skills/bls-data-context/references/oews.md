@@ -75,6 +75,8 @@ Other `oe.series` columns that are not part of the ID breakdown: `state_code` (2
 
 Data files carry `series_id`, `year`, `period`, `value` (12 wide) and `footnote_codes`. ([oe.txt][1])
 
+BLS footnotes special characteristics of the data where necessary. ([oe.txt][1]) The `oe.footnote` mapping file defines `footnote_code` and `footnote_text`. The layout's example is code `7` with the text `Estimate not released.` ([oe.txt][1]) The layout file does not say what `value` holds when an estimate is not released. Advice, not a BLS statement: read `footnote_codes` before you cast `value` to a number.
+
 ---
 
 ## 5. Flat files
