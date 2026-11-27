@@ -1418,3 +1418,26 @@ def test_an_error_outranks_a_divergence_and_divergences_join_in_one_finding(tmp_
         DIVERGES, 'isolation: control was refused; isolation: the worktree was still locked after ExitWorktree')
     assert wt_verdict(places, isolation=two, noop=wt_stream()) == (ERROR, 'noop: ExitWorktree never ran; '
                                                                           'noop: pwd after ExitWorktree never ran')
+
+
+def test_a_bare_locked_porcelain_line_is_a_lock(tmp_path):
+    '''git worktree list --porcelain writes a lock with no reason as `locked` alone.'''
+    places = wt_places(tmp_path)
+    shown = wt_list(places, False) + 'locked\n'
+    calls = [(name, given, shown if given.get('command') == WT_LIST and n < 5 else body, is_error)
+             for n, (name, given, body, is_error) in enumerate(wt_isolation_calls(places))]
+    assert pc.worktree_sightings(wt_streams(places, isolation=wt_stream(*calls)), places)[
+        'isolation']['locked_before'] is True
+
+
+def test_a_command_that_extends_a_steps_command_is_not_the_step(tmp_path):
+    places = wt_places(tmp_path)
+    extended = wt_isolation(places, commands={'control': 'git rev-parse --show-toplevel --path-format=absolute'})
+    assert wt_verdict(places, isolation=extended) == (ERROR, 'isolation: control never ran')
+
+
+def test_a_later_call_with_a_result_counts_when_the_first_has_none(tmp_path):
+    places = wt_places(tmp_path)
+    calls = wt_isolation_calls(places)
+    retried = wt_stream(wt_bash(WT_PLAIN_SUBSHELL, None), *calls)
+    assert wt_verdict(places, isolation=retried) == (PASS, WT_PASS)
