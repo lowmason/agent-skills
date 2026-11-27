@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 import probe_checks
+import probe_process
 import probes
 import state
 import test_probe_checks as tpc
@@ -90,7 +91,7 @@ def claude(tmp_path):
 @pytest.fixture(autouse=True)
 def no_alias_remaps(monkeypatch):
     '''A remap in the machine running the suite would add its name to every row; each test starts without one.'''
-    for name in probes.ALIAS_REMAPS:
+    for name in probe_process.ALIAS_REMAPS:
         monkeypatch.delenv(name, raising=False)
 
 
@@ -205,7 +206,7 @@ def test_an_inherited_alias_remap_is_named_in_the_row_and_its_value_is_not(repo,
 
 
 def test_every_inherited_alias_remap_is_named_after_the_allow_old_flag(repo, tmp_path, claude, monkeypatch):
-    for name in probes.ALIAS_REMAPS:
+    for name in probe_process.ALIAS_REMAPS:
         monkeypatch.setenv(name, 'a-model')
     monkeypatch.setenv('ANTHROPIC_DEFAULT_MODEL', 'a-model')  # the default model, not an alias remap
     monkeypatch.setenv('CLAUDE_CODE_SUBAGENT_MODEL', 'a-model')  # outranked by an agent's model field
@@ -777,6 +778,16 @@ def log_reads(log: Path, lines: list[str], wait: float) -> bool:
     return False
 
 
+def written(path: Path, wait: float = 5) -> bool:
+    '''Whether the file holds text within `wait` seconds.'''
+    deadline = time.monotonic() + wait
+    while time.monotonic() < deadline:
+        if path.is_file() and path.read_text(encoding='utf-8').strip():
+            return True
+        time.sleep(0.01)
+    return False
+
+
 @contextlib.contextmanager
 def reaped(proc: subprocess.Popen):
     try:
@@ -1105,202 +1116,6 @@ def test_the_cut_probe_reads_its_run_like_a_live_one(tmp_path, isolated_home):
     absent = probes.run_probe('compaction-cut', 'claude', REPO, tmp_path / 'absent', FakeRuns({'cut': cut_stream()}))
     assert absent == (ERROR, 'no re-attached copy of cut-probe-prose after the compact boundary')
     assert json.loads((tmp_path / 'absent' / 'cut.json').read_text(encoding='utf-8')) == {}
-
-
-# Prints the effort override, or "unset", then the variable its invocation adds.
-ENV_ECHO = '#!/bin/sh\nprintf "%s %s" "${CLAUDE_CODE_EFFORT_LEVEL-unset}" "${PROBE_ADDED-unset}"\n'
-
-
-def test_a_run_never_inherits_the_effort_override(tmp_path, monkeypatch):
-    '''CLAUDE_CODE_EFFORT_LEVEL outranks an agent's effort field
-    (subagents.frontmatter), so one set in the caller's shell would decide
-    the effort that agent-model-pins reads. A run goes without it, and still
-    gets what its invocation adds.'''
-    monkeypatch.setenv('CLAUDE_CODE_EFFORT_LEVEL', 'low')
-    inv = probes.Invocation('echo', [str(executable(tmp_path / 'echo', ENV_ECHO))], {'PROBE_ADDED': 'yes'}, 30)
-    assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
-    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'unset yes'
-
-
-def test_a_run_keeps_an_inherited_alias_remap(tmp_path, monkeypatch):
-    '''Owner ruling, 2026-10-31: record a remap, never scrub it. On Bedrock, Google Cloud or Foundry it can be the
-    owner's own setup, so the probe tests the model the owner runs.'''
-    monkeypatch.setenv('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'a-model')
-    echo = executable(tmp_path / 'echo', '#!/bin/sh\nprintf "%s" "${ANTHROPIC_DEFAULT_HAIKU_MODEL-unset}"\n')
-    inv = probes.Invocation('echo', [str(echo)], {}, 30)
-    assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
-    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'a-model'
-    assert not set(probes.ALIAS_REMAPS) & probes.SCRUBBED_ENV
-
-
-# A run whose leader starts a child, as Gate B's bash starts claude. It writes "<leader> <child>" to $1.
-SLOW = '#!/bin/sh\nsleep 300 &\necho "$$ $!" > "$1"\nsleep 300\n'
-# The same, but the leader and its child ignore SIGTERM, as a stuck claude might, so only SIGKILL ends them.
-STUBBORN = "#!/bin/sh\ntrap '' TERM\nsleep 300 &\necho \"$$ $!\" > \"$1\"\nwait\n"
-
-
-def written(path: Path, wait: float = 5) -> bool:
-    '''Whether the file holds text within `wait` seconds.'''
-    deadline = time.monotonic() + wait
-    while time.monotonic() < deadline:
-        if path.is_file() and path.read_text(encoding='utf-8').strip():
-            return True
-        time.sleep(0.01)
-    return False
-
-
-def gone(pid: int, wait: float = 5) -> bool:
-    '''Whether the process ends within `wait` seconds.'''
-    deadline = time.monotonic() + wait
-    while time.monotonic() < deadline:
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            return True
-        time.sleep(0.05)
-    return False
-
-
-@pytest.fixture
-def pids(tmp_path):
-    '''The pid file a SLOW or STUBBORN run writes. Teardown kills what is
-    left of its process group, so a failing test leaks no sleep.'''
-    path = tmp_path / 'pids'
-    yield path
-    if path.is_file() and path.read_text(encoding='utf-8').split():
-        with contextlib.suppress(ProcessLookupError, PermissionError):
-            os.killpg(int(path.read_text(encoding='utf-8').split()[0]), signal.SIGKILL)
-
-
-def child_of(path: Path) -> int:
-    return int(path.read_text(encoding='utf-8').split()[1])
-
-
-def test_a_timeout_stops_everything_the_run_started(tmp_path, pids):
-    '''Gate B runs claude under bash: a timeout must stop the grandchild too,
-    not only the bash that started it.'''
-    inv = probes.Invocation('slow', [str(executable(tmp_path / 'slow', SLOW)), str(pids)], {}, 3)
-    assert probes.execute(inv, tmp_path, tmp_path / 'slow.out', tmp_path / 'slow.err') is None
-    assert written(pids), 'the run was stopped before it started its child'
-    assert gone(child_of(pids))
-
-
-def test_an_interrupt_stops_everything_the_run_started_and_still_propagates(tmp_path, pids, monkeypatch):
-    '''Ctrl-C while a probe runs: its own process group gets no SIGINT from
-    the terminal, so execute stops the group itself before re-raising.'''
-    real_wait = subprocess.Popen.wait
-
-    def interrupted(proc, timeout=None):
-        if timeout == 30:  # the probe's own wait, once its child is running
-            assert written(pids), 'the run never started its child'
-            raise KeyboardInterrupt
-        return real_wait(proc, timeout)
-    monkeypatch.setattr(subprocess.Popen, 'wait', interrupted)
-    inv = probes.Invocation('slow', [str(executable(tmp_path / 'slow', SLOW)), str(pids)], {}, 30)
-    with pytest.raises(KeyboardInterrupt):
-        probes.execute(inv, tmp_path, tmp_path / 'slow.out', tmp_path / 'slow.err')
-    assert gone(child_of(pids))
-
-
-def test_a_stop_while_the_run_starts_still_stops_it(tmp_path, pids, monkeypatch):
-    '''A SIGTERM that lands while Popen starts the run is held until proc
-    is bound, so the run is stopped, not orphaned.'''
-    real_popen, leaders = subprocess.Popen, []
-
-    def starting(*args, **kwargs):
-        proc = real_popen(*args, **kwargs)
-        leaders.append(proc.pid)
-        os.kill(os.getpid(), signal.SIGTERM)
-        return proc
-    monkeypatch.setattr(subprocess, 'Popen', starting)
-    inv = probes.Invocation('slow', [str(executable(tmp_path / 'slow', SLOW)), str(pids)], {}, 30)
-    with pytest.raises(SystemExit):
-        with probes.term_as_exit():
-            probes.execute(inv, tmp_path, tmp_path / 'slow.out', tmp_path / 'slow.err')
-    assert gone(leaders[0])
-
-
-def test_a_second_signal_during_the_grace_still_ends_with_sigkill(tmp_path, pids, monkeypatch):
-    '''Ctrl-C while stop_group waits out SIGTERM's grace is held, so the
-    SIGKILL still goes out, and the interrupt is raised after it.'''
-    monkeypatch.setattr(probes, 'KILL_GRACE', 1)
-    proc = subprocess.Popen([str(executable(tmp_path / 'stubborn', STUBBORN)), str(pids)], start_new_session=True)
-    assert written(pids)
-    threading.Timer(0.3, os.kill, (os.getpid(), signal.SIGINT)).start()
-    with pytest.raises(KeyboardInterrupt):
-        probes.stop_group(proc)
-    assert gone(child_of(pids))
-
-
-# Run in a child Python, so a signal left at its default ends the child, not pytest.
-STOP_CHECK = """
-import os, signal, sys, time
-import probes
-signum = int(sys.argv[1])
-before = signal.getsignal(signum)
-try:
-    with probes.term_as_exit():
-        os.kill(os.getpid(), signum)
-        time.sleep(5)
-except SystemExit:
-    assert signal.getsignal(signum) is before
-    raise
-"""
-
-
-@pytest.mark.parametrize('signum', [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT])
-def test_a_stop_signal_while_probes_run_exits_through_the_cleanup_path(signum):
-    '''SIGTERM (a stopped tool), SIGHUP (a closed terminal) and SIGQUIT end
-    Python with no except or finally by default; while probes run each one
-    raises SystemExit instead, and the old handler comes back after. A
-    negative exit code means the signal ended the child unhandled.'''
-    proc = subprocess.run([sys.executable, '-c', STOP_CHECK, str(int(signum))], cwd=Path(__file__).parent,
-                          capture_output=True, text=True, timeout=30)
-    assert (proc.returncode, proc.stderr) == (128 + signum, '')
-
-
-def test_a_hangup_ignored_by_nohup_stays_ignored():
-    before = signal.signal(signal.SIGHUP, signal.SIG_IGN)
-    try:
-        with probes.term_as_exit():
-            assert signal.getsignal(signal.SIGHUP) is signal.SIG_IGN
-    finally:
-        signal.signal(signal.SIGHUP, before)
-
-
-def test_held_signals_act_once_the_block_is_done():
-    reached = []
-    with pytest.raises(SystemExit):
-        with probes.term_as_exit():
-            with probes.held_signals():
-                os.kill(os.getpid(), signal.SIGTERM)
-                time.sleep(0.2)
-                reached.append('end of block')
-    assert reached == ['end of block']
-
-
-# Run in a child Python, started as nohup starts it: SIGHUP ignored.
-HELD_CHECK = """
-import os, signal, time
-import probes
-signal.signal(signal.SIGHUP, signal.SIG_IGN)
-acted = []
-signal.signal(signal.SIGTERM, lambda signum, frame: acted.append(signum))
-with probes.held_signals():
-    os.kill(os.getpid(), signal.SIGHUP)
-    os.kill(os.getpid(), signal.SIGTERM)
-    time.sleep(0.2)
-print(acted, signal.getsignal(signal.SIGHUP) is signal.SIG_IGN)
-"""
-
-
-def test_an_ignored_signal_is_not_held_so_a_stop_after_it_is_acted_on_once():
-    '''A SIGHUP that nohup ignores, landing in a held window, is not
-    recorded: the SIGTERM after it is acted on once when the window ends,
-    and SIGHUP stays ignored.'''
-    proc = subprocess.run([sys.executable, '-c', HELD_CHECK], cwd=Path(__file__).parent,
-                          capture_output=True, text=True, timeout=30)
-    assert (proc.returncode, proc.stdout, proc.stderr) == (0, f'[{int(signal.SIGTERM)}] True\n', '')
 
 
 def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
