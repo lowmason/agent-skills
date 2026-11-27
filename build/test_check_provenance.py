@@ -1,6 +1,10 @@
 import re
 from pathlib import Path
 
+import pytest
+
+import check_provenance
+
 from check_provenance import (
     AGENT_LICENSES,
     BUNDLED_LICENSES,
@@ -254,3 +258,25 @@ def test_agent_licenses_table_matches_notice():
     notice = (REPO / 'NOTICE').read_text()
     distilled = re.findall(r'agents/([a-z-]+)\.md is a read-only agent definition distilled', notice)
     assert sorted(distilled) == sorted(AGENT_LICENSES['LICENSE-superpowers'])
+
+
+@pytest.mark.parametrize('surface', ADAPTED_SURFACES)
+def test_agent_licenses_report_a_missing_pointer_on_each_surface(tmp_path, surface):
+    repo = _agent_tree(tmp_path, pointed=tuple(s for s in ADAPTED_SURFACES if s != surface))
+    assert agent_license_violations(repo, AGENT_TABLE) == [
+        f'{surface}: no license pointer naming LICENSE-x, which AGENT_LICENSES maps to adapted']
+
+
+def test_agent_licenses_read_a_hyphenated_name_in_a_pointer(tmp_path):
+    repo = _agent_tree(tmp_path, pointed=ADAPTED_SURFACES)
+    path = repo / 'agents' / 'adapted.md'
+    path.write_text(path.read_text().replace(
+        POINTER, '# license: MIT. Full text: LICENSE-x and LICENSE-y-sources.'))
+    assert agent_license_violations(repo, AGENT_TABLE) == [
+        'agents/adapted.md: license pointer names LICENSE-y-sources, '
+        'which AGENT_LICENSES does not map to adapted']
+
+
+def test_main_runs_the_agent_license_check(monkeypatch):
+    monkeypatch.setattr(check_provenance, 'AGENT_LICENSES', {'LICENSE-superpowers': ('debugger',)})
+    assert main() == 1
