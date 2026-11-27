@@ -37,9 +37,9 @@ The drift spec that the probe code argues from is `specs/completed/claude-code-d
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-27): approved the plan with the planner's defaults P1–P5 below, and chose subagent-driven execution in this session. Applied in: Tasks 1–8.
 
-Planner's defaults, for the owner's review at plan review:
+Planner's defaults, approved by D1:
 
 - **P1** The worktree runner goes in its own module, `probe_worktrees.py`, not in `probes.py`. Its git setup alone is about 80 lines, and `probes.py` already holds five jobs (R52 (l)). The older probes stay in `probes.py`.
 - **P2** R52 (x): the `probes` mode learns the count from the `probes:` line of `cli.py check --worktree`, which that mode runs anyway. No `--dry-run` flag is added.
