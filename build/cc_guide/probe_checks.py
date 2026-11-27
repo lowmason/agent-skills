@@ -43,12 +43,13 @@ GUARD_MARKER = 'readonly-agent-guard:'
 # whether the guard must deny it.
 GUARD_CHECKS = (('git status --porcelain', False), ('git fetch --dry-run origin', True),
                 ('git config --global --list', True))
+ERROR_SUBTYPE_PREFIX = 'error'  # a result event's subtype for a run that ended in error, such as error_max_turns
 UUID_RE = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 TOOL_ID_RE = re.compile(r'toolu_[A-Za-z0-9]+')
 MCP_PREFIX = 'mcp__'
 MCP_MARK = '<mcp-tool>'
-# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
-MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
+# A tool name that starts with the MCP prefix, up to white space, a quote, a closing bracket or one of `,;:`.
+MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>,;:]*''')
 PRIVATE_MARK = '<private>'
 # compaction-cut: two probe skills whose bodies differ only in their filler. Text and digits split into tokens at
 # different rates, so the two cuts tell a limit in characters from one in tokens. The names have the same
@@ -79,14 +80,18 @@ def parse_stream(text: str) -> list[dict] | None:
             event = json.loads(line)
         except json.JSONDecodeError:
             return None
-        if not isinstance(event, dict):
-            return None
         events.append(event)
     return events
 
 
 def is_init(event: dict) -> bool:
     return event.get('type') == 'system' and event.get('subtype') == 'init'
+
+
+def is_error_result(event: dict) -> bool:
+    '''Whether a result event reports an error: is_error is set, or its
+    subtype names one, as `error_max_turns` does with is_error false.'''
+    return bool(event.get('is_error')) or str(event.get('subtype')).startswith(ERROR_SUBTYPE_PREFIX)
 
 
 def broken(events: list[dict] | None) -> str | None:
@@ -100,7 +105,7 @@ def broken(events: list[dict] | None) -> str | None:
     results = [e for e in events if e.get('type') == 'result']
     if not results:
         return 'no result event'
-    failed = next((r for r in results if r.get('is_error')), None)
+    failed = next((r for r in results if is_error_result(r)), None)
     if failed is not None:
         return f"a result event is an error ({failed.get('subtype')})"
     return None
@@ -573,17 +578,39 @@ EXPLORE_AGENT, EXPLORE_MARK = 'Explore', 'EXPLORE-OVERRIDE'
 CANARY_AGENT, CANARY_MARK = 'canary-control', 'CANARY-CONTROL'
 EXPLORE_MARKS = {EXPLORE_AGENT: EXPLORE_MARK, CANARY_AGENT: CANARY_MARK}
 EXPLORE_REPS = 3
+# A CLI may have its subagents answer through a tool call, as SubagentHandback appears in the agent-model-pins
+# recording (2.1.330). Such a call reads nothing, and its input holds the subagent's answer.
+HANDBACK_TOOLS = frozenset({'SubagentHandback'})
+HANDBACK_FIELD = 'message'
 CANARY_NAMES = {'claude_md': 'CLAUDE.md', 'git_status': 'git-status'}  # canaries.json key -> its name in a finding
+
+
+def spoken_text(block: dict) -> str:
+    '''What a subagent's content block says: a text block's text, or the
+    HANDBACK_FIELD of a HANDBACK_TOOLS call when that is a string.'''
+    if block.get('type') == 'text':
+        return str(block.get('text') or '')
+    if block.get('type') == 'tool_use' and block.get('name') in HANDBACK_TOOLS:
+        message = (block.get('input') or {}).get(HANDBACK_FIELD)
+        return message if isinstance(message, str) else ''
+    return ''
+
+
+def reads_a_file(block: dict) -> bool:
+    '''Whether a subagent's content block is a tool call that may read a file: any tool_use but a hand-back.'''
+    return block.get('type') == 'tool_use' and block.get('name') not in HANDBACK_TOOLS
 
 
 def explore_sightings(events: list[dict] | None, canaries: dict[str, str]) -> dict:
     '''One explore-override rep, read from its raw stream: why the run
     broke, or None; whether a canary leaked into an input of the parent's
     Agent calls; and, for each agent, how many tool_use blocks its forwarded
-    messages hold and whether their text holds its mark and each canary.
-    The parent loads CLAUDE.md and the git status too, so only the messages
-    forwarded under a dispatch of that agent's type count. An agent the
-    parent never dispatched has no text, so it sees nothing.'''
+    messages hold and whether what it said holds its mark and each canary.
+    A hand-back call (HANDBACK_TOOLS) is not counted, and its message is
+    what the agent said, as its text blocks are. The parent loads CLAUDE.md
+    and the git status too, so only the messages forwarded under a dispatch
+    of that agent's type count. An agent the parent never dispatched has no
+    text, so it sees nothing.'''
     stream = events or []
     leaked = any(value in json.dumps(block.get('input') or {}) for block in dispatch_blocks(stream)
                  for value in canaries.values())
@@ -593,18 +620,19 @@ def explore_sightings(events: list[dict] | None, canaries: dict[str, str]) -> di
         ids = {tid for tid, kind in sent.items() if kind == agent}
         blocks = [block for e in stream if e.get('type') == 'assistant' and e.get('parent_tool_use_id') in ids
                   for block in (e.get('message') or {}).get('content') or [] if isinstance(block, dict)]
-        said = '\n'.join(str(block.get('text') or '') for block in blocks if block.get('type') == 'text')
-        tool_calls[agent] = sum(block.get('type') == 'tool_use' for block in blocks)
+        said = '\n'.join(filter(None, map(spoken_text, blocks)))
+        tool_calls[agent] = sum(map(reads_a_file, blocks))
         seen[agent] = {'mark': mark in said, **{key: canaries[key] in said for key in CANARY_NAMES}}
     return {'broken': broken(events), 'leaked': leaked, 'tool_calls': tool_calls, 'seen': seen}
 
 
 def explore_void(sighting: dict) -> str | None:
     '''Why a rep proves nothing, or None: the run broke, a canary leaked
-    into the parent's Agent call, an agent called a tool (it may have read
-    the canary instead of being given it), an agent gave no mark (another
-    definition served, or it ignored its instructions), or the control
-    missed a canary, so a canary the override missed proves nothing.'''
+    into the parent's Agent call, an agent called a tool other than a
+    hand-back (it may have read the canary instead of being given it), an
+    agent gave no mark (another definition served, or it ignored its
+    instructions), or the control missed a canary, so a canary the override
+    missed proves nothing.'''
     if sighting.get('broken'):
         return f"the run broke: {sighting['broken']}"
     if sighting.get('leaked'):
@@ -761,17 +789,23 @@ def redact(text: str, private: list[str]) -> str:
     return text
 
 
+def json_escaped(value: str) -> str:
+    '''`value` as it reads inside a JSON string: a quote or a backslash gets a backslash before it.'''
+    return json.dumps(value, ensure_ascii=False)[1:-1]
+
+
 def scrub_events(events: list[dict], private: list[str]) -> str:
     '''A recorded stream as a committable fixture (R12.6; owner, plan 58
     decision D3): cut to the fields the assertions read, so text blocks and
     tool output lose their text, and stripped of what must stay out of a
     public repo: MCP tool names leave the init tool list and become
     <mcp-tool> in a tool call and in a hook's name, each string in
-    `private` (home and scratch paths, the login name), longest first,
-    becomes <private>, and uuids and tool-use ids become stable
-    placeholders.'''
+    `private` (home and scratch paths, the login name) and its form inside
+    a JSON string, longest first, becomes <private>, and uuids and tool-use
+    ids become stable placeholders.'''
     kept = [t for t in map(_trim_event, events) if t is not None]
-    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n', private)
+    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n',
+                  [*private, *map(json_escaped, private)])
     ids: dict[str, str] = {}
     text = TOOL_ID_RE.sub(lambda m: ids.setdefault(m.group(0), f'toolu_fixture{len(ids) + 1}'), text)
     uuids: dict[str, str] = {}

@@ -428,21 +428,21 @@ def parse_probes(text: str | None) -> list[ProbeRow]:
     if text is None:
         return []
     rows: list[ProbeRow] = []
-    header: list[str] | None = None
+    columns: list[str] | None = None  # None outside a table; [] inside one that is not the log table
     lines = [line.strip() for line in text.split('\n')]
     for n, s in enumerate(lines):
         if not s.startswith('|'):
-            header = None
+            columns = None
             continue
-        if header is None:
+        if columns is None:
             if not is_separator(lines[n + 1] if n + 1 < len(lines) else ''):
                 raise SetupError(f'{PROBES}: row {s!r} stands outside a table, so it would be skipped: '
                                  'a blank or other line above it ends the log table')
-            header = [c.lower() for c in table_cells(s)]
+            columns = [c.lower() for c in table_cells(s)] if is_probe_header(s) else []
             continue
-        if is_separator(s) or not PROBE_COLUMNS <= set(header):
+        if is_separator(s) or not columns:
             continue
-        row = dict(zip(header, table_cells(s)))
+        row = dict(zip(columns, table_cells(s)))
         try:
             version_key(row['version'])
             outcome = row['outcome'].upper()

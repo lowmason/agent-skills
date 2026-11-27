@@ -63,6 +63,13 @@ def test_a_run_is_broken_without_init_or_result_or_with_an_error_result(events, 
     assert pc.broken(events) == why
 
 
+def test_an_error_subtype_result_is_broken():
+    '''A run that stops on its turn limit writes a result whose subtype names the error and whose is_error is false.'''
+    limit = {'type': 'result', 'subtype': 'error_max_turns', 'is_error': False}
+    assert pc.broken([init(), limit]) == 'a result event is an error (error_max_turns)'
+    assert pc.broken([init(), result(), init(), limit]) == 'a result event is an error (error_max_turns)'
+
+
 def tools_run(*tools):
     return [init(tools), assistant({'type': 'text', 'text': 'OK'}), result()]
 
@@ -341,6 +348,13 @@ def test_an_empty_log_counts_every_hook_and_reads_no_counts_as_none():
     assert pc.assess_agent_payload(payload_run(), {}) == (ERROR, 'the PreToolUse hooks logged no subagent dispatch')
 
 
+def test_a_task_dispatch_counts_as_an_agent_dispatch():
+    '''DISPATCH_TOOLS names the subagent tool's older name too, so a CLI that still says Task reads the same.'''
+    events = [init(), assistant(tool_use('toolu_t', 'Task', subagent_type='Explore'),
+                                tool_use('toolu_a', 'Agent', subagent_type='test-runner'))]
+    assert pc.dispatches(events) == {'toolu_t': 'Explore', 'toolu_a': 'test-runner'}
+
+
 def test_requested_models_reads_the_main_session_calls_in_stream_order():
     '''Both dispatch tool names count, a call made inside a subagent does
     not, and a call that passes no model reads None.'''
@@ -483,6 +497,14 @@ def retried_fetch():
 ])
 def test_guard_liveness(streams, verdict):
     assert pc.assess_guard_liveness(streams) == verdict
+
+
+def test_a_guard_check_whose_result_is_missing_is_an_error():
+    '''The agent ran the command, but the stream holds no tool_result for the call: the hook had nothing to judge.'''
+    command = pc.GUARD_CHECKS[1][0]
+    unanswered = [init(('Read', 'Bash')), assistant(tool_use('toolu_g', 'Bash', command=command)), result()]
+    assert pc.assess_guard_liveness([guard_streams()[0], unanswered, guard_streams()[2]]) == (
+        ERROR, f'check 2: the agent never ran {command}, or its result is missing')
 
 
 def test_cut_body_lines_carry_their_offsets():
@@ -764,6 +786,37 @@ def test_explore_sightings_reads_marks_canaries_and_leaks_from_the_raw_stream(ev
     assert pc.explore_sightings(events, CANARIES) == expected
 
 
+def test_a_hand_back_is_not_a_read_and_its_message_is_the_answer():
+    '''A CLI whose subagents answer through a hand-back tool call, as SubagentHandback in the agent-model-pins
+    recording, leaves the answer in the call's input, and the call reads no file.'''
+    handback = tool_use('toolu_h', 'SubagentHandback', message=f"{MARKS[EXPLORE]} {CANARIES['claude_md']}")
+    rep = pc.explore_sightings(explore_run(explore=[handback]), CANARIES)
+    assert rep['tool_calls'] == {EXPLORE: 0, CONTROL: 0}
+    assert rep['seen'][EXPLORE] == {'mark': True, 'claude_md': True, 'git_status': False}
+    assert pc.explore_void(rep) is None
+
+
+def test_a_hand_back_beside_a_read_still_counts_the_read():
+    read = tool_use('toolu_r', 'Read', file_path='CLAUDE.md')
+    handback = tool_use('toolu_h', 'SubagentHandback', message=answer(EXPLORE, git_status=False))
+    rep = pc.explore_sightings(explore_run(explore=[read, handback]), CANARIES)
+    assert rep['tool_calls'] == {EXPLORE: 1, CONTROL: 0}
+    assert pc.explore_void(rep) == (
+        'Explore made 1 tool call(s), so its answer may not come from its context alone')
+
+
+@pytest.mark.parametrize('given', [{}, {'message': ['not', 'text']}, {'answer': 'EXPLORE-OVERRIDE'}])
+def test_a_hand_back_with_no_text_in_its_message_field_says_nothing(given):
+    rep = pc.explore_sightings(explore_run(explore=[tool_use('toolu_h', 'SubagentHandback', **given)]), CANARIES)
+    assert rep['tool_calls'][EXPLORE] == 0
+    assert rep['seen'][EXPLORE] == {'mark': False, 'claude_md': False, 'git_status': False}
+
+
+def test_the_hand_back_tool_and_field_are_the_ones_the_recorded_runs_show():
+    assert pc.HANDBACK_TOOLS == frozenset({'SubagentHandback'})
+    assert pc.HANDBACK_FIELD == 'message'
+
+
 TEARDOWN_PASS = 'the async SessionStart hook got TERM first at teardown and was gone within 5 s'
 TEARDOWN_HUP = 'the async SessionStart hook got HUP first at teardown and was gone within 5 s'
 NO_SIGNAL = 'the async SessionStart hook got none of TERM, HUP, INT at teardown'
@@ -886,6 +939,23 @@ def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
     # Shortest first would leave '<private>/work' for the first path.
     assert pc.redact('/home/me/work and /home/me', ['/home/me', '/home/me/work', '']) == '<private> and <private>'
     assert pc.redact('abc', ['']) == 'abc'
+
+
+def test_the_mcp_token_stops_before_trailing_punctuation():
+    assert pc.MCP_TOKEN_RE.sub(pc.MCP_MARK, 'mcp__s__t, mcp__u__v; mcp__w__x:') == '<mcp-tool>, <mcp-tool>; <mcp-tool>:'
+
+
+def test_scrub_events_redacts_a_private_value_with_a_quote_or_backslash():
+    '''json.dumps writes a quote or a backslash with a backslash in front, so the raw value no longer matches
+    the text it was found in: scrub_events redacts the escaped form too.'''
+    private = 'C:\\Users\\o"q'
+    escaped = json.dumps(private, ensure_ascii=False)[1:-1]
+    assert escaped != private
+    events = [init(), assistant(tool_use('toolu_1', 'Bash', command=f'ls {private}/work')), result()]
+    text = pc.scrub_events(events, [private])
+    assert pc.PRIVATE_MARK in text
+    assert private not in text and escaped not in text
+    assert pc.parse_stream(text)[1]['message']['content'][0]['input']['command'] == 'ls <private>/work'
 
 
 def test_scrub_masks_an_mcp_tool_name_in_a_hook_name():

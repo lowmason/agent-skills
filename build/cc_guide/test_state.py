@@ -238,6 +238,14 @@ def test_an_unreadable_probe_row_is_a_setup_error():
     assert str(err.value) == f"{state.PROBES}: unreadable row '| soon | 2.1.290 | x | PASS |'"
 
 
+def test_a_row_with_an_empty_probe_cell_is_a_setup_error():
+    '''A row with no probe name would count toward no probe's due state, so it is a SetupError, never a row.'''
+    text = '| Date | Version | Probe | Outcome |\n|---|---|---|---|\n| 2026-10-10 | 2.1.290 |  | PASS |\n'
+    with pytest.raises(state.SetupError) as err:
+        state.parse_probes(text)
+    assert str(err.value) == f"{state.PROBES}: unreadable row '| 2026-10-10 | 2.1.290 |  | PASS |'"
+
+
 def test_probe_rows_skip_a_legend_table_and_reject_an_unknown_outcome():
     '''The probe registry's gaps, part (a): a second table, such as a legend, is
     skipped rather than read as rows, and an outcome outside R10.5's words,
