@@ -1186,7 +1186,7 @@ def wt_isolation(places, flip=(), exit_error=False, pwd=None, locked_before=True
         return wt_bash((commands or {}).get(step, command), WT_REFUSAL.format(where=where) if refused else output,
                        refused)
 
-    exit_body = WT_REFUSAL.format(where=where) if exit_error else WT_EXITED.format(where=where, main=main)
+    exit_body = WT_NO_OP if exit_error else WT_EXITED.format(where=where, main=main)
     leave = [] if 'exit' in drop else [WT_LOAD_EXIT, wt_exit(exit_body, True if exit_error else None)]
     return wt_stream(*[call(s) for s in WT_BEFORE if s not in drop], *leave,
                      *[call(s) for s in WT_AFTER if s not in drop])
@@ -1297,7 +1297,7 @@ def test_the_recorded_shape_gives_these_sightings(tmp_path):
     ran, refused = {'ran': True, 'refused': False, 'marked': False}, {'ran': True, 'refused': True, 'marked': True}
     base = {'broken': None, 'entered': True, 'has_pushed': True}
     assert pc.worktree_sightings(wt_streams(places), places) == {
-        'isolation': {'broken': None, 'exited': True, 'pwd_after': 'main', 'locked_before': True,
+        'isolation': {'broken': None, 'exited': True, 'exit_marked': False, 'pwd_after': 'main', 'locked_before': True,
                       'locked_after': False,
                       'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
                                 'plain_subshell': ran, 'main_git_after': ran}},
@@ -1358,8 +1358,9 @@ def test_a_refused_git_subshell_without_the_mark_is_an_error(tmp_path):
 
 
 @pytest.mark.parametrize('change, finding', [
-    (lambda p: {'isolation': wt_isolation(p, drop={'exit'})}, 'isolation: ExitWorktree never ran'),
-    (lambda p: {'isolation': wt_without_result(wt_isolation(p), 'toolu_wt7')}, 'isolation: ExitWorktree never ran'),
+    (lambda p: {'isolation': wt_isolation(p, drop={'exit'})}, 'isolation: ExitWorktree keep never ran'),
+    (lambda p: {'isolation': wt_without_result(wt_isolation(p), 'toolu_wt7')},
+     'isolation: ExitWorktree keep never ran'),
     (lambda p: {'isolation': wt_isolation(p, drop={'list_before'})},
      'isolation: git worktree list --porcelain before ExitWorktree never ran'),
     (lambda p: {'isolation': wt_isolation(p, drop={'list_after'})},
@@ -1467,3 +1468,57 @@ def test_a_pwd_with_a_trailing_newline_names_its_place(tmp_path):
     places = wt_places(tmp_path)
     events = wt_isolation(places, pwd=places['main'] + '\n')
     assert wt_verdict(places, isolation=events) == (PASS, WT_PASS)
+
+
+WT_NOT_LOADED = ('<tool_use_error>InputValidationError: ExitWorktree failed due to the following issue:\n'
+                 'The tool ExitWorktree is not loaded. Load it with ToolSearch first.</tool_use_error>')
+
+
+def test_a_stray_exit_worktree_before_a_successful_one_splits_at_the_success(tmp_path):
+    '''2.1.330 answers a deferred tool called before ToolSearch loads it with an InputValidationError. The
+    isolation reading splits at the first keep call that succeeded, so the steps before it stay before it.'''
+    places = wt_places(tmp_path)
+    stray = wt_stream(wt_exit(WT_NOT_LOADED, True), *wt_isolation_calls(places))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=stray), places)
+    assert (sightings['isolation']['exited'], sightings['isolation']['exit_marked']) == (True, False)
+    assert pc.assess_worktree_isolation(sightings) == (PASS, WT_PASS)
+
+
+def test_an_exit_worktree_remove_call_is_not_the_keep_step(tmp_path):
+    places = wt_places(tmp_path)
+    calls = [(name, {'action': 'remove'} if name == 'ExitWorktree' else given, body, is_error)
+             for name, given, body, is_error in wt_isolation_calls(places)]
+    outcome, said = wt_verdict(places, isolation=wt_stream(*calls))
+    assert outcome == ERROR
+    assert 'isolation: ExitWorktree keep never ran' in said.split('; ')
+
+
+def test_a_noop_exit_worktree_remove_call_is_not_the_keep_step(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(WT_LOAD_EXIT, ('ExitWorktree', {'action': 'remove'}, WT_NO_OP, True),
+                       wt_bash('pwd', places['plain-worktree']))
+    outcome, said = wt_verdict(places, noop=events)
+    assert outcome == ERROR
+    assert 'noop: ExitWorktree never ran' in said.split('; ')
+
+
+def test_an_isolation_exit_worktree_refused_without_the_no_op_mark_is_an_error(tmp_path):
+    '''Only a refusal carrying the No-op text is the CLI following its own description; a refusal for another
+    reason proves nothing.'''
+    places = wt_places(tmp_path)
+    calls = [(name, given, WT_NOT_LOADED if name == 'ExitWorktree' else body, True if name == 'ExitWorktree'
+              else is_error) for name, given, body, is_error in wt_isolation_calls(places)]
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=wt_stream(*calls)), places)
+    assert (sightings['isolation']['exited'], sightings['isolation']['exit_marked']) == (False, False)
+    assert pc.assess_worktree_isolation(sightings) == (
+        ERROR, 'isolation: ExitWorktree was refused without the No-op mark')
+
+
+def test_with_no_successful_keep_call_the_first_keep_call_is_read(tmp_path):
+    places = wt_places(tmp_path)
+    calls = [c for c in wt_isolation_calls(places) if c[0] != 'ExitWorktree']
+    at = next(n for n, c in enumerate(calls) if c[0] == 'ToolSearch') + 1
+    refused = [*calls[:at], wt_exit(WT_NO_OP, True), wt_exit(WT_NOT_LOADED, True), *calls[at:]]
+    outcome, said = wt_verdict(places, isolation=wt_stream(*refused))
+    assert outcome == DIVERGES
+    assert 'isolation: ExitWorktree was refused' in said.split('; ')

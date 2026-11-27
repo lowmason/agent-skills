@@ -764,6 +764,7 @@ WT_STEPS = {'control': WT_CONTROL, 'main_git_before': WT_MAIN_GIT, 'git_subshell
 WT_AFTER_STEPS = frozenset({'main_git_after'})  # run after ExitWorktree; the rest run before it
 WT_REFUSED_STEPS = frozenset({'main_git_before', 'git_subshell'})  # the steps the guide says the harness refuses
 EXIT_TOOL, ENTER_TOOL = 'ExitWorktree', 'EnterWorktree'
+WT_KEEP = 'keep'  # the ExitWorktree action both runs call; a call with another action is not the step
 WT_NOT_RUN = {'ran': False, 'refused': None, 'marked': None}
 WT_FINDING = ('a $(...) naming git was refused and HERE=$(pwd) ran; ExitWorktree keep left a --worktree launch and '
               'its lock; it was a no-op in a plain-git worktree; a failed fetch left the unpushed commit out, and no '
@@ -808,7 +809,21 @@ def place_of(text: str, places: dict[str, str]) -> str:
 def split_at(events: list[dict], tool: str) -> tuple[tuple[str, str] | None, list, list]:
     '''The first call of `tool` as (id, result text or None), or None, and the Bash calls before and after it.
     With no such call, every Bash call is before it.'''
-    bash, marks = positioned_calls(events, 'Bash'), positioned_calls(events, tool)
+    return split_around(events, positioned_calls(events, tool))
+
+
+def split_at_keep(events: list[dict]) -> tuple[tuple[str, str] | None, list, list]:
+    '''split_at for ExitWorktree calls whose action is WT_KEEP: the first that succeeded, else the first, so a
+    stray call the harness refused before ToolSearch loaded the tool is not the step.'''
+    keeps = [c for c in positioned_calls(events, EXIT_TOOL) if c[2].get('action') == WT_KEEP]
+    succeeded = [c for c in keeps if call_failed(events, (c[1], tool_result_text(events, c[1]))) is False]
+    return split_around(events, succeeded or keeps)
+
+
+def split_around(events: list[dict], marks: list) -> tuple[tuple[str, str] | None, list, list]:
+    '''The first of `marks` (positioned_calls) as (id, result text or None), or None, and the Bash calls before
+    and after it.'''
+    bash = positioned_calls(events, 'Bash')
     if not marks:
         return None, bash, []
     at, tid, _ = marks[0]
@@ -833,7 +848,7 @@ def locked(events: list[dict], calls: list) -> bool | None:
 
 
 def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
-    exit_call, before, after = split_at(events, EXIT_TOOL)
+    exit_call, before, after = split_at_keep(events)
     steps = {}
     for step, command in WT_STEPS.items():
         command = main_git_command(places[WT_MAIN]) if command == WT_MAIN_GIT else command
@@ -841,12 +856,14 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
         steps[step] = dict(WT_NOT_RUN) if run is None else {
             'ran': True, 'refused': call_is_error(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}
     refused = call_failed(events, exit_call)
-    return {'exited': None if refused is None else not refused, 'pwd_after': pwd_after(events, after, places),
+    return {'exited': None if refused is None else not refused,
+            'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
+            'pwd_after': pwd_after(events, after, places),
             'locked_before': locked(events, before), 'locked_after': locked(events, after), 'steps': steps}
 
 
 def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
-    exit_call, _, after = split_at(events, EXIT_TOOL)
+    exit_call, _, after = split_at_keep(events)
     refused = call_failed(events, exit_call)
     return {'exit_refused': refused, 'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
             'pwd_after': pwd_after(events, after, places)}
@@ -865,8 +882,10 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
     '''The four worktree-isolation runs, read from their raw streams as booleans, place names and None, never a
     path or tool output. `places` maps main, worktree and plain-worktree to absolute paths. In isolation, a step
     is the first Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result:
-    whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). exited is
-    whether ExitWorktree's result is not an error; locked_before and locked_after, whether the first WT_LIST
+    whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both
+    ExitWorktree runs, ExitWorktree is split_at_keep's call: the first keep call that succeeded, else the first
+    keep call. exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK;
+    locked_before and locked_after, whether the first WT_LIST
     result before or after ExitWorktree has a WT_LOCKED line; pwd_after, the place the first WT_PWD after
     ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether
     its result holds WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error,
@@ -884,7 +903,7 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
 
 def worktree_errors(sightings: dict) -> list[str]:
     '''Why the runs prove nothing: a run broke, a step never ran, a step was refused without the isolation
-    mark or noop's ExitWorktree without WT_NOOP_MARK (refused for another reason), or a base run never
+    mark or an ExitWorktree without WT_NOOP_MARK (refused for another reason), or a base run never
     entered a worktree or logged no WT_PUSHED.'''
     errors = [f"{part}: the run broke: {sightings[part]['broken']}" for part in WT_PARTS if sightings[part]['broken']]
     if errors:
@@ -896,12 +915,14 @@ def worktree_errors(sightings: dict) -> list[str]:
         elif seen['refused'] and not seen['marked']:
             errors.append(f'isolation: {step} was refused without the isolation mark')
     errors += [f'{part}: {what} never ran' for part, what, value in (
-        ('isolation', EXIT_TOOL, isolation['exited']),
+        ('isolation', f'{EXIT_TOOL} {WT_KEEP}', isolation['exited']),
         ('isolation', f'{WT_LIST} before {EXIT_TOOL}', isolation['locked_before']),
         ('isolation', f'{WT_LIST} after {EXIT_TOOL}', isolation['locked_after']),
         ('isolation', f'{WT_PWD} after {EXIT_TOOL}', isolation['pwd_after']),
         ('noop', EXIT_TOOL, noop['exit_refused']),
         ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
+    if isolation['exited'] is False and not isolation['exit_marked']:
+        errors.append(f'isolation: {EXIT_TOOL} was refused without the {WT_NOOP_MARK} mark')
     if noop['exit_refused'] and not noop['exit_marked']:
         errors.append(f'noop: {EXIT_TOOL} was refused without the {WT_NOOP_MARK} mark')
     for part in WT_BASE_PARTS:
