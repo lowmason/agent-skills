@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 import os
+import pwd
 import random
 import re
 import secrets
@@ -123,7 +124,8 @@ def spent() -> float:
 
 # ---- scrub and void ----------------------------------------------------------
 
-ACCOUNT = os.environ.get('USER', '')
+# The filesystem account, not $USER, which may be unset or name another user.
+ACCOUNT = pwd.getpwuid(os.getuid()).pw_name
 
 
 def scrub(obj, user: str = ACCOUNT):
@@ -184,18 +186,22 @@ def reply_text(records: list, final: bool = False) -> str:
     return joined or str(result.get('result') or '')
 
 
-PATH_TOKEN = re.compile(r'''(?<![\w.~$:/-])/[\w.@+-]+(?:/[\w.@+-]*)*''')
+# <user> is the scrub's mark, so a scrubbed path stays one token.
+PATH_TOKEN = re.compile(r'''(?<![\w.~$:/-])/[\w.@+<>-]+(?:/[\w.@+<>-]*)*''')
 SYSTEM_PREFIXES = ('/usr/', '/bin/', '/sbin/', '/opt/homebrew/', '/System/', '/Library/', '/dev/')
 
 
 def outside_paths(records: list, home: str) -> list:
     '''Absolute paths in tool inputs outside HOME and the system folders (the plan's V3, D10).'''
-    homes = (home, home.replace('/private/tmp/', '/tmp/', 1))
+    # A kept stream is scrubbed, so HOME is matched in its scrubbed form too.
+    forms = (home, home.replace('/private/tmp/', '/tmp/', 1))
+    homes = {f for h in forms for f in (h, scrub(h))}
     out = []
     for _name, data in tool_uses(records):
         text = ' '.join(str(data.get(k, '')) for k in ('file_path', 'path', 'command', 'pattern'))
         for p in PATH_TOKEN.findall(text):
-            if any(p == h or p.startswith(h + '/') for h in homes) or p.startswith(SYSTEM_PREFIXES):
+            n = os.path.normpath(p)
+            if any(n == h or n.startswith(h + '/') for h in homes) or (n + '/').startswith(SYSTEM_PREFIXES):
                 continue
             out.append(p)
     return out

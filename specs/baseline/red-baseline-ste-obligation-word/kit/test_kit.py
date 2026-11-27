@@ -356,3 +356,34 @@ def test_flag_ids_stay_unique_after_a_voided_rep_leaves_a_gap(tmp_path):
     assert run_kit(env, 'flags').returncode == 0
     ids = [r['flag'] for r in kit.read_tsv(tmp_path / 'runs' / 'flags.tsv', kit.FLAG_FIELDS)]
     assert len(ids) == 3 and len(set(ids)) == 3
+
+
+# ---- final review, Codex on 0ccdcf1 ----
+
+def test_v3_voids_a_path_that_climbs_out_of_its_home():
+    home = '/private/tmp/ste114/rabc123'
+    climb = bash_use(f'cat {home}/../../shared.md')
+    assert kit.void_reason(records({}, climb), 'Bash', home).startswith('V3')
+
+
+def test_revoid_keeps_a_rep_whose_home_path_holds_the_account_name(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.')
+    env['STE114_ROOT'] = str(tmp_path / os.environ['USER'] / 'root')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    assert run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '1', '--jobs', '1').returncode == 0
+    (row,) = kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)
+    kept = tmp_path / 'runs' / 'reps' / row['rep'] / 'stream.jsonl'
+    inside = bash_use(f'cat {env["STE114_ROOT"]}/{row["rep"]}/work/notes.md')
+    kept.write_text(kept.read_text(encoding='utf-8') + json.dumps(inside) + '\n', encoding='utf-8')
+    done = run_kit(env, 'revoid')
+    assert done.returncode == 0, done.stderr
+    (row,) = kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)
+    assert row['status'] == 'good'
+
+
+def test_the_account_name_comes_from_the_account_when_user_is_unset():
+    import pwd
+    env = {k: v for k, v in os.environ.items() if k not in ('USER', 'LOGNAME')}
+    done = subprocess.run([sys.executable, '-c', 'import kit; print(kit.ACCOUNT)'], cwd=KIT, env=env,
+                          capture_output=True, text=True)
+    assert done.stdout.strip() == pwd.getpwuid(os.getuid()).pw_name, done.stderr
