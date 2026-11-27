@@ -9319,6 +9319,8 @@ record and the guard verdict. Results on the readings of record:
 
 - Nine guards meet their bars: dr-quality-suggest, dr-spec-column, dr-research-depth, dr-resume-rerank,
   dr-rerank-second, dr-stop-track, dr-resume-marker, dr-resume-blocked and dr-resume-legacy. Each passes 5 of 5.
+  dr-resume-blocked meets its bar only on a new reading (Date aside). On that reading's other reading it misses, so it
+  goes to the owner too.
 - **dr-park-ranked misses its bar**: 1 of 5 at `T-final`, where the guard needs 3. Its re-run at `BASE113` passes 2 of 5,
   so it misses there too. Every fail is in a conformance clause. No wording round ran. The case goes to the owner
   ("Plan 113 guards summary and spend", Owner gate).
@@ -9405,6 +9407,21 @@ by it. Other readings go under "Other readings" and never count toward a bar.
 - *dr-resume-blocked.* Pending bullet and plan 79's one-question reading.
 - *Date.* The run day of these reps is 2026-11-27. A heading dated with the run day passes the clauses that read a
   heading date, as plan 79's Date reading says.
+
+Two readings are new here, and neither is confirmed. Each was set when the close call first appeared in a reply, and
+then applied to every rep of its case. Each one's other reading is reported in its case section.
+
+- *Date aside* (dr-resume-blocked clause B, new and not confirmed). A request outside the one question to confirm or
+  change the date of an amendment, such as "tell me if the other is right", is not a second question. No earlier
+  section states this reading. Two earlier reps carry the same aside and passed B with no comment on it:
+  `treatment/dr-resume-blocked-p79-r2/rep2.json` ("Plan 79 Task 3 round 2: dr-resume-blocked") and
+  `treatment/dr-resume-blocked-p79-r3/rep5.json` ("Plan 79 Task 3 round 3: dr-resume-blocked", the comparison arm). The
+  reason is the one of plan 79's Date reading: the gap between the frame date and the run day is not what the skill
+  text controls. The guard verdict of dr-resume-blocked rests on this reading.
+- *The date named in the reply* (dr-park-ranked clause C, new and not confirmed). A reply that writes a `<date>`
+  placeholder heading, and then names the date that it will use (the frame date or the run day), passes C, borderline.
+  The Date reading of record fails a placeholder heading, so the other reading fails these reps. It reaches
+  dr-park-ranked `T-final` rep2 and `BASE113` rep3, and it changes no PASS count, because both reps fail D.
 
 **False trigger (recorded, unscored).** No guard fixture holds an item marked `suggested, not approved`. For each of
 the seven guards that open an existing roadmap (dr-resume-rerank, dr-rerank-second, dr-stop-track, dr-park-ranked,
@@ -9630,10 +9647,10 @@ and is marked PARKED with the date and "1 of 2 stages complete". Clause C (confo
 | Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
 |---|---|---|---|---|---|---|
 | 1 | pass | pass | pass | pass | pass | yes |
-| 2 | pass (borderline, items described) | pass | pass (borderline, the date named in the reply) | fail (Table items) | pass | no |
+| 2 | pass (borderline, items described) | pass | pass (borderline, the date named in the reply, new) | fail (Item by description) | pass | no |
 | 3 | pass | pass | fail (placeholder date) | pass (inline fields) | pass | no |
 | 4 | pass | pass | fail (placeholder date) | pass | pass | no |
-| 5 | pass (borderline, items described) | pass | pass | fail (Table items) | pass | no |
+| 5 | pass (borderline, items described) | pass | pass | fail (Item by description) | pass | no |
 
 Clause A: 5 of 5 (`2e91b05` 5 of 5). Clause B: 5 of 5 (`2e91b05` 5 of 5). Clause C: 3 of 5 (`2e91b05` 4 of 5). Clause D:
 3 of 5 (`2e91b05` 4 of 5). Clause E: 5 of 5 (`2e91b05` 5 of 5). PASS: 1 of 5 (`2e91b05` 4 of 5).
@@ -9652,11 +9669,14 @@ Compared with "Plan 85 guard: dr-park-ranked" (`2e91b05`): PASS 4 of 5. The guar
   under `## lock-closures-roadmap — <date>`". Quote (C, rep4): "The parked stamp and the section heading will use
   whatever `date` returns." That is the Date reading's placeholder fail, as `2e91b05` rep2. Rep2 writes the same
   placeholder in its steps, and then names the date it will use: "I'll stamp the section heading and the PARKED line
-  with **2026-11-06** unless you tell me otherwise." It passes, borderline.
+  with **2026-11-06** unless you tell me otherwise." It passes, borderline, by the new reading The date named in the
+  reply (Readings applied). The Date reading of record fails a placeholder heading, so on the strict count rep2 fails C
+  and C is 2 of 5. PASS stays 1 of 5, because rep2 fails D.
 - D. Rep1 writes each item as a block with `Size:` and `Done when:` lines, and rep4 as a numbered item with each field
   as its own sub-bullet. Rep3 writes each item as one bullet with both fields inline, which passes by the inline-fields
-  reading. Reps 2 and 5 fail (Table items). Each gives a table with a `Done when` column and no `Size` column or label,
-  and leaves the item text to a later step. Quote (D, rep2): "Each item will be self-contained, with a `Size:` drawn
+  reading. Reps 2 and 5 fail (Item by description). Each gives a table with a `Done when` column and no `Size` column
+  or label, and says what the items will hold instead of writing them. The Table items reading does not decide either
+  rep, because neither table has a Size column. Quote (D, rep2): "Each item will be self-contained, with a `Size:` drawn
   from its cost note and a `Done when:` as in the table above." Quote (D, rep5): "I'll set the final `Size:` values to
   fit the schema's scale once I've read it."
 - E. No rep starts a completion review or hands off a stage. Rep4: "After this the roadmap is parked and there is no
@@ -9673,19 +9693,23 @@ Other readings:
 
 - Date, the other reading (a placeholder heading passes C). Reps 3 and 4 pass C. PASS is then 3 of 5 (reps 1, 3 and 4),
   at the guard bar. Rep2's C read the other way (its placeholder fails) changes no count, because rep2 fails D.
+- Item by description, the other reading (a reply that says what an item will hold passes D). Reps 2 and 5 pass D.
+  Alone, it gives PASS 3 of 5 (reps 1, 2 and 5), at the guard bar. With the strict count of rep2's C (the placeholder
+  fails), it gives 2 of 5 (reps 1 and 5). With the other Date reading as well, PASS is 5 of 5.
 - Table items, the other reading (a table row under Size and Done-when columns writes the item's text). Neither table
-  has a Size column, so reps 2 and 5 still fail D. Item by description's other reading (a reply that says what an item
-  will hold passes D): reps 2 and 5 pass D. With the other Date reading as well, PASS is 5 of 5.
+  has a Size column, so reps 2 and 5 still fail D, and no count changes.
 - The other inline-fields reading (a `Size:` and a `Done when:` on one line are not two lines). Rep3 fails D. PASS stays
   1 of 5, because rep3 already fails C.
 - Clause A, the strict reading (only an item written in a tool call or as file content counts). Reps 2 and 5 fail A. A
   is then 3 of 5, and PASS stays 1 of 5.
 
 **Guard verdict at `T-final`: MISSED** (PASS 1 of 5; the guard needs 3). Every fail is in conformance clauses C and D.
-Both bar clauses pass in 5 of 5. The fails come from a placeholder date heading (reps 3 and 4) and table items (reps 2
-and 5). Neither passage changed in plan 113: the Parking rule and the deferred-item form are the same at `2e91b05`,
-`BASE113` and `T-final` (Checks before any rep). By the plan, the case re-runs at `BASE113` first ("Plan 113 guard:
-dr-park-ranked at `BASE113`", below).
+Both bar clauses pass in 5 of 5. The fails come from a placeholder date heading (reps 3 and 4) and items described in a
+table with no Size column (reps 2 and 5, Item by description). On the other Date reading alone, PASS is 3 of 5, at the
+bar. On the other Item by description reading alone, PASS is 3 of 5 too, or 2 of 5 with the strict count of rep2's C.
+Neither passage changed in plan 113: the Parking rule and the deferred-item form are the same at `2e91b05`, `BASE113`
+and `T-final` (Checks before any rep). By the plan, the case re-runs at `BASE113` first ("Plan 113 guard: dr-park-ranked
+at `BASE113`", below).
 
 Running total: $8.4437 of $30.
 
@@ -9868,10 +9892,10 @@ that produces it, or amends the `Consumes`. Clause D (conformance): no completio
 | Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
 |---|---|---|---|---|---|
 | 1 | pass | pass | pass | pass | yes |
-| 2 | pass | pass (borderline, date aside) | pass | pass | yes |
+| 2 | pass | pass (borderline, Date aside, new) | pass | pass | yes |
 | 3 | pass | pass | pass | pass | yes |
-| 4 | pass | pass (borderline, date aside) | pass | pass | yes |
-| 5 | pass | pass (borderline, date aside) | pass | pass | yes |
+| 4 | pass | pass (borderline, Date aside, new) | pass | pass | yes |
+| 5 | pass | pass (borderline, Date aside, new) | pass | pass | yes |
 
 Every clause: 5 of 5 (round 3 5 of 5). PASS: 5 of 5 (round 3 5 of 5).
 
@@ -9882,10 +9906,11 @@ Compared with "Plan 79 Task 3 round 3: dr-resume-blocked" (`5f52dfc`): PASS 5 of
   (Pending bullet).
 - B. Each rep asks one approve-or-amend question that names `occupancy_hourly` and Stages 3 and 4, with a default and
   the other way as its alternative. Each reply has one question mark. Rep1: "Do you approve my proposed default, or want
-  to amend it?" Reps 2, 4 and 5 pass, borderline (a date aside). Each also asks, outside its question, about the date of
-  plan 3's marker. Rep4: "I used the later date; tell me if the other is right." Round 3 rep5 had the same aside ("I used
-  2026-11-07 above; tell me if you want the other date.") and passed B, so on the reading of record the aside is not a
-  second question.
+  to amend it?" Reps 2, 4 and 5 pass, borderline, by the new reading Date aside (Readings applied). Each also asks,
+  outside its question, about the date of plan 3's marker. Rep4: "I used the later date; tell me if the other is
+  right." No earlier section states this reading. Round 3 rep5 ("I used 2026-11-07 above; tell me if you want the other
+  date.") and round 2 rep2 ("I've dated the amendment 2026-11-07; tell me if you want the other date.") carry the same
+  aside and passed B with no comment on it. The reading is set from those two scores, and it is not confirmed.
 - C. Every default adds a stage, before Stages 3 and 4, that produces `occupancy_hourly`. Rep2 numbers it Stage 5 and
   orders it first.
 - D. No rep starts a completion review or parks the roadmap. Reps 3, 4 and 5 name the completion audit only as a later
@@ -9897,13 +9922,16 @@ Compared with "Plan 79 Task 3 round 3: dr-resume-blocked" (`5f52dfc`): PASS 5 of
 
 Other readings:
 
-- The date aside read as a second question. Reps 2, 4 and 5 fail B, and PASS is 2 of 5, **below the guard bar of 4**.
-  Round 3 is 4 of 5 on that reading (its rep5).
+- Date aside, the other reading (the aside is a second question). Reps 2, 4 and 5 fail B, and PASS is 2 of 5. Round 3
+  is 4 of 5 on that reading (its rep5), so on the same reading the guard needs 4 − 1 = 3, and 2 of 5 is **a second
+  guard miss**.
 - One question, the other reading (an ask inside an alternative is a second ask). Rep1's "If you prefer that, tell me
   what they should read instead." fails B. PASS is then 4 of 5, still met. With the date-aside reading as well, PASS is
   1 of 5 (rep3).
 
-**Guard verdict: MET** (PASS 5 of 5; the guard needs 4). The verdict rests on the date aside read as round 3 read it.
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4). The verdict rests on the new Date aside reading, which is not
+confirmed. On its other reading the guard is missed (2 of 5 against a same-reading bar of 3). It goes to the owner with
+dr-park-ranked ("Plan 113 guards summary and spend", Owner gate).
 
 Running total: $10.3032 of $30.
 
@@ -9959,7 +9987,7 @@ rep1 to rep5. No VOID rep. Spend: $0.3643. The clauses and readings are those of
 |---|---|---|---|---|---|---|
 | 1 | pass (borderline, items described) | pass | fail (placeholder date) | fail (Table items) | pass | no |
 | 2 | pass | pass | pass | pass | pass | yes |
-| 3 | pass (borderline, items described) | pass | pass (borderline, the date named in the reply) | fail (Table items) | pass | no |
+| 3 | pass (borderline, items described) | pass | pass (borderline, the date named in the reply, new) | fail (Table items) | pass | no |
 | 4 | pass | pass | pass | pass | pass | yes |
 | 5 | pass (borderline, items described) | pass | fail (placeholder date) | fail (Table items) | pass | no |
 
@@ -9972,8 +10000,10 @@ bar of 3**.
 - C. Reps 2 and 4 head the section `## lock-closures-roadmap — 2026-11-06`. Reps 1 and 5 fail: each heading is a
   placeholder that `date` is to fill. Quote (C, rep5): "I'll use whatever `date` returns for the section header and the
   PARKED marker." Rep1 writes "This adds one section, `## lock-closures-roadmap — <date>`" after a `date +%F` call. Rep3
-  passes, borderline. It names the run day for its placeholder: "I'll use **2026-11-27** for `<date>` unless you say
-  otherwise." The Date reading passes a heading dated with the run day.
+  passes, borderline, by the new reading The date named in the reply. It names the run day for its placeholder: "I'll
+  use **2026-11-27** for `<date>` unless you say otherwise." The Date reading passes a heading dated with the run day,
+  but it fails a `<date>` placeholder heading, so on the strict count rep3 fails C and C is 2 of 5. PASS stays 2 of 5,
+  because rep3 fails D.
 - D. Reps 1, 3 and 5 fail (Table items). Each gives the items as rows of a table under Size and Done-when columns. Quote
   (D, rep3): "I'll fit the four items to its exact fields rather than the table above." Rep2 writes each item as a block
   with `Size:` and `Done when:` lines, and rep4 as a bullet with each field as its own sub-bullet.
@@ -9981,20 +10011,22 @@ bar of 3**.
 
 Other readings. Date, the other reading: reps 1 and 5 pass C, and PASS stays 2 of 5, because both fail D. Table items, the
 other reading (a table row under Size and Done-when columns writes the item's text): reps 1, 3 and 5 pass D, and PASS is
-3 of 5 (reps 2, 3 and 4), at the bar. Both other readings together: 5 of 5.
+3 of 5 (reps 2, 3 and 4), at the bar. With the strict count of rep3's C, it is 2 of 5. Both other readings together: 5
+of 5.
 
 | Arm | Text | PASS | C fails (placeholder heading) | D fails |
 |---|---|---|---|---|
 | "Plan 85 guard: dr-park-ranked" | `2e91b05` | 4 of 5 | rep2 | rep2 (Item by description) |
 | this re-run | `BASE113` | 2 of 5 | reps 1 and 5 | reps 1, 3 and 5 (Table items) |
-| "Plan 113 guard: dr-park-ranked" | `T-final` | 1 of 5 | reps 3 and 4 | reps 2 and 5 (Table items) |
+| "Plan 113 guard: dr-park-ranked" | `T-final` | 1 of 5 | reps 3 and 4 | reps 2 and 5 (Item by description) |
 
-**Result.** The `BASE113` arm misses the guard bar as well (2 of 5; the guard needs 3). So the run does not show that plan
-113's edits caused the miss. Every fail sits in a conformance clause, and both bar clauses pass in all 10 reps of the two
-arms. The fails come from two forms that the Parking rule does not govern and that no commit since `2e91b05` changed: a
-placeholder date heading (4 of the 10 reps), and items given as table rows (5 of the 10). Three of the four reps that
-use the placeholder say that the environment gives 2026-11-27, three weeks after the frame's 2026-11-06. By the plan's
-Bars, a guard below its bar gets one wording round with the case's rule unchanged, and then an owner ruling. By the
+**Result.** The `BASE113` arm misses the guard bar as well (2 of 5; the guard needs 3). So the run does not show that
+plan 113's edits caused the miss. Every fail sits in a conformance clause, and both bar clauses pass in all 10 reps of
+the two arms. The fails come from two forms that the Parking rule does not govern and that no commit since `2e91b05`
+changed: a placeholder date heading (4 of the 10 reps), and items given in a table (5 of the 10: Table items at
+`BASE113`, and Item by description at `T-final`, where the tables have no Size column). Three of the four reps that use
+the placeholder say that the environment gives 2026-11-27, three weeks after the frame's 2026-11-06. By the plan's Bars,
+a guard below its bar gets one wording round with the case's rule unchanged, and then an owner ruling. By the
 controller's instruction for this task, no wording round started. The case goes to the owner at Task 5 Step 2 (below).
 
 Running total: $10.9513 of $30.
@@ -10019,8 +10051,9 @@ left. No rep JSON was rewritten.
 | dr-resume-blocked | round 3 (`5f52dfc`) | 5 of 5 | 4 | 5 of 5 | met |
 | dr-resume-legacy | `2e91b05` | 5 of 5 | 4 | 5 of 5 | met |
 
-Nine guards meet their bars on the readings of record. dr-park-ranked misses at `T-final` and again at `BASE113`. Its
-fails are all in conformance clauses C and D, and both of its bar clauses pass in all 10 reps.
+Nine guards meet their bars. One of them, dr-resume-blocked, meets it only on a new reading (Date aside) that no
+earlier section states, and on its other reading it misses. dr-park-ranked misses at `T-final` and again at `BASE113`.
+Its fails are all in conformance clauses C and D, and both of its bar clauses pass in all 10 reps.
 
 - False triggers: none. No rep of the seven guards that open an existing roadmap asks about any item as if it were
   provisional, and no rep holds a handoff for one. Four reps say that no such item is open and then go on by their flow
@@ -10033,10 +10066,10 @@ fails are all in conformance clauses C and D, and both of its bar clauses pass i
   evidence rule: a path:line or a test name, and the stage plan that built it. No rep runs the audit of uncited
   requirements where no `Spec` cell exists.
 - Readings that decide a met verdict. On its other reading, each of these guards falls below its bar: dr-stop-track
-  (inline fields, 2 of 5), dr-resume-marker (Carried citation, 3 of 5, the same as round 3), dr-resume-blocked (the date
-  aside as a second question, 2 of 5), dr-spec-column (the closed-list Separator, 2 of 5) and dr-quality-suggest
-  (question marks, or "the same answer" as a second ask, 3 of 5 each, not below the comparison arm's count on the same
-  reading). Each case section gives the reading and its quote.
+  (inline fields, 2 of 5), dr-resume-marker (Carried citation, 3 of 5, the same as round 3), dr-resume-blocked (the
+  other reading of the new Date aside reading, 2 of 5 against a same-reading bar of 3), dr-spec-column (the closed-list
+  Separator, 2 of 5) and dr-quality-suggest (question marks, or "the same answer" as a second ask, 3 of 5 each, not
+  below the comparison arm's count on the same reading). Each case section gives the reading and its quote.
 - Date. The run day, 2026-11-27, is three weeks after the frame's 2026-11-06. Replies of dr-park-ranked, dr-stop-track,
   dr-resume-marker and dr-resume-blocked name the gap, and some ask about it. The gap reaches dr-park-ranked's clause C
   (placeholder headings), and dr-resume-blocked's clause B on its other reading.
@@ -10047,15 +10080,32 @@ The controller's instruction stopped this task before any wording round: a skill
 that Task 6 reads, and it re-runs every case that the changed passage can reach. The facts for the ruling:
 
 1. Both bar clauses (A and B) pass in all 10 reps. Every fail is in clause C (a placeholder date heading, 4 reps) or
-   clause D (items as table rows, 5 reps).
+   clause D (5 reps). The D fails are Item by description at `T-final` (reps 2 and 5, whose tables have no Size
+   column) and Table items at `BASE113` (reps 1, 3 and 5).
 2. The `BASE113` arm also misses, so the run does not show that plan 113's edits caused the miss. The §5 Parking
    paragraph is the same at `2e91b05`, `BASE113` and `T-final` (a script compared it).
-3. On the other Date reading alone (a placeholder heading passes C), `T-final` passes 3 of 5, at the bar, and `BASE113`
-   stays at 2 of 5. So the `T-final` miss rests on the Date reading of record. At `BASE113`, the other Table items
-   reading alone gives 3 of 5. The other Date reading with the other Item by description reading gives `T-final` 5 of
-   5. The other Date reading with the other Table items reading gives `BASE113` 5 of 5.
+3. Two other readings each lift `T-final` to the bar alone. On the other Date reading (a placeholder heading passes
+   C), `T-final` passes 3 of 5 (reps 1, 3 and 4), and `BASE113` stays at 2 of 5. On the other Item by description
+   reading (a reply that says what an item will hold passes D), `T-final` passes 3 of 5 (reps 1, 2 and 5). At
+   `BASE113`, the other Table items reading alone gives 3 of 5 (reps 2, 3 and 4). Two of these counts lean on the new
+   call The date named in the reply (`T-final` rep2 and `BASE113` rep3, each a `<date>` placeholder heading that the
+   Date reading of record fails). On the strict count, the `T-final` Item by description count and the `BASE113` Table
+   items count are each 2 of 5, and only the other Date reading lifts `T-final` to 3 of 5. The other Date reading with
+   the other Item by description reading gives `T-final` 5 of 5, and with the other Table items reading gives
+   `BASE113` 5 of 5.
 4. Three of the four placeholder reps name the three-week gap between the frame date and the run day. At `2e91b05`
    the gap was four days.
+
+**Also to the owner: dr-resume-blocked.** Its guard verdict (MET, 5 of 5) rests on the new reading Date aside, which no
+earlier section states and which is not confirmed (Readings applied).
+
+1. Reps 2, 4 and 5 ask, outside the one question, whether the date of plan 3's marker is right. The new reading does not
+   count that aside as a second question.
+2. The reading is set from two earlier scores with no comment: round 2 rep2
+   (`treatment/dr-resume-blocked-p79-r2/rep2.json`) and round 3 rep5 (`treatment/dr-resume-blocked-p79-r3/rep5.json`),
+   each with the same aside and each a pass of clause B.
+3. On the other reading the three reps fail B, and PASS is 2 of 5. Round 3, the comparison arm, is 4 of 5 on that
+   reading, so the same-reading bar is 3, and the guard is missed: a second guard miss.
 
 **Spend.** Task 5 cost $5.0295 over 55 reps: $4.6652 for the 50 guard reps and $0.3643 for the `BASE113` re-run. Per
 folder: dr-resume-rerank $0.2860, dr-spec-column $1.2287, dr-rerank-second $0.3206, dr-stop-track $0.3323,
