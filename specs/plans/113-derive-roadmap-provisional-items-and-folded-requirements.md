@@ -96,9 +96,14 @@ and D2). R1–R3 and V1–V4 below are the spec's.
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-27): "Approved". It covers the seven defaults of Open for plan review, each
+  as proposed: the freed O-number, the third V1 case, fixture (a)'s two Ask paths, fixtures (a) and (c)'s launched Stage
+  1, the ten guards, the $30 spend stop and the gap filed at the completion gate. Applied in: Global Constraints
+  (Spend), Task 1 Step 2, Task 3 Step 1 (edit 4), Task 5, Plan completion.
 
 ## Open for plan review
+
+Resolved at plan review on 2026-11-27: the owner approved each item as proposed (D1).
 
 The owner approves or amends these defaults as one batch. Each one was open in the spec or is new here.
 
