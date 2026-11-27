@@ -192,6 +192,20 @@ running total + the batch's reps × $0.25 ≤ $35. Stop when the check fails. Re
 | Step | Reps | Cost | Running total |
 |---|---|---|---|
 | Task 3 (no model call) | 0 | $0.00 | $0.00 |
+| Task 4 probe (Sonnet, Opus) | 2 | $0.16 | $0.16 |
+| Task 4 pilots, P1, `old` (Sonnet, Opus) | 2 | $0.28 | $0.45 |
+| P1 batches (4 cells x 3 reps) | 12 | $1.68 | $2.12 |
+| P2 batches | 12 | $1.87 | $4.00 |
+| P3 batches | 12 | $1.64 | $5.63 |
+| P4 batches | 12 | $1.67 | $7.31 |
+| P5 batches | 12 | $1.64 | $8.95 |
+| N1 batches | 12 | $1.47 | $10.41 |
+| N2 batches | 12 | $1.76 | $12.17 |
+| N3 batches | 12 | $1.73 | $13.90 |
+| N4 batches | 12 | $1.10 | $15.00 |
+
+The largest single rep cost $0.22. No rep was void, so no rerun was needed. Before each batch the check
+passed (the running total plus 3 x $0.25 stayed at or below $35).
 
 ## Task 4: what the probe and the pilots must show
 
@@ -228,3 +242,41 @@ Task 3 cannot check these without a model, so Task 4 Step 1 checks them before a
    Plan 107's `tally` refused only an unknown prompt folder.
 6. The kit errors, the integer reading of `result_index` and the rule 5 reading are stated in the VOID
    rule. The plan's Step 3 lists rules 3 to 5, an error result and the listing check.
+
+## Result (Task 4)
+
+**Verdict: PASS** on both models. No rep was void, so each of the 36 cells holds 3 valid reps.
+
+- Claude Code version: `2.1.323`, as in Task 3.
+- `old` ref: `a59ae1c0501adc3ce0f13589a057123a803d3a18`, the commit before the description change.
+- `new` ref: `b3f91b5`, the commit that changes only the `description` of
+  `skills/classification-codes/SKILL.md` to the text registered above (1,005 characters once folded).
+- The probe ran on both models. Lines 1 to 5 and 8 read NO. Line 6 read YES, as expected for a trigger rep.
+  Line 7 read YES on both models, and the quote was the account's email address, which this record does not
+  repeat. This is the known account-identity watch item of plan 107 (`specs/baseline/red-baseline-writing-skills-tests.md`),
+  not an instruction file or a memory. The tools were `Glob`, `Grep`, `Read` and `Skill` only, with no MCP server.
+- The pilots (P1, `old`) showed that the `Skill` tool works with the skills under the `Read(~/**)` deny and the
+  read fence: each pilot made a `Skill` call for `classification-codes` whose tool result was not an error. The
+  rep's own `Grep` calls were refused by the fence, as designed. `audit.py` showed no VOID and no rule 4 finding.
+  No pilot loaded `tech-debt`, so the forked-skill stop did not arise.
+
+| Bar | Model | `old` | `new` | Rule |
+|---|---|---|---|---|
+| `ind` (P1 + P2, of 6) | Sonnet | 6 | 6 | `new` >= `old` |
+| `ind` (P1 + P2, of 6) | Opus | 6 | 6 | `new` >= `old` |
+| `should-load` (P1 to P5, of 15) | Sonnet | 15 | 15 | `new` >= `old` |
+| `should-load` (P1 to P5, of 15) | Opus | 15 | 15 | `new` >= `old` |
+| `near-miss` (N1 to N4, of 12) | Sonnet | 0 | 0 | `new` <= `old` |
+| `near-miss` (N1 to N4, of 12) | Opus | 0 | 0 | `new` <= `old` |
+
+How to read this result:
+
+- The test shows no loss. It cannot show a gain. The `old` description already loaded on every P1 to P5 rep on
+  both models, so there was no room to improve. Every near-miss rep (N1 to N4) read NO in both arms.
+- Some reps ended on `--max-turns 3` (`error_max_turns`): 15 of the 60 P reps and 2 of the 48 N reps. The
+  registered reading counts these as a normal end. Every P rep that ended this way had loaded the skill. If
+  these reps were dropped from the P cells, `old` and `new` would still be level, because every remaining P rep
+  also loaded, so the verdict would not change.
+- The `old` tree already holds the Census industry bundle of Task 2, so both arms list the same body. The two
+  refs differ in the description only.
+- Raw streams and per-rep summaries are kept outside the repository, as in plan 107.
