@@ -42,10 +42,13 @@ def clean_env(**extra):
 
     The user and system git configs are switched off (HOME stays, uv needs it), so
     a developer's global hooksPath, identity or aliases cannot change a test's
-    outcome. Anything in extra overrides these defaults.
+    outcome. XDG_CONFIG_HOME points at a folder that cannot exist, so git reads no
+    default excludes file ($XDG_CONFIG_HOME/git/ignore, else $HOME/.config/git/ignore).
+    Anything in extra overrides these defaults.
     '''
     env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-    env.update(GIT_CONFIG_GLOBAL='/dev/null', GIT_CONFIG_NOSYSTEM='1')
+    env.update(GIT_CONFIG_GLOBAL='/dev/null', GIT_CONFIG_NOSYSTEM='1',
+               XDG_CONFIG_HOME='/dev/null/no-xdg-config')
     env.update(extra)
     return env
 
@@ -103,6 +106,19 @@ def clone(tmp_path):
     git(dst, 'config', 'user.email', 'lint-test@example.invalid')
     git(dst, 'config', 'core.hooksPath', 'build/githooks')
     return dst
+
+
+def test_clean_env_hides_the_users_default_excludes(tmp_path, monkeypatch):
+    home = tmp_path / 'home'
+    (home / '.config' / 'git').mkdir(parents=True)
+    (home / '.config' / 'git' / 'ignore').write_text('build/\n')
+    monkeypatch.setenv('HOME', str(home))
+    monkeypatch.delenv('XDG_CONFIG_HOME', raising=False)   # git falls back to $HOME/.config/git/ignore only then
+    repo = tmp_path / 'repo'
+    git(tmp_path, 'init', '--quiet', str(repo))
+    (repo / 'build').mkdir()
+    (repo / 'build' / 'a.py').write_text('')
+    assert git(repo, 'status', '--porcelain', '--untracked-files=all').stdout.split() == ['??', 'build/a.py']
 
 
 def test_runner_and_hook_are_executable():

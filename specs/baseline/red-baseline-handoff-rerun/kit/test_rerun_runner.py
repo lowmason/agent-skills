@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -194,6 +195,7 @@ def test_env_holds_no_session_variables(kit):
     env = dict(line.split('=', 1) for line in envfile.read_text().splitlines() if '=' in line)
     allowed = {'CLAUDE_CODE_DISABLE_ADVISOR_TOOL', 'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'}
     assert {name for name in env if name.startswith('CLAUDE')} <= allowed
+    assert [name for name in env if name.startswith('GIT_')] == []  # the runner's own GIT_* identity stays out
     home = os.path.realpath(kit.root / rep)
     assert env['HOME'] == home
     assert env['TMPDIR'] == home + '/tmp'
@@ -558,3 +560,47 @@ def test_many_transcript_matches_do_not_kill_the_runner(kit):
     out = run_ok(kit, rep)
     sid = (out / 'session-id').read_text().strip()
     assert (out / 'project' / f'{sid}.jsonl').is_file()
+
+
+SENTINEL_NAME = 'Sentinel Owner Zq'
+SENTINEL_EMAIL = 'sentinel.owner.zq@example.invalid'
+# A reflog line: <old sha> <new sha> <Name> <<email>> <timestamp> <tz><TAB><message>
+REFLOG_LINE = re.compile(r'^[0-9a-f]{40} [0-9a-f]{40} (?P<who>.+? <[^<>]*>) \d+ [+-]\d{4}\t(?P<what>.*)$')
+# The placeholder, and the identity that this test's fixture template is built with.
+ALLOWED_IDENTITIES = {'Pondworks Rep <rep@pondworks.invalid>', 't <t@example.invalid>'}
+
+
+def reflog_entries(home: Path, rep: str) -> list[tuple[str, str, str]]:
+    '''(file relative to the parked home, identity, message) for every entry of every reflog file of the
+    parked rep repo and of its bare origin.'''
+    entries = []
+    for folder in (home / 'work' / rep / '.git' / 'logs', home / 'git' / f'{rep}.git' / 'logs'):
+        for path in sorted(folder.rglob('*')) if folder.is_dir() else []:
+            if not path.is_file():
+                continue
+            for line in path.read_text().splitlines():
+                hit = REFLOG_LINE.match(line)
+                assert hit, f'{path.relative_to(home)} has a reflog line that does not parse'
+                entries.append((str(path.relative_to(home)), hit['who'], hit['what']))
+    return entries
+
+
+def test_no_real_git_identity_reaches_a_rep_repo(kit):
+    # The runner runs with the real HOME, so a git call that writes a reflog entry would stamp the owner's identity.
+    # The runner sets the placeholder through GIT_AUTHOR_* and GIT_COMMITTER_*. `-c user.*` is not enough:
+    # `git remote set-head` ignores user.* config and writes the account's passwd name and a host-derived email.
+    # Ported from plan 101's guard kit (specs/baseline/red-baseline-completion-triage/guard-kit/).
+    (kit.real / '.gitconfig').write_text(f'[user]\n\tname = {SENTINEL_NAME}\n\temail = {SENTINEL_EMAIL}\n')
+    rep, = kit.make_reps()
+    run_ok(kit, rep)
+    home = kit.ctl / 'homes' / rep
+    files = [p for folder in (home / 'work' / rep / '.git', home / 'git' / f'{rep}.git')
+             for p in folder.rglob('*') if p.is_file()]
+    assert any(p.name == 'HEAD' for p in files)
+    holding = [str(p.relative_to(kit.ctl / 'homes')) for p in files
+               if SENTINEL_NAME.encode() in p.read_bytes() or SENTINEL_EMAIL.encode() in p.read_bytes()]
+    entries = reflog_entries(home, rep)
+    assert f'work/{rep}/.git/logs/refs/remotes/origin/HEAD' in {path for path, _, _ in entries}  # remote set-head
+    assert holding == []
+    assert [(path, what) for path, who, what in entries if who not in ALLOWED_IDENTITIES] == [], \
+        'reflog entries by an identity outside the allow list'
