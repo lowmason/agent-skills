@@ -1203,3 +1203,98 @@ def test_gemini_pointer_comes_before_the_dropped_tools_note(tmp_path):
   lines = head.splitlines()
   note = next(i for i, line in enumerate(lines) if line.startswith('# Claude-only tools dropped'))
   assert lines.index(SECOND_POINTER) < note
+
+
+AGENT_DIRS = {'claude': '.claude/agents', 'codex': '.codex/agents', 'gemini': '.gemini/config/agents'}
+AGENT_SOURCES = (
+  ('agents', '.md'),
+  ('runtimes/codex/agents', '.toml'),
+  ('runtimes/gemini/agents', '.md'),
+)
+
+
+@pytest.mark.parametrize('runtime', sorted(AGENT_DIRS))
+def test_companion_install_links_the_agent_license_beside_the_agents(tmp_path, runtime):
+  for _ in range(2):
+    result = run_install(tmp_path, runtime, '--companions')
+    assert result.returncode == 0, result.stdout + result.stderr
+  link = tmp_path / AGENT_DIRS[runtime] / 'LICENSE-superpowers'
+  assert link.is_symlink() and link.resolve() == REPO / 'LICENSE-superpowers'
+  assert f'unchanged {link}' in result.stdout
+
+
+def test_copy_install_copies_the_agent_license(tmp_path):
+  result = run_install(tmp_path, 'all', '--companions', '--copy')
+  assert result.returncode == 0, result.stdout + result.stderr
+  for agent_dir in AGENT_DIRS.values():
+    copied = tmp_path / agent_dir / 'LICENSE-superpowers'
+    assert copied.is_file() and not copied.is_symlink()
+    assert copied.read_bytes() == (REPO / 'LICENSE-superpowers').read_bytes()
+
+
+def test_install_without_companions_installs_no_agent_license(tmp_path):
+  result = run_install(tmp_path, 'claude', '--no-companions')
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert not list((tmp_path / '.claude').rglob('LICENSE-superpowers'))
+
+
+def test_agent_licenses_match_the_provenance_table(monkeypatch):
+  install = load_install(monkeypatch)
+  monkeypatch.syspath_prepend(str(REPO / 'build'))
+  from check_provenance import AGENT_LICENSES
+
+  expected = {(agent, name) for name, agents in AGENT_LICENSES.items() for agent in agents}
+  for directory, suffix in AGENT_SOURCES:
+    sources = sorted((REPO / directory).glob(f'*{suffix}'))
+    assert sources
+    found = {(src.stem, name) for src in sources for name in install.pointed_licenses(src)}
+    assert found == expected, directory
+
+
+def test_agent_license_name_matches_no_agent_file_pattern(monkeypatch):
+  install = load_install(monkeypatch)
+  names = {
+    name
+    for directory, suffix in AGENT_SOURCES
+    for src in (REPO / directory).glob(f'*{suffix}')
+    for name in install.pointed_licenses(src)
+  }
+  assert names
+  for name in names:
+    assert not name.endswith(('.md', '.toml'))
+    assert (REPO / name).is_file()
+
+
+def test_agent_pointer_to_a_missing_root_license_refuses(tmp_path, monkeypatch, capsys):
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  make_skill(root)
+  (root / 'agents').mkdir()
+  (root / 'agents' / 'x.md').write_text(
+    '---\nname: x\n# license: MIT. Full text: LICENSE-gone.\n---\nbody\n'
+  )
+  monkeypatch.setattr(install, 'REPO', root)
+  home = tmp_path / 'home'
+  assert install.main(['claude', '--home', str(home)]) != 0
+  assert (
+    'agents/x.md: license pointer names LICENSE-gone, which is not a file at the repository root'
+    in capsys.readouterr().err
+  )
+  assert not home.exists()
+
+
+def test_two_agents_with_one_pointer_install_one_license(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  make_skill(root)
+  (root / 'agents').mkdir()
+  (root / 'LICENSE-demo').write_text('license text\n')
+  for name in ('a', 'b'):
+    (root / 'agents' / f'{name}.md').write_text(
+      f'---\nname: {name}\n# license: MIT. Full text: LICENSE-demo.\n# license: MIT. Again LICENSE-demo.\n---\nbody\n'
+    )
+  monkeypatch.setattr(install, 'REPO', root)
+  home = tmp_path / 'home'
+  assert install.main(['claude', '--home', str(home)]) == 0
+  assert names(home / '.claude' / 'agents') == ['LICENSE-demo', 'a.md', 'b.md']
+  assert install.pointed_licenses(root / 'agents' / 'a.md') == ['LICENSE-demo']
