@@ -38,6 +38,7 @@ The drift spec that the probe code argues from is `specs/completed/claude-code-d
 ## Decisions
 
 - **D1** (owner, plan review, 2026-11-27): approved the plan with the planner's defaults P1–P5 below, and chose subagent-driven execution in this session. Applied in: Tasks 1–8.
+- **D2** (owner, Task 8 gate, 2026-11-27): go ahead with the live run on the 2.1.330 Desktop app binary with `--allow-old`. Applied in: Task 8.
 
 Planner's defaults, approved by D1:
 

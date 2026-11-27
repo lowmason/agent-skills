@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Callable, NamedTuple, Sequence
 
 import probe_checks
+import probe_worktrees
 from check import due_probes
 from docs import version_key
 from probe_checks import Verdict
@@ -580,6 +581,7 @@ PROBE_RUNS = {
                               {'sightings.json': 'explore-override.sightings.json'}),
     'async-teardown': Probe(prepare_teardown, collect_teardown, assess_teardown,
                             {'teardown.jsonl': 'async-teardown.jsonl', 'teardown.log': 'async-teardown.log'}),
+    'worktree-isolation': probe_worktrees.WORKTREE_PROBE,
 }
 
 

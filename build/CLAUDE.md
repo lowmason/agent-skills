@@ -156,6 +156,10 @@ output under `~/.cache/agent-skills/cc-guide/probes/` and appends one row to
 `agent-model-pins` also leaves its session under `~/.claude/projects/`, since
 it reads effort from the subagents' transcripts.
 `probe_checks.py` holds the assertions, which read the raw stream-json.
+`probe_process.py` holds process control for a probe run: its
+environment, process groups, signals and command line.
+`probe_worktrees.py` is the `worktree-isolation` runner, whose collect
+step reduces the four streams to a sightings file that is its fixture.
 `probe_streams/` holds recorded runs, cut down and scrubbed by
 `probes.save_fixtures`, which `test_probe_replay.py` replays (R12.6); re-record
 them only through `save_fixtures`, since a raw stream holds home paths and

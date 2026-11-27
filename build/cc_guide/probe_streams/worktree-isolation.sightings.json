@@ -1,0 +1,54 @@
+{
+ "isolation": {
+  "broken": null,
+  "exited": true,
+  "pwd_after": "main",
+  "locked_before": true,
+  "locked_after": false,
+  "steps": {
+   "control": {
+    "ran": true,
+    "refused": false,
+    "marked": false
+   },
+   "main_git_before": {
+    "ran": true,
+    "refused": true,
+    "marked": true
+   },
+   "git_subshell": {
+    "ran": true,
+    "refused": true,
+    "marked": true
+   },
+   "plain_subshell": {
+    "ran": true,
+    "refused": false,
+    "marked": false
+   },
+   "main_git_after": {
+    "ran": true,
+    "refused": false,
+    "marked": false
+   }
+  }
+ },
+ "noop": {
+  "broken": null,
+  "exit_refused": true,
+  "exit_marked": true,
+  "pwd_after": "plain-worktree"
+ },
+ "base-no-remote": {
+  "broken": null,
+  "entered": true,
+  "has_pushed": true,
+  "has_unpushed": true
+ },
+ "base-failed-fetch": {
+  "broken": null,
+  "entered": true,
+  "has_pushed": true,
+  "has_unpushed": false
+ }
+}

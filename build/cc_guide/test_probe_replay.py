@@ -201,6 +201,14 @@ def exiting(code: int):
     return edit
 
 
+def worktrees_with(part: str, step: str | None = None, **seen) -> dict[str, str]:
+    '''The recorded worktree-isolation sightings with `seen` replacing fields of run `part`, or of its step `step`.'''
+    probe = probes.PROBE_RUNS['worktree-isolation']
+    saved = json.loads((FIXTURES / probe.fixtures['worktrees.json']).read_text(encoding='utf-8'))
+    (saved[part] if step is None else saved[part]['steps'][step]).update(seen)
+    return {'worktrees.json': json.dumps(saved)}
+
+
 CUT_WINDOW = probes.register_window()
 
 
@@ -293,6 +301,18 @@ CUT_WINDOW = probes.register_window()
     ('async-teardown', lambda: edited('async-teardown', 'teardown.jsonl', outcome('success')), DIVERGES,
      "the async SessionStart hook got TERM first at teardown and was gone within 5 s; the stream's SessionStart "
      'hook_response reads success, not cancelled'),
+    # worktree-isolation's cases pin one finding for each of the guide's four facts, and a run that broke. The edits
+    # change the recorded sightings, and the assessor reads only those.
+    ('worktree-isolation', lambda: worktrees_with('isolation', 'git_subshell', refused=False, marked=False), DIVERGES,
+     'isolation: git_subshell was not refused'),
+    ('worktree-isolation', lambda: worktrees_with('isolation', locked_after=True), DIVERGES,
+     'isolation: the worktree was still locked after ExitWorktree'),
+    ('worktree-isolation', lambda: worktrees_with('noop', exit_refused=False, exit_marked=False), DIVERGES,
+     'noop: ExitWorktree was not refused'),
+    ('worktree-isolation', lambda: worktrees_with('base-failed-fetch', has_unpushed=True), DIVERGES,
+     'base-failed-fetch kept the unpushed commit'),
+    ('worktree-isolation', lambda: worktrees_with('isolation', broken='no result event'), ERROR,
+     'isolation: the run broke: no result event'),
 ])
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())
