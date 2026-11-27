@@ -5072,7 +5072,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       unruled. The item stays open: its `Done when:` still needs the Echo ruling or a wording change, and the
       independent runs. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary, Owner ruling).
       → progress 2026-11-17 (owner ruling): no Echo. The reading of record stands: the phrase next to an order calls the order stages, and plan 78's round 2 rep5 verdict stands. The `Done when:` still needs the independent runs.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -5341,7 +5341,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quality when no other question is open, and what it does with a `suggested, not approved` item, and a
       case covers each path with a control run.
       → progress 2026-11-17 (owner ruling): narrow this item to its second gap. The resume half of R7 is dropped (the spec is amended), and the §5 sentence quoted above is gone, so a resume no longer adds a later quality to any question. Done when now needs only: §5 says what a resume does with a `suggested, not approved` item, and a case covers that path with a control run.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
 - [x] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
       `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
@@ -5370,7 +5370,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       R12 as the spec wrote it, and it exits by a new stage or a written deferral. Size: design. Done when: §6
       says how the review treats a folded requirement, and a case on a spec-sourced roadmap shows the
       behavior with a control run.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
 
 ## superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 - [x] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
