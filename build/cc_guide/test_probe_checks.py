@@ -1276,6 +1276,16 @@ def test_a_pwd_through_a_symlink_names_the_same_place(tmp_path):
     assert pc.worktree_sightings(wt_streams(places, isolation=events), places)['isolation']['pwd_after'] == 'main'
 
 
+def test_the_git_c_step_is_found_by_its_quoted_command_when_the_path_has_a_space(tmp_path):
+    places = wt_places(tmp_path / 'a b')
+    quoted = f"git -C '{places['main']}' rev-parse --show-toplevel"
+    events = wt_isolation(places, commands={'main_git_before': quoted, 'main_git_after': quoted})
+    assert wt_verdict(places, isolation=events) == (PASS, WT_PASS)
+    unquoted = wt_isolation(places)
+    assert wt_verdict(places, isolation=unquoted) == (
+        ERROR, 'isolation: main_git_before never ran; isolation: main_git_after never ran')
+
+
 def test_sightings_hold_no_path(tmp_path):
     places = wt_places(tmp_path)
     shown = json.dumps(pc.worktree_sightings(wt_streams(places), places))

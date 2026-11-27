@@ -13,6 +13,7 @@ never a pass.'''
 import json
 import os.path
 import re
+import shlex
 from typing import NamedTuple
 
 from state import DIVERGES, ERROR, PASS
@@ -769,6 +770,12 @@ WT_FINDING = ('a $(...) naming git was refused and HERE=$(pwd) ran; ExitWorktree
               'remote kept it')
 
 
+def main_git_command(main: str) -> str:
+    '''The git -C step's command for the main checkout at `main`, its path shell-quoted, since the model runs the
+    text as written: both the isolation prompt and the assertion take it from here.'''
+    return WT_MAIN_GIT.format(main=shlex.quote(main))
+
+
 def positioned_calls(events: list[dict], name: str) -> list[tuple[tuple[int, int], str, dict]]:
     '''(position, tool-use id, input) for each call of the named tool, in stream order. A position is the
     event's index and the block's index in it, so calls before and after another call can be told apart.'''
@@ -829,7 +836,7 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
     exit_call, before, after = split_at(events, EXIT_TOOL)
     steps = {}
     for step, command in WT_STEPS.items():
-        command = WT_MAIN_GIT.format(main=places[WT_MAIN]) if command == WT_MAIN_GIT else command
+        command = main_git_command(places[WT_MAIN]) if command == WT_MAIN_GIT else command
         run = first_run(events, after if step in WT_AFTER_STEPS else before, command)
         steps[step] = dict(WT_NOT_RUN) if run is None else {
             'ran': True, 'refused': call_is_error(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}

@@ -30,7 +30,7 @@ import subprocess
 from pathlib import Path
 
 import probe_checks
-from probe_checks import (ENTER_TOOL, EXIT_TOOL, WT_CONTROL, WT_GIT_SUBSHELL, WT_LIST, WT_LOG, WT_MAIN, WT_MAIN_GIT,
+from probe_checks import (ENTER_TOOL, EXIT_TOOL, WT_CONTROL, WT_GIT_SUBSHELL, WT_LIST, WT_LOG, WT_MAIN,
                           WT_PARTS, WT_PLAIN, WT_PLAIN_SUBSHELL, WT_PUSHED, WT_PWD, WT_UNPUSHED, Verdict)
 from probe_process import PROBE_TIMEOUT, Invocation, Probe, Read, claude_args
 from state import ERROR, SetupError
@@ -121,7 +121,7 @@ def prompt(tool: str, *steps: str) -> str:
 
 
 def worktree_prompts(scratch: Path) -> dict[str, str]:
-    main_git = WT_MAIN_GIT.format(main=worktree_places(scratch)[WT_MAIN])
+    main_git = probe_checks.main_git_command(worktree_places(scratch)[WT_MAIN])
     base = prompt(ENTER_TOOL, ENTER_STEP, bash(WT_LOG))
     isolation = prompt(EXIT_TOOL, bash(WT_CONTROL), bash(main_git), bash(WT_GIT_SUBSHELL), bash(WT_PLAIN_SUBSHELL),
                        bash(WT_LIST), EXIT_STEP, bash(WT_PWD), bash(main_git), bash(WT_LIST))

@@ -92,6 +92,17 @@ def test_prepare_builds_the_four_repos_and_their_invocations(built):
         assert 'with the Bash tool' in text and 'do not retry a command in another form' in text
 
 
+def test_the_git_c_step_quotes_a_scratch_path_with_a_space(tmp_path):
+    '''The model runs the step's text as written, so an unquoted path with a space would split, and the
+    assertion must look for the same quoted text.'''
+    scratch = tmp_path / 'a b'
+    scratch.mkdir()
+    runs = by_name(pw.prepare_worktrees(scratch, CLAUDE, REPO))
+    quoted = f"git -C '{scratch / 'iso'}' rev-parse --show-toplevel"
+    assert pc.main_git_command(pw.worktree_places(scratch)[pc.WT_MAIN]) == quoted
+    assert prompt_of(runs['isolation']).count(f'`{quoted}`') == 2
+
+
 def test_the_repos_hold_what_each_run_reads(built):
     scratch, _ = built
     iso, plain_wt, norem, gone = (scratch / name for name in ('iso', 'plain-wt', 'norem', 'gone'))
