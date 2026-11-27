@@ -10571,11 +10571,12 @@ No clause of any plan 113 arm scores these passages.
    it.
 2. **Guard miss: dr-park-ranked** (`T-final` 1 of 5, `BASE113` 2 of 5, bar 3). The pending decision: the miss rests on a
    regression that predates plan 113's edits. The comparison arm at `2e91b05` passed 4 of 5, and the `BASE113` re-run
-   passes 2 of 5, so the drop came after `2e91b05` and before plan 113's edits. The §5 Parking paragraph is
-   byte-identical at `2e91b05`, `BASE113` and `T-final`. Both bar clauses pass in all 10 reps. Every fail is a
-   placeholder date heading (clause C) or table-form items (clause D). By the controller's
-   ruling, no wording round ran in this plan: a round would edit Parking text outside plan 113's edits and change what
-   Task 6 read. The owner rules whether to accept that, or to order a round after the PR with the same fixtures. The
+   passes 2 of 5. The `BASE113` arm misses too, so plan 113's edits are not shown to cause the miss. Five-rep arms
+   cannot show more than that. The frame-date gap (item 6) is one likely cause of the placeholder headings, outside the
+   skill text. The §5 Parking paragraph is byte-identical at `2e91b05`, `BASE113` and `T-final`. Both bar clauses pass
+   in all 10 reps. Every fail is a placeholder date heading (clause C) or table-form items (clause D). By the
+   controller's ruling, no wording round ran in this plan: a round would edit Parking text outside plan 113's edits and
+   change what Task 6 read. The owner rules whether to accept that, or to order a round after the PR with the same fixtures. The
    facts are in "Plan 113 guards summary and spend", Owner gate.
 3. **Two clean controls: dr-provisional-alone and dr-provisional-only.** Each control fails no bar clause, so the
    additive bar cannot be met, though each treatment passes 5 of 5 at `T` and at `T-r1`. By the Bars, a clean control
