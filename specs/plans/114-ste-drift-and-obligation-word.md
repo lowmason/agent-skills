@@ -110,10 +110,10 @@ Case set:
 **Files:**
 - Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/control/` (scrubbed reps, sheets, judge results, verdicts)
 
-- [ ] **Step 1: Run** the three agent cases in arm `control`, 5 reps on each model (30 reps). Replace any void rep under a new rep number.
-- [ ] **Step 2: Score:** judges, mechanical flags, a hand reading of every flag before opening the key. Run the tally. Expected (the gap): `agent-instruction` fails the obligation check on at least one model.
-- [ ] **Step 3: Apply D4.** If the control passes the obligation check at 4 of 5 or better on both models, stop and ask the owner whether the line still ships.
-- [ ] **Step 4: Commit** `test(write-with-asd-ste100): score the control arm`.
+- [x] **Step 1: Run** the three agent cases in arm `control`, 5 reps on each model (30 reps). Replace any void rep under a new rep number.
+- [x] **Step 2: Score:** judges, mechanical flags, a hand reading of every flag before opening the key. Run the tally. Expected (the gap): `agent-instruction` fails the obligation check on at least one model.
+- [x] **Step 3: Apply D4.** If the control passes the obligation check at 4 of 5 or better on both models, stop and ask the owner whether the line still ships.
+- [x] **Step 4: Commit** `test(write-with-asd-ste100): score the control arm`.
 
 ### Task 4: The obligation line and the treatment arm
 
@@ -169,6 +169,8 @@ Recheck, each reproduction run with `python3 -I ste-lint.py --json` on the `7073
 Upstream fixed none of the four. Linter counts, `70736273` and `d714e536` alike: `SKILL.md` 2 violations (1 hard), 1339 words. `rules/write-with-asd-ste100.md` 2 violations (1 hard), 272 words.
 
 **Task 2 (2026-11-27).** The kit has 16 no-model tests (`ste-obligation-kit` suite). Each of 8 deliberate breaks in `kit.py` (the scrub, the origin void, the denial void, the symlink target check, the environment, the arm field in the sheet, the cross-session deny list, the unread-flag rule) made one test fail. The ported cases equal the 2026-10-18 kit's prompts, checks, caps and fixtures. `control` froze at `4168d2a`: `SKILL.md` SHA-256 `e85c795e…`, rule `223a232c…`. Both probes on `claude-sonnet-5-5` saw only the rule, the skill prompt and the planned tools (none, or `Bash`, `Edit`, `Read`, `Write`), no memory, no other session and no user name. The init records list the CLI's bundled skills (`deep-research`, `dataviz` and others), but no rep has the Skill tool, and neither probe named them. The probes cost $0.06.
+
+**Task 3 (2026-11-27).** Under D8, the control arm ran 30 good reps with no void, plus 6 judge calls. The provisional tally (every unread flag a fail): `agent-instruction` passes the obligation check on Opus 5 of 5 and on Sonnet 1 of 5, and `agent-error-message` on Opus 3 of 5. So the control does not pass on both models, and D4 does not stop the line. Spend after Task 3: $8.98.
 
 ## Completion notes for the protocol
 

@@ -8,3 +8,39 @@ rep rb350aa	3.3681
 rep rb4ed87	3.4926
 probe rad5582	0.0588
 probe r20f9a4	0.0279
+rep rda3ad5	0.0694
+rep r5af8f8	0.0681
+rep r0fdd05	0.0700
+rep r09a75f	0.0689
+rep r1b09d6	0.0716
+rep r653012	0.0325
+rep r1a277f	0.0321
+rep r6128b0	0.0329
+rep rdade9f	0.0339
+rep r6fca49	0.0323
+rep r5afa5e	0.0647
+rep r1983ef	0.0647
+rep r70c412	0.0653
+rep rf3e295	0.0677
+rep r38d468	0.0660
+rep r3b60de	0.0303
+rep r35bccb	0.0304
+rep r5fa200	0.0311
+rep r6821a9	0.0338
+rep r466cc3	0.0353
+rep rcc440a	0.0679
+rep r263793	0.0664
+rep rf26c5f	0.0662
+rep r52a113	0.0682
+rep r4835ff	0.0695
+rep r45e47f	0.0317
+rep r3d9b89	0.0335
+rep rc57b53	0.0339
+rep r93f8f8	0.0345
+rep r4d5f63	0.0355
+judge control agent-tool-description claude-opus-5-5	0.0603
+judge control agent-tool-description claude-sonnet-5-5	0.0384
+judge control agent-error-message claude-opus-5-5	0.0439
+judge control agent-error-message claude-sonnet-5-5	0.0416
+judge control agent-instruction claude-opus-5-5	0.0414
+judge control agent-instruction claude-sonnet-5-5	0.0439

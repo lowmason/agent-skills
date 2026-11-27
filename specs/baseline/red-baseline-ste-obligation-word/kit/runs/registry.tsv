@@ -4,3 +4,33 @@ reed463	control	agent-tool-description	claude-opus-5-5	set aside (D8)	0.0578
 rb350aa	control	agent-tool-description	claude-opus-5-5	set aside (D8)	3.3681
 r00c178	control	agent-tool-description	claude-opus-5-5	set aside (D8)	0.0689
 rb4ed87	control	agent-tool-description	claude-opus-5-5	set aside (D8)	3.4926
+r5af8f8	control	agent-tool-description	claude-opus-5-5	good	0.0681
+rda3ad5	control	agent-tool-description	claude-opus-5-5	good	0.0694
+r09a75f	control	agent-tool-description	claude-opus-5-5	good	0.0689
+r0fdd05	control	agent-tool-description	claude-opus-5-5	good	0.0700
+r1b09d6	control	agent-tool-description	claude-opus-5-5	good	0.0716
+r6128b0	control	agent-tool-description	claude-sonnet-5-5	good	0.0329
+r1a277f	control	agent-tool-description	claude-sonnet-5-5	good	0.0321
+rdade9f	control	agent-tool-description	claude-sonnet-5-5	good	0.0339
+r6fca49	control	agent-tool-description	claude-sonnet-5-5	good	0.0323
+r653012	control	agent-tool-description	claude-sonnet-5-5	good	0.0325
+r38d468	control	agent-error-message	claude-opus-5-5	good	0.0660
+r1983ef	control	agent-error-message	claude-opus-5-5	good	0.0647
+r70c412	control	agent-error-message	claude-opus-5-5	good	0.0653
+rf3e295	control	agent-error-message	claude-opus-5-5	good	0.0677
+r5afa5e	control	agent-error-message	claude-opus-5-5	good	0.0647
+r466cc3	control	agent-error-message	claude-sonnet-5-5	good	0.0353
+r3b60de	control	agent-error-message	claude-sonnet-5-5	good	0.0303
+r6821a9	control	agent-error-message	claude-sonnet-5-5	good	0.0338
+r35bccb	control	agent-error-message	claude-sonnet-5-5	good	0.0304
+r5fa200	control	agent-error-message	claude-sonnet-5-5	good	0.0311
+rcc440a	control	agent-instruction	claude-opus-5-5	good	0.0679
+r52a113	control	agent-instruction	claude-opus-5-5	good	0.0682
+rf26c5f	control	agent-instruction	claude-opus-5-5	good	0.0662
+r4835ff	control	agent-instruction	claude-opus-5-5	good	0.0695
+r263793	control	agent-instruction	claude-opus-5-5	good	0.0664
+r4d5f63	control	agent-instruction	claude-sonnet-5-5	good	0.0355
+r45e47f	control	agent-instruction	claude-sonnet-5-5	good	0.0317
+rc57b53	control	agent-instruction	claude-sonnet-5-5	good	0.0339
+r3d9b89	control	agent-instruction	claude-sonnet-5-5	good	0.0335
+r93f8f8	control	agent-instruction	claude-sonnet-5-5	good	0.0345
