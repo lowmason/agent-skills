@@ -24,7 +24,7 @@ lines = [
     {{'type': 'system', 'subtype': 'init', 'tools': [], 'session_id': 's1', 'uuid': 'u1'}},
     {{'type': 'assistant', 'message': {{'content': [{{'type': 'text', 'text': {REPLY!r}}}]}}, 'uuid': 'u2'}},
     {{'type': 'result', 'subtype': 'success', 'is_error': False, 'result': {REPLY!r}, 'result_index': 0,
-      'total_cost_usd': 0.01, 'session_id': 's1', 'credential_expires_at': 123, 'origin': None}},
+      'total_cost_usd': {COST}, 'session_id': 's1', 'credential_expires_at': 123, 'origin': None}},
 ]
 for line in lines:
     print(json.dumps(line))
@@ -33,10 +33,10 @@ PLANNED_ENV = {'HOME', 'USER', 'LOGNAME', 'SHELL', 'LANG', 'TMPDIR', 'PATH',
                'CLAUDE_CODE_DISABLE_ADVISOR_TOOL', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY'}
 
 
-def kit_env(tmp_path: Path, reply: str) -> dict:
+def kit_env(tmp_path: Path, reply: str, cost: float = 0.01) -> dict:
     stub = tmp_path / 'claude'
     # The test's own Python: /usr/bin/python3 is Xcode's shim, which adds CPATH, SDKROOT and others itself.
-    stub.write_text(STUB.format(PY=sys.executable, LOG=str(tmp_path / 'log'), REPLY=reply), encoding='utf-8')
+    stub.write_text(STUB.format(PY=sys.executable, LOG=str(tmp_path / 'log'), REPLY=reply, COST=cost), encoding='utf-8')
     stub.chmod(0o755)
     keychains = tmp_path / 'realhome' / 'Library' / 'Keychains'
     keychains.mkdir(parents=True)
@@ -282,3 +282,38 @@ def test_revoid_applies_the_current_void_rules_and_redacts_kept_streams(tmp_path
     (row,) = kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)
     assert row['status'].startswith('V3')
     assert os.environ['USER'] not in kept.read_text(encoding='utf-8')
+
+
+# ---- input shapes (plan 114 Task 2 mutant step) ----
+
+def test_a_stronger_word_that_the_source_has_raises_no_flag():
+    assert cases.obligation_flags('The agent must wait.', 'The agent must wait.') == []
+
+
+def test_redaction_leaves_a_longer_word_that_holds_the_name():
+    assert kit.scrub({'s': 'alicex and alice'}, user='alice') == {'s': 'alicex and <user>'}
+
+
+def test_v3_voids_a_path_in_a_sibling_home_that_shares_the_prefix():
+    home = '/private/tmp/ste114/rabc123'
+    sibling = bash_use('cat /private/tmp/ste114/rabc1234/work/repo/docs/guide.md')
+    assert kit.void_reason(records({}, sibling), 'Bash', home).startswith('V3')
+
+
+def test_set_aside_rows_are_not_attempts(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.')
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    reg = tmp_path / 'runs' / 'registry.tsv'
+    kit.write_tsv(reg, kit.REGISTRY_FIELDS, [{'rep': f'rold{n}', 'arm': 'control', 'case': 'agent-instruction',
+                                              'model': 'claude-opus-5-5', 'status': 'set aside (D8)', 'cost': '0'}
+                                             for n in range(7)])
+    done = run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '2', '--jobs', '2')
+    assert done.returncode == 0, done.stdout
+
+
+def test_the_cost_alarm_registers_every_rep_of_its_batch(tmp_path):
+    env = kit_env(tmp_path, 'The downstream agent should consume the artifact.', cost=3.5)
+    assert run_kit(env, 'freeze', 'control', CONTROL_COMMIT).returncode == 0
+    done = run_kit(env, 'run', 'control', 'agent-instruction', 'claude-opus-5-5', '--good', '2', '--jobs', '2')
+    assert done.returncode == 3 and 'stop:' in done.stdout
+    assert len(kit.read_tsv(tmp_path / 'runs' / 'registry.tsv', kit.REGISTRY_FIELDS)) == 2

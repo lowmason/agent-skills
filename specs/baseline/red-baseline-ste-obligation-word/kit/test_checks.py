@@ -48,3 +48,7 @@ def test_a_sentence_over_the_cap_raises_a_flag():
     long = ' '.join(['word'] * 21) + '.'
     assert len(cases.sentence_cap_flags(long, 20)) == 1
     assert cases.sentence_cap_flags('Short sentence here.', 20) == []
+
+
+def test_a_sentence_at_the_cap_raises_no_flag():
+    assert cases.sentence_cap_flags(' '.join(['word'] * 20) + '.', 20) == []
