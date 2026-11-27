@@ -768,7 +768,7 @@
       `audited` while leaving a newer `checked` alone needs a `baseline.py` change; the simpler
       remedy is for the skill to tell the owner to rebuild the audit packet. Size: quick-fix.
       Revisit if: a live audit's `audited --to` is refused this way.
-- [ ] The audit verifier's omission recall was 3 of 7 known positives (plan 44's Live run,
+- [x] The audit verifier's omission recall was 3 of 7 known positives (plan 44's Live run,
       step B, 2026-10-13). `/cc-guide audit models` (packet `20261013T113847-audit`, 2.1.296
       snapshot) found the effort-change cache caveat and `ANTHROPIC_DEFAULT_MODEL` as PARTIAL
       rows, and `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` as a B and a C row. It missed
@@ -824,6 +824,7 @@
       > done-when, not the other misses.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): the changed arm met P11 in 5 of 5 valid reps against 0 of 5 (3 by the mechanical B-row line, 2 by C rows rated by hand), but gate A failed and Part A is reverted, so an audit at HEAD still misses `deniedModels`. Kept open by the owner's word. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A and Disposition.
+      → retired 2026-11-27: the owner retired it after plan 102's gate A failed and Part A was reverted; no new verifier-recall round will run, so its `deniedModels` done-when cannot be met.
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
@@ -1099,7 +1100,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       not-covered row the owner has not ruled on, and cites it once each row is ruled. A
       micro-test of the step (5 reps per arm, claude -p from a fresh /tmp folder) held the
       file in 5 of 5 runs with the new step and 0 of 5 with the old one.
-- [ ] The audit verifier writes no B row for the changelog entries behind P11 (`deniedModels`
+- [x] The audit verifier writes no B row for the changelog entries behind P11 (`deniedModels`
       beside `availableModels`, the audit packet's `changelog.md:1288`) and P8 (a top-level
       `effortLevel` no longer counting for Opus 5.5, `changelog.md:1702`), though the packet's
       changelog carries both (plan 45's key, `specs/plans/completed/45-claude-code-drift-automation.md`
@@ -1115,6 +1116,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `44-claude-code-drift-automation — 2026-10-13`); close both together when P11 is met.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): gate A failed (P8 in 2 of 5 changed reps, where 4 are needed; P13 retention 1 against the control's 4), so Part A was reverted whole. The changed arm answered every listed item (0 of 206 unanswered in 5 of 5 reps, against 202 to 206 in the control) and met P11 in 5 of 5. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A. A new round needs the owner's word.
+      → retired 2026-11-27: the owner retired it with the P11 item in section `44-claude-code-drift-automation — 2026-10-13`, after plan 102's gate A failed and Part A was reverted; no new verifier-recall round will run.
 - [x] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
       checkpoint on 2026-10-14 turned on contested readings of the changed arm's
       `hooks/README.md` rows: r11 and r27 kept 3 and 4 `contradicts` rows on cases that are
