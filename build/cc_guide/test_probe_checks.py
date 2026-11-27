@@ -1298,7 +1298,7 @@ def test_the_recorded_shape_gives_these_sightings(tmp_path):
     base = {'broken': None, 'entered': True, 'has_pushed': True}
     assert pc.worktree_sightings(wt_streams(places), places) == {
         'isolation': {'broken': None, 'exited': True, 'exit_marked': False, 'pwd_after': 'main', 'locked_before': True,
-                      'kept_after': True, 'locked_after': False,
+                      'kept_before': True, 'kept_after': True, 'locked_after': False,
                       'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
                                 'plain_subshell': ran, 'main_git_after': ran}},
         'noop': {'broken': None, 'exit_refused': True, 'exit_marked': True, 'pwd_after': 'plain-worktree'},
@@ -1576,3 +1576,25 @@ def test_the_worktrees_block_is_found_through_a_symlink(tmp_path):
     events = wt_with_lists(places, (wt_list(shown, True), False), (wt_list(shown, False), False))
     sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
     assert (sightings['isolation']['locked_before'], sightings['isolation']['kept_after']) == (True, True)
+
+
+def test_a_failed_list_before_exit_worktree_is_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_with_lists(places, ('fatal: not a git repository', True), (wt_list(places, False), False))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
+    assert (sightings['isolation']['kept_before'], sightings['isolation']['locked_before']) == (None, None)
+    assert pc.assess_worktree_isolation(sightings) == (
+        ERROR, 'isolation: git worktree list --porcelain before ExitWorktree never ran')
+
+
+def test_a_list_before_exit_worktree_without_the_worktree_is_an_error(tmp_path):
+    '''With no block for the probe worktree, the --worktree launch made no worktree the run can see, so the lock
+    reading proves nothing.'''
+    places = wt_places(tmp_path)
+    main_only = f"worktree {places['main']}\nHEAD abc\nbranch refs/heads/main\n"
+    events = wt_with_lists(places, (main_only, False), (wt_list(places, False), False))
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events), places)
+    assert (sightings['isolation']['kept_before'], sightings['isolation']['locked_before']) == (False, None)
+    assert pc.assess_worktree_isolation(sightings) == (
+        ERROR, 'isolation: git worktree list --porcelain before ExitWorktree did not list the worktree, so its lock '
+               'reading proves nothing')
