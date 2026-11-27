@@ -1280,3 +1280,141 @@ def test_sightings_hold_no_path(tmp_path):
     places = wt_places(tmp_path)
     shown = json.dumps(pc.worktree_sightings(wt_streams(places), places))
     assert not [path for path in places.values() if path in shown]
+
+
+def test_the_recorded_shape_gives_these_sightings(tmp_path):
+    places = wt_places(tmp_path)
+    ran, refused = {'ran': True, 'refused': False, 'marked': False}, {'ran': True, 'refused': True, 'marked': True}
+    base = {'broken': None, 'entered': True, 'has_pushed': True}
+    assert pc.worktree_sightings(wt_streams(places), places) == {
+        'isolation': {'broken': None, 'exited': True, 'pwd_after': 'main', 'locked_before': True,
+                      'locked_after': False,
+                      'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
+                                'plain_subshell': ran, 'main_git_after': ran}},
+        'noop': {'broken': None, 'exit_refused': True, 'pwd_after': 'plain-worktree'},
+        'base-no-remote': {**base, 'has_unpushed': True}, 'base-failed-fetch': {**base, 'has_unpushed': False}}
+
+
+def wt_without_result(events, tid):
+    '''The events with the tool_result of call `tid` left out.'''
+    return [e for e in events if not any(isinstance(b, dict) and b.get('tool_use_id') == tid
+                                         for b in (e.get('message') or {}).get('content') or [])]
+
+
+def test_a_step_is_found_by_its_command_after_strip(tmp_path):
+    places = wt_places(tmp_path)
+    padded = wt_isolation(places, commands={'git_subshell': f'  {WT_GIT_SUBSHELL}\n'})
+    assert wt_verdict(places, isolation=padded) == (PASS, WT_PASS)
+
+
+@pytest.mark.parametrize('events, step', [
+    # The same command after ExitWorktree is main_git_after, so main_git_before never ran.
+    (lambda p: wt_isolation(p, drop={'main_git_before'}), 'main_git_before'),
+    # A step that runs only after ExitWorktree is not the step, which runs before it.
+    (lambda p: wt_stream(*[c for c in wt_isolation_calls(p) if c[1].get('command') != WT_GIT_SUBSHELL],
+                         wt_bash(WT_GIT_SUBSHELL, p['main'])), 'git_subshell'),
+    # main_git_after with no ExitWorktree before it.
+    (lambda p: wt_isolation(p, drop={'main_git_after'}), 'main_git_after'),
+    # A call with no tool_result did not run.
+    (lambda p: wt_without_result(wt_isolation(p), 'toolu_wt4'), 'plain_subshell'),
+])
+def test_a_step_missing_from_its_side_of_exit_worktree_never_ran(tmp_path, events, step):
+    places = wt_places(tmp_path)
+    sightings = pc.worktree_sightings(wt_streams(places, isolation=events(places)), places)
+    assert sightings['isolation']['steps'][step] == {'ran': False, 'refused': None, 'marked': None}
+    assert pc.assess_worktree_isolation(sightings) == (ERROR, f'isolation: {step} never ran')
+
+
+def wt_isolation_calls(places):
+    '''The isolation run's calls as wt_stream takes them, read back from wt_isolation's events.'''
+    events = wt_isolation(places)
+    calls = []
+    for e in events:
+        for block in (e.get('message') or {}).get('content') or []:
+            if block.get('type') == 'tool_use':
+                outcome = next((b for x in events for b in (x.get('message') or {}).get('content') or []
+                                if b.get('type') == 'tool_result' and b.get('tool_use_id') == block['id']))
+                calls.append((block['name'], block['input'], outcome['content'][0]['text'],
+                              outcome.get('is_error')))
+    return calls
+
+
+def test_a_refused_git_subshell_without_the_mark_is_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    calls = [(name, given, 'fatal: bad revision' if given.get('command') == WT_GIT_SUBSHELL else body, is_error)
+             for name, given, body, is_error in wt_isolation_calls(places)]
+    assert wt_verdict(places, isolation=wt_stream(*calls)) == (
+        ERROR, 'isolation: git_subshell was refused without the isolation mark')
+
+
+@pytest.mark.parametrize('change, finding', [
+    (lambda p: {'isolation': wt_isolation(p, drop={'exit'})}, 'isolation: ExitWorktree never ran'),
+    (lambda p: {'isolation': wt_without_result(wt_isolation(p), 'toolu_wt7')}, 'isolation: ExitWorktree never ran'),
+    (lambda p: {'isolation': wt_isolation(p, drop={'list_before'})},
+     'isolation: git worktree list --porcelain before ExitWorktree never ran'),
+    (lambda p: {'isolation': wt_isolation(p, drop={'list_after'})},
+     'isolation: git worktree list --porcelain after ExitWorktree never ran'),
+    (lambda p: {'isolation': wt_isolation(p, drop={'pwd'})}, 'isolation: pwd after ExitWorktree never ran'),
+    (lambda p: {'noop': wt_stream(wt_bash('pwd', p['plain-worktree']))}, 'noop: ExitWorktree never ran'),
+    (lambda p: {'noop': wt_stream(wt_bash('pwd', p['plain-worktree']), WT_LOAD_EXIT, wt_exit(WT_NO_OP, True))},
+     'noop: pwd after ExitWorktree never ran'),
+    (lambda p: {'base-no-remote': wt_base(p, ['probe: unpushed', 'probe: pushed'], entered=False)},
+     'base-no-remote: never entered a worktree'),
+    (lambda p: {'base-failed-fetch': wt_stream(wt_bash(WT_LOG, 'probe: pushed'))},
+     'base-failed-fetch: never entered a worktree'),
+    (lambda p: {'base-failed-fetch': wt_stream(wt_bash(WT_LOG, 'probe: pushed'),
+                                               ('EnterWorktree', {'name': 'base'}, 'Created worktree', None))},
+     'base-failed-fetch: git log --format=%s never ran after EnterWorktree'),
+    (lambda p: {'base-failed-fetch': wt_base(p, ['probe: pushed again'])},
+     "base-failed-fetch: the log has no 'probe: pushed' commit"),
+    (lambda p: {'noop': None}, 'noop: the run broke: no stream-json events'),
+    (lambda p: {'base-no-remote': wt_stream()[:-1]}, 'base-no-remote: the run broke: no result event'),
+])
+def test_a_missing_reading_is_an_error_naming_it(tmp_path, change, finding):
+    '''The finding joins every missing reading: with no ExitWorktree, the steps after it are missing too.'''
+    places = wt_places(tmp_path)
+    outcome, said = wt_verdict(places, **change(places))
+    assert outcome == ERROR
+    assert finding in said.split('; ')
+
+
+def test_a_pwd_before_exit_worktree_is_not_pwd_after(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(wt_bash('pwd', places['plain-worktree']), WT_LOAD_EXIT, wt_exit(WT_NO_OP, True))
+    assert pc.worktree_sightings(wt_streams(places, noop=events), places)['noop']['pwd_after'] is None
+
+
+def test_pwd_after_reads_the_first_pwd_and_names_an_unknown_path_other(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(WT_LOAD_EXIT, wt_exit(WT_NO_OP, True), wt_bash('pwd', str(tmp_path / 'elsewhere')),
+                       wt_bash('pwd', places['plain-worktree']))
+    sightings = pc.worktree_sightings(wt_streams(places, noop=events), places)
+    assert sightings['noop']['pwd_after'] == 'other'
+    assert pc.assess_worktree_isolation(sightings) == (
+        DIVERGES, 'noop: pwd after ExitWorktree was other, not plain-worktree')
+
+
+def test_a_lock_line_counts_only_at_the_start_of_a_porcelain_line(tmp_path):
+    places = wt_places(tmp_path)
+    shown = wt_list(places, False) + 'prunable gitdir points at a locked path\n'
+    calls = [(name, given, shown if given.get('command') == WT_LIST and n < 5 else body, is_error)
+             for n, (name, given, body, is_error) in enumerate(wt_isolation_calls(places))]
+    assert wt_verdict(places, isolation=wt_stream(*calls)) == (
+        DIVERGES, 'isolation: the worktree was not locked before ExitWorktree')
+
+
+def test_a_log_before_enter_worktree_does_not_count(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(wt_bash(WT_LOG, 'probe: unpushed\nprobe: pushed'),
+                       ('EnterWorktree', {'name': 'base'}, 'Created worktree', None), wt_bash(WT_LOG, 'probe: pushed'))
+    assert pc.worktree_sightings(wt_streams(places, **{'base-failed-fetch': events}), places)[
+        'base-failed-fetch']['has_unpushed'] is False
+
+
+def test_an_error_outranks_a_divergence_and_divergences_join_in_one_finding(tmp_path):
+    places = wt_places(tmp_path)
+    two = wt_isolation(places, flip={'control'}, locked_after=True)
+    assert wt_verdict(places, isolation=two) == (
+        DIVERGES, 'isolation: control was refused; isolation: the worktree was still locked after ExitWorktree')
+    assert wt_verdict(places, isolation=two, noop=wt_stream()) == (ERROR, 'noop: ExitWorktree never ran; '
+                                                                          'noop: pwd after ExitWorktree never ran')
