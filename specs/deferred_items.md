@@ -6502,6 +6502,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan (lane 3 of the 2026-11-26 pass, with the `build/run_suites.py` items). Done when: the weekly job's
       3.13 pass lists none of the three kit suites as failed.
       → planned 2026-11-26: specs/plans/110-build-runner-and-ci-kit-suites.md
+      → done 2026-11-26 (plan 110): the workflow now sets `fetch-depth: 0` and `TMPDIR: /var/tmp`. The branch run 45885612117 printed `suite runs passed` for its 3.13 pass. The owner changed D2 from `runner.temp`, which broke three writing-skills kits. The `main` run after the merge is in the completion report.
 
 ## 109-cc-guide-fetch-notice-and-probes — 2026-11-26
 - [ ] `collect_teardown` could SIGKILL an unrelated process if the OS reuses the hook's logged pid during the 5 s
@@ -6528,8 +6529,6 @@ review and the Plan Completion gate (2026-10-27) add the others.
       answer sits in a tool input (the final review of plan 109, Declined to judge; none of the three 2.1.330 reps
       holds one). Size: quick-fix (read the answer from a hand-back tool input, or exempt that tool by name). Revisit
       if: an `explore-override` run reports ERROR "made 1 tool call(s)" for a rep whose only tool call is a hand-back.
-
-      → done 2026-11-26 (plan 110): the workflow now sets `fetch-depth: 0` and `TMPDIR: /var/tmp`. The branch run 45885612117 printed `suite runs passed` for its 3.13 pass. The owner changed D2 from `runner.temp`, which broke three writing-skills kits. The `main` run after the merge is in the completion report.
 
 ## 110-build-runner-and-ci-kit-suites — 2026-11-26
 - [ ] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
