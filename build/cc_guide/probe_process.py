@@ -94,8 +94,8 @@ def stop_group(proc: subprocess.Popen) -> None:
     run, then SIGKILL to whatever is left after up to KILL_GRACE seconds.
     The wait is for the group's leader, not for every member: a member that
     outlives the leader gets the SIGKILL at once. A run that exits normally
-    is swept by execute instead. Stop signals are
-    held meanwhile, so a second Ctrl-C cannot skip the SIGKILL. macOS answers
+    is swept by execute instead. Stop signals are held meanwhile, so a
+    second Ctrl-C cannot skip the SIGKILL. macOS answers
     EPERM for a group whose members have all exited but are not reaped. The
     reaps are bounded, since an interrupted wait can leave Popen's lock held.'''
     with held_signals():

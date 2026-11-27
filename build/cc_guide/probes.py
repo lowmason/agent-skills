@@ -728,8 +728,9 @@ def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, a
     '''One log row. PROBES.md is committed to a public repo, and a finding can
     carry a home or temporary path, the login name or an MCP tool name, so
     the finding is scrubbed as a fixture is (public_finding), and the Binary
-    cell, past its ~, is scrubbed of the same private strings. The Flags cell holds `--allow-old` when used, then
-    the names of the alias remaps the run inherited (inherited_remaps).'''
+    cell, past its ~, is scrubbed of the same private strings. The Flags
+    cell holds `--allow-old` when used, then the names of the alias remaps
+    the run inherited (inherited_remaps).'''
     flags = [*(['--allow-old'] if allow_old else []), *remaps]
     binary = probe_checks.redact(shown_path(claude), private_strings())
     cells = [day.isoformat(), version, binary, pid, verdict.outcome, public_finding(verdict), ' '.join(flags)]
