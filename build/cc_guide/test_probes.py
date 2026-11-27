@@ -1382,3 +1382,15 @@ def test_save_fixtures_scrubs_an_escaped_private_value_from_a_side_file(tmp_path
     saved = (dest / 'agent-model-pins.transcripts.json').read_text()
     assert saved == json.dumps({'Explore': [{'model': '<private> <private>', 'effort': 'low'}]},
                                ensure_ascii=ensure_ascii)
+
+
+def test_save_fixtures_scrubs_a_raw_private_value_from_a_text_side_file(tmp_path, monkeypatch):
+    '''A stop.log is plain text, not JSON, so a private value with a quote or a non-ASCII character reads there as
+    given, and the JSON forms of the value do not match it.'''
+    home = tmp_path / 'hé"me'
+    home.mkdir()
+    monkeypatch.setenv('HOME', str(home))
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {'stop.jsonl': stream(init(), RESULT), 'stop.log': f'false\n{home}\ntrue\n'})
+    probes.save_fixtures(run_dir, 'stop-continuation', dest)
+    assert (dest / 'stop-continuation.log').read_text() == 'false\n<private>\ntrue\n'
