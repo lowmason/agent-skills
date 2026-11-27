@@ -907,6 +907,35 @@ def test_parse_census_ind_rejects_prefix_missing_from_naics(naics_for_ind, code,
   assert 'census_ind_2022' in str(error.value) and 'naics_2022' in str(error.value)
 
 
+@pytest.mark.parametrize('vintage', [2017, 2022])
+@pytest.mark.parametrize('cell', [None, '', '  '])
+def test_parse_census_ind_keeps_the_blank_cell_of_9920(naics_for_ind, vintage, cell):
+  # 9920 (unemployed, last worked 5 years ago or earlier or never worked) has no industry.
+  census = build.parse_census_ind(
+    census_ind_raw(vintage, cells={'9920': cell}), vintage=vintage, **{f'naics_{vintage}': naics_for_ind},
+  )
+  assert census.filter(pl.col('census_ind').eq('9920'))['naics_cell'].to_list() == [cell]
+  frame = build.expand_census_ind(
+    vintage=vintage, **{f'census_ind_{vintage}': census, f'naics_{vintage}': naics_for_ind},
+  )
+  assert frame.filter(pl.col(f'census_ind_{vintage}').eq('9920')).height == 0
+
+
+@pytest.mark.parametrize('vintage', [2017, 2022])
+@pytest.mark.parametrize('cell', [None, '', '  '])
+@pytest.mark.parametrize('code', [
+  '0380',   # its six-digit codes are still claimed by 0480 'Part of 21', so coverage would pass
+  '9670',   # a military code: mapped ('pt. 92811'), unlike 9920
+  '1190',   # an exact six-digit claim
+])
+def test_parse_census_ind_rejects_a_blank_cell_on_a_mapped_code(naics_for_ind, vintage, cell, code):
+  with pytest.raises(ValueError, match=rf'Census {code}\b.*NAICS cell is blank') as error:
+    build.parse_census_ind(
+      census_ind_raw(vintage, cells={code: cell}), vintage=vintage, **{f'naics_{vintage}': naics_for_ind},
+    )
+  assert f'census_ind_{vintage}' in str(error.value)
+
+
 def test_expand_census_ind_partitions_exact_and_prefix_claims(naics_for_ind):
   frame = expand_ind(naics_for_ind)
   assert frame.columns == ['census_ind_2022', 'census_title_2022', 'naics_2022', 'naics_title_2022', 'via']

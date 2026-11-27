@@ -747,6 +747,9 @@ NAICS_PREFIX_RE = r'\d{2,6}'
 NAICS_CELL_EXCLUSION_RE = r'\s+exc\.\s+'
 NAICS_CELL_ITEM_SEPARATOR_RE = r',\s*|\s+and\s+'
 NAICS_CELL_PARTIAL_RE = r'^(?:[Pp]ts?\.|[Pp]art of)\s+'
+# The Census industry codes that may have a blank NAICS cell: 9920 (unemployed, last worked 5
+# years ago or earlier or never worked) has no industry. A blank cell on any other code raises.
+CENSUS_IND_UNMAPPED = frozenset({'9920'})
 # The 2017 list codes 9590 as prefix 928 and each military branch as exact 928110, so eight
 # Census codes claim 928110 whole. The 2022 list rewrites all eight as 'pt. 92811'; by owner
 # ruling the 2017 claims on that one code count as partial too. Keyed (vintage, NAICS code) ->
@@ -792,7 +795,9 @@ def parse_census_ind(raw: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> p
   code listed on two rows (0770, 7570) keeps its first row's title, which a sector heading
   carries in the first column; the rows must agree on the NAICS cell. naics_cell is stored
   verbatim, trailing spaces included (parse_naics_cell trims when it reads it), and every prefix
-  in it must reach a six-digit code of the NAICS vintage the list derives from.
+  in it must reach a six-digit code of the NAICS vintage the list derives from. Only the codes in
+  CENSUS_IND_UNMAPPED may have a blank cell: on any other code a blank cell raises, because the
+  expansion would drop that code with no error.
   '''
   naics = deps[f'naics_{vintage}']
   body = frame_below_header(raw, [str(vintage), 'census', 'naics'])
@@ -822,6 +827,11 @@ def parse_census_ind(raw: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> p
       pairs = parse_naics_cell(cell)
     except ValueError as error:
       raise ValueError(f'census_ind_{vintage}: Census {census_ind}: {error}') from error
+    if not pairs and census_ind not in CENSUS_IND_UNMAPPED:
+      raise ValueError(
+        f'census_ind_{vintage}: Census {census_ind}: its NAICS cell is blank ({cell!r}), and only '
+        f'{", ".join(sorted(CENSUS_IND_UNMAPPED))} may have none; the source layout changed.'
+      )
     for prefix, _kind in pairs:
       if prefix not in reachable:
         raise ValueError(
