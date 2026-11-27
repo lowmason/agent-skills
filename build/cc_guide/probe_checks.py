@@ -1,4 +1,4 @@
-# cc-guide: subagents.frontmatter subagents.tools subagents.models hooks.events hooks.exit-codes hooks.patterns @2.1.326
+# cc-guide: subagents.frontmatter subagents.tools subagents.models hooks.events hooks.exit-codes hooks.patterns subagents.worktrees @2.1.326
 '''The probe assertions (drift spec R10.2, R10.5): pure functions over a probe
 run's raw stream-json events and the side files the run leaves, each giving
 an outcome and a one-line finding. They read event fields, never the model's
@@ -738,6 +738,198 @@ def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
     if signals[:1] == [TEARDOWN_FIRST] and gone and not other:
         return Verdict(PASS, shown)
     return Verdict(DIVERGES, shown)
+
+
+# worktree-isolation: four claude -p runs in scratch repos, watching the guide's four probe-backed facts on worktree
+# isolation (subagents.worktrees; deferred item R122). The commands are shared with probe_worktrees.py's prompts, and
+# a step is found only by its exact command, so a reworded command reads as never run, not as a changed behaviour.
+WT_CONTROL = 'git rev-parse --show-toplevel'
+WT_GIT_SUBSHELL = 'TOP=$(git rev-parse --show-toplevel); echo "$TOP"'
+WT_PLAIN_SUBSHELL = 'HERE=$(pwd); echo "$HERE"'
+WT_LIST = 'git worktree list --porcelain'
+WT_PWD = 'pwd'
+WT_MAIN_GIT = 'git -C {main} rev-parse --show-toplevel'
+WT_LOG = 'git log --format=%s'
+WT_PUSHED, WT_UNPUSHED = 'probe: pushed', 'probe: unpushed'  # the base runs' commit subjects
+WT_ISOLATION_MARK = 'isolated in the worktree'  # in the harness's refusal of a command that leaves the worktree
+WT_LOCKED = 'locked'  # a porcelain line in a locked worktree's block
+WT_PARTS = ('isolation', 'noop', 'base-no-remote', 'base-failed-fetch')
+WT_BASE_PARTS = ('base-no-remote', 'base-failed-fetch')
+WT_NO_REMOTE, WT_FAILED_FETCH = WT_BASE_PARTS
+WT_MAIN, WT_PLAIN, WT_OTHER = 'main', 'plain-worktree', 'other'  # place names; WT_OTHER is a path in no place
+WT_STEPS = {'control': WT_CONTROL, 'main_git_before': WT_MAIN_GIT, 'git_subshell': WT_GIT_SUBSHELL,
+            'plain_subshell': WT_PLAIN_SUBSHELL, 'main_git_after': WT_MAIN_GIT}
+WT_AFTER_STEPS = frozenset({'main_git_after'})  # run after ExitWorktree; the rest run before it
+WT_REFUSED_STEPS = frozenset({'main_git_before', 'git_subshell'})  # the steps the guide says the harness refuses
+EXIT_TOOL, ENTER_TOOL = 'ExitWorktree', 'EnterWorktree'
+WT_NOT_RUN = {'ran': False, 'refused': None, 'marked': None}
+WT_FINDING = ('a $(...) naming git was refused and HERE=$(pwd) ran; ExitWorktree keep left a --worktree launch and '
+              'its lock; it was a no-op in a plain-git worktree; a failed fetch left the unpushed commit out, and no '
+              'remote kept it')
+
+
+def tool_calls(events: list[dict], name: str) -> list[tuple[tuple[int, int], str, dict]]:
+    '''(position, tool-use id, input) for each call of the named tool, in stream order. A position is the
+    event's index and the block's index in it, so calls before and after another call can be told apart.'''
+    return [((n, k), block.get('id'), block.get('input') or {})
+            for n, e in enumerate(events) if e.get('type') == 'assistant'
+            for k, block in enumerate((e.get('message') or {}).get('content') or [])
+            if isinstance(block, dict) and block.get('type') == 'tool_use' and block.get('name') == name]
+
+
+def first_run(events: list[dict], calls: list, command: str) -> tuple[str, str] | None:
+    '''(tool-use id, result text) of the first of `calls` whose command is `command` after strip() and that has
+    a result, or None.'''
+    for _, tid, given in calls:
+        text = tool_result_text(events, tid) if str(given.get('command') or '').strip() == command else None
+        if text is not None:
+            return tid, text
+    return None
+
+
+def failed(events: list[dict], tid: str) -> bool:
+    return any(tool_result_errors(events, [tid]))
+
+
+def place_of(text: str, places: dict[str, str]) -> str:
+    '''The name of the place whose realpath is the realpath of a printed path, else WT_OTHER.'''
+    seen = os.path.realpath(text.strip())
+    return next((name for name, path in places.items() if os.path.realpath(path) == seen), WT_OTHER)
+
+
+def split_at(events: list[dict], tool: str) -> tuple[tuple[str, str] | None, list, list]:
+    '''The first call of `tool` as (id, result text or None), or None, and the Bash calls before and after it.
+    With no such call, every Bash call is before it.'''
+    bash, marks = tool_calls(events, 'Bash'), tool_calls(events, tool)
+    if not marks:
+        return None, bash, []
+    at, tid, _ = marks[0]
+    return ((tid, tool_result_text(events, tid)), [c for c in bash if c[0] < at], [c for c in bash if c[0] > at])
+
+
+def call_failed(events: list[dict], call: tuple[str, str] | None) -> bool | None:
+    '''Whether a call's result (from split_at) is an error, or None when there is no call or no result.'''
+    if call is None or call[1] is None:
+        return None
+    return failed(events, call[0])
+
+
+def pwd_after(events: list[dict], after: list, places: dict[str, str]) -> str | None:
+    run = first_run(events, after, WT_PWD)
+    return None if run is None else place_of(run[1], places)
+
+
+def locked(events: list[dict], calls: list) -> bool | None:
+    run = first_run(events, calls, WT_LIST)
+    return None if run is None else any(line.startswith(WT_LOCKED) for line in run[1].splitlines())
+
+
+def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
+    exit_call, before, after = split_at(events, EXIT_TOOL)
+    steps = {}
+    for step, command in WT_STEPS.items():
+        command = WT_MAIN_GIT.format(main=places[WT_MAIN]) if command == WT_MAIN_GIT else command
+        run = first_run(events, after if step in WT_AFTER_STEPS else before, command)
+        steps[step] = WT_NOT_RUN if run is None else {
+            'ran': True, 'refused': failed(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}
+    refused = call_failed(events, exit_call)
+    return {'exited': None if refused is None else not refused, 'pwd_after': pwd_after(events, after, places),
+            'locked_before': locked(events, before), 'locked_after': locked(events, after),
+            'steps': steps}
+
+
+def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
+    exit_call, _, after = split_at(events, EXIT_TOOL)
+    return {'exit_refused': call_failed(events, exit_call), 'pwd_after': pwd_after(events, after, places)}
+
+
+def base_sighting(events: list[dict]) -> dict:
+    enter_call, _, after = split_at(events, ENTER_TOOL)
+    entered = call_failed(events, enter_call) is False
+    run = first_run(events, after, WT_LOG) if entered else None
+    subjects = None if run is None else {line.strip() for line in run[1].splitlines()}
+    return {'entered': entered, 'has_pushed': None if subjects is None else WT_PUSHED in subjects,
+            'has_unpushed': None if subjects is None else WT_UNPUSHED in subjects}
+
+
+def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, str]) -> dict:
+    '''The four worktree-isolation runs, read from their raw streams as booleans, place names and None, never a
+    path or tool output. `places` maps main, worktree and plain-worktree to absolute paths. In isolation, a step
+    is the first Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result:
+    whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). exited is
+    whether ExitWorktree's result is not an error; locked_before and locked_after, whether the first WT_LIST
+    result before or after ExitWorktree has a WT_LOCKED line; pwd_after, the place the first WT_PWD after
+    ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag. In a base run, entered
+    is an EnterWorktree call whose result is not an error, and has_pushed and has_unpushed read the first WT_LOG
+    result after it, line by line. A value that no call shows is None.'''
+    seen = {}
+    for part in WT_PARTS:
+        events = streams.get(part)
+        stream = events or []
+        reading = (isolation_sighting(stream, places) if part == 'isolation'
+                   else noop_sighting(stream, places) if part == 'noop' else base_sighting(stream))
+        seen[part] = {'broken': broken(events), **reading}
+    return seen
+
+
+def worktree_errors(sightings: dict) -> list[str]:
+    '''Why the runs prove nothing: a run broke, a step never ran, a step was refused without the isolation
+    mark (refused for another reason), or a base run never entered a worktree or logged no WT_PUSHED.'''
+    errors = [f"{part}: the run broke: {sightings[part]['broken']}" for part in WT_PARTS if sightings[part]['broken']]
+    if errors:
+        return errors
+    isolation, noop = sightings['isolation'], sightings['noop']
+    for step, seen in isolation['steps'].items():
+        if not seen['ran']:
+            errors.append(f'isolation: {step} never ran')
+        elif seen['refused'] and not seen['marked']:
+            errors.append(f'isolation: {step} was refused without the isolation mark')
+    errors += [f'{part}: {what} never ran' for part, what, value in (
+        ('isolation', EXIT_TOOL, isolation['exited']),
+        ('isolation', f'{WT_LIST} before {EXIT_TOOL}', isolation['locked_before']),
+        ('isolation', f'{WT_LIST} after {EXIT_TOOL}', isolation['locked_after']),
+        ('isolation', f'{WT_PWD} after {EXIT_TOOL}', isolation['pwd_after']),
+        ('noop', EXIT_TOOL, noop['exit_refused']),
+        ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
+    for part in WT_BASE_PARTS:
+        base = sightings[part]
+        if not base['entered']:
+            errors.append(f'{part}: never entered a worktree')
+        elif base['has_pushed'] is None:
+            errors.append(f'{part}: {WT_LOG} never ran after {ENTER_TOOL}')
+        elif not base['has_pushed']:
+            errors.append(f'{part}: the log has no {WT_PUSHED!r} commit')
+    return errors
+
+
+def worktree_differences(sightings: dict) -> list[str]:
+    '''How valid runs differ from the guide's four facts.'''
+    isolation, noop = sightings['isolation'], sightings['noop']
+    wrong = [f"isolation: {step} was {'not ' if step in WT_REFUSED_STEPS else ''}refused"
+             for step, seen in isolation['steps'].items() if seen['refused'] != (step in WT_REFUSED_STEPS)]
+    wrong += [*([] if isolation['exited'] else [f'isolation: {EXIT_TOOL} was refused']),
+              *([] if isolation['pwd_after'] == WT_MAIN else
+                [f"isolation: pwd after {EXIT_TOOL} was {isolation['pwd_after']}, not {WT_MAIN}"]),
+              *([] if isolation['locked_before'] else [f'isolation: the worktree was not locked before {EXIT_TOOL}']),
+              *([f'isolation: the worktree was still locked after {EXIT_TOOL}'] if isolation['locked_after'] else []),
+              *([] if noop['exit_refused'] else [f'noop: {EXIT_TOOL} was not refused']),
+              *([] if noop['pwd_after'] == WT_PLAIN else
+                [f"noop: pwd after {EXIT_TOOL} was {noop['pwd_after']}, not {WT_PLAIN}"]),
+              *([f'{WT_FAILED_FETCH} kept the unpushed commit'] if sightings[WT_FAILED_FETCH]['has_unpushed'] else []),
+              *([] if sightings[WT_NO_REMOTE]['has_unpushed'] else [f'{WT_NO_REMOTE} left the unpushed commit out'])]
+    return wrong
+
+
+def assess_worktree_isolation(sightings: dict) -> Verdict:
+    '''worktree-isolation: ERROR when worktree_errors finds anything, naming each; else DIVERGES when a fact
+    differs, naming each, joined by `; `; else PASS.'''
+    errors = worktree_errors(sightings)
+    if errors:
+        return Verdict(ERROR, '; '.join(errors))
+    wrong = worktree_differences(sightings)
+    if wrong:
+        return Verdict(DIVERGES, '; '.join(wrong))
+    return Verdict(PASS, WT_FINDING)
 
 
 DISPATCH_INPUT_KEYS = ('subagent_type', 'model')  # the input fields the dispatch checks read
