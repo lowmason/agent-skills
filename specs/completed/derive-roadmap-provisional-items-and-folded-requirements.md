@@ -1,6 +1,6 @@
 # derive-roadmap: provisional items and folded requirements — Design Spec
 
-**Status:** APPROVED (2026-11-27, owner: "Approved"). The design came from a brainstorming session on 2026-11-27,
+**Status:** COMPLETE (2026-11-27), implemented by plan 113 (`specs/plans/completed/113-derive-roadmap-provisional-items-and-folded-requirements.md`). It was APPROVED on 2026-11-27 (owner: "Approved"). The design came from a brainstorming session on 2026-11-27,
 opened by a `/deferred` Design pick. Decisions D1 and D2 are the owner's, from that session, and so is D2's one-path
 form after the builder check. Text marked *(designer's call)* is the designer's choice.
 

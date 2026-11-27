@@ -20,7 +20,7 @@ Ranked list. Plan 78's micro-test kit gains four cases. Every result goes into p
 **Tech Stack:** Markdown skill text. The stdlib Python kit in `specs/baseline/red-baseline-new-project-entry/kit/`.
 `claude -p` reps on Opus 5.5.
 
-**Spec:** `specs/derive-roadmap-provisional-items-and-folded-requirements.md` (APPROVED 2026-11-27, owner decisions D1
+**Spec:** `specs/completed/derive-roadmap-provisional-items-and-folded-requirements.md` (APPROVED 2026-11-27, owner decisions D1
 and D2). R1–R3 and V1–V4 below are the spec's.
 
 ## Global Constraints
