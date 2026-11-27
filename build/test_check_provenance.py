@@ -280,3 +280,12 @@ def test_agent_licenses_read_a_hyphenated_name_in_a_pointer(tmp_path):
 def test_main_runs_the_agent_license_check(monkeypatch):
     monkeypatch.setattr(check_provenance, 'AGENT_LICENSES', {'LICENSE-superpowers': ('debugger',)})
     assert main() == 1
+
+
+def test_agent_licenses_report_a_pointer_naming_the_wrong_license(tmp_path):
+    repo = _agent_tree(tmp_path, pointed=ADAPTED_SURFACES)
+    path = repo / 'agents' / 'adapted.md'
+    path.write_text(path.read_text().replace('LICENSE-x', 'LICENSE-y'))
+    assert agent_license_violations(repo, AGENT_TABLE) == [
+        'agents/adapted.md: no license pointer naming LICENSE-x, which AGENT_LICENSES maps to adapted',
+        'agents/adapted.md: license pointer names LICENSE-y, which AGENT_LICENSES does not map to adapted']
