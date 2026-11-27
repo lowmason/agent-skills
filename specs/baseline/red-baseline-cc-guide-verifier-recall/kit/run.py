@@ -239,6 +239,10 @@ def stop_group(proc: subprocess.Popen) -> None:
         except subprocess.TimeoutExpired:
             continue
     proc.wait()
+    try:  # a child that ignored SIGTERM outlives the parent in its group; the next rep must not start beside it
+        os.killpg(proc.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
 
 
 def records(path: Path) -> list[dict]:

@@ -792,6 +792,30 @@ def test_an_interrupted_runner_stops_the_rep_and_its_group(kit, tmp_path, sandbo
     assert run.spent() == common.CAPS['files']
 
 
+def test_stop_group_kills_a_child_that_outlives_its_parent(tmp_path, monkeypatch):
+    '''A child that ignores SIGTERM stays in the group after the parent exits on it:
+    stop_group still sends SIGKILL to the group, so no process of the rep runs on.'''
+    monkeypatch.setattr(run, 'KILL_GRACE', 2)
+    pid_file = tmp_path / 'child.pid'
+    child = ('import os, signal, sys, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); '
+             'open(sys.argv[1], "w").write(str(os.getpid())); time.sleep(60)')
+    parent = ('import subprocess, sys, time; '
+              f'subprocess.Popen([sys.executable, "-c", {child!r}, sys.argv[1]]); time.sleep(60)')
+    proc = subprocess.Popen([sys.executable, '-c', parent, str(pid_file)], start_new_session=True)
+    try:
+        assert wait_for(pid_file)
+        time.sleep(0.2)  # the child writes its pid after it ignores SIGTERM; let the write finish
+        child_pid = int(pid_file.read_text())
+        run.stop_group(proc)
+        assert proc.returncode == -signal.SIGTERM  # the parent ended on SIGTERM, within the grace
+        assert gone(child_pid)
+    finally:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
 def test_a_sigterm_to_the_runner_stops_the_rep(kit, tmp_path, sandbox):
     configure(tmp_path, 'r001', sleep=30)
     plan(('r001', 'readme', 'control'), ('r002', 'readme', 'changed'))

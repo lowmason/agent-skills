@@ -1498,6 +1498,31 @@ def test_v9_passes_a_stream_it_cannot_read_and_other_checks_void_the_rep(kit, st
     assert check_line(text, 'void') == 'void: V1, V5, V6, V7, V8'
 
 
+@pytest.mark.parametrize('line', ['plain text from stderr', '[1, 2]'], ids=['text', 'json-not-object'])
+def test_v6_voids_a_stream_with_a_line_that_is_no_json_object(kit, line):
+    '''A stream line that is no JSON object makes the stream not parse, though every
+    other line is a good record; a blank line still does not count.'''
+    plan(('r001', 'audit', 'changed'), batch='gateA1')
+    res = rep_files('r001', 'audit', 'changed', AUDIT_REPORT)
+    events = stream('r001', 'audit')
+    path = res / 'stream.jsonl'
+    path.write_text(''.join(json.dumps(e) + '\n' for e in events[:2]) + line + '\n\n'
+                    + ''.join(json.dumps(e) + '\n' for e in events[2:]))
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)
+    assert grade.main(['gateA1']) == 0
+    assert check_line(sheet('r001'), 'V6').startswith('V6: void: the stream does not parse')
+
+
+def test_v6_passes_a_stream_whose_only_odd_line_is_blank(kit):
+    plan(('r001', 'audit', 'changed'), batch='gateA1')
+    res = rep_files('r001', 'audit', 'changed', AUDIT_REPORT)
+    path = res / 'stream.jsonl'
+    path.write_text(path.read_text() + '\n  \n')
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)
+    assert grade.main(['gateA1']) == 0
+    assert check_line(sheet('r001'), 'V6') == 'V6: ok'
+
+
 def test_a_valid_verdict_on_a_graded_v9_void_sheet_is_refused(kit, capfd):
     assert check_line(v9_sheet(events=[user_with(FOREIGN)]), 'void') == 'void: V9'
     capfd.readouterr()
