@@ -31,12 +31,12 @@ import probe_checks
 from check import due_probes
 from docs import version_key
 from probe_checks import Verdict
-from probe_process import Execute, Invocation, claude_args, execute, inherited_remaps, term_as_exit
+from probe_process import (PROBE_TIMEOUT, Execute, Invocation, Probe, Read, claude_args, execute, inherited_remaps,
+                           term_as_exit)
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
 VERSION_TIMEOUT = 30  # seconds for `claude --version`
-PROBE_TIMEOUT = 600  # seconds for one probe invocation
 PINS_TIMEOUT = 1200  # agent-model-pins waits on three background agents
 # claude -p stops background agents 10 minutes after the main turn unless this
 # says otherwise. 15 minutes is above PROBE_TIMEOUT and below PINS_TIMEOUT, so
@@ -46,7 +46,8 @@ PINS_CEILING_MS = 900_000
 # ends its own wait before the harness stops the run.
 PAYLOAD_CEILING_MS = 300_000
 # A setup or output problem inside a probe: an ERROR row, never a crash (R10.5).
-PROBE_FAILURES = (OSError, subprocess.SubprocessError, ValueError, TypeError, KeyError, AttributeError)
+PROBE_FAILURES = (OSError, subprocess.SubprocessError, ValueError, TypeError, KeyError, AttributeError,
+                  SetupError)
 PINS_BUDGET_USD = '0.75'  # three agents, one of them Opus at xhigh
 TOOLS_TURNS, STOP_TURNS, PINS_TURNS, PAYLOAD_TURNS = 1, 6, 8, 6
 GUARD_SCRIPT = 'hooks/probe-readonly-guard.sh'
@@ -63,10 +64,6 @@ LOG_TEXT = '\n'.join([
     '|---|---|---|---|---|---|---|', ''])
 
 
-# Reads a run directory's file by name: its text, or None when absent.
-Read = Callable[[str], str | None]
-
-
 def stream_of(text: str | None) -> list[dict] | None:
     return None if text is None else probe_checks.parse_stream(text)
 
@@ -74,19 +71,6 @@ def stream_of(text: str | None) -> list[dict] | None:
 def copy_if_there(source: Path, target: Path) -> None:
     if source.is_file():
         shutil.copy(source, target)
-
-
-class Probe(NamedTuple):
-    # (scratch directory, claude, repo) -> the invocations to run there
-    prepare: Callable[[Path, str, Path], list[Invocation]]
-    # (scratch directory, run directory): copy what the run left beside its streams
-    collect: Callable[[Path, Path], None]
-    # the verdict from the run directory's files, the same path R12.6's replay takes
-    assess: Callable[[Read], Verdict]
-    # run-directory file -> the fixture file it is scrubbed into (R12.6)
-    fixtures: dict[str, str]
-    # whether the assertion reads a Bash call's command, so its fixtures keep the text (R12.6): only guard-liveness
-    reads_commands: bool = False
 
 
 def prepare_guard(scratch: Path, claude: str, repo: Path) -> list[Invocation]:

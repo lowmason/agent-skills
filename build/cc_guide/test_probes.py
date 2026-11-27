@@ -1218,6 +1218,20 @@ def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
         ERROR, 'OSError: disk full')
 
 
+def test_a_setup_error_from_prepare_is_an_error_row(tmp_path, monkeypatch):
+    '''worktree-isolation's prepare raises SetupError when a scratch repo misses a precondition.'''
+    def broken(scratch, claude, repo):
+        raise state.SetupError('gone: git fetch origin succeeded')
+    monkeypatch.setitem(probes.PROBE_RUNS, 'agent-tools', probes.PROBE_RUNS['agent-tools']._replace(prepare=broken))
+    assert probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'run', FakeRuns({})) == (
+        ERROR, 'SetupError: gone: git fetch origin succeeded')
+
+
+def test_the_moved_probe_names_still_resolve_through_probes():
+    assert (probes.Probe, probes.Read, probes.PROBE_TIMEOUT) == (
+        probe_process.Probe, probe_process.Read, probe_process.PROBE_TIMEOUT)
+
+
 def test_a_run_dir_that_cannot_be_made_is_an_error_row(tmp_path):
     '''(i): run_probe returns ERROR, never a traceback, so the row is still written.'''
     parent = tmp_path / 'a-file'

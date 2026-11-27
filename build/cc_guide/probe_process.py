@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from typing import Callable, NamedTuple
 
+from probe_checks import Verdict
+
 KILL_GRACE = 5  # seconds between SIGTERM and SIGKILL when a run is stopped, and for each reap after
 # SystemExit while probes run (term_as_exit). SIGHUP and SIGQUIT are POSIX-only, and cli.py imports this
 # module through probes.py for every subcommand, so a platform without them still imports it.
@@ -29,6 +31,7 @@ SCRUBBED_ENV = frozenset({'CLAUDE_CODE_EFFORT_LEVEL'})
 ALIAS_REMAPS = ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL', 'ANTHROPIC_DEFAULT_HAIKU_MODEL',
                 'ANTHROPIC_DEFAULT_FABLE_MODEL')
 BUDGET_USD = '0.50'  # --max-budget-usd for one probe invocation
+PROBE_TIMEOUT = 600  # seconds for one probe invocation
 
 
 class Invocation(NamedTuple):
@@ -37,12 +40,28 @@ class Invocation(NamedTuple):
     env: dict[str, str]   # added to the caller's environment, less SCRUBBED_ENV
     timeout: int          # seconds
     suffix: str = '.jsonl'
+    cwd: str = '.'        # the folder it runs in, relative to the scratch directory execute is given
     sweep: bool = True    # after a normal exit, SIGKILL whatever the run left in its process group
 
 
 # Runs one invocation from a directory, writing its stdout and stderr to the
 # two paths; returns its exit code, or None when it timed out.
 Execute = Callable[[Invocation, Path, Path, Path], int | None]
+# Reads a run directory's file by name: its text, or None when absent.
+Read = Callable[[str], str | None]
+
+
+class Probe(NamedTuple):
+    # (scratch directory, claude, repo) -> the invocations to run there
+    prepare: Callable[[Path, str, Path], list[Invocation]]
+    # (scratch directory, run directory): copy what the run left beside its streams
+    collect: Callable[[Path, Path], None]
+    # the verdict from the run directory's files, the same path R12.6's replay takes
+    assess: Callable[[Read], Verdict]
+    # run-directory file -> the fixture file it is scrubbed into (R12.6)
+    fixtures: dict[str, str]
+    # whether the assertion reads a Bash call's command, so its fixtures keep the text (R12.6): only guard-liveness
+    reads_commands: bool = False
 
 
 def inherited_env() -> dict[str, str]:
@@ -65,7 +84,7 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     bash: the group gets no terminal signal of its own. A stop signal while
     the run starts is held until `proc` is bound, so it cannot orphan it.
     The run inherits the caller's environment less SCRUBBED_ENV, then
-    takes what the invocation adds. After a normal exit, a run with sweep
+    takes what the invocation adds, and runs from its cwd under `cwd`. After a normal exit, a run with sweep
     set has its group swept with SIGKILL, so a background child it left
     behind does not outlive the probe.'''
     env = inherited_env() | inv.env
@@ -73,8 +92,8 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
         proc = None
         try:
             with held_signals():
-                proc = subprocess.Popen(inv.argv, cwd=cwd, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                        env=env, start_new_session=True)
+                proc = subprocess.Popen(inv.argv, cwd=cwd / inv.cwd, stdin=subprocess.DEVNULL, stdout=stdout,
+                                        stderr=stderr, env=env, start_new_session=True)
             code = proc.wait(timeout=inv.timeout)
         except subprocess.TimeoutExpired:
             stop_group(proc)

@@ -42,6 +42,24 @@ def test_a_run_keeps_an_inherited_alias_remap(tmp_path, monkeypatch):
     assert not set(probe_process.ALIAS_REMAPS) & probe_process.SCRUBBED_ENV
 
 
+
+def test_execute_runs_an_invocation_from_its_cwd(tmp_path):
+    '''An invocation's cwd is relative to the directory execute is given, so one probe can run in several
+    scratch repos.'''
+    (tmp_path / 'sub').mkdir()
+    inv = probe_process.Invocation('here', ['pwd'], {}, 30, cwd='sub')
+    assert probe_process.execute(inv, tmp_path, tmp_path / 'here.out', tmp_path / 'here.err') == 0
+    printed = (tmp_path / 'here.out').read_text(encoding='utf-8').strip()
+    assert os.path.realpath(printed) == os.path.realpath(tmp_path / 'sub')
+
+
+def test_an_invocation_runs_from_the_scratch_folder_by_default(tmp_path):
+    inv = probe_process.Invocation('here', ['pwd'], {}, 30)
+    assert inv.cwd == '.' and inv._fields[-1] == 'sweep'
+    assert probe_process.execute(inv, tmp_path, tmp_path / 'here.out', tmp_path / 'here.err') == 0
+    printed = (tmp_path / 'here.out').read_text(encoding='utf-8').strip()
+    assert os.path.realpath(printed) == os.path.realpath(tmp_path)
+
 # A run whose leader starts a child, as Gate B's bash starts claude. It writes "<leader> <child>" to $1.
 SLOW = '#!/bin/sh\nsleep 300 &\necho "$$ $!" > "$1"\nsleep 300\n'
 # The same, but the leader and its child ignore SIGTERM, as a stuck claude might, so only SIGKILL ends them.

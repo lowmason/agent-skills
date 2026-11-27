@@ -4799,6 +4799,9 @@
    "subagents.models": "sha256:fde45a05e386f80aa08994d8b970b2faa124b583e346e5f4f9fc8aa009239b91",
    "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
+  "build/cc_guide/probe_worktrees.py": {
+   "subagents.worktrees": "sha256:35e288e591cf41a503eff47f76bbf9b46d091e78340df7fc10f3da182a30097d"
+  },
   "build/cc_guide/probes.py": {
    "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
    "subagents.frontmatter": "sha256:aa8449f54fac046103fa842471f04994dfa2b784e127f35bff7d7d8b897a3c0d",
