@@ -5079,7 +5079,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       unruled. The item stays open: its `Done when:` still needs the Echo ruling or a wording change, and the
       independent runs. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary, Owner ruling).
       → progress 2026-11-17 (owner ruling): no Echo. The reading of record stands: the phrase next to an order calls the order stages, and plan 78's round 2 rep5 verdict stands. The `Done when:` still needs the independent runs.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
+      → progress 2026-11-27 (plan 113): at `2bd982d`, plan 113's final skill text, the two independent five-rep `dr-tracks` runs pass 5 of 5 each, and the `dr-known-progression-79` run passes 3 of 5 (bar 4). Its two fails leave traceability out of every stage. Its re-run at `171e763` passes 5 of 5. The owner accepted the miss at the completion gate (plan 113, D2). The item stays open: at `2bd982d` the `dr-tracks` runs meet its `Done when:`, and the `dr-known-progression-79` run does not. See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary). The gap between the two texts has its own item. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -5337,7 +5338,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-11 (/deferred quick fix): `test-run` removes its temporary file only after the run file is written, so a killed run leaves its output so far in `test-run.<random>`, which the "No `run:` line" bullet of `references/test-run.md` names. Two tests in `test_sdd_scripts.py` cover a killed run and a finished one.
 
 ## 85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10
-- [ ] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final
+- [x] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final
       review, Codex P2 and the code-reviewer's Declined line; owner ruled defer at the completion gate).**
       `skills/derive-roadmap/SKILL.md` §5 says a quality found at a resume "joins the same question in §4's
       form". A resume that adds, splits, drops or reorders no stage asks no such question, and the spec's R7
@@ -5348,7 +5349,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quality when no other question is open, and what it does with a `suggested, not approved` item, and a
       case covers each path with a control run.
       → progress 2026-11-17 (owner ruling): narrow this item to its second gap. The resume half of R7 is dropped (the spec is amended), and the §5 sentence quoted above is gone, so a resume no longer adds a later quality to any question. Done when now needs only: §5 says what a resume does with a `suggested, not approved` item, and a case covers that path with a control run.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
+      → done 2026-11-27 (plan 113): at `2bd982d`, §5's Ask puts each `suggested, not approved` item into the ONE question, to approve with a rank or to decline, and opens the Ask with them when nothing else is open. The waiting-Ranked-list paragraph keeps such an item out of promotion, counting and the re-ranking, and no stage is handed off while one is open. `references/roadmap-format.md` says what an approval and a decline record. Three cases cover the path, each with a control run at `171e763`: dr-provisional-ask (control RED, treatment 5 of 5), and dr-provisional-alone and dr-provisional-only (controls clean, treatments 5 of 5, edits kept by the owner at the completion gate). See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary). The decline commit, the Leaves out entry after approval, a track stop with an open item and a provisional file with no suggested item have new items. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
 - [x] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
       `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
@@ -5370,14 +5372,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       source that survives a squash merge, such as the tracked file, and `build_prompts.py` rebuilds
       `wp-stage-plan` on a clone that holds only the merged branch.
       → retired 2026-11-11: the squash merge did not happen. Plan 85 merged as a true merge (2394a6e), so `git merge-base --is-ancestor ede95b8 main` succeeds and a clone of `main` holds the commit.
-- [ ] **A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final
+- [x] **A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final
       review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §6. When `Source` is a spec, the review
       lists each numbered spec requirement that no outcome's `Spec` cell cites as unmet. A requirement the
       partner folded into a stage's constraints, with no outcome of its own, therefore reads as unmet. This is
       R12 as the spec wrote it, and it exits by a new stage or a written deferral. Size: design. Done when: §6
       says how the review treats a folded requirement, and a case on a spec-sourced roadmap shows the
       behavior with a control run.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
+      → done 2026-11-27 (plan 113): at `eee5cbf`, §6 runs the gap rubric over each numbered spec requirement that no `Spec` cell cites. It is met only on a path:line or a test name, the verdict names the stage plan that built it, and a stamp alone is not evidence. With no evidence it is unmet. dr-folded-req, on the sec-edgar spec's roadmap, shows it: the control at `171e763` fails bar clause A in 4 of 5, and the treatment passes 5 of 5. See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary).
 
 ## superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 - [x] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
@@ -6547,6 +6550,90 @@ review and the Plan Completion gate (2026-10-27) add the others.
       kept it out of the data files. A join through `naics_2017_to_2022` is possible but is not described.
       Size: quick-fix. Done when: SKILL.md says how to bridge IND 2017 and 2022, or the owner rules that no note is wanted.
       → done 2026-11-27 (/deferred quick fix): SKILL.md points to `references/revision-process.md`, which now gives the three-hop bridge `census_ind_2017_to_naics_2017` → `naics_2017_to_2022` → `census_ind_2022_to_naics_2022`, with counts read from `data/` (249 of 271 codes reach one 2022 code, six reach more, 16 have only `partial` rows or none) and a line that the workbook's own IND crosswalk is not bundled.
+
+## 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+- [ ] **§5's Commit step does not name a declined provisional item (plan 113 final review, Codex P2; owner ruled
+      defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md` §5, the Commit bullet: "Commit the
+      amendments, and whatever your partner approved at the Ask, on the current branch before the handoff". A
+      decline of a `suggested, not approved` item removes its Outcomes row and list item. The stage's `Leaves
+      out` entry then reads `<quality>: declined, <YYYY-MM-DD>` (`references/roadmap-format.md`, Ranked list). A
+      decline is neither an amendment nor an approval, so the Commit step does not name it. A fresh session that
+      receives the handoff may then read the old roadmap, with the item still marked. No plan 113 arm
+      scores the answer path, because every rep stops before the partner answers. Plan 113 left the one-line
+      edit out because any skill commit re-runs the V3 runs and the guards that read §5. Size: plan. Done when:
+      the Commit bullet names a decline, and the kit cases whose decision that bullet can reach re-run at the
+      new text and meet their bars under specs/baseline/red-baseline-new-project-entry/kit/.
+- [ ] **No rule says what a track stop does with a `suggested, not approved` item that is still open (plan 113
+      Review Focus 3; owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md` §5, the
+      waiting-Ranked-list paragraph and Parking. When the partner stops a research track, that track's remaining
+      Ranked-list items park, one deferred item each. The spec and the skill do not say whether an item the
+      partner has not approved also parks as an item, or goes. §5's Ask puts the item into the one question, but
+      the partner's answer can stop the track and leave the item unanswered. A park of the whole roadmap meets
+      the same question. The dr-stop-track and dr-park-ranked guards hold no suggested item, so no arm scores
+      this path (specs/baseline/red-baseline-new-project-entry.md, "Plan 113: summary", Untested passages item
+      3). Size: design. Done when: §5 says what a track stop does with an open `suggested, not approved` item,
+      and a case with such an item covers the stop with a control run and a treatment run.
+- [ ] **The format does not say what a stage's `Leaves out` reads for a provisional item after approval (plan 113;
+      owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/references/roadmap-format.md`,
+      Ranked list. For a session that can ask, the paragraph gives two forms. Before the answer the entry is
+      `<quality>: suggested, see the approval question`, and after approval it points at the O-number. For a
+      provisional file it gives the O-number, the list item, the Outcomes row and the decline form. It does not
+      say what Stage 1's `Leaves out` entry reads in the file or after an approval. Plan 113's fixtures chose
+      `traceability (O6)` ("Plan 113: fixture judgment calls", item 4, in
+      specs/baseline/red-baseline-new-project-entry.md). Some control replies of dr-provisional-ask and
+      dr-provisional-alone proposed the interim form instead. Size:
+      plan. Done when: the Ranked list paragraph says what a provisional item's `Leaves out` entry reads in the
+      file and after approval, and the three `dr-provisional-*` cases re-run at the new text and meet their bars
+      under the kit.
+- [ ] **Numbered points inside the ONE question are not scored (first found in
+      specs/baseline/red-baseline-new-project-entry.md, "Plan 85: summary", Unscored observations item 5,
+      2026-11-10; raised again in plan 113; owner ruled defer at the completion gate, D5).**
+      `skills/derive-roadmap/SKILL.md` §5 Ask: "Put every such change to your human partner as ONE question, not
+      a numbered list". Replies in plan 85 (dr-resume-rerank, dr-rerank-second) and plan 113 (for example the
+      dr-provisional-alone control's rep1, three numbered points under one question) number their points inside
+      one approve-or-amend request. No clause scores the list form, so no record says whether it meets the rule.
+      Size: design. Done when: the owner rules whether numbered points inside one question meet §5's "ONE
+      question, not a numbered list", and the Ask text states the ruling or a kit clause scores the form.
+- [ ] **A provisional roadmap with no suggested item still hands off Stage 1 at its first resume (plan 113 Open
+      for plan review item 7; owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md`
+      §5 and its entry rules. A provisional file, written by a session that could not ask, carries the roadmap
+      header, so entry rule 1 sends every later session to §5, Resume. No rule routes such a file back to §4 for
+      an approval of the partition (spec D2's builder check, in
+      specs/completed/derive-roadmap-provisional-items-and-folded-requirements.md). With no `suggested, not
+      approved` item open, §5's handoff gate does not hold, so Stage 1 can be handed off with no approval. The
+      spec rejected a new provisional marker with an entry rule to §4 (D2, option B), because it adds a format
+      field. dr-provisional-alone holds a suggested item, so it does not test this path. Size: design. Done
+      when: §5 says what the first resume that can ask does with a provisional file that holds no suggested
+      item, and a case covers that path with a control run.
+- [ ] **The kit's sec-edgar cases depend on an archived clone (plan 113 Fixtures constraint; owner ruled defer at
+      the completion gate, D5).** `specs/baseline/red-baseline-new-project-entry/kit/cases.py` (`SEC_SPEC`) pins
+      commit `22c6767f`, and `build_prompts.py` reads it under `CASE_REPOS`. That commit is gone from
+      `~/Projects/sec-edgar` and from GitHub (checked 2026-11-27). Only the archived clone
+      `~/Projects/archive/sec-edgar-cloud` holds it, so every plan 113 build ran with
+      `CASE_REPOS=/tmp/plan113-work/repos`, a folder of links. A build with the default `CASE_REPOS` cannot read
+      the spec, and if the archive goes, no sec-edgar case rebuilds. Size: design (choose the source of record).
+      Done when: every sec-edgar case builds from a named source of record that holds the bytes with sha256
+      `c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6`, and the kit's notes name that source.
+- [ ] **dr-known-progression-79 drops from 5 of 5 at plan 113's base to 3 of 5 at its final text (plan 113 Task 6;
+      owner accepted the miss at the completion gate, D2).** At `2bd982d`, reps 2 and 3 leave traceability out
+      of every stage and name "manifests and replay" instead, so clause C fails by Provenance on bytes. The
+      re-run at `171e763` (`BASE113`), on the same day, passes 5 of 5. The case's earlier arms passed 3, 5, 4
+      and 5 of 5. No line of the `171e763` to `2bd982d` diff names traceability, and five-rep arms cannot show
+      that plan 113's edits cause the drop. See specs/baseline/red-baseline-new-project-entry.md ("Plan 113:
+      summary", Owner gate item 1). The item "dr-tracks and dr-known-progression-79 miss conformance clause C at
+      the final skill text" (§ 79-derive-roadmap-resume-and-route-tests) stays open on this miss. Size: plan.
+      Done when: the record holds a same-day comparison of dr-known-progression-79 at the current skill text and
+      at `171e763`, with at least ten reps per arm under the kit, and it says whether the drop repeats and names
+      its cause or calls it sampling.
+- [ ] **dr-park-ranked misses its guard bar at plan 113's final text and at its base (plan 113 Task 5; owner
+      accepted the miss at the completion gate, D3).** It passes 1 of 5 at `2bd982d` and 2 of 5 at `171e763`
+      (`BASE113`), against 4 of 5 at `2e91b05` and a guard bar of 3. The §5 Parking paragraph is the same at all
+      three commits. Both bar clauses pass in all 10 reps. Every fail is a placeholder date heading (clause C) or
+      table-form items (clause D). The run date confounds the drop: every fixture says "Today is 2026-11-06", and
+      the gap to the run day grew from four days to three weeks. No wording round ran. See
+      specs/baseline/red-baseline-new-project-entry.md ("Plan 113 guards summary and spend", Owner gate). Size:
+      plan. Done when: the record names the cause of the drop from 4 of 5, and dr-park-ranked passes at least 3
+      of 5 at the current skill text under the kit.
 
 ## 112-superpowers-agent-license-travel — 2026-11-27
 - [ ] Probe live loading of the pointed agents after a default install (final review of plan 112, owner ruled defer).

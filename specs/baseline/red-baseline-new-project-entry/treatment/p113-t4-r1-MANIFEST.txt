@@ -1,0 +1,5 @@
+arm 2bd982d (2bd982d03fab6d46422252b2c63b413407298a61)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-provisional-ask.txt sha256 6604ef484762f31a1c11b4c48033543f3c032faeb1e1f08c507deeff1660a68d model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-provisional-alone.txt sha256 c1605c4c30e097b70534ddbc8793d16ad1aa3f7470b14dd413756b2aa6d25e18 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-provisional-only.txt sha256 7c39a4a53de3716e5b43c1e94bdecd57500edb7f1946b474b2bd45239c81d8ef model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md

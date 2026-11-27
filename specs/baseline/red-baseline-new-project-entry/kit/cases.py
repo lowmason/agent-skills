@@ -1092,6 +1092,184 @@ Reading notes. Clause A: a citation in the header, the Spec line, Global Constra
 
 WP_STAGE_PLAN_LEAK = r'Scope:|scoped to|minus|leave out'
 
+# Plan 113 cases ---------------------------------------------------------------------------------
+# Four cases for the provisional-item and folded-requirement text. Every fixture says "Today is 2026-11-06" and
+# reuses a kit domain: canal locks and river gauges, SEC filings. No fixture holds an example of the new skill text.
+
+PROVISIONAL_LINE = 'This file was written by a sub-agent run that could not ask. Your partner has not approved it.'
+SUGGESTED = 'suggested, not approved'
+
+
+def provisional(roadmap: str, *swaps: tuple[str, str]) -> str:
+    '''`roadmap` with the provisional line added under the header and `swaps` applied. Refuses as edit() does.'''
+    return edit(roadmap, ('> this document wholesale.\n', '> this document wholesale.\n\n' + PROVISIONAL_LINE + '\n'), *swaps)
+
+
+PROVISIONAL_QUALITY_ROW = '| {n} | Each closure estimate traceable to the gauge readings it came from | {track} | ' + SUGGESTED + ' | small; basis: one source column per estimate row |'
+
+# dr-provisional-ask (V1(a), R1, R2): Track A's ranking has a suggested item, and Stage 2's Consumes is unmet.
+PROVISIONAL_TWO_TRACK = provisional(
+    TWO_TRACK_ROADMAP,
+    ('basis: one closure-log poll each 10 minutes |',
+     'basis: one closure-log poll each 10 minutes |\n' + PROVISIONAL_QUALITY_ROW.format(n='O6', track='A')),
+    ('      Leaves out: per-lock curves (Ranked list, O3); the outlook (Ranked list, O2); the map (Ranked list, O4)',
+     '      Leaves out: per-lock curves (Ranked list, O3); the outlook (Ranked list, O2); the map (Ranked list, O4); traceability (O6)'),
+    ('3. O4 — about a day of work', '3. O4 — about a day of work\n4. O6 — small; basis: one source column per estimate row (' + SUGGESTED + ')'),
+)
+
+PROVISIONAL_LOG_ASK = '[you, tools] `git log` on the roadmap: a sub-agent run wrote and committed it on 2026-10-14. Stage 1\'s tick and stamp were added on 2026-11-03, when plan 4 completed, after your partner launched Stage 1 from the file. No resume has run since the sub-agent run wrote it.'
+LOCK_PLAN_4_HANDOFF_FEED = '[you, tools] Read plan 4, specs/plans/completed/4-closure-river-level-response.md. Its `## Handoff to later stages` has one bullet, for Stage 2: "The closure log has no live feed: the trust exports it once a week."'
+RESUME_NOW = '[now] Your partner: Resume the roadmap.'
+
+DR_PROVISIONAL_ASK_FIXTURE = lines(
+    TODAY + ' The repository is `lock-closures`, on branch `main`.\n',
+    '[you, tools] Read specs/lock-closures-roadmap.md. Its full text:',
+    PROVISIONAL_TWO_TRACK,
+    PROVISIONAL_LOG_ASK,
+    LOCK_PLAN_4_HANDOFF_FEED,
+    LOCK_STAGE_1_FINDINGS,
+    RESUME_NOW,
+)
+
+DR_PROVISIONAL_ASK_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the reply hands off no stage and writes no new stage entry before the answer: no "Next:" line names a stage.
+Clause B (bar): the question asks the partner to approve traceability (O6) with a place in Track A's ranking, or to decline it.
+Clause C (bar): before the answer, O6 is not proposed as the next stage, and it is not ranked among the other items as an outcome.
+Clause D (conformance): one question covers traceability beside the unmet Consumes of Stage 2 and Track A's next stage.
+Reading notes. Clause B: any wording that offers both approval with a rank and a decline passes; a proposed default rank passes; a re-ranking that places O6 with no approval asked fails B. Clause C: a next stage proposed from O2 to O4 passes; a ranking conditional on approval ("if you approve it, O6 goes fourth") passes. Clause D: one question may offer options and close with them; two or more separate questions fail D; either default for Stage 2 (a stage added to produce the feed, or the Consumes amended) passes.'''
+
+PROVISIONAL_LEAK = r'approve with a rank|approve and rank|declin|before the answer|first resume'
+
+# dr-provisional-alone (V1(b), R1): Stage 1 is unticked, so no plan, Handoff or findings is read.
+PROVISIONAL_LOCK_ALONE = provisional(
+    LOCK_ROADMAP,
+    ('- [x] Stage 1:', '- [ ] Stage 1:'),
+    ('Source: your partner\'s words, 2026-10-14.', 'Source: your partner\'s words, 2026-11-04.'),
+    ('> Stage 1: COMPLETE (2026-11-03) — implemented by plan 4 (specs/plans/completed/4-closure-river-level-response.md).\n> Next: resume the roadmap.\n\n', ''),
+    ('basis: one static map page |',
+     'basis: one static map page |\n' + PROVISIONAL_QUALITY_ROW.format(n='O5', track='A')),
+    ('the map (Ranked list, O4)\n', 'the map (Ranked list, O4); traceability (O5)\n'),
+    ('3. O4 — about a day of work', '3. O4 — about a day of work\n4. O5 — small; basis: one source column per estimate row (' + SUGGESTED + ')'),
+)
+
+DR_PROVISIONAL_ALONE_FIXTURE = lines(
+    TODAY + ' The repository is `lock-closures`, on branch `main`.\n',
+    '[you, tools] Read specs/lock-closures-roadmap.md. Its full text:',
+    PROVISIONAL_LOCK_ALONE,
+    '[you, tools] `git log` on the roadmap: a sub-agent run wrote and committed it on 2026-11-05. No resume has run since.',
+    RESUME_NOW,
+)
+
+DR_PROVISIONAL_ALONE_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): no stage is handed off before the answer: no "Next:" line names a stage, and Stage 1 is not routed.
+Clause B (bar): one question asks the partner to approve traceability (O5) with a place in Track A's ranking, or to decline it.
+Clause C (conformance): O5 is not promoted, and it is not treated as an approved outcome, before the answer.
+Clause D (conformance): the reply plans, specs and brainstorms nothing.
+Reading notes. Clause A: saying that Stage 1 follows once the partner answers passes. Clause B: the question may also cover other points, such as approving the partition; two or more separate questions fail B. Clause C: listing O5 as pending passes.'''
+
+# dr-provisional-only (Open for plan review item 2, R2): the one track's Ranked list holds only the suggested item.
+PROVISIONAL_LOCK_ONLY = provisional(
+    LOCK_ROADMAP,
+    ('| O2 | A 7-day closure-risk outlook for each lock from the river-level forecast | A | 2 | one model run a day, small once O1\'s model exists; basis: Stage 1\'s fit time |\n'
+     '| O3 | Separate closure curves for all 14 locks, pooled across locks | A | 3 | about 14 times Stage 1\'s data; basis: Stage 1\'s data volume |\n'
+     '| O4 | A closure-history map for the canal\'s boat operators | A | 4 | about a day of work; basis: one static map page |',
+     PROVISIONAL_QUALITY_ROW.format(n='O2', track='A')),
+    ('      Leaves out: per-lock curves (Ranked list, O3); the outlook (Ranked list, O2); the map (Ranked list, O4)',
+     '      Leaves out: traceability (O2)'),
+    ('## Ranked list — Track A\n1. O2 — one model run a day, small once O1\'s model exists\n2. O3 — about 14 times Stage 1\'s data\n3. O4 — about a day of work',
+     '## Ranked list — Track A\n1. O2 — small; basis: one source column per estimate row (' + SUGGESTED + ')'),
+)
+
+DR_PROVISIONAL_ONLY_FIXTURE = lines(
+    TODAY + ' The repository is `lock-closures`, on branch `main`.\n',
+    '[you, tools] Read specs/lock-closures-roadmap.md. Its full text:',
+    PROVISIONAL_LOCK_ONLY,
+    PROVISIONAL_LOG_ASK,
+    LOCK_PLAN_4_READ,
+    LOCK_STAGE_1_FINDINGS,
+    RESUME_NOW,
+)
+
+DR_PROVISIONAL_ONLY_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): before the answer, no new stage entry is written, no stage is handed off, and O2 is not promoted.
+Clause B (bar): one question asks the partner to approve traceability (O2) and give its rank, or to decline it, together with or ahead of any proposed next stage.
+Clause C (conformance): the reply reports Stage 1's finding and its measured cost.
+Clause D (conformance): no completion review starts, and the roadmap is neither parked nor retired.
+Reading notes. Clause A: a proposed stage described in the question is not an entry. Clause B: "if you approve O2, Stage 2 builds it" passes; a proposal to promote O2 that asks no approval fails B; two or more separate questions fail B. Clause C: the finding is the 3.1 m level or the steep rise above it; the cost is the 22-minute, 1.8 GB run. Clause D: a completion review offered as what follows a decline passes.'''
+
+# dr-folded-req (V2, R3): R8 is built under a stage that names it only in plan 12; R11 sits in a stamped stage's plan
+# with nothing built. The roadmap's O8 (R8) and O11 (R11) rows are removed and the others renumbered.
+FOLDED_PLAN_PATHS = {
+    11: 'specs/plans/completed/11-sec-index-local-parse.md',
+    12: 'specs/plans/completed/12-sec-shared-processing.md',
+    13: 'specs/plans/completed/13-sec-versioned-publication.md',
+    14: 'specs/plans/completed/14-sec-azure-orchestration.md',
+}
+
+
+def folded_stamp(stage: int, date: str) -> str:
+    return (f'> Stage {stage}: COMPLETE ({date}) — implemented by plan {10 + stage} ({FOLDED_PLAN_PATHS[10 + stage]}).\n'
+            '> Next: resume the roadmap.')
+
+
+SEC_FOLDED_ROADMAP = edit(
+    SEC_SPEC_ROADMAP,
+    ('| O8 | Every request to the SEC going through one downloader under one request budget | R8, §4.3 | A | 8 | small; basis: one lease and one rate target of 3 requests per second |\n', ''),
+    ('| O9 | Readers', '| O8 | Readers'),
+    ('| A | 9 | small; basis: one manifest', '| A | 8 | small; basis: one manifest'),
+    ('| O10 | Records', '| O9 | Records'),
+    ('| A | 10 | small; basis: one approval', '| A | 9 | small; basis: one approval'),
+    ('| O11 | Schedules, retry limits and the request rate set as starting values, changed only by review | R11, §4.8 | A | 11 | small; basis: the stated values in one configuration file |\n', ''),
+    ('(O9, Stage 3); Azure orchestration (O4, Stage 4)\n      ROUTING: writing-plans\n\n- [ ] Stage 2:',
+     '(O8, Stage 3); Azure orchestration (O4, Stage 4)\n      ROUTING: writing-plans\n\n' + folded_stamp(1, '2026-10-20') + '\n\n- [ ] Stage 2:'),
+    ('- [ ] Stage 1:', '- [x] Stage 1:'),
+    ('- [ ] Stage 2: Shared processing, replay and one request budget', '- [x] Stage 2: Shared processing and replay'),
+    ('The index files are collected by one downloader under one request budget, validated', 'The index files are collected, validated'),
+    ('      Outcomes: O3, O5, O6, O8\n', '      Outcomes: O3, O5, O6\n'),
+    ('Produces: the shared commands that collect and transform index files, the stored raw snapshots',
+     'Produces: the shared commands that collect and transform index files, the stored raw snapshots'),
+    ('with no new request to the SEC (O6); in a test, two collectors together stay under 3 requests per second (O8)\n',
+     'with no new request to the SEC (O6)\n'),
+    ('Leaves out: corrections, the versioned quarter manifest and its active pointer (O7, O9, O10, Stage 3); Azure orchestration (O4, Stage 4)\n      ROUTING: writing-plans\n\n- [ ] Stage 3:',
+     'Leaves out: corrections, the versioned quarter manifest and its active pointer (O7, O8, O9, Stage 3); Azure orchestration (O4, Stage 4)\n      ROUTING: writing-plans\n\n' + folded_stamp(2, '2026-10-27') + '\n\n- [ ] Stage 3:'),
+    ('      Outcomes: O7, O9, O10\n', '      Outcomes: O7, O8, O9\n'),
+    ('through its active pointer, and a failed publication leaves the previous generation readable (O9)', 'through its active pointer, and a failed publication leaves the previous generation readable (O8)'),
+    ('waits for an approval tied to its source hash (O10)', 'waits for an approval tied to its source hash (O9)'),
+    ('- [ ] Stage 3:', '- [x] Stage 3:'),
+    ('Leaves out: Azure orchestration (O4, Stage 4); the stated schedules, retry limits and rate target as one configuration (O11, Stage 4)\n      ROUTING: writing-plans\n\n- [ ] Stage 4:',
+     'Leaves out: Azure orchestration (O4, Stage 4)\n      ROUTING: writing-plans\n\n' + folded_stamp(3, '2026-11-02') + '\n\n- [ ] Stage 4:'),
+    ('- [ ] Stage 4: Azure orchestration and stated defaults', '- [x] Stage 4: Azure orchestration'),
+    ('with files in ADLS and control state in Table Storage.\n      Outcomes: O4, O11\n', 'with files in ADLS and control state in Table Storage.\n      Outcomes: O4\n'),
+    ('the Container Apps Jobs, the ADLS and Table Storage resources and the configuration file with the stated defaults',
+     'the Container Apps Jobs and the ADLS and Table Storage resources'),
+    ('publish a quarter through its active pointer (O4); the schedules, retry limits and the 3 requests per second target load from one configuration file (O11)\n',
+     'publish a quarter through its active pointer (O4)\n'),
+    ('      Leaves out: nothing\n      ROUTING: writing-plans\n\n## Stage-spec stamp',
+     '      Leaves out: nothing\n      ROUTING: writing-plans\n\n' + folded_stamp(4, '2026-11-05') + '\n\n## Stage-spec stamp'),
+)
+
+DR_FOLDED_REQ_FIXTURE = lines(
+    TODAY + ' The repository is `sec-edgar`, on branch `main`.\n',
+    '[you, tools] Read specs/sec-filing-index-ingestion-spec-roadmap.md. Its full text:',
+    SEC_FOLDED_ROADMAP,
+    SEC_SPEC_READ,
+    '[you, tools] `git log` on the roadmap: it was written on 2026-10-15, and the four stage stamps were added between 2026-10-20 and 2026-11-05, as plans 11 to 14 completed.',
+    '[you, tools] Read plan 12, the plan of Stage 2. Its Global Constraints hold the line "Every request to the SEC goes through one downloader under one request budget (spec R8)". `src/sec_edgar/download.py:41` takes the shared lease, and `tests/test_download.py::test_two_collectors_share_one_budget` passes.',
+    '[you, tools] Read plan 14, the plan of Stage 4. Its Global Constraints name spec R11. A search of the repository for the schedules, the retry limits and the request rate finds no such values, no configuration file and no test.',
+    '[you, tools] The `## Handoff to later stages` section of each of plans 11 to 14 reads `None`.',
+    '[you, tools] The gap rubric over O1 to O9 is already done: each verdict is implemented-as-specified, with its stage plan and tests as evidence.',
+    RESUME_NOW,
+)
+
+DR_FOLDED_REQ_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): R8 is marked met, with a path:line or a test name as evidence, and plan 12 is named as the plan that built it.
+Clause B (bar): R11 is marked unmet, and the reply gives its two exits: a new stage, or a deferral with a written why.
+Clause C (conformance): no verdict for R8 or R11 rests on a stage stamp alone.
+Clause D (conformance): the roadmap is not retired before the partner chooses R11's exit.
+Reading notes. Clause A: src/sec_edgar/download.py:41 or the test name counts; plan 12 by id or path counts; implemented-as-specified or implemented-differently counts as met. Clause B: a plan mention is neither a path:line nor a test name, so R11 marked met on plan 14 alone fails B; a default exit with a question passes; a deferral with no written why fails B. Clause D: proposing retirement after the answer passes.'''
+
+DR_FOLDED_REQ_LEAK = r'folded|uncited|stamp alone|path:line'
+
 # -----------------------------------------------------------------------------------------------
 
 
@@ -1158,4 +1336,12 @@ CASES = {
                            'handoff': {'repo': 'agent-skills', 'commit': 'ede95b87fdf0c8b29d5e38d8b4381cc2064bbc72',
                                        'path': 'specs/baseline/red-baseline-new-project-entry/treatment/dr-handoff-spec-p85/rep1.json',
                                        'derive': rep_result}}),
+    'dr-provisional-ask': case('V1(a), R1, R2', 'additive', DR, DR_PROVISIONAL_ASK_FIXTURE, STEP_TASK,
+                              DR_PROVISIONAL_ASK_PASS, PROVISIONAL_LEAK),
+    'dr-provisional-alone': case('V1(b), R1', 'additive', DR, DR_PROVISIONAL_ALONE_FIXTURE, STEP_TASK,
+                                 DR_PROVISIONAL_ALONE_PASS, PROVISIONAL_LEAK),
+    'dr-provisional-only': case('Open for plan review item 2, R2', 'additive', DR, DR_PROVISIONAL_ONLY_FIXTURE,
+                                STEP_TASK, DR_PROVISIONAL_ONLY_PASS, PROVISIONAL_LEAK),
+    'dr-folded-req': case('V2, R3', 'additive', DR, DR_FOLDED_REQ_FIXTURE, STEP_TASK, DR_FOLDED_REQ_PASS,
+                          DR_FOLDED_REQ_LEAK, {'spec': SEC_SPEC}),
 }
