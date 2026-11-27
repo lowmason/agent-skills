@@ -8797,3 +8797,18 @@ readings go to the controller to confirm before Task 4 scores its treatment arms
 **Spend.** Task 2's control arms cost $2.0676 (`show_reps.py` prints $2.07), the Task 2 row of the Plan 113 spend table.
 Per case: dr-provisional-ask $1.0090, dr-provisional-alone $0.3134, dr-provisional-only $0.2932 and dr-folded-req
 $0.4520. Running total: $2.0851 of $30. The largest pre-call sum (running total plus $5.00) was $6.6330.
+
+## Plan 113: skill text
+
+Task 3 made the skill commit `T` = `eee5cbf` (`feat(derive-roadmap): settle provisional items at resume and judge
+folded requirements by evidence`). Tasks 4 to 6 read their treatments at `T`. The derive-roadmap SKILL.md body is 18,686
+characters, under the 20,000 limit (17,817 at `f620eba`). The description is unchanged.
+
+| Requirement | Edits |
+|---|---|
+| R1 (settle provisional items at a resume) | 1 (§5 Ask), 2b (§5 handoff gate), 4 (`roadmap-format.md`, Ranked list) |
+| R2 (a provisional-only list still waits) | 2 (§5 waiting Ranked list) |
+| R3 (folded requirements judged by evidence) | 3 (§6) |
+
+Edit 4 uses the freed O-number form (owner approval D1, Open item 1). Every phrase-count row of Task 3 Step 2 matched its
+expected count. The commit gate printed `commit lints passed`.
