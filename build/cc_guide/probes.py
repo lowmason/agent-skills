@@ -13,12 +13,14 @@ import itertools
 import json
 import os
 import re
+import secrets
 import shlex
 import shutil
 import signal
 import subprocess
 import sys
 import tempfile
+import time
 import tomllib
 import uuid
 from datetime import date, datetime
@@ -350,7 +352,6 @@ def assess_pins(read: Read) -> Verdict:
 # Each PreToolUse payload goes to a file of its own in the folder the hook is
 # given, since the two hooks, and two dispatches in one message, can run at once.
 PAYLOAD_HOOK = '#!/usr/bin/env bash\ncat > "$(mktemp "$1/payload.XXXXXX")"\n'
-PAYLOAD_LOGS = {'any': probe_checks.ANY_MATCHER, 'agent': probe_checks.GUARD_MATCHER}  # log folder -> matcher
 PAYLOAD_PROMPT = ('In one message, call the Agent tool twice: (1) subagent_type "general-purpose" with model "haiku" '
                   'and prompt "Reply with the word OK and nothing else. Use no tools."; (2) subagent_type '
                   '"claude-code-guide", passing no model, with prompt "Reply with the word OK and nothing else. Use '
@@ -368,7 +369,7 @@ def prepare_payload(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
     hook.write_text(PAYLOAD_HOOK, encoding='utf-8')
     hook.chmod(0o755)
     groups = []
-    for folder, matcher in PAYLOAD_LOGS.items():
+    for folder, matcher in probe_checks.PAYLOAD_LOGS.items():
         log = scratch / 'payloads' / folder
         log.mkdir(parents=True)
         command = f'{shlex.quote(str(hook))} {shlex.quote(str(log))}'
@@ -383,24 +384,33 @@ def prepare_payload(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
 
 
 def collect_payload(scratch: Path, run_dir: Path) -> None:
-    '''Each hook's log, raw, as payloads-<folder>.raw.jsonl, to read by
-    hand, and the main session's dispatches cut by trim_payload as
-    payloads.json, the one file the assessment and its fixture read. A
-    payload that is not JSON raises ValueError, which run_probe reports as
-    ERROR.'''
-    kept = []
-    for folder, matcher in PAYLOAD_LOGS.items():
+    '''Each hook's log, raw, as payloads-<folder>.raw.jsonl, one payload a
+    line, to read by hand, then payloads.json from those copies
+    (rebuild_payloads).'''
+    for folder in probe_checks.PAYLOAD_LOGS:
         texts = [path.read_text(encoding='utf-8').strip()
                  for path in sorted((scratch / 'payloads' / folder).glob('payload.*'))]
         (run_dir / f'payloads-{folder}.raw.jsonl').write_text(''.join(f'{t}\n' for t in texts), encoding='utf-8')
-        kept += [p for p in (probe_checks.trim_payload(json.loads(t), matcher) for t in texts) if p is not None]
-    kept.sort(key=lambda p: (p['matcher'], str(p['subagent_type'])))
-    (run_dir / 'payloads.json').write_text(json.dumps(kept, indent=1) + '\n', encoding='utf-8')
+    rebuild_payloads(run_dir)
+
+
+def rebuild_payloads(run_dir: Path) -> None:
+    '''payloads.json, the one file the assessment and its fixture read,
+    from run_dir's payloads-<folder>.raw.jsonl alone, so a past run's raw
+    logs can be read again under a changed trim. Each line is one payload,
+    an empty one included. A payload that is not JSON raises ValueError,
+    which run_probe reports as ERROR.'''
+    raw = {}
+    for folder in probe_checks.PAYLOAD_LOGS:
+        text = (run_dir / f'payloads-{folder}.raw.jsonl').read_text(encoding='utf-8')
+        raw[folder] = text.removesuffix('\n').split('\n') if text else []
+    (run_dir / 'payloads.json').write_text(json.dumps(probe_checks.payload_file(raw), indent=1) + '\n',
+                                           encoding='utf-8')
 
 
 def assess_payload(read: Read) -> Verdict:
     return probe_checks.assess_agent_payload(stream_of(read('dispatch.jsonl')),
-                                             json.loads(read('payloads.json') or '[]'))
+                                             json.loads(read('payloads.json') or '{}'))
 
 
 PAYLOAD_PROBE = Probe(prepare_payload, collect_payload, assess_payload,
@@ -523,6 +533,158 @@ CUT_PROBE = Probe(prepare_cut, collect_cut, assess_cut,
                   {'cut.jsonl': 'compaction-cut.stream.jsonl', 'cut.json': 'compaction-cut.cut.json'})
 
 
+# explore-override: a project agent named Explore, overriding the built-in, and a custom control. Each may not read,
+# search or run anything, and answers from its context alone; probe_checks.explore_sightings reads the answers.
+EXPLORE_FILES = {'explore': probe_checks.EXPLORE_AGENT, 'canary-control': probe_checks.CANARY_AGENT}  # stem -> name
+EXPLORE_AGENT_FILE = ('---\nname: {name}\ndescription: A drift probe agent.\n'
+                      'disallowedTools: Read, Grep, Glob, Bash, Edit, Write\n---\n\n'
+                      'Use no tools. Answer from your context alone, in exactly three lines:\n'
+                      '1. {mark}\n'
+                      "2. The canary word that this project's CLAUDE.md gives, or NONE if your context holds no "
+                      'CLAUDE.md.\n'
+                      '3. The untracked file names that your git status lists, or NONE if your context holds no git '
+                      'status.\n')
+EXPLORE_PROMPT = ('In one message, call the Agent tool twice: (1) subagent_type "Explore" with prompt "Follow your '
+                  'instructions."; (2) subagent_type "canary-control" with prompt "Follow your instructions.". Wait '
+                  'for both results, then reply with the word DONE.')
+CANARY_BYTES = 4  # secrets.token_hex bytes in each canary: eight hex digits
+
+
+def prepare_explore(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
+    '''explore-override draws two canaries, kept in canaries.json: the
+    word CLAUDE.md gives, and the name of an untracked file, which only a
+    git-status snapshot lists, in a fresh git repo. The two agents are
+    project agents, and only project settings load, so this repo's
+    installed agents/explore.md, a user agent, stays out, as in
+    agent-payload; each agent's mark shows which definition served. The
+    parent names neither canary. Each of the EXPLORE_REPS reps is its own
+    invocation from the same scratch directory, and its dispatches may run
+    in the background, as agent-payload's may.'''
+    subprocess.run(['git', 'init', '-q'], cwd=scratch, check=True, capture_output=True)
+    canaries = {'claude_md': f'cm-{secrets.token_hex(CANARY_BYTES)}',
+                'git_status': f'gs-{secrets.token_hex(CANARY_BYTES)}'}
+    (scratch / 'canaries.json').write_text(json.dumps(canaries, indent=1) + '\n', encoding='utf-8')
+    (scratch / 'CLAUDE.md').write_text(f"The canary word for this project is {canaries['claude_md']}.\n",
+                                       encoding='utf-8')
+    (scratch / f"{canaries['git_status']}.txt").write_text('An untracked file.\n', encoding='utf-8')
+    agents = scratch / '.claude' / 'agents'
+    agents.mkdir(parents=True)
+    for stem, name in EXPLORE_FILES.items():
+        (agents / f'{stem}.md').write_text(EXPLORE_AGENT_FILE.format(name=name, mark=probe_checks.EXPLORE_MARKS[name]),
+                                           encoding='utf-8')
+    argv = claude_args(claude, EXPLORE_PROMPT, turns=PAYLOAD_TURNS, sources='project', mode='default',
+                       allow=('Agent',), extra=('--forward-subagent-text',))
+    env = {'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS': str(PAYLOAD_CEILING_MS)}
+    return [Invocation(f'explore-{n}', argv, env, PROBE_TIMEOUT) for n in range(1, probe_checks.EXPLORE_REPS + 1)]
+
+
+def collect_explore(scratch: Path, run_dir: Path) -> None:
+    '''canaries.json, copied beside the streams, and sightings.json, the
+    one file the assessment and its fixture read: one entry a rep, read
+    from its stream with those canaries. A missing stream is a broken rep.'''
+    shutil.copy(scratch / 'canaries.json', run_dir / 'canaries.json')
+    canaries = json.loads((run_dir / 'canaries.json').read_text(encoding='utf-8'))
+    sightings = []
+    for n in range(1, probe_checks.EXPLORE_REPS + 1):
+        path = run_dir / f'explore-{n}.jsonl'
+        events = stream_of(path.read_text(encoding='utf-8')) if path.is_file() else None
+        sightings.append(probe_checks.explore_sightings(events, canaries))
+    (run_dir / 'sightings.json').write_text(json.dumps(sightings, indent=1) + '\n', encoding='utf-8')
+
+
+def assess_explore(read: Read) -> Verdict:
+    return probe_checks.assess_explore_override(json.loads(read('sightings.json') or '[]'))
+
+
+# async-teardown: an async SessionStart hook that logs `start <pid>`, then the name of each TEARDOWN_SIGNALS signal
+# it gets, and keeps running, since each trap only logs. `sleep 1 & wait $!` lets a trap run at once, not once a sleep
+# ends, and the loop ends by itself within TEARDOWN_LIFETIME seconds, so the hook never runs unbounded. It writes
+# nothing to stdout or stderr, so a pipe that claude closes cannot end it with SIGPIPE.
+TEARDOWN_WAIT = probe_checks.TEARDOWN_WAIT  # seconds collect_teardown waits for the hook to go
+TEARDOWN_POLL = 0.1  # seconds between two looks for the hook
+TEARDOWN_LIFETIME = 120  # seconds the hook runs at most: its loop's one-second sleeps
+TEARDOWN_TURNS = 1
+TEARDOWN_LOG = 'teardown.log'
+TEARDOWN_TRAP = '''trap 'printf "{name}\\n" >> "$log"' {name}'''
+TEARDOWN_HOOK = '\n'.join(['#!/bin/sh', 'log=$1', 'echo "start $$" >> "$log"',
+                           *(TEARDOWN_TRAP.format(name=name) for name in probe_checks.TEARDOWN_SIGNALS),
+                           'n=0', f'while [ "$n" -lt {TEARDOWN_LIFETIME} ]; do', '    sleep 1 & wait $!',
+                           '    n=$((n + 1))', 'done', ''])
+
+
+def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
+    '''async-teardown registers its hook in the scratch directory's
+    project settings as an async SessionStart command hook on the startup
+    matcher, as .claude/settings.json registers notice.sh's refresh, and
+    asks for hook events in the stream, where claude -p may finalize the
+    hook as cancelled. The reply takes one turn, so the hook is still
+    running when the run ends.'''
+    hook = scratch / 'teardown-hook.sh'
+    hook.write_text(TEARDOWN_HOOK, encoding='utf-8')
+    hook.chmod(0o755)
+    command = f'{shlex.quote(str(hook))} {shlex.quote(str(scratch / TEARDOWN_LOG))}'
+    settings = {'hooks': {'SessionStart': [{'matcher': 'startup',
+                                            'hooks': [{'type': 'command', 'command': command, 'async': True}]}]}}
+    (scratch / '.claude').mkdir()
+    (scratch / '.claude' / 'settings.json').write_text(json.dumps(settings, indent=1) + '\n', encoding='utf-8')
+    argv = claude_args(claude, 'Reply with the word OK.', turns=TEARDOWN_TURNS, sources='project', mode='default',
+                       extra=('--include-hook-events',))
+    return [Invocation('teardown', argv, {}, PROBE_TIMEOUT)]
+
+
+def read_lines(path: Path) -> list[str]:
+    return path.read_text(encoding='utf-8').splitlines() if path.is_file() else []
+
+
+def running(pid: int) -> bool:
+    '''Whether a process has the pid. PermissionError means one does,
+    though not one this user may signal.'''
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def hook_pids(lines: list[str]) -> list[int]:
+    '''The pid on each start line of the hook's log, less those os.kill
+    must never get: 0, which is the caller's own process group, 1, which is
+    init, and this process.'''
+    found = [int(m.group(1)) for m in map(probe_checks.TEARDOWN_START_RE.fullmatch, lines) if m]
+    return [pid for pid in found if pid > 1 and pid != os.getpid()]
+
+
+def collect_teardown(scratch: Path, run_dir: Path) -> None:
+    '''The hook's log as teardown.log, with gone or alive added: whether
+    each pid on its start lines was gone within TEARDOWN_WAIT seconds of
+    claude -p's end. Each one still there after the wait, or when the wait
+    is cut short, gets SIGKILL, which no trap catches, so the hook never
+    outlives the probe. The log is read again after the wait, so a signal
+    the hook logs late still counts. A log with no start line is copied as
+    it is, and an absent one as empty: the assessment reads either as
+    ERROR.'''
+    log = scratch / TEARDOWN_LOG
+    pids, end = hook_pids(read_lines(log)), []
+    try:
+        deadline = time.monotonic() + TEARDOWN_WAIT
+        while any(map(running, pids)) and time.monotonic() < deadline:
+            time.sleep(TEARDOWN_POLL)
+        if pids:
+            end = [probe_checks.TEARDOWN_ALIVE if any(map(running, pids)) else probe_checks.TEARDOWN_GONE]
+    finally:
+        for pid in filter(running, pids):
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.kill(pid, signal.SIGKILL)
+    (run_dir / TEARDOWN_LOG).write_text(''.join(f'{line}\n' for line in [*read_lines(log), *end]), encoding='utf-8')
+
+
+def assess_teardown(read: Read) -> Verdict:
+    return probe_checks.assess_async_teardown(stream_of(read('teardown.jsonl')),
+                                              (read(TEARDOWN_LOG) or '').splitlines())
+
+
 PROBE_RUNS = {
     'guard-liveness': Probe(prepare_guard, collect_guard, assess_guard,
                             {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)}),
@@ -536,6 +698,10 @@ PROBE_RUNS = {
                                'transcripts.json': 'agent-model-pins.transcripts.json'}),
     'agent-payload': PAYLOAD_PROBE,
     'compaction-cut': CUT_PROBE,
+    'explore-override': Probe(prepare_explore, collect_explore, assess_explore,
+                              {'sightings.json': 'explore-override.sightings.json'}),
+    'async-teardown': Probe(prepare_teardown, collect_teardown, assess_teardown,
+                            {'teardown.jsonl': 'async-teardown.jsonl', 'teardown.log': 'async-teardown.log'}),
 }
 
 

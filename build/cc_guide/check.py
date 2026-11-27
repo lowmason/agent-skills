@@ -6,6 +6,11 @@ packets.py builds R6.11's packets from these parts.'''
 import hashlib
 import http.client
 import json
+import os
+import secrets
+import shutil
+import tempfile
+import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -18,15 +23,17 @@ from blocks import SEP, block_hash, candidates, key_hash, key_names, page_blocks
 from docs import CHANGELOG, LLMS, Release, is_platform, page_file, page_url, parse_changelog, parse_llms, version_key
 from guide import by_section, read_citations
 from lint import lint, stale_by_section
-from state import (BASELINE, DIVERGES, ERROR, MANIFEST, PASS, PROBES, Manifest, ProbeRow, SetupError, Snapshot,
-                   Source, block_namer, citing_files, fetch_record, group_terms, latest_docs, no_snapshot,
-                   parse_baseline, parse_manifest, parse_probes, read_fetch, read_utf8, snapshot_text)
+from state import (BASELINE, DIVERGES, ERROR, GENERATION_PREFIX, LATEST, MANIFEST, PASS, PROBES, Manifest, ProbeRow,
+                   SetupError, Snapshot, Source, block_namer, citing_files, fetch_record_in, group_terms, latest_dir,
+                   no_snapshot, parse_baseline, parse_manifest, parse_probes, read_fetch_at, read_utf8, snapshot_text)
 
 USER_AGENT = 'agent-skills-cc-guide/1 (Claude Code docs drift check)'
 TIMEOUT = 30
 ATTEMPTS = 2  # R6.4: one retry
 HTTP_OK, HTTP_NOT_FOUND = 200, 404
 WORKERS = 8
+STAGING_GRACE = 3600  # seconds: a younger generation folder may be another check's staging folder
+TEMP_NAME_BYTES = 8   # random bytes in the hidden temp link's name
 Fetch = Callable[[str], tuple[int, bytes]]
 
 
@@ -100,16 +107,17 @@ def offline_docs(manifest: Manifest, folder: Path) -> Docs:
 
 
 def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> Docs:
-    '''R6.3-R6.4: fetch the changelog and llms.txt; then every mapped page if
-    the changelog head moved since the last fetch, else only the mapped pages
-    latest/docs lacks. Pages overwrite latest/docs. A 404 or a failed fetch
-    removes the stale copy, so a later run fetches the page again; a head move
-    also removes every cached page this manifest does not map, since the one
-    recorded head would otherwise vouch for it later. An llms.txt that lists
-    no code page is a FetchError, raised before the cache changes.'''
-    folder = latest_docs(cache)
-    folder.mkdir(parents=True, exist_ok=True)
-    record = read_fetch(cache)
+    '''R6.3-R6.4 as plan 109 amends them: fetch the changelog and llms.txt;
+    then every mapped page if the changelog head moved since the last fetch,
+    else only the mapped pages the current generation lacks. Each run builds
+    a generation of its own, seeded from the current one when the head is
+    unchanged and empty when it moved (D4), writes fetch.json in it last, and
+    then swaps latest to it, so latest names one finished fetch. A page
+    answered 404 or not fetched is left out, so a later run fetches it again.
+    An llms.txt that lists no code page is a FetchError, raised before the
+    cache changes; a run that fails after that leaves latest as it was.'''
+    current = latest_dir(cache)
+    record = read_fetch_at(current)
     previous = record['changelog_head'] if record else None
     fetched = {}
     for name, url in ((CHANGELOG, manifest.sources['changelog']), (LLMS, manifest.sources['llms'])):
@@ -124,43 +132,83 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
         raise FetchError(f"{manifest.sources['llms']}: lists no code pages")
     head = releases_of(fetched[CHANGELOG])[0].label
     pages = manifest.pages()
-    if head != previous:
-        # A page this manifest does not map would keep the old head's text, and a later run that
-        # maps it again would find it and compare it as current.
-        keep = {CHANGELOG, LLMS, *map(page_file, pages)}
-        for stale in folder.glob('*.md'):
-            if stale.name not in keep:
-                stale.unlink()
-    todo = pages if head != previous else [p for p in pages if not (folder / page_file(p)).is_file()]
-
-    def get(page: str):
-        try:
-            return page, fetch(page_url(page, manifest.sources)), None
-        except FetchError as exc:
-            return page, None, str(exc)
-    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        results = list(pool.map(get, todo))
-    errors, unread = [], set()
-    for page, got, error in results:
-        path = folder / page_file(page)
-        if error is None and got[0] not in (HTTP_OK, HTTP_NOT_FOUND):
-            error = f'{page_url(page, manifest.sources)}: HTTP {got[0]}'
-        if error is None and got[0] == HTTP_OK and utf8(got[1]) is None:
-            error = f'{page_url(page, manifest.sources)}: not UTF-8 text'
-        if error is not None:
-            errors.append(error)
-            unread.add(page)
-            path.unlink(missing_ok=True)
-        elif got[0] == HTTP_NOT_FOUND:
-            path.unlink(missing_ok=True)
+    cache.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=GENERATION_PREFIX, dir=cache))
+    folder = staging / 'docs'
+    swapped = False
+    try:
+        if head == previous and (current / 'docs').is_dir():
+            shutil.copytree(current / 'docs', folder)
         else:
-            path.write_bytes(got[1])
-    for name, text in fetched.items():
-        (folder / name).write_text(text, encoding='utf-8')
-    fetch_record(cache).write_text(json.dumps({'fetched_at': now.isoformat(timespec='seconds'),
-                                               'changelog_head': head}, indent=1) + '\n', encoding='utf-8')
+            folder.mkdir()
+        todo = pages if head != previous else [p for p in pages if not (folder / page_file(p)).is_file()]
+
+        def get(page: str):
+            try:
+                return page, fetch(page_url(page, manifest.sources)), None
+            except FetchError as exc:
+                return page, None, str(exc)
+        with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+            results = list(pool.map(get, todo))
+        errors, unread = [], set()
+        for page, got, error in results:
+            if error is None and got[0] not in (HTTP_OK, HTTP_NOT_FOUND):
+                error = f'{page_url(page, manifest.sources)}: HTTP {got[0]}'
+            if error is None and got[0] == HTTP_OK and utf8(got[1]) is None:
+                error = f'{page_url(page, manifest.sources)}: not UTF-8 text'
+            if error is not None:
+                errors.append(error)
+                unread.add(page)
+            elif got[0] == HTTP_OK:
+                (folder / page_file(page)).write_bytes(got[1])
+        for name, text in fetched.items():
+            (folder / name).write_text(text, encoding='utf-8')
+        fetch_record_in(staging).write_text(json.dumps({'fetched_at': now.isoformat(timespec='seconds'),
+                                                        'changelog_head': head}, indent=1) + '\n', encoding='utf-8')
+        swap_latest(cache, staging)
+        swapped = True
+    finally:
+        if not swapped and latest_dir(cache) != staging:
+            shutil.rmtree(staging, ignore_errors=True)
     texts = {p: read_utf8(folder / page_file(p)) if (folder / page_file(p)).is_file() else None for p in pages}
     return Docs(fetched[CHANGELOG], fetched[LLMS], texts, 'live', errors, unread)
+
+
+def swap_latest(cache: Path, generation: Path) -> None:
+    '''D3: point the latest link at generation, a folder in cache, by one
+    os.replace of a link made under a hidden temp name, so a reader finds the
+    old generation or the new one, never neither. A real latest/ folder, as
+    caches before plan 109 hold, is first renamed aside as a generation: a
+    one-time migration with a short gap. Then prune every generation but the
+    new one and the one it replaced, which a reader may have just resolved.'''
+    link = cache / LATEST
+    keep = {generation}
+    if link.is_symlink():
+        keep.add(latest_dir(cache))
+    elif link.is_dir():
+        aside = Path(tempfile.mkdtemp(prefix=GENERATION_PREFIX, dir=cache))
+        os.replace(link, aside)
+        keep.add(aside)
+    temp = cache / f'.{LATEST}-{secrets.token_hex(TEMP_NAME_BYTES)}'
+    temp.symlink_to(generation.name)
+    os.replace(temp, link)
+    prune_generations(cache, keep, time.time())
+
+
+def prune_generations(cache: Path, keep: set[Path], now_epoch: float) -> None:
+    '''Remove each generation folder not in keep whose mtime is at least
+    STAGING_GRACE before now_epoch. A younger one may be another check's
+    staging folder. One a concurrent check removed meanwhile is skipped.'''
+    kept = {p.name for p in keep}
+    for path in cache.iterdir():
+        if not path.name.startswith(GENERATION_PREFIX) or path.name in kept:
+            continue
+        try:
+            age = now_epoch - path.stat().st_mtime
+        except FileNotFoundError:
+            continue
+        if age >= STAGING_GRACE:
+            shutil.rmtree(path, ignore_errors=True)
 
 
 class Finding(NamedTuple):

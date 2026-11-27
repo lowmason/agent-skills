@@ -3,13 +3,16 @@
 The run tests inject a fake run function, so no test starts uv; the --check tests
 build throwaway git repositories.
 '''
+import os
 import subprocess
+import sys
 import tomllib
 
 import pytest
 
 import run_suites as rs
 import versions
+from git_listing import git_env, kept_paths
 
 V = versions.load()   # the dev interpreter and the cutoff come from the file, never from a literal here
 DEV = V.dev_python
@@ -44,6 +47,18 @@ dir = 'tools/inner'
 with = ['pytest']
 pythons = ['dev', '/usr/bin/python3']
 '''
+
+
+@pytest.fixture(autouse=True)
+def isolated_git(tmp_path, monkeypatch):
+    '''Keep every git call below tmp_path, and read no user or system git config or default
+    excludes file ($XDG_CONFIG_HOME/git/ignore, else $HOME/.config/git/ignore).'''
+    monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
+    monkeypatch.setenv('GIT_CONFIG_GLOBAL', os.devnull)
+    monkeypatch.setenv('GIT_CONFIG_NOSYSTEM', '1')
+    monkeypatch.setenv('XDG_CONFIG_HOME', str(tmp_path / 'no-xdg'))
+
+
 ONE = "[[suite]]\nname = 'a'\ndir = 'x'\n"  # a suite table without its `with` line
 
 
@@ -81,6 +96,17 @@ def test_the_fixture_registry_is_valid():
      "suite 2 (b): duplicate dir 'x'"),
     ("title = 'suites'\n" + ONE + "with = ['pytest']\n", "unknown top-level key 'title'"),
     ('', 'no [[suite]] tables'),
+    (ONE + "with = ['pytest', '--index-url=x']\n", "suite 1 (a): 'with' entries must not start with '-'"),
+    (ONE + "with = ['pytest']\nextras = ['-e.']\n", "suite 1 (a): 'extras' entries must not start with '-'"),
+    (ONE + "with = ['pytest']\npythons = ['-p']\n", "suite 1 (a): 'pythons' entries must not start with '-'"),
+    ("suite = 'x'\n", 'no [[suite]] tables'),
+    ('suite = [1]\n', 'suite 1: not a table'),
+    ("[[suite]]\nname = 'a'\ndir = '/abs'\nwith = ['pytest']\n",
+     "suite 1 (a): 'dir' must be a normalised path below the repo root"),
+    ("[[suite]]\nname = 1\ndir = 'x'\nwith = ['pytest']\n", "suite 1: 'name' must be a non-empty string"),
+    ("[[suite]]\nname = 'a'\ndir = 1\nwith = ['pytest']\n", "suite 1 (a): 'dir' must be a non-empty string"),
+    (ONE + "with = ['pytest']\nextras = [1]\n", "suite 1 (a): 'extras' must be a list of non-empty strings"),
+    (ONE + "with = ['pytest']\npythons = [1]\n", "suite 1 (a): 'pythons' must be a list of non-empty strings"),
 ])
 def test_validate_refuses(text, problem):
     assert problem in problems(text)
@@ -146,6 +172,16 @@ def test_container_compares_path_parts_not_string_prefixes():
     assert rs.container(other, [build, other]) is None
 
 
+def test_all_runs_an_inner_suite_the_outer_one_skips():
+    outer = rs.Suite('outer', 'tools', ('pytest',))
+    inner = rs.Suite('tools-build', 'tools/build', ('pytest',))
+    assert rs.container(inner, [outer, inner]) is None
+
+
+def test_norecurse_is_pytests_default(request):
+    assert set(rs.NORECURSE) == set(request.config.getini('norecursedirs'))
+
+
 # --- --check: the registry and its coverage ---
 
 COVERED = {
@@ -162,7 +198,7 @@ def git_repo(root, files):
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text)
-    subprocess.run(['git', 'init', '-q'], cwd=root, env=rs.git_env(), check=True)
+    subprocess.run(['git', 'init', '-q'], cwd=root, env=git_env(), check=True)
     return root
 
 
@@ -203,6 +239,33 @@ def test_check_ignores_gitignored_trees(tmp_path):
     assert findings(root) == []
 
 
+def test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'skills/beta/scripts/test_b.py': ''})
+    subprocess.run(['git', 'add', '.'], cwd=root, env=git_env(), check=True)
+    (root / 'skills' / 'beta' / 'scripts' / 'test_b.py').unlink()
+    assert findings(root) == []
+
+
+def test_the_git_isolation_hides_the_users_default_excludes(tmp_path, monkeypatch):
+    home = tmp_path / 'home'
+    (home / '.config' / 'git').mkdir(parents=True)
+    (home / '.config' / 'git' / 'ignore').write_text('build/\n')
+    monkeypatch.setenv('HOME', str(home))   # git reads $HOME/.config/git/ignore only while XDG_CONFIG_HOME is unset or empty
+    root = git_repo(tmp_path / 'repo', {'build/test_b.py': ''})
+    assert kept_paths(root) == ['build/test_b.py']
+
+
+def test_check_skips_a_tracked_file_deleted_from_the_work_tree(tmp_path):
+    files = {rel: text for rel, text in COVERED.items() if not rel.startswith('skills/alpha/')}
+    root = git_repo(tmp_path, {**files, 'skills/alpha/scripts/test_a.py': ''})
+    git = ['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com']
+    subprocess.run([*git, 'add', '.'], cwd=root, env=git_env(), check=True)
+    subprocess.run([*git, 'commit', '-q', '-m', 'seed'], cwd=root, env=git_env(), check=True)
+    (root / 'skills' / 'alpha' / 'scripts' / 'test_a.py').unlink()
+    (root / 'skills' / 'alpha' / 'scripts' / 'tool.py').write_text('')
+    assert findings(root) == ['build/suites.toml: alpha: skills/alpha/scripts holds no pytest file']
+
+
 def test_check_ignores_archived_skills(tmp_path):
     root = git_repo(tmp_path, {**COVERED, 'archive/skills/beta/scripts/test_b.py': ''})
     assert findings(root) == []
@@ -221,10 +284,56 @@ def test_check_flags_suites_out_of_name_order(tmp_path):
     assert findings(root) == ["build/suites.toml: suites are not sorted by name: 'outer' comes after 'zulu'"]
 
 
-def test_check_fails_closed_outside_a_git_repository(tmp_path):
+def test_check_flags_a_test_directory_that_pytest_skips(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'skills/alpha/scripts/build/test_y.py': ''})
+    assert findings(root) == ["skills/alpha/scripts/build: holds pytest files, but pytest skips 'build' "
+                              'below skills/alpha/scripts, so no suite collects it']
+
+
+def one_suite_registry(*dirs):
+    return ''.join(f"[[suite]]\nname = 's{i}'\ndir = '{d}'\nwith = ['pytest']\n\n" for i, d in enumerate(dirs))
+
+
+@pytest.mark.parametrize('rel, part, below', [
+    ('skills/alpha/scripts/build/deep/test_y.py', 'build', 'skills/alpha/scripts'),
+    ('skills/alpha/scripts/.hidden/test_y.py', '.hidden', 'skills/alpha/scripts'),
+    ('skills/alpha/scripts/pkg.egg/test_y.py', 'pkg.egg', 'skills/alpha/scripts'),
+])
+def test_check_flags_a_skipped_part_that_is_not_last_or_matches_a_pattern(tmp_path, rel, part, below):
+    root = git_repo(tmp_path, {**COVERED, rel: ''})
+    assert findings(root) == [f'{rel.rsplit("/", 1)[0]}: holds pytest files, but pytest skips {part!r} '
+                              f'below {below}, so no suite collects it']
+
+
+def test_a_directory_is_covered_when_one_of_its_suites_does_not_skip_it(tmp_path):
+    registry = one_suite_registry('tools', 'tools/build')
+    root = git_repo(tmp_path, {'build/suites.toml': registry, 'tools/build/x/test_y.py': ''})
+    assert findings(root) == []
+
+
+def test_a_skipped_directory_is_reported_with_its_deepest_suite(tmp_path):
+    registry = one_suite_registry('tools', 'tools/.hid/inner')
+    root = git_repo(tmp_path, {'build/suites.toml': registry, 'tools/test_t.py': '',
+                               'tools/.hid/inner/test_i.py': '', 'tools/.hid/inner/build/test_y.py': ''})
+    assert findings(root) == ["tools/.hid/inner/build: holds pytest files, but pytest skips 'build' "
+                              'below tools/.hid/inner, so no suite collects it']
+
+
+def test_a_suite_dir_named_like_a_skipped_folder_is_collected(tmp_path):
+    registry = "[[suite]]\nname = 'build'\ndir = 'build'\nwith = ['pytest']\n"
+    root = git_repo(tmp_path, {'build/suites.toml': registry, 'build/test_b.py': ''})
+    assert findings(root) == []
+
+
+def test_check_fails_closed_outside_a_git_repository(tmp_path, monkeypatch):
+    monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
+    monkeypatch.setenv('LC_ALL', 'C')
     (tmp_path / 'build').mkdir()
     (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
-    assert findings(tmp_path) == ['build/suites.toml: git ls-files failed, so the test directories are unknown']
+    [finding] = findings(tmp_path)
+    assert finding.startswith('build/suites.toml: git ls-files failed (')
+    assert 'not a git repository' in finding
+    assert finding.endswith('), so the test directories are unknown')
 
 
 # --- the command line ---
@@ -274,12 +383,35 @@ def test_the_notes_follow_the_first_header(repo, capsys):
     assert capsys.readouterr().out.splitlines()[:2] == [f'== alpha ({DEV})', 'note: Reads a pilot wiki, else skips.']
 
 
+class PrintingRuns(FakeRuns):
+    def __call__(self, root, run):
+        print(f'run {run.label}')
+        return super().__call__(root, run)
+
+
+def test_notes_print_once_after_the_first_header_and_before_the_run(repo, capsys):
+    (repo / 'build' / 'suites.toml').write_text(
+        "[[suite]]\nname = 'alpha'\ndir = 'x'\nwith = ['pytest']\n"
+        "pythons = ['dev', '/usr/bin/python3']\nnotes = ['n1']\n")
+    rs.main(['alpha'], root=repo, run_one=PrintingRuns(), pins=PINS)
+    assert capsys.readouterr().out.splitlines() == [
+        f'== alpha ({DEV})', 'note: n1', f'run alpha ({DEV})',
+        '== alpha (/usr/bin/python3)', 'run alpha (/usr/bin/python3)', 'suite runs passed']
+
+
 def test_extras_and_pytest_args_reach_the_run(repo):
     fake = FakeRuns()
     rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake, pins=PINS)
     assert fake.argvs == [('uv', 'run', '--python', DEV, '--exclude-newer', V.cutoff, '--with', 'pytest',
                            '--with', 'polars==9.9.9', '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q',
                            '-k', 'x')]
+
+
+def test_an_option_between_suite_names_applies_to_all(repo):
+    fake = FakeRuns()
+    assert rs.main(['alpha', '--extras', 'outer'], root=repo, run_one=fake, pins=PINS) == 0
+    assert fake.labels == [f'alpha ({DEV})', f'outer ({DEV})']
+    assert '--with' in fake.argvs[0] and 'arviz>=1.0' in fake.argvs[0]
 
 
 def test_the_options_build_the_pins_from_the_repos_file(repo):
@@ -329,6 +461,26 @@ def test_list_prints_commands_extras_and_notes_and_runs_nothing(repo, capsys):
     ]
 
 
+def test_list_with_extras_shows_the_extras_deps(repo, capsys):
+    rs.main(['--list', 'alpha', '--extras'], root=repo, run_one=FakeRuns(), pins=PINS)
+    assert ('  cd skills/alpha/scripts && uv run --python ' + DEV + f' --exclude-newer {V.cutoff} --with pytest '
+            "--with polars==9.9.9 --with 'arviz>=1.0' python -m pytest -q") in capsys.readouterr().out.splitlines()
+
+
+def test_list_with_pytest_args_appends_them(repo, capsys):
+    rs.main(['--list', 'outer', '--', '-k', 'a and b'], root=repo, run_one=FakeRuns(), pins=PINS)
+    assert capsys.readouterr().out.splitlines() == [
+        'outer: tools',
+        f"  cd tools && uv run --python {DEV} --exclude-newer {V.cutoff} --with pytest python -m pytest -q "
+        "-k 'a and b'"]
+
+
+def test_list_with_no_names_lists_every_suite_in_file_order(repo, capsys):
+    rs.main(['--list'], root=repo, run_one=FakeRuns(), pins=PINS)
+    heads = [line for line in capsys.readouterr().out.splitlines() if not line.startswith('  ')]
+    assert heads == ['alpha: skills/alpha/scripts', 'outer: tools', 'tools-inner: tools/inner']
+
+
 def test_an_unknown_suite_exits_2(repo, capsys):
     assert rs.main(['nope'], root=repo, run_one=FakeRuns()) == 2
     assert 'unknown suite: nope' in capsys.readouterr().err
@@ -373,6 +525,23 @@ def test_a_run_that_cannot_start_fails(tmp_path, capsys):
     [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)), PINS)
     assert rs.run_subprocess(tmp_path, run) == 1
     assert f'ghost ({DEV}): cannot start' in capsys.readouterr().err
+
+
+def test_run_subprocess_runs_in_the_suite_dir_with_this_environment(tmp_path, monkeypatch, capfd):
+    (tmp_path / 'sub').mkdir()
+    monkeypatch.setenv('LANE3_PROBE', 'seen')
+    code = "import os, sys; print(os.getcwd()); print(os.environ['LANE3_PROBE']); sys.exit(3)"
+    run = rs.Run(rs.Suite('probe', 'sub', ('pytest',)), DEV, (sys.executable, '-c', code))
+    assert rs.run_subprocess(tmp_path, run) == 3
+    assert capfd.readouterr().out.splitlines() == [str((tmp_path / 'sub').resolve()), 'seen']
+
+
+def test_a_malformed_registry_exits_2_for_a_run_and_1_for_check(repo, capsys):
+    (repo / 'build' / 'suites.toml').write_text('name = [')
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns()) == 2
+    assert 'build/suites.toml: cannot read' in capsys.readouterr().err
+    assert rs.main(['--check'], root=repo) == 1
+    assert 'build/suites.toml: cannot read' in capsys.readouterr().err
 
 
 # --- the real registry ---

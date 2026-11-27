@@ -5,7 +5,9 @@ fake, so no test spends a token or reads the real ~/.claude.'''
 import contextlib
 import json
 import os
+import re
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -20,6 +22,7 @@ import pytest
 import probe_checks
 import probes
 import state
+import test_probe_checks as tpc
 from cc_fixtures import MANIFEST_TOML, isolated_home, write_tree  # noqa: F401
 from state import DIVERGES, ERROR, PASS
 
@@ -542,11 +545,13 @@ def fire_payload_hooks(*payloads):
     return side
 
 
-def payload_stream() -> str:
-    '''A parent on Sonnet that dispatches the haiku control and
-    claude-code-guide in one message, each forwarding one Haiku message.'''
-    sent = [{'type': 'tool_use', 'id': f't{n}', 'name': 'Agent', 'input': {'subagent_type': agent}}
-            for n, agent in enumerate(('general-purpose', 'claude-code-guide'))]
+def payload_stream(control_model: str | None = 'haiku') -> str:
+    '''A parent on Sonnet that dispatches the control, with control_model,
+    and claude-code-guide in one message, each forwarding one Haiku
+    message.'''
+    control = {'model': control_model} if control_model else {}
+    sent = [{'type': 'tool_use', 'id': f't{n}', 'name': 'Agent', 'input': {'subagent_type': agent, **given}}
+            for n, (agent, given) in enumerate((('general-purpose', control), ('claude-code-guide', {})))]
     parent = {'type': 'assistant', 'parent_tool_use_id': None,
               'message': {'model': 'claude-sonnet-5-5', 'content': sent}}
     forwarded = [{'type': 'assistant', 'parent_tool_use_id': f't{n}',
@@ -557,7 +562,9 @@ def payload_stream() -> str:
 def test_the_payload_probe_logs_each_dispatch_through_both_matchers(tmp_path):
     '''Project settings only, two logging hooks, one file a payload, since
     the hooks and the two dispatches can run at once; collect keeps each
-    hook's raw log beside the trimmed payloads.json.'''
+    hook's raw log beside payloads.json, which counts each log's payloads
+    before trimming, and rebuild_payloads writes it again from the raw logs
+    alone.'''
     (inv,) = probes.prepare_payload(tmp_path, 'claude', REPO)
     settings = json.loads((tmp_path / '.claude' / 'settings.json').read_text())
     assert [g['matcher'] for g in settings['hooks']['PreToolUse']] == ['*', 'Agent']
@@ -574,19 +581,35 @@ def test_the_payload_probe_logs_each_dispatch_through_both_matchers(tmp_path):
     run_dir = tmp_path / 'run'
     run_dir.mkdir()
     probes.collect_payload(tmp_path, run_dir)
-    assert json.loads((run_dir / 'payloads.json').read_text()) == TRIMMED
+    expected = {'logged': {'any': 4, 'agent': 3}, 'payloads': TRIMMED}
+    assert json.loads((run_dir / 'payloads.json').read_text()) == expected
     assert len((run_dir / 'payloads-any.raw.jsonl').read_text().splitlines()) == 4
     assert len((run_dir / 'payloads-agent.raw.jsonl').read_text().splitlines()) == 3
+    shutil.rmtree(tmp_path / 'payloads')
+    (run_dir / 'payloads.json').unlink()
+    probes.rebuild_payloads(run_dir)
+    assert json.loads((run_dir / 'payloads.json').read_text()) == expected
 
 
-def bad_payload(cwd):
-    (cwd / 'payloads' / 'any' / 'payload.bad').write_text('not json\n', encoding='utf-8')
+def bad_payload(folder):
+    def write(cwd):
+        (cwd / 'payloads' / folder / 'payload.bad').write_text('not json\n', encoding='utf-8')
+    return write
+
+
+def empty_payload(cwd):
+    fire_payload_hooks(*PAYLOADS)(cwd)
+    (cwd / 'payloads' / 'agent' / 'payload.empty').write_text('', encoding='utf-8')
 
 
 @pytest.mark.parametrize('side, outcome, finding', [
     (fire_payload_hooks(*PAYLOADS), PASS, 'dispatches reach PreToolUse as Agent, with no model when unset; '
                                           'claude-code-guide served claude-haiku-5-5, as the haiku control was'),
-    (bad_payload, ERROR, 'JSONDecodeError: '),
+    (bad_payload('any'), ERROR, 'JSONDecodeError: '),
+    (bad_payload('agent'), ERROR, 'JSONDecodeError: '),
+    # An empty payload is not JSON either, and hooks that never fired leave empty logs, not a broken file.
+    (empty_payload, ERROR, 'JSONDecodeError: '),
+    (lambda cwd: None, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
 ])
 def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome, finding):
     '''From prepare to the verdict through run_probe, with the hooks fired on
@@ -594,6 +617,324 @@ def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome
     fake = FakeRuns({'dispatch': payload_stream()}, side={'dispatch': side})
     verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
     assert verdict.outcome == outcome and verdict.finding.startswith(finding)
+
+
+def test_a_live_run_whose_parent_strays_from_its_prompt_is_error(tmp_path):
+    '''Payloads that match the prompt cannot hide a parent that strayed
+    from it: the stream's own Agent calls decide.'''
+    fake = FakeRuns({'dispatch': payload_stream(control_model=None)}, side={'dispatch': fire_payload_hooks(*PAYLOADS)})
+    verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
+    assert verdict == (ERROR, "the parent session sent general-purpose with no model, but its prompt asks for model "
+                              "'haiku'")
+
+
+EXPLORE_PASS = 'Explore override read CLAUDE.md and got no git-status snapshot in 3 of 3 reps; the control got both'
+EXPLORE_REPS = [f'explore-{n}' for n in range(1, 4)]
+
+
+def frontmatter(path: Path) -> dict[str, str]:
+    head = path.read_text(encoding='utf-8').split('---\n')[1]
+    return dict(line.split(': ', 1) for line in head.splitlines())
+
+
+def test_the_explore_probe_prepares_two_project_agents_its_canaries_and_three_reps(tmp_path):
+    '''Each run draws its own canaries: the CLAUDE.md word and an untracked file in a fresh git repo. Both agents
+    are project agents that may not read, search or run anything, and the parent's prompt names neither canary
+    nor mark, so an answer can hold them only from the agent's context.'''
+    first, second = tmp_path / 'a', tmp_path / 'b'
+    first.mkdir()
+    second.mkdir()
+    invs = probes.prepare_explore(first, 'claude', REPO)
+    probes.prepare_explore(second, 'claude', REPO)
+    canaries = [json.loads((d / 'canaries.json').read_text(encoding='utf-8')) for d in (first, second)]
+    for key in ('claude_md', 'git_status'):
+        assert canaries[0][key] != canaries[1][key]
+    for drawn in canaries:
+        assert re.fullmatch(r'cm-[0-9a-f]{8}', drawn['claude_md'])
+        assert re.fullmatch(r'gs-[0-9a-f]{8}', drawn['git_status'])
+    word, untracked = canaries[0]['claude_md'], f"{canaries[0]['git_status']}.txt"
+    assert (first / 'CLAUDE.md').read_text(encoding='utf-8') == f'The canary word for this project is {word}.\n'
+    status = subprocess.run(['git', 'status', '--porcelain'], cwd=first, capture_output=True, text=True, check=True)
+    assert f'?? {untracked}' in status.stdout.splitlines()
+    for stem, name, mark in (('explore', 'Explore', 'EXPLORE-OVERRIDE'),
+                             ('canary-control', 'canary-control', 'CANARY-CONTROL')):
+        path = first / '.claude' / 'agents' / f'{stem}.md'
+        assert frontmatter(path) == {'name': name, 'description': 'A drift probe agent.',
+                                     'disallowedTools': 'Read, Grep, Glob, Bash, Edit, Write'}
+        body = path.read_text(encoding='utf-8').split('---\n', 2)[2]
+        assert f'1. {mark}\n' in body and 'CLAUDE.md' in body and 'git status' in body and 'NONE' in body
+    assert sorted(p.name for p in (first / '.claude' / 'agents').iterdir()) == ['canary-control.md', 'explore.md']
+    assert [inv.name for inv in invs] == EXPLORE_REPS
+    inv = invs[0]
+    assert all(other.argv == inv.argv and other.env == inv.env for other in invs)
+    assert (inv.timeout, inv.env) == (probes.PROBE_TIMEOUT, {'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS': '300000'})
+    flags = {flag: inv.argv[inv.argv.index(flag) + 1] for flag in ('--setting-sources', '--settings', '--max-turns',
+                                                                   '--max-budget-usd')}
+    assert (flags['--setting-sources'], flags['--max-turns'], flags['--max-budget-usd']) == ('project', '6', '0.50')
+    assert json.loads(flags['--settings']) == {'permissions': {'defaultMode': 'default', 'allow': ['Agent']}}
+    assert '--forward-subagent-text' in inv.argv and inv.argv[-1] == '--no-session-persistence'
+    prompt = inv.argv[1]
+    for agent in ('Explore', 'canary-control'):
+        assert f'subagent_type "{agent}" with prompt "Follow your instructions."' in prompt
+    for secret in (*canaries[0].values(), 'EXPLORE-OVERRIDE', 'CANARY-CONTROL', 'cm-', 'gs-'):
+        assert secret not in prompt
+
+
+def test_the_explore_probe_reads_its_run_like_a_live_one(tmp_path, monkeypatch):
+    '''From prepare to the verdict through run_probe: three reps from one scratch git repo, each stream built by
+    test_probe_checks' explore_run, with the canaries prepare draws fixed to that file's CANARIES.'''
+    drawn = []
+    monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: drawn.append(n) or '0a1b2c3d')
+    fake = FakeRuns({rep: stream(*tpc.explore_run()) for rep in EXPLORE_REPS})
+    run_dir = tmp_path / 'run'
+    assert probes.run_probe('explore-override', 'claude', REPO, run_dir, fake) == (PASS, EXPLORE_PASS)
+    assert drawn == [4, 4]
+    assert [inv.name for inv, _, _ in fake.ran] == EXPLORE_REPS
+    assert len({cwd for _, cwd, _ in fake.ran}) == 1
+    files = [f for f in fake.ran[0][2] if not f.startswith('.git/')]
+    assert files == ['.claude', '.claude/agents', '.claude/agents/canary-control.md', '.claude/agents/explore.md',
+                     '.git', 'CLAUDE.md', 'canaries.json', 'gs-0a1b2c3d.txt']
+    assert json.loads((run_dir / 'canaries.json').read_text(encoding='utf-8')) == tpc.CANARIES
+    assert json.loads((run_dir / 'sightings.json').read_text(encoding='utf-8')) == [tpc.sighting()] * 3
+    assert sorted(p.name for p in run_dir.iterdir()) == sorted(
+        ['canaries.json', 'sightings.json', *(f'{rep}{suffix}' for rep in EXPLORE_REPS
+                                              for suffix in ('.argv.json', '.err', '.jsonl'))])
+
+
+def test_the_explore_probe_backs_its_sections_and_its_fixture_replays_like_the_run(tmp_path, monkeypatch):
+    '''The registry entry the owner chose (plan 109, D10), and the one fixture save_fixtures writes, which the
+    replay reads as the run was read. A run with no sightings.json is ERROR, never a pass.'''
+    manifest = state.parse_manifest((REPO / state.MANIFEST).read_text(encoding='utf-8'))
+    assert manifest.probes['explore-override'] == (['subagents.isolation', 'subagents.models'], ['agents/explore.md'])
+    monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: '0a1b2c3d')
+    unmarked = tpc.explore_run(control=[tpc.text(tpc.answer('canary-control', mark=False))])
+    fake = FakeRuns({'explore-1': stream(*tpc.explore_run()), 'explore-2': stream(*tpc.explore_run()),
+                     'explore-3': stream(*unmarked)})
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    verdict = probes.run_probe('explore-override', 'claude', REPO, run_dir, fake)
+    assert verdict == (ERROR, 'rep 3: canary-control did not give its mark CANARY-CONTROL')
+    assert probes.save_fixtures(run_dir, 'explore-override', dest) == [dest / 'explore-override.sightings.json']
+    probe = probes.PROBE_RUNS['explore-override']
+    assert probe.assess(probes.reader(dest, probe.fixtures)) == verdict
+    assert probe.assess(lambda name: None) == (ERROR, 'expected 3 reps, found 0')
+
+
+def test_the_explore_probe_reads_each_rep_from_its_own_stream(tmp_path, monkeypatch):
+    '''A rep whose stream diverges is named by its number, and a missing stream is a broken rep, not a pass.'''
+    monkeypatch.setattr(probes.secrets, 'token_hex', lambda n: '0a1b2c3d')
+    snapshot = tpc.explore_run(explore=[tpc.text(tpc.answer('Explore'))])
+    fake = FakeRuns({'explore-1': stream(*tpc.explore_run()), 'explore-2': stream(*snapshot),
+                     'explore-3': stream(*tpc.explore_run())})
+    assert probes.run_probe('explore-override', 'claude', REPO, tmp_path / 'run', fake) == (
+        DIVERGES, 'rep 2: the Explore override got a git-status snapshot')
+    fake = FakeRuns({'explore-1': stream(*tpc.explore_run()), 'explore-2': stream(*tpc.explore_run())})
+    assert probes.run_probe('explore-override', 'claude', REPO, tmp_path / 'short', fake) == (
+        ERROR, 'rep 3: the run broke: no stream-json events')
+
+
+AT_ONCE = 0.5  # seconds: a trap that waited for the hook's one-second sleep to end would come later
+
+
+def gone_pid() -> int:
+    '''The pid of a process that has exited and been reaped.'''
+    proc = subprocess.Popen(['true'])
+    proc.wait()
+    return proc.pid
+
+
+def orphan(command: str) -> int:
+    '''The pid of a background shell running `command`, whose parent has exited, so init reaps it when it ends,
+    as it reaps a hook whose claude has exited.'''
+    started = subprocess.run(['sh', '-c', f'({command}) >/dev/null 2>&1 &\necho $!'], capture_output=True, text=True,
+                             check=True)
+    return int(started.stdout)
+
+
+def teardown_log(*lines):
+    return lambda cwd: (cwd / 'teardown.log').write_text(''.join(f'{line}\n' for line in lines), encoding='utf-8')
+
+
+def default_signals():
+    '''In the hook's process before exec: a signal the suite's process ignores, as nohup ignores SIGHUP, would stay
+    ignored in the hook's shell, which then could not trap it.'''
+    for signum in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
+        signal.signal(signum, signal.SIG_DFL)
+
+
+def start_hook(scratch: Path, script: str | None = None) -> tuple[subprocess.Popen, Path]:
+    hook = executable(scratch / 'teardown-hook.sh', script or probes.TEARDOWN_HOOK)
+    log = scratch / 'teardown.log'
+    return subprocess.Popen([str(hook), str(log)], start_new_session=True, preexec_fn=default_signals), log
+
+
+def log_reads(log: Path, lines: list[str], wait: float) -> bool:
+    '''Whether the log holds exactly these lines within `wait` seconds.'''
+    deadline = time.monotonic() + wait
+    while time.monotonic() < deadline:
+        if log.is_file() and log.read_text(encoding='utf-8').splitlines() == lines:
+            return True
+        time.sleep(0.01)
+    return False
+
+
+@contextlib.contextmanager
+def reaped(proc: subprocess.Popen):
+    try:
+        yield proc
+    finally:
+        with contextlib.suppress(ProcessLookupError):
+            proc.kill()
+        proc.wait()
+
+
+def test_the_teardown_probe_registers_an_async_session_start_hook(tmp_path):
+    '''Project settings only, one async SessionStart command hook on the startup matcher, as .claude/settings.json
+    registers notice.sh's refresh, and hook events in the stream.'''
+    (inv,) = probes.prepare_teardown(tmp_path, 'claude', REPO)
+    hook, log = tmp_path / 'teardown-hook.sh', tmp_path / 'teardown.log'
+    settings = json.loads((tmp_path / '.claude' / 'settings.json').read_text(encoding='utf-8'))
+    command = f'{shlex.quote(str(hook))} {shlex.quote(str(log))}'
+    assert settings == {'hooks': {'SessionStart': [
+        {'matcher': 'startup', 'hooks': [{'type': 'command', 'command': command, 'async': True}]}]}}
+    assert hook.read_text(encoding='utf-8') == probes.TEARDOWN_HOOK and os.access(hook, os.X_OK)
+    assert (inv.name, inv.env, inv.timeout, inv.suffix) == ('teardown', {}, probes.PROBE_TIMEOUT, '.jsonl')
+    assert inv.argv == probes.claude_args('claude', 'Reply with the word OK.', turns=1, sources='project',
+                                          mode='default', extra=('--include-hook-events',))
+    assert probes.TEARDOWN_WAIT == 5
+
+
+def test_the_teardown_hook_logs_each_signal_at_once_and_keeps_running(tmp_path):
+    proc, log = start_hook(tmp_path)
+    with reaped(proc):
+        expected = [f'start {proc.pid}']
+        assert log_reads(log, expected, 5), 'the hook never logged its start line'
+        for name in ('TERM', 'HUP', 'INT'):
+            os.kill(proc.pid, getattr(signal, f'SIG{name}'))
+            expected.append(name)
+            assert log_reads(log, expected, AT_ONCE), f'{name} was not logged at once'
+            assert proc.poll() is None, f'the hook ended on {name}'
+
+
+def test_the_teardown_hook_ends_by_itself_after_its_lifetime(tmp_path):
+    '''Nothing the probe starts runs unbounded: with its 120-second bound cut to 2, the hook ends on its own.'''
+    bound = f'-lt {probes.TEARDOWN_LIFETIME} ]'
+    assert probes.TEARDOWN_LIFETIME == 120 and bound in probes.TEARDOWN_HOOK
+    proc, log = start_hook(tmp_path, probes.TEARDOWN_HOOK.replace(bound, '-lt 2 ]'))
+    with reaped(proc):
+        assert proc.wait(timeout=10) == 0
+        assert log.read_text(encoding='utf-8') == f'start {proc.pid}\n'
+
+
+def test_the_teardown_probe_reads_its_run_like_a_live_one(tmp_path):
+    '''From prepare to the verdict through run_probe: the hook logged its start and TERM, and its pid is gone.'''
+    pid = gone_pid()
+    fake = FakeRuns({'teardown': stream(init(), RESULT)}, side={'teardown': teardown_log(f'start {pid}', 'TERM')})
+    run_dir = tmp_path / 'run'
+    assert probes.run_probe('async-teardown', 'claude', REPO, run_dir, fake) == (PASS, tpc.TEARDOWN_PASS)
+    assert fake.ran[0][2] == ['.claude', '.claude/settings.json', 'teardown-hook.sh']
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == f'start {pid}\nTERM\ngone\n'
+    assert sorted(p.name for p in run_dir.iterdir()) == ['teardown.argv.json', 'teardown.err', 'teardown.jsonl',
+                                                         'teardown.log']
+
+
+def test_collect_teardown_waits_for_a_hook_that_goes_late_and_reads_its_log_after(tmp_path):
+    '''A hook that logs TERM and ends a second after collect starts reads gone, with that TERM in the log.'''
+    log = tmp_path / 'teardown.log'
+    pid = orphan(f"sleep 1; printf 'TERM\\n' >> {shlex.quote(str(log))}")
+    log.write_text(f'start {pid}\n', encoding='utf-8')
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    probes.collect_teardown(tmp_path, run_dir)
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == f'start {pid}\nTERM\ngone\n'
+
+
+def test_collect_teardown_kills_every_hook_still_there_after_the_wait(tmp_path, monkeypatch):
+    '''A hook that outlives the wait reads alive and gets SIGKILL, which its traps cannot catch, so it never
+    outlives the probe. Each start line counts, not only the first.'''
+    monkeypatch.setattr(probes, 'TEARDOWN_WAIT', 0.3)
+    proc, log = start_hook(tmp_path)
+    with reaped(proc):
+        assert written(log)
+        lines = f'start {gone_pid()}\nstart {proc.pid}\n'
+        log.write_text(lines, encoding='utf-8')
+        run_dir = tmp_path / 'run'
+        run_dir.mkdir()
+        probes.collect_teardown(tmp_path, run_dir)
+        assert proc.wait(timeout=5) == -signal.SIGKILL
+        assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == f'{lines}alive\n'
+
+
+def test_collect_teardown_kills_the_hook_when_its_wait_is_cut_short(tmp_path, monkeypatch):
+    '''A stop during the wait, which term_as_exit turns into SystemExit, still ends the hook.'''
+    proc, log = start_hook(tmp_path)
+    with reaped(proc):
+        assert written(log)
+
+        def stop(seconds):
+            raise SystemExit(143)
+
+        with monkeypatch.context() as patched:
+            patched.setattr(probes.time, 'sleep', stop)
+            with pytest.raises(SystemExit):
+                probes.collect_teardown(tmp_path, tmp_path)
+        assert proc.wait(timeout=5) == -signal.SIGKILL
+
+
+@pytest.mark.parametrize('line', ['start 0', 'start 1', f'start {os.getpid()}'], ids=['pid 0', 'pid 1', 'own pid'])
+def test_collect_teardown_never_signals_a_group_init_or_itself(tmp_path, monkeypatch, line):
+    '''os.kill on pid 0 signals the probe's own process group; 1 is init. Such a start line is no start.'''
+    sent = []
+    monkeypatch.setattr(probes.os, 'kill', lambda pid, signum: sent.append((pid, signum)))
+    (tmp_path / 'teardown.log').write_text(f'{line}\nTERM\n', encoding='utf-8')
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    probes.collect_teardown(tmp_path, run_dir)
+    assert sent == []
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == f'{line}\nTERM\n'
+
+
+def test_collect_teardown_counts_a_pid_it_may_not_signal_as_alive(tmp_path, monkeypatch):
+    '''PermissionError means a process holds the pid, though this user may not signal it: the pid is not gone, so
+    the hook reads alive, and a SIGKILL refused the same way does not stop collect.'''
+    def refuse(pid, signum):
+        raise PermissionError(1, 'Operation not permitted')
+
+    monkeypatch.setattr(probes, 'TEARDOWN_WAIT', 0.2)
+    monkeypatch.setattr(probes.os, 'kill', refuse)
+    (tmp_path / 'teardown.log').write_text('start 99999\nTERM\n', encoding='utf-8')
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    probes.collect_teardown(tmp_path, run_dir)
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == 'start 99999\nTERM\nalive\n'
+
+
+def test_collect_teardown_copies_a_log_with_no_start_line_and_adds_nothing(tmp_path):
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    probes.collect_teardown(tmp_path, run_dir)
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == ''
+    (tmp_path / 'teardown.log').write_text('TERM\n', encoding='utf-8')
+    probes.collect_teardown(tmp_path, run_dir)
+    assert (run_dir / 'teardown.log').read_text(encoding='utf-8') == 'TERM\n'
+    (run_dir / 'teardown.jsonl').write_text(stream(init(), RESULT), encoding='utf-8')
+    assert probes.assess_teardown(probes.reader(run_dir)) == (ERROR, 'the async SessionStart hook never started')
+
+
+def test_the_teardown_probe_backs_its_sections_and_its_fixtures_replay_like_the_run(tmp_path):
+    '''The registry entry the owner chose (plan 109, D10), and the two fixtures save_fixtures writes, which the
+    replay reads as the run was read. A run with neither file is ERROR, never a pass.'''
+    manifest = state.parse_manifest((REPO / state.MANIFEST).read_text(encoding='utf-8'))
+    assert manifest.probes['async-teardown'] == (['hooks.pitfalls'], ['build/cc_guide/notice.sh'])
+    pid = gone_pid()
+    fake = FakeRuns({'teardown': stream(init(), RESULT)}, side={'teardown': teardown_log(f'start {pid}', 'HUP')})
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    verdict = probes.run_probe('async-teardown', 'claude', REPO, run_dir, fake)
+    assert verdict == (DIVERGES, tpc.TEARDOWN_HUP)
+    assert probes.save_fixtures(run_dir, 'async-teardown', dest) == [dest / 'async-teardown.jsonl',
+                                                                      dest / 'async-teardown.log']
+    probe = probes.PROBE_RUNS['async-teardown']
+    assert probe.assess(probes.reader(dest, probe.fixtures)) == verdict
+    assert probe.assess(lambda name: None) == (ERROR, 'no stream-json events')
 
 
 def test_register_window_reads_the_compaction_window_check(tmp_path, monkeypatch):

@@ -1,7 +1,7 @@
 '''Run the repo's directory-scoped pytest suites from their registry, build/suites.toml.
 
 Each suite runs pytest from its own directory through uv, with its own inline deps;
-the root CLAUDE.md says why. From any directory in the repo:
+the root CLAUDE.md says why. From the repo root:
 
     uv run python build/run_suites.py --list [NAME ...]
     uv run python build/run_suites.py NAME [NAME ...] [--extras] [-- PYTEST_ARGS]
@@ -39,6 +39,7 @@ from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
 
 import versions
+from git_listing import GitError, kept_paths
 
 REPO = Path(__file__).resolve().parent.parent
 REGISTRY = 'build/suites.toml'  # relative to the repo root
@@ -50,6 +51,13 @@ REQUIRED_KEYS = ('name', 'dir', 'with')
 OPTIONAL_KEYS = ('extras', 'pythons', 'notes')
 STRING_KEYS = ('name', 'dir')
 LIST_KEYS = ('with', 'extras', 'pythons', 'notes')
+NO_DASH_KEYS = ('with', 'extras', 'pythons')  # their entries become uv arguments, never options
+# pytest's default `norecursedirs`, which a test pins against the installed pytest. No suite
+# sets its own `norecursedirs` today, so these folders are skipped below every suite directory.
+NORECURSE = ('*.egg', '.*', '_darcs', 'build', 'CVS', 'dist', 'node_modules', 'venv', '{arch}')
+EXIT_OK = 0
+EXIT_FAILED = 1
+EXIT_USAGE = 2
 
 
 @dataclass(frozen=True)
@@ -132,6 +140,8 @@ def validate(data: dict) -> list[str]:
                      if key in table and not _is_string_list(table[key])]
         if _is_string_list(table.get('with')) and 'pytest' not in table['with']:
             problems.append(f"{where}: 'with' must include 'pytest'")
+        problems += [f"{where}: {key!r} entries must not start with '-'" for key in NO_DASH_KEYS
+                     if _is_string_list(table.get(key)) and any(v.startswith('-') for v in table[key])]
         if table.get('pythons') == []:
             problems.append(f"{where}: 'pythons' must not be empty")
         if isinstance(name, str) and name:
@@ -172,27 +182,22 @@ def container(suite: Suite, suites: Sequence[Suite]) -> Suite | None:
     '''The other suite whose directory holds this suite's directory, if any.'''
     path = PurePosixPath(suite.dir)
     return next((other for other in suites
-                 if other.dir != suite.dir and path.is_relative_to(other.dir)), None)
+                 if other.dir != suite.dir and path.is_relative_to(other.dir)
+                 and skipped_part(suite.dir, other.dir) is None), None)
 
 
-def git_env() -> dict[str, str]:
-    '''os.environ without git's repo-local variables, as check_conformance.git_env:
-    a hook may export GIT_DIR or GIT_INDEX_FILE for another repository.'''
-    local = subprocess.run(['git', 'rev-parse', '--local-env-vars'],
-                           capture_output=True, text=True, check=True).stdout.split()
-    return {name: value for name, value in os.environ.items() if name not in local}
+def skipped_part(path: str, suite_dir: str) -> str | None:
+    '''The first part of path below suite_dir that pytest's norecursedirs skips, else None.
+    suite_dir's own parts never count: pytest starts there.'''
+    below = PurePosixPath(path).relative_to(suite_dir).parts
+    return next((part for part in below
+                 if any(fnmatchcase(part, pattern) for pattern in NORECURSE)), None)
 
 
-def pytest_dirs(root: Path) -> set[str] | None:
+def pytest_dirs(root: Path) -> set[str]:
     '''The directories that hold a pytest file, among the files git keeps under root
-    (tracked, or untracked and not ignored) outside ARCHIVE; None when git fails.'''
-    try:
-        listing = subprocess.run(
-            ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-            cwd=root, env=git_env(), capture_output=True, check=True).stdout
-    except (OSError, subprocess.CalledProcessError):
-        return None
-    paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
+    (tracked, or untracked and not ignored) outside ARCHIVE; raises GitError when git fails.'''
+    paths = kept_paths(root)
     # --cached also lists tracked files deleted from the working tree.
     return {str(PurePosixPath(p).parent) for p in paths
             if any(fnmatchcase(PurePosixPath(p).name, pattern) for pattern in TEST_FILE_PATTERNS)
@@ -209,18 +214,24 @@ def check(root: Path, data: dict) -> list[str]:
     suites = parse(data)
     names = [s.name for s in suites]
     problems += [f'{REGISTRY}: suites are not sorted by name: {b!r} comes after {a!r}'
-                 for a, b in zip(names, names[1:]) if a > b][:1]
-    found = pytest_dirs(root)
-    if found is None:
-        return [*problems, f'{REGISTRY}: git ls-files failed, so the test directories are unknown']
+                 for a, b in zip(names, names[1:]) if a > b][:1]  # one line is enough to point at the fix, so only the first out-of-order pair
+    try:
+        found = pytest_dirs(root)
+    except GitError as exc:
+        return [*problems, f'{REGISTRY}: git ls-files failed ({exc}), so the test directories are unknown']
     for suite in suites:
         if not (root / suite.dir).is_dir():
             problems.append(f'{REGISTRY}: {suite.name}: {suite.dir} is not a directory')
         elif not any(PurePosixPath(d).is_relative_to(suite.dir) for d in found):
             problems.append(f'{REGISTRY}: {suite.name}: {suite.dir} holds no pytest file')
-    problems += [f'{d}: holds pytest files, but no suite in {REGISTRY} contains it'
-                 for d in sorted(found)
-                 if not any(PurePosixPath(d).is_relative_to(s.dir) for s in suites)]
+    for d in sorted(found):
+        holders = [s for s in suites if PurePosixPath(d).is_relative_to(s.dir)]
+        if not holders:
+            problems.append(f'{d}: holds pytest files, but no suite in {REGISTRY} contains it')
+        elif all(skipped_part(d, s.dir) for s in holders):
+            deepest = max(holders, key=lambda s: len(s.dir))
+            problems.append(f'{d}: holds pytest files, but pytest skips {skipped_part(d, deepest.dir)!r} '
+                            f'below {deepest.dir}, so no suite collects it')
     return problems
 
 
@@ -233,7 +244,7 @@ def run_subprocess(root: Path, run: Run) -> int:
         return subprocess.run(run.argv, cwd=root / run.suite.dir).returncode
     except OSError as exc:
         print(f'{run.label}: cannot start: {exc}', file=sys.stderr, flush=True)
-        return 1
+        return EXIT_FAILED
 
 
 def execute(root: Path, suites: Sequence[Suite], pins: Pins, extras: bool, pytest_args: Sequence[str],
@@ -246,16 +257,17 @@ def execute(root: Path, suites: Sequence[Suite], pins: Pins, extras: bool, pytes
             if i == 0:
                 for note in suite.notes:
                     print(f'note: {note}', flush=True)
-            if run_one(root, run) != 0:
+            if run_one(root, run) != EXIT_OK:
                 failed.append(run.label)
     if failed:
         print(f'suite runs failed: {", ".join(failed)}', file=sys.stderr)
-        return 1
+        return EXIT_FAILED
     print('suite runs passed')
-    return 0
+    return EXIT_OK
 
 
 def list_suites(suites: Sequence[Suite], pins: Pins, extras: bool, pytest_args: Sequence[str]) -> None:
+    '''Print each suite's name and directory, the shell line of each run, its extras and its notes.'''
     for suite in suites:
         print(f'{suite.name}: {suite.dir}')
         for run in runs(suite, pins, extras, pytest_args):
@@ -289,7 +301,7 @@ def parse_args(argv: list[str]) -> tuple[argparse.Namespace, tuple[str, ...]]:
     parser.add_argument('--python', help='run the dev entries on this interpreter')
     parser.add_argument('--no-freeze', action='store_true', help='leave out the freeze cutoff')
     parser.add_argument('names', nargs='*', metavar='NAME', help='a suite to run or list')
-    args = parser.parse_args(argv)
+    args = parser.parse_intermixed_args(argv)
     if args.check and (args.names or args.extras or pytest_args or args.pin or args.python or args.no_freeze):
         parser.error('--check takes no suite names, --extras, --pin, --python, --no-freeze or pytest arguments')
     if args.all and args.names:
@@ -301,31 +313,33 @@ def parse_args(argv: list[str]) -> tuple[argparse.Namespace, tuple[str, ...]]:
 
 def main(argv: Sequence[str] | None = None, root: Path = REPO,
          run_one: RunOne = run_subprocess, pins: Pins | None = None) -> int:
+    '''Run the command line against the registry under root and return the exit status
+    (EXIT_OK, EXIT_FAILED or EXIT_USAGE); run_one and pins are test seams.'''
     args, pytest_args = parse_args(list(sys.argv[1:] if argv is None else argv))
     try:
         data = tomllib.loads((root / REGISTRY).read_text(encoding='utf-8'))
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as exc:
         print(f'{REGISTRY}: cannot read: {exc}', file=sys.stderr)
-        return 1 if args.check else 2
+        return EXIT_FAILED if args.check else EXIT_USAGE
     if args.check:
         problems = check(root, data)
         for problem in problems:
             print(problem)
         if problems:
-            return 1
+            return EXIT_FAILED
         print('suite registry ok')
-        return 0
+        return EXIT_OK
     problems = validate(data)
     if problems:
         for problem in problems:
             print(f'{REGISTRY}: {problem}', file=sys.stderr)
-        return 2
+        return EXIT_USAGE
     suites = parse(data)
     by_name = {suite.name: suite for suite in suites}
     unknown = [name for name in args.names if name not in by_name]
     if unknown:
         print(f'unknown suite: {", ".join(unknown)} (--list names them all)', file=sys.stderr)
-        return 2
+        return EXIT_USAGE
     chosen = [by_name[name] for name in args.names] or suites
     if pins is None:
         try:
@@ -333,10 +347,10 @@ def main(argv: Sequence[str] | None = None, root: Path = REPO,
             pins = Pins.from_versions(v, args.python, not args.no_freeze, versions.parse_pins(v, args.pin))
         except versions.VersionsError as exc:
             print(f'run_suites: {exc}', file=sys.stderr)
-            return 2
+            return EXIT_USAGE
     if args.list:
         list_suites(chosen, pins, args.extras, pytest_args)
-        return 0
+        return EXIT_OK
     if args.all:
         chosen = []
         for suite in suites:

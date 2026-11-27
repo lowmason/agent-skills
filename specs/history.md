@@ -838,6 +838,64 @@ Differences from the design:
 Closed earlier deferred items:
 - "**Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers" (deferred by 107-writing-skills-improvements).
 
+## 109-cc-guide-fetch-notice-and-probes — 2026-11-26
+Plan: specs/plans/completed/109-cc-guide-fetch-notice-and-probes.md · Spec: specs/completed/claude-code-drift-automation-spec.md (retired)
+
+Differences from the design:
+- Ruling: plan Step 5's "passes unchanged" claim for test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again is wrong; the one-line read-through-link change is kept — the old saved path is now a kept generation, no assertion loosened — if wrong, nothing lost (Mutant 4 still catches it).
+- Ruling: reviewer's note that cli.py rebaseline/packets.load resolve latest more than once — not a Task 1 finding; Task 2 fixes exactly this — if wrong, Task 2's own test fails.
+- Ruling: Task 2 state.py copy_to_snapshot source param and 2 extra packets tests are outside the brief's file list but inside lane and needed for D11 — kept — if wrong, revert the param and copy re-resolves latest.
+- Ruling: reviewer's Declined-to-judge (404 page also left out; legacy real latest/ renamed aside) — parked, not spec-wording defects — if wrong, a later spec touch-up.
+- Ruling: Task 6 review Important 1 (a parent that skips a PAYLOAD_AGENTS dispatch gets a finding that does not name the parent; brief lists only 3 check_parent conditions) — extend the check as the reviewer proposes, in assess_agent_payload before the empty-log check, since Plan Review Focus 4 and the plan Goal require ERROR naming the parent and the three-condition list is silent, not exclusive — if wrong, one extra ERROR branch to delete.
+- Ruling, contradicts spec (Task 8): `explore-override` reads the canary tokens and marks that subagents echo from their own context, while spec R10.5 says "Never assert on the model's prose." The lines are random tokens the subagent was told to echo, and a subagent's context shows only in its output, so the plan's design stays and a docstring clause names the exception. The owner ruled on 2026-11-26 to keep the probe and amend R10.5, so the spec now carries an owner-tagged exception (926b44f) — the owner would have had Task 8 reverted if wrong.
+- Ruling: final Important 1 (packets.group_docs re-resolves latest_docs and calls copy_to_snapshot with no source; plan Task 2 Step 3 exempted a nonexistent `snapshot_pages`) — fix: group_docs reads the generation load pinned — if wrong, a verify packet could snapshot newer pages under an older head.
+- Ruling: final Important 3 (probe registration commits 570f640 and 395b5d3 precede their PROBES row commits a7fbe3e and b232910; five commits fail the fixture tests) — accept the split, no history rewrite; main's tip is what check and the notice read — if wrong, a bisect through those 5 commits hits a red suite.
+- Ruling: Codex P1 (SIGKILL by logged pid after a 5 s poll could hit a reused pid) — decline: the brief prescribes os.kill(pid, 0) polling, the window is 5 s, pid reuse needs a pid-space wrap, pids 0, 1 and own are excluded — if wrong, an unrelated same-user process is killed once.
+- Ruling: Codex P2 (legacy-latest migration race: two overlapping first checks with a head move) — decline: a one-time migration, needs two checks and a changelog move in the same minutes; the result is stale pages under an old head until the next head move — if wrong, one stale fetch.
+- Ruling: Codex P2 (prune grace runs from the generation's mtime, not from the replacement time) — decline: a reader must pin a generation older than an hour and see two swaps during one millisecond-scale read — if wrong, a reader errors once and the next run recovers.
+- Ruling: Codex P2 (teardown hook's 120 s life can end before a slow successful turn, giving a false DIVERGES) — decline: the probe turn is one short reply; a false DIVERGES stops and reports to the owner, never a silent pass — if wrong, one re-run.
+- Deviation (Task 1): Step 5's claim that `test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again` passes unchanged was wrong. It saved a generation path that the swap now keeps, so one line reads through the link. Fix round 1 added `test_the_swap_never_leaves_latest_missing` and `test_a_live_swap_prunes_on_the_wall_clock`: the atomic flip and the grace through a live swap had no test. Source: plan, Task 1.
+- Deviation (Task 2): Task 2 also gave `state.copy_to_snapshot` an optional `source` and added two packets tests (D11). Step 3 exempted `packets.py:249` as `snapshot_pages`, but that line is inside `group_docs`, which still re-resolved `latest`. The final review found it, and commit ef52e5a fixed it with three tests. Source: plan, Task 2.
+- Deviation (Task 4): Step 7's mutant was applied as `due['blocks'] = 0` outside the `if docs is not None:` block, a stand-in that the new assertion also catches for the plan's mutant. Source: plan, Task 4.
+- Deviation (Task 6): the controller ran Step 7 live after review and committed the `PROBES.md` row apart (4d71bb5). Review added `check_dispatched`, an ERROR naming the parent when it never dispatches a `PAYLOAD_AGENTS` type, beyond `check_parent`'s three conditions, and a mutant for the obedient-parent path. Source: plan, Task 6.
+- Deviation (Task 7): fix round 1 added a test for the model-conflict ERROR under the `Agent` matcher. Source: plan, Task 7.
+- Deviation (Task 8): the controller ran the live Step 6 between Steps 5 and 7, so the registration commit (570f640) precedes the row commit (a7fbe3e). The implementer added `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=300000` per rep and a rep-count guard, neither in the plan. Review added canary-leak rows for one Agent call. The owner ruled on 2026-11-26 that spec R10.5 excepts `explore-override` (926b44f). Source: plan, Task 8.
+- Deviation (Task 9): the same split (registration 395b5d3, row b232910). The implementer added the `startup` matcher, a third replay case and a PermissionError test. Review added a test that a `hook_started` event gives no outcome. Source: plan, Task 9.
+- Deferred: 4 items. Source: specs/deferred_items.md, § 109-cc-guide-fetch-notice-and-probes.
+
+Closed earlier deferred items:
+- "Test-coverage gaps in the drift notice (plan 49 task reviews; left at the completion" (deferred by 49-claude-code-drift-automation).
+- "Write `latest/` as a whole, not page by page (plan 51 final review, Minor; the owner chose to" (deferred by 51-claude-code-drift-automation).
+- "Two Stage 5 probe candidates from the 2026-10-20 rulings, where the docs are silent." (deferred by cc-drift-upkeep-2026-10-20).
+- "The `agent-payload` probe cannot tell a parent session that disobeyed its prompt from real drift" (deferred by 69-agent-payload-probe).
+- "Review Minors from plan 69's final review (code, triaged defer). `first_by_type` in" (deferred by 69-agent-payload-probe).
+
+## 110-build-runner-and-ci-kit-suites — 2026-11-26
+Plan: specs/plans/completed/110-build-runner-and-ci-kit-suites.md · Spec: none
+
+Differences from the design:
+- Ruling: the extra test in build/test_versions_check.py (and its mutant 14) goes; the Global Constraint "(one import line)" for that file outranks the task's mutant step — the is_file filter in live_files is untouched by the task — if wrong, one pre-existing filter is covered only by existing tests.
+- Ruling: the extra tests in build/test_run_suites.py and the +2 in test_git_listing.py stay — both files are in the plan's set with no line limit — if wrong, a little extra test code.
+- Ruling: Task 3 concern 3 (dropping only the `  extras:` print line in list_suites is not caught by the new --list tests) stays out — an existing test (test_list_prints_commands_extras_and_notes...) covers it — if wrong, one print line is covered once, not twice.
+- Ruling: Task 3 concerns 1 and 2 (overlap with Task 2 tests) stay — distinct branches, harmless redundancy — if wrong, a little extra test code.
+- Ruling: owner 2026-11-26 (kit gate, Task 5 Step 1): branch run 45878724846 cleared the three target kits on 3.13 but TMPDIR=${{ runner.temp }} (/home/runner/work/_temp) makes the three writing-skills kits fail (their path rewrite maps /home/runner to /home/$USER); owner chose TMPDIR=/var/tmp instead of D2's runner.temp — if wrong, the writing-skills kits keep failing on 3.13 or /var/tmp breaks another kit.
+- Deviation: the Plan Completion Protocol may also edit the plan markup, `specs/history.md`, the move to `specs/plans/completed/` and the `→ done` notes in `specs/deferred_items.md`, as plan 111 states (owner default, handoff brief 2026-11-26). Source: plan, header.
+- Deviation (Task 1): the file holds +9 tests, not +7: the implementer added `test_kept_paths_decodes_with_fsdecode` and `test_kept_paths_ignores_a_foreign_index_that_tracks_other_files`. The plan test `test_kept_paths_ignores_a_foreign_git_dir` passes even without `env=git_env()` (an empty foreign index), so its mutant-step line reads `Strengthened:` and names the second test. Source: plan, Task 1.
+- Deviation (Task 1): the implementer also removed the now-unused `import subprocess` from `build/versions_check.py`. The one extra test in `build/test_versions_check.py` was dropped at review, since the Global Constraints allow one import line there. Source: plan, Task 1.
+- Deviation (Task 2): the implementer added 12 tests, not 8, after the mutant screen found four survivors (skipped-part shapes). Two of them pass on the revert by design, with `Keeps:` lines. Source: plan, Task 2.
+- Deviation (Task 3): Task 2 had already added `test_check_ignores_a_tracked_test_file_deleted_from_the_working_tree` and a `no [[suite]] tables` case, so the overlap stays. The final review found the autouse fixture still read the default git excludes file, so commit 22f342a adds `XDG_CONFIG_HOME` to it and one test (+1, outside the plan). The same gap in `clean_env` of `build/test_commit_lints.py` is deferred, because the plan caps that file. → item: specs/deferred_items.md § 110-build-runner-and-ci-kit-suites. Source: plan, Task 3.
+- Deviation (Task 4): the controller pushed and dispatched after the task review, not the implementer. Branch run 45878724846 showed that `TMPDIR: ${{ runner.temp }}` fixed the three target kits but broke `writing-skills-guard-run-kit`, `writing-skills-layout-kit` and `writing-skills-tests-kit` on 3.13 (their `/home/runner` to `/home/$USER` rewrite). Owner ruling, 2026-11-26: use `TMPDIR: /var/tmp` (commit 5d6b975). Run 45885612117 on that commit: the 3.13 pass printed `suite runs passed`, and the 3.15 pass lists only `track-model-experiments` (missing cp315 wheels). This changes D2. Source: plan, Task 4.
+- Deviation (Task 5): read from run 45885612117 (the second branch run, at 5d6b975), after the owner gate on the first run. Its 3.13 pass printed `suite runs passed`. Source: plan, Task 5.
+- Deviation (Task 5): a post-merge step. The retired plan cannot tick it. The run id and result go in the completion report. Source: plan, Task 5.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 110-build-runner-and-ci-kit-suites.
+
+Closed earlier deferred items:
+- "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py` and" (deferred by 55-test-suite-registry).
+- "Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the" (deferred by 55-test-suite-registry).
+- "Close the test gaps in `build/test_run_suites.py` (task reviews and final review of" (deferred by 55-test-suite-registry).
+- "A fourth copy of the git file listing now exists (plan 66, Task 9): `build/versions_check.py`" (deferred by 66-package-versions).
+- "**Three kit suites fail in the weekly `versions-drift` job (found by the 2026-11-26 `/deferred` pass in the log of" (deferred by deferred-2026-11-26-parallel).
+
 ## 111-codes-and-bls-reference-skills — 2026-11-26
 Plan: specs/plans/completed/111-codes-and-bls-reference-skills.md · Spec: none
 
