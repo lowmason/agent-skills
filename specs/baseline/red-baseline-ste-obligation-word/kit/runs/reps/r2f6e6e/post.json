@@ -1,0 +1,11 @@
+{
+ "status": " M docs/manual.md\n?? docs/guide.ste.md\n",
+ "commits": 1,
+ "files": {
+  "docs/manual.md": "---\ntitle: Label printer setup\nowner: facilities\n---\n\n# Label printer setup\n\nThe label printer that is located in room 2.14 has been configured so that it can be utilized by everyone on the floor; however, it should be noted that the driver needs to be installed prior to the first print job being sent.\n\n## Install the driver\n\nIn order to install the driver, the following command should be run from a terminal window:\n\n```bash\nsudo ./install-driver.sh --model LP-200 --queue floor2\n```\n\nIf the installer reports \"E_QUEUE: queue busy\", it is recommended that you wait for a minute or so and then try again.\n\n## Paper sizes\n\n| Size | Use it for |\n|---|---|\n| 62 mm | address labels that are going to be sent out by post |\n| 29 mm | small labels that are used for the shelves |\n\n> Do not load third-party rolls. The warranty is void if you do.\n\nSee the [vendor manual](https://example.com/lp-200/manual.pdf) for more information about the various options that are available.\n\nLast checked by facilities on 2026-10-01.\n",
+  "docs/guide.ste.md": "---\ntitle: Label printer setup\nowner: facilities\n---\n\n# Label printer setup\n\nThe label printer in room 2.14 is configured for use by everyone on the floor. You need to install the driver before you send the first print job.\n\n## Install the driver\n\nTo install the driver, you should run this command in a terminal window:\n\n```bash\nsudo ./install-driver.sh --model LP-200 --queue floor2\n```\n\nIf the installer reports \"E_QUEUE: queue busy\", we recommend that you wait about a minute and then try again.\n\n## Paper sizes\n\n| Size | Use it for |\n|---|---|\n| 62 mm | address labels that you send by post |\n| 29 mm | small labels for the shelves |\n\n> Do not load third-party rolls. The warranty is void if you do.\n\nFor more information about the available options, see the [vendor manual](https://example.com/lp-200/manual.pdf).\n\nLast checked by facilities on 2026-10-01.\n"
+ },
+ "links": {
+  "docs/guide.md": "manual.md"
+ }
+}

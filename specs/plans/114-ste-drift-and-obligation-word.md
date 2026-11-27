@@ -139,9 +139,9 @@ Case set:
 **Files:**
 - Create: `specs/baseline/red-baseline-ste-obligation-word/kit/runs/docs/`
 
-- [ ] **Step 1: Run** `doc-clean`, `doc-dirty`, `skill-md` and `doc-symlink` on the treatment arm, 5 reps on each model (40 reps).
-- [ ] **Step 2: Score** with the mechanical checks, judges and hand reading. Expected: each case passes at 4 of 5 or better on both models. A failure follows Task 4 Step 5's rule, with the wording fix in `references/document-rewrite.md`.
-- [ ] **Step 3: Commit** `test(write-with-asd-ste100): run the document cases`.
+- [x] **Step 1: Run** `doc-clean`, `doc-dirty`, `skill-md` and `doc-symlink` on the treatment arm, 5 reps on each model (40 reps).
+- [x] **Step 2: Score** with the mechanical checks, judges and hand reading. Expected: each case passes at 4 of 5 or better on both models. A failure follows Task 4 Step 5's rule, with the wording fix in `references/document-rewrite.md`.
+- [x] **Step 3: Commit** `test(write-with-asd-ste100): run the document cases`.
 
 ### Task 6: Record
 
@@ -185,6 +185,10 @@ Upstream fixed none of the four. Linter counts, `70736273` and `d714e536` alike:
 | `agent-instruction` | Sonnet | 1/5 (1/5) | 2/5 FAIL (5/5) |
 
 > Deviation: treatment `agent-instruction` on Sonnet missed the all-checks bar (2 of 5) on a guessed actor and a sentence cap, not on the obligation check. The owner chose to accept it and file an item (D9), so Step 5's wording fix and re-run did not run.
+
+**Task 5 (2026-11-27).** 40 good reps, no void, 4 judge calls, no new flag. Registered tally, treatment arm: `doc-clean`, `doc-dirty` and `skill-md` 5/5 on both models; `doc-symlink` Opus 5/5, Sonnet 4/5. All four pass. Spend after Task 5: $14.39.
+
+A second reading, not registered, from each `doc-symlink` rep's tool calls: 7 of 10 reps wrote through the link into the dirty `docs/manual.md` before they took the copy branch. Most ran step 3's three checks as one `&&` chain. On a link, `test ! -L` fails, the chain stops and prints nothing, and the rep read the silence as an empty status. Six of the seven saw the changed `manual.md`, restored its dirty bytes and wrote the copy. The seventh (Sonnet `r141a4d`) left `manual.md` changed and wrote no copy, which is the one registered fail. Only 3 of 10 reps took the copy branch with no write through the link. The registered verdict stands. The wording defect in `references/document-rewrite.md` step 3 gets a new deferred item.
 
 ## Completion notes for the protocol
 

@@ -80,3 +80,47 @@ judge treatment agent-error-message claude-opus-5-5	0.0475
 judge treatment agent-error-message claude-sonnet-5-5	0.0454
 judge treatment agent-instruction claude-opus-5-5	0.0367
 judge treatment agent-instruction claude-sonnet-5-5	0.0445
+rep rd084ca	0.0896
+rep rbc3c3d	0.0589
+rep r141a4d	0.0658
+rep rcdf06e	0.0896
+rep r3c2cea	0.0989
+rep r0d05f8	0.1338
+rep rbd93e0	0.1345
+rep r2f6e6e	0.1860
+rep r540955	0.2156
+rep rff96c3	0.2300
+rep rcb852d	0.0520
+rep r823089	0.0506
+rep r7d8d94	0.0551
+rep rc5676b	0.0566
+rep rbe6885	0.0605
+rep rc2a167	0.1103
+rep r51ae2a	0.1117
+rep r083e0f	0.1184
+rep r6b52f4	0.1226
+rep ra35651	0.1280
+rep r0d1aa3	0.0507
+rep r0238bf	0.0494
+rep rb79c52	0.0505
+rep r41ac38	0.0504
+rep rdfd743	0.0573
+rep r60f3b1	0.1203
+rep r27f0bb	0.1180
+rep rba9db0	0.1227
+rep r529cb6	0.1288
+rep rc19f8c	0.1232
+rep r41ea35	0.0330
+rep r1ccdea	0.0329
+rep rc25a13	0.0333
+rep r6bb04a	0.0347
+rep r68e522	0.0355
+rep rb36c1c	0.0671
+rep rf5fb10	0.0670
+rep r6c4cf5	0.0655
+rep r7703c3	0.0658
+rep r9a3586	0.0749
+judge treatment doc-clean claude-opus-5-5	0.0303
+judge treatment doc-clean claude-sonnet-5-5	0.0270
+judge treatment skill-md claude-opus-5-5	0.0270
+judge treatment skill-md claude-sonnet-5-5	0.0288

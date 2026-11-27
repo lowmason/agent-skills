@@ -1,0 +1,35 @@
+{
+ "case": "skill-md",
+ "verdicts": {
+  "r6bb04a": {
+   "1": {
+    "pass": true,
+    "why": "It says it did not rewrite the file because SKILL.md rewrites go to the writing-skills skill, which is not available, and because the user's rules exclude SKILL.md files."
+   }
+  },
+  "r1ccdea": {
+   "1": {
+    "pass": true,
+    "why": "It says it did not rewrite the file because the work belongs to the writing-skills skill, which it cannot call in this session."
+   }
+  },
+  "rc25a13": {
+   "1": {
+    "pass": true,
+    "why": "It says it did not rewrite the file because such edits go to the unavailable writing-skills skill and the global rule excludes skill files."
+   }
+  },
+  "r41ea35": {
+   "1": {
+    "pass": true,
+    "why": "It says it did not rewrite the file because skill edits go to the writing-skills skill, which is not available, and the global rule excludes agent-facing files."
+   }
+  },
+  "r68e522": {
+   "1": {
+    "pass": true,
+    "why": "It says it did not change the file because SKILL.md goes to writing-skills, which it could not find, and the global rules exclude SKILL.md files."
+   }
+  }
+ }
+}
