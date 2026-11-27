@@ -104,3 +104,7 @@ r9a3586	treatment	skill-md	claude-opus-5-5	good	0.0749
 r6c4cf5	treatment	skill-md	claude-opus-5-5	good	0.0655
 rb36c1c	treatment	skill-md	claude-opus-5-5	good	0.0671
 r7703c3	treatment	skill-md	claude-opus-5-5	good	0.0658
+rc8221f	treatment	doc-symlink	claude-sonnet-5-5	good	0.0577
+rf95374	treatment	doc-symlink	claude-sonnet-5-5	good	0.0561
+r4d3796	treatment	doc-symlink	claude-opus-5-5	good	0.1331
+r580b65	treatment	doc-symlink	claude-opus-5-5	good	0.1295

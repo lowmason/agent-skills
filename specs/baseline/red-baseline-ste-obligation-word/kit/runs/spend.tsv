@@ -124,3 +124,7 @@ judge treatment doc-clean claude-opus-5-5	0.0303
 judge treatment doc-clean claude-sonnet-5-5	0.0270
 judge treatment skill-md claude-opus-5-5	0.0270
 judge treatment skill-md claude-sonnet-5-5	0.0288
+rep rf95374	0.0561
+rep rc8221f	0.0577
+rep r580b65	0.1295
+rep r4d3796	0.1331
