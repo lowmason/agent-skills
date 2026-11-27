@@ -1298,3 +1298,20 @@ def test_two_agents_with_one_pointer_install_one_license(tmp_path, monkeypatch):
   assert install.main(['claude', '--home', str(home)]) == 0
   assert names(home / '.claude' / 'agents') == ['LICENSE-demo', 'a.md', 'b.md']
   assert install.pointed_licenses(root / 'agents' / 'a.md') == ['LICENSE-demo']
+
+
+def test_pointed_licenses_reads_only_license_lines_in_order_without_repeats(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  source = tmp_path / 'x.md'
+  source.write_text(
+    '---\n'
+    'name: x\n'
+    'description: see LICENSE-skipped here\n'
+    '# license: MIT. See LICENSE-b-two and LICENSE-a.\n'
+    '# license: MIT. Again LICENSE-b-two, then LICENSE-c.\n'
+    '---\n'
+    'body\n'
+  )
+  assert install.pointed_licenses(source) == ['LICENSE-b-two', 'LICENSE-a', 'LICENSE-c']
+  source.write_text('---\nname: x\n---\nbody\n')
+  assert install.pointed_licenses(source) == []
