@@ -1291,7 +1291,7 @@ def test_the_recorded_shape_gives_these_sightings(tmp_path):
                       'locked_after': False,
                       'steps': {'control': ran, 'main_git_before': refused, 'git_subshell': refused,
                                 'plain_subshell': ran, 'main_git_after': ran}},
-        'noop': {'broken': None, 'exit_refused': True, 'pwd_after': 'plain-worktree'},
+        'noop': {'broken': None, 'exit_refused': True, 'exit_marked': True, 'pwd_after': 'plain-worktree'},
         'base-no-remote': {**base, 'has_unpushed': True}, 'base-failed-fetch': {**base, 'has_unpushed': False}}
 
 
@@ -1441,3 +1441,19 @@ def test_a_later_call_with_a_result_counts_when_the_first_has_none(tmp_path):
     calls = wt_isolation_calls(places)
     retried = wt_stream(wt_bash(WT_PLAIN_SUBSHELL, None), *calls)
     assert wt_verdict(places, isolation=retried) == (PASS, WT_PASS)
+
+
+def test_a_noop_exit_worktree_refused_without_the_no_op_mark_is_an_error(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_stream(wt_exit('<tool_use_error>No such tool available: ExitWorktree</tool_use_error>', True),
+                       wt_bash('pwd', places['plain-worktree']))
+    sightings = pc.worktree_sightings(wt_streams(places, noop=events), places)
+    assert sightings['noop']['exit_marked'] is False
+    assert pc.assess_worktree_isolation(sightings) == (
+        ERROR, 'noop: ExitWorktree was refused without the No-op mark')
+
+
+def test_a_pwd_with_a_trailing_newline_names_its_place(tmp_path):
+    places = wt_places(tmp_path)
+    events = wt_isolation(places, pwd=places['main'] + '\n')
+    assert wt_verdict(places, isolation=events) == (PASS, WT_PASS)

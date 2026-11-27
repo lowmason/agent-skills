@@ -752,6 +752,7 @@ WT_MAIN_GIT = 'git -C {main} rev-parse --show-toplevel'
 WT_LOG = 'git log --format=%s'
 WT_PUSHED, WT_UNPUSHED = 'probe: pushed', 'probe: unpushed'  # the base runs' commit subjects
 WT_ISOLATION_MARK = 'isolated in the worktree'  # in the harness's refusal of a command that leaves the worktree
+WT_NOOP_MARK = 'No-op'  # in ExitWorktree's refusal in a session that EnterWorktree did not start
 WT_LOCKED = 'locked'  # a porcelain line in a locked worktree's block
 WT_PARTS = ('isolation', 'noop', 'base-no-remote', 'base-failed-fetch')
 WT_BASE_PARTS = ('base-no-remote', 'base-failed-fetch')
@@ -839,7 +840,9 @@ def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
 
 def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
     exit_call, _, after = split_at(events, EXIT_TOOL)
-    return {'exit_refused': call_failed(events, exit_call), 'pwd_after': pwd_after(events, after, places)}
+    refused = call_failed(events, exit_call)
+    return {'exit_refused': refused, 'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
+            'pwd_after': pwd_after(events, after, places)}
 
 
 def base_sighting(events: list[dict]) -> dict:
@@ -858,9 +861,10 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
     whether it ran, its result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). exited is
     whether ExitWorktree's result is not an error; locked_before and locked_after, whether the first WT_LIST
     result before or after ExitWorktree has a WT_LOCKED line; pwd_after, the place the first WT_PWD after
-    ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag. In a base run, entered
-    is an EnterWorktree call whose result is not an error, and has_pushed and has_unpushed read the first WT_LOG
-    result after it, line by line. A value that no call shows is None.'''
+    ExitWorktree printed (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether
+    its result holds WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error,
+    and has_pushed and has_unpushed read the first WT_LOG result after it, line by line. A value that no call
+    shows is None.'''
     seen = {}
     for part in WT_PARTS:
         events = streams.get(part)
@@ -873,7 +877,8 @@ def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, 
 
 def worktree_errors(sightings: dict) -> list[str]:
     '''Why the runs prove nothing: a run broke, a step never ran, a step was refused without the isolation
-    mark (refused for another reason), or a base run never entered a worktree or logged no WT_PUSHED.'''
+    mark or noop's ExitWorktree without WT_NOOP_MARK (refused for another reason), or a base run never
+    entered a worktree or logged no WT_PUSHED.'''
     errors = [f"{part}: the run broke: {sightings[part]['broken']}" for part in WT_PARTS if sightings[part]['broken']]
     if errors:
         return errors
@@ -890,6 +895,8 @@ def worktree_errors(sightings: dict) -> list[str]:
         ('isolation', f'{WT_PWD} after {EXIT_TOOL}', isolation['pwd_after']),
         ('noop', EXIT_TOOL, noop['exit_refused']),
         ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
+    if noop['exit_refused'] and not noop['exit_marked']:
+        errors.append(f'noop: {EXIT_TOOL} was refused without the {WT_NOOP_MARK} mark')
     for part in WT_BASE_PARTS:
         base = sightings[part]
         if not base['entered']:
