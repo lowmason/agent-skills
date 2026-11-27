@@ -6434,11 +6434,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       can carry this edit.
       → planned 2026-11-24: specs/plans/108-writing-skills-improvements.md
       → done 2026-11-25 (plan 108): micro-test step 1 of `SKILL.md` now reads "a raw API call, or a fresh session isolated as micro-tests.md says" and names no subagent fallback (fb48a03). It ran RED first with case F3: Sonnet `old` passed 2 of 5 and `new` 5 of 5, and Opus passed 5 of 5 on both arms, so RED showed on Sonnet alone. The body is 19,469 characters. Record: specs/baseline/red-baseline-writing-skills-guard-run.md, Task 4.
-- [ ] **Give `discovery.md` § 6 a number of runs per prompt (plan 107, final review).** `### 6. Test triggering`
+- [x] **Give `discovery.md` § 6 a number of runs per prompt (plan 107, final review).** `### 6. Test triggering`
       step 3 says to run each prompt in a fresh session with each description but gives no count, and 5 reps
       cannot separate a loss from noise (plan 107's narrow check). Size: quick-fix. Done when: step 3 states a
       number of runs per prompt and says how to read a difference of one load, run RED first or under an owner
       waiver.
+      → done 2026-11-27 (/deferred quick fix): step 3 now asks for at least 10 runs per prompt with each description, the same number for both, and says to report a difference of one load as no change and add runs before acting on it, citing the narrow check (one prompt loaded in 3 of 5 runs with one description); no RED run, under the owner's waiver given in this /deferred session.
 
 ## 108-writing-skills-improvements — 2026-11-25
 - [ ] **Watch whether the guard-run line steers a reword to a no-drop bar (plan 108, owner ruling at the gate).**

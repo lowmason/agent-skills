@@ -221,8 +221,14 @@ A description that reads well has not yet shown that it loads. Test a descriptio
 2. Write three or more near-miss prompts: tasks that belong to a neighboring skill, or to none.
    List every prompt in full. A plan that only says to write prompts has no prompts yet.
    Write them yourself, in your answer or in a file; do not leave them for the user.
-3. Run each prompt in a fresh session with the old description, and again with the new one. Count
-   the sessions that load the skill.
+3. Run each prompt in a fresh session with the old description, and again with the new one. Run
+   each prompt at least 10 times with each description, the same number for both. Count the
+   sessions that load the skill.
+   A difference of one load between the descriptions is not a result: one prompt with one
+   description can load in some runs and not in others. Report it as no change, and add runs
+   before you act on it. At 5 runs, one load is a fifth of the count, and a real loss could not be
+   told from that noise (in agent-skills: `specs/baseline/red-baseline-writing-skills-tests.md`,
+   the narrow check, where one prompt loaded in 3 of 5 runs with the new description).
 4. Report both counts for both descriptions: loads on the should-load prompts and loads on the near
    misses. A fix raises the first count and does not raise the second.
 5. To check what the skill changes once it loads, run the should-load prompts with the skill on and
