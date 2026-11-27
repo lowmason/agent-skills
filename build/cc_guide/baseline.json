@@ -414,12 +414,12 @@
     "release": "2.1.332",
     "date": "2026-11-25"
    },
-   "changed": "2.1.332",
+   "changed": "2.1.332.1",
    "audited": {
     "release": "2.1.296",
     "date": "2026-10-13"
    },
-   "text_hash": "sha256:0e7b0a8ae44e3b51bbf54e2dad95ebd445f8c95024d991382e28d84a8eb7c89a"
+   "text_hash": "sha256:4a68865041affde6bbf959d24e64b74d8bc16e77364507bf07282df6279b5129"
   },
   "lean.mcp": {
    "checked": {
