@@ -1,5 +1,7 @@
 # Superpowers Agent License Travel Implementation Plan
 
+**Status: COMPLETE (2026-11-27)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Each installed superpowers-derived agent, in every runtime, carries a one-line pointer to `LICENSE-superpowers`, and `install.py` installs that file beside it.
@@ -72,7 +74,7 @@ Owner answers at plan review, 2026-11-27 (a `/deferred` pass):
 **Interfaces:**
 - Produces: `license_pointers(path: Path) -> list[str]` in `build/sync_runtime_assets.py`: the lines of the canonical file's frontmatter block that match `LICENSE_POINTER_RE = re.compile(r'^# license: .+$', re.M)`, in file order. The pointer line text of Global Constraints, which Tasks 2 and 3 match with the prefix `# license: `.
 
-- [ ] **Step 1: Write the failing tests** in `build/test_runtime_support.py`
+- [x] **Step 1: Write the failing tests** in `build/test_runtime_support.py`
 
 ```python
 POINTER = '# license: MIT. Adapted from upstream. Full text: LICENSE-x (beside this file).'
@@ -111,27 +113,29 @@ def test_license_pointer_stays_out_of_the_model_input():
   # of runtimes/codex/agents/<n>.toml; and the pointer line is in each of the three files
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k 'license_pointer or without_a_pointer'`
 Expected: FAIL. `license_pointers` is not defined, and the adapters carry no pointer.
 
-- [ ] **Step 3: Implement `license_pointers(path: Path) -> list[str]` and emit it**
+- [x] **Step 3: Implement `license_pointers(path: Path) -> list[str]` and emit it**
 
 Reuse the frontmatter regex that `read_frontmatter` already applies, so only frontmatter lines count. In `render_codex_agent`, put each pointer line right after `GENERATED_COMMENT`. In `render_gemini_agent`, append each pointer line to `yaml_text` after the dumped keys and before the "Claude-only tools dropped" note.
 
-- [ ] **Step 4: Add the pointer to both canonical agents**
+- [x] **Step 4: Add the pointer to both canonical agents**
 
 Insert the Global Constraints pointer line in `agents/code-reviewer.md` and `agents/task-reviewer.md`, directly above the `# cc-guide:` line. Regenerate with `uv run --with pyyaml python build/sync_runtime_assets.py`.
 
-- [ ] **Step 5: Run the checks**
+- [x] **Step 5: Run the checks**
+
+> Deviation: Task 1 was a mutant task (SDD mutant step). It added tests for several pointers, a body `# license:` line and the dropped-tools order, so the suite grew from 127 to 131 tests.
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`
 Expected: all pass.
 Run: `uv run --with pyyaml python build/sync_runtime_assets.py --check` and `uv run python build/cc_guide/cli.py lint` and `uv run python build/check_reviewer_block.py`
 Expected: each exits 0. `git diff --stat runtimes/` shows exactly the four adapters of the two agents, each with one added line.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add agents/code-reviewer.md agents/task-reviewer.md build/sync_runtime_assets.py build/test_runtime_support.py runtimes/
@@ -151,7 +155,7 @@ git commit -m 'feat(agents): point the superpowers-derived agents and their adap
 
 The three surfaces of an agent `<n>` are `agents/<n>.md`, `runtimes/codex/agents/<n>.toml` and `runtimes/gemini/agents/<n>.md`. In a `.md` surface, only a pointer line inside the frontmatter counts. In a `.toml` surface, any line that starts with `# license: ` is a comment, because the generator writes each string on one line. A pointer's license names are its `LICENSE-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*` matches.
 
-- [ ] **Step 1: Write the failing tests** in `build/test_check_provenance.py`, with a helper `_agent_tree(tmp_path, pointed)` that writes the root `LICENSE-x`, and for agents `adapted` and `own` all three surfaces, with the pointer `# license: MIT. Full text: LICENSE-x.` on the surfaces listed in `pointed`
+- [x] **Step 1: Write the failing tests** in `build/test_check_provenance.py`, with a helper `_agent_tree(tmp_path, pointed)` that writes the root `LICENSE-x`, and for agents `adapted` and `own` all three surfaces, with the pointer `# license: MIT. Full text: LICENSE-x.` on the surfaces listed in `pointed`
 
 ```python
 AGENT_TABLE = {'LICENSE-x': ('adapted',)}
@@ -189,22 +193,24 @@ def test_agent_licenses_table_matches_notice():
     assert sorted(distilled) == sorted(AGENT_LICENSES['LICENSE-superpowers'])
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_provenance.py -k agent_licenses`
 Expected: FAIL with an ImportError on `agent_license_violations`.
 
-- [ ] **Step 3: Implement `agent_license_violations` and call it in `main`**
+- [x] **Step 3: Implement `agent_license_violations` and call it in `main`**
 
 Order the messages as the tests do: table errors first, then per agent in sorted order, per surface in the order listed above. Add one line to the module docstring naming the agent check.
 
-- [ ] **Step 4: Update CLAUDE.md**
+- [x] **Step 4: Update CLAUDE.md**
 
 In the provenance paragraph, append this sentence after "so edit a root license file and its copies together.":
 "Each superpowers-derived agent carries a `# license:` pointer to `LICENSE-superpowers`, which `install.py` installs beside it, and the same lint's `AGENT_LICENSES` checks the pointers."
 Keep it on the existing line, so CLAUDE.md gains no line.
 
-- [ ] **Step 5: Run the checks**
+- [x] **Step 5: Run the checks**
+
+> Deviation: Task 2 was a mutant task. It added per-surface, hyphenated-name, `main` wiring and wrong-license tests, 33 tests in all.
 
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_provenance.py`
 Expected: all pass.
@@ -212,7 +218,7 @@ Run: `uv run python build/check_provenance.py`
 Expected: exit 0 on the repo (Task 1 put the pointers in place).
 Mutation check: delete the pointer from `runtimes/gemini/agents/task-reviewer.md` in the working tree, run the lint, expect exit 1 with that file's `no license pointer` line, then `git checkout runtimes/gemini/agents/task-reviewer.md`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/check_provenance.py build/test_check_provenance.py CLAUDE.md
@@ -231,7 +237,7 @@ git commit -m 'feat(build): check_provenance checks the agent license pointers (
 
 `runtime_items` adds the license items right after `agent_items`, in the same `companions` branch, so an install without companions installs no license. The destination directory is the runtime's agents directory: `~/.claude/agents`, `~/.codex/agents` or `~/.gemini/config/agents`.
 
-- [ ] **Step 1: Write the failing tests** in `build/test_runtime_support.py`
+- [x] **Step 1: Write the failing tests** in `build/test_runtime_support.py`
 
 ```python
 AGENT_DIRS = {'claude': '.claude/agents', 'codex': '.codex/agents', 'gemini': '.gemini/config/agents'}
@@ -269,16 +275,18 @@ def test_agent_pointer_to_a_missing_root_license_refuses(tmp_path, monkeypatch):
   # and home stays empty
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k 'agent_license'`
 Expected: FAIL. No `LICENSE-superpowers` is installed, and `pointed_licenses` is not defined.
 
-- [ ] **Step 3: Implement `pointed_licenses` and `agent_license_items`, and call them in `runtime_items`**
+- [x] **Step 3: Implement `pointed_licenses` and `agent_license_items`, and call them in `runtime_items`**
 
 `LICENSE_POINTER_RE = re.compile(r'^# license: .*$', re.M)` and `LICENSE_NAME_RE = re.compile(r'\bLICENSE-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*')`. The `InstallError` message is the one the test pins, with the path relative to `REPO`. In the module docstring, add one sentence after "A full install also includes each runtime's companion agents and commands": "With the agents it installs the license files their `# license:` lines name, such as LICENSE-superpowers, in the same directory."
 
-- [ ] **Step 4: Run the checks**
+- [x] **Step 4: Run the checks**
+
+> Deviation: Task 3 was a mutant task. It added tests for `pointed_licenses` inputs, duplicates, the refusal text, installed destination names and a name before a file suffix, so the suite grew to 148 tests.
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`
 Expected: all pass, the aliased-agent-directory refusal test included, with no change to it.
@@ -287,7 +295,7 @@ Expected: three `would link .../LICENSE-superpowers -> ...` lines, one per agent
 Run: `uv run python build/cc_guide/cli.py lint`
 Expected: exit 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add install.py build/test_runtime_support.py
@@ -314,13 +322,13 @@ Exact copy (F5, approved at plan review):
 - README, the paragraph that starts "Each skill directory also carries copies", append:
   "The two agents adapted from superpowers point to `LICENSE-superpowers`, and `install.py` installs that file beside them."
 
-- [ ] **Step 1: Make the three NOTICE edits and the README edit**
-- [ ] **Step 2: Run the checks**
+- [x] **Step 1: Make the three NOTICE edits and the README edit**
+- [x] **Step 2: Run the checks**
 
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_provenance.py` and `bash build/run_commit_lints.sh`
 Expected: all pass, exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add NOTICE README.md
