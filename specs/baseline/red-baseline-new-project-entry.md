@@ -8307,3 +8307,123 @@ example "The roadmap is already committed on `main` at `specs/sec-filing-index-i
 
 **Result.** All six cases show no regression on the readings of record. The new §4 sentence changes where the reps
 put the commit: after the partner's answer, and before the handoff.
+
+## Plan 113: base, cases and leak check
+
+Plan 113 (`specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md`) changes the derive-roadmap
+skill text for provisional items and folded requirements, and tests the change with micro-test reps. Task 1 adds four
+cases to plan 78's kit and runs their leak check. It runs no counted rep and edits no skill file.
+
+The quarantine of plan 78 holds for plan 113. This section, the plan and the cases name the pass rules and the
+expected behavior. Keep them out of every prompt.
+
+### Plan 113: base
+
+- `BASE113` short sha: `171e763`.
+- Full sha: `171e7631be8d5c6c97a230c51fc94d1e16127a5b`.
+- Branch: `claude/writing-plans-derive-roadmap-969457`.
+
+`git diff --stat f620eba 171e763 -- skills/derive-roadmap specs/baseline/red-baseline-new-project-entry` printed
+nothing. The plan's line anchors hold.
+
+`/tmp/plan113-work/repos/` holds four links: `sec-edgar` to `$HOME/Projects/archive/sec-edgar-cloud` (it holds
+`22c6767f`, which the live `sec-edgar` and GitHub no longer do), and `ces-revisions`, `embedding-data` and
+`agent-skills` to `$HOME/Projects/<name>`. Every build runs with `CASE_REPOS=/tmp/plan113-work/repos`. The leak
+build's manifest shows the sec-edgar spec at `22c6767f` with sha256 `c43fa455…` (full:
+`c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6`), the bytes of every earlier manifest.
+
+### Plan 113: isolation probe
+
+`claude --version` prints `2.1.323 (Claude Code)`. No earlier record section ran the probe at that version (plan 78
+ran it at 2.1.316). The probe ran as the "Isolation probe (Task 1 Step 5)" section does, into
+`pilot/probe-p113/rep1.json`. All five lines read `NO`. `show_reps.py` shows one turn, one model
+(`claude-opus-5-5`), `success`, and a cost of $0.017.
+
+### Plan 113: cases
+
+Four cases are at the end of `CASES` in `specs/baseline/red-baseline-new-project-entry/kit/cases.py`. Each is
+additive, reads the texts `DR` and the task `STEP_TASK`, and has the 1.00 USD cap. `len(CASES)` is 30. The pass rules
+are exact copy from the plan.
+
+| Case | Spec ref | Repository | State |
+|---|---|---|---|
+| dr-provisional-ask | V1(a), R1, R2 | `lock-closures` | two tracks, Stage 1 stamped, traceability suggested as O6, Stage 2's Consumes unmet by plan 4's Handoff |
+| dr-provisional-alone | V1(b), R1 | `lock-closures` | one track, Stage 1 unticked, traceability suggested as O5, no plan, Handoff or findings read |
+| dr-provisional-only | Open for plan review item 2, R2 | `lock-closures` | one track with O1 and traceability as O2, Stage 1 stamped, the Ranked list holds only O2 |
+| dr-folded-req | V2, R3 | `sec-edgar` | four stages stamped (plans 11 to 14), O8 (R8) and O11 (R11) removed, R8 built under plan 12, R11 unbuilt under plan 14 |
+
+New constants: `PROVISIONAL_LINE`, `SUGGESTED`, `provisional()`, `PROVISIONAL_QUALITY_ROW`,
+`PROVISIONAL_TWO_TRACK`, `PROVISIONAL_LOCK_ALONE`, `PROVISIONAL_LOCK_ONLY`, `SEC_FOLDED_ROADMAP`, `folded_stamp()`,
+`FOLDED_PLAN_PATHS` and `RESUME_NOW`. The three provisional roadmaps are built with `edit()` from `TWO_TRACK_ROADMAP`
+and `LOCK_ROADMAP`, and the folded roadmap from `SEC_SPEC_ROADMAP`, so each swap refuses unless its old text appears
+exactly once. No existing case, rule, fixture or constant changed.
+
+### Plan 113: fixture judgment calls
+
+1. **Provisional line.** It is a plain sentence placed right after the header block, before `## Outcomes`: "This file
+   was written by a sub-agent run that could not ask. Your partner has not approved it." The format leaves the place
+   and wording open.
+2. **Provisional label.** `suggested, not approved`, as the format gives it. In the Outcomes row it sits in the Rank
+   cell, because the partner has given no rank. In the Ranked list it follows the cost note in brackets.
+3. **Suggested outcome line.** "Each closure estimate traceable to the gauge readings it came from", with cost note
+   "small; basis: one source column per estimate row". The same line serves all three cases.
+4. **`Leaves out` of a suggested quality.** Stage 1's entry names it by O-number: `traceability (O6)`. In
+   `dr-provisional-only` the entry holds only that item, because Stage 1 leaves out nothing else there.
+5. **Ranked-list position.** The suggested item is the last item of Track A's list, as the plan says (4th in
+   `dr-provisional-ask` and `dr-provisional-alone`, 1st in `dr-provisional-only`).
+6. **No Open questions section** in any provisional roadmap, and no questions block, as the plan says.
+7. **`dr-provisional-alone` date.** The roadmap's Source line reads 2026-11-04 so that it precedes the `git log` line
+   of 2026-11-05. `dr-provisional-ask` and `dr-provisional-only` keep 2026-10-14 with the stamp on 2026-11-03.
+8. **Session facts.** `RESUME_NOW` is the last line of every fixture, so the tool-read lines come before `[now]`,
+   unlike the kit's older resume fixtures that put the first `Resume the roadmap` in an `[earlier]` line.
+9. **`dr-folded-req` roadmap.** Rows O8 (R8) and O11 (R11) are removed, old O9 and O10 become O8 and O9, and Stage 2's
+   Outcomes, Objective, Exit and name, Stage 3's Outcomes and Exit, and Stage 4's Outcomes, Objective products and
+   Exit were edited to match. Stage 4's Objective keeps "on the stated schedules", which is neutral wording from the
+   original. All stamps have no second sentence, because every Handoff reads `None` (the format drops it). Stamp dates
+   are 2026-10-20, 2026-10-27, 2026-11-02 and 2026-11-05. Plan file names are invented: `11-sec-index-local-parse`,
+   `12-sec-shared-processing`, `13-sec-versioned-publication`, `14-sec-azure-orchestration`.
+10. **`dr-folded-req` evidence.** The `[you, tools]` lines are the plan's, with the spec read (`{file:spec}`) in the
+    fixture so a reply can check R8 and R11 against the spec text.
+
+### Plan 113: leak check
+
+The leak view was built with
+`CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan113-work/leak dr-provisional-ask dr-provisional-alone dr-provisional-only dr-folded-req`.
+It printed `wrote 4 prompts to /tmp/plan113-work/leak`. It was built twice: the first build, before a placement fix for
+the provisional line and the Source date of `dr-provisional-alone`, gave the same hit counts as the second, which is
+the one of record.
+
+Part 1: each case's hand-written fixture lines and task line, from `cases.py`, were matched case-insensitively
+against its leak words. Part 2: each leak-view prompt was matched the same way.
+
+| Case | Leak words | Hits in hand-written lines | Hits in the leak view | Verdict |
+|---|---|---|---|---|
+| dr-provisional-ask | `approve with a rank\|approve and rank\|declin\|before the answer\|first resume` | 0 | 0 | none needed |
+| dr-provisional-alone | same | 0 | 0 | none needed |
+| dr-provisional-only | same | 0 | 0 | none needed |
+| dr-folded-req | `folded\|uncited\|stamp alone\|path:line` | 0 | 0 | none needed |
+
+The format tokens `suggested, not approved`, `Leaves out` and `Ranked list` are in the fixtures and match no leak
+pattern. No hand-written line was reworded, so no `leak-2` rebuild was needed.
+
+Meta words: each of the four prompts was matched for `red-baseline`, `plan 113`, `micro-test` and `quarantine`. Three
+prompts have 0 hits. `dr-folded-req` has 7 hits of `quarantine` at lines 288, 340, 384, 417, 421, 504 and 597. All
+seven sit inside the sec-edgar spec, which the prompt reads verbatim from line 115 to line 651 ("malformed-source
+quarantine", `quarantine/sec/<run-id>/...` and similar), so they are exempt. The hand-written lines (1 to 114 and 652
+on) have none.
+
+Prompt hashes (sha256): `dr-provisional-ask` `7d07f4d3…`, `dr-provisional-alone` `db4a4130…`,
+`dr-provisional-only` `93bdb01d…`, `dr-folded-req` `5c094f5c…`.
+
+## Plan 113: spend
+
+Stop: $30.00 total. Per-rep cap: $1.00.
+
+| Task | Calls | Worst case | Actual | Running total |
+|---|---|---|---|---|
+| Task 1 (isolation probe, `pilot/probe-p113`) | 1 rep | $1.00 | $0.02 | $0.02 |
+| Task 2 (control) | | | | |
+| Task 3 (skill text) | none | $0.00 | $0.00 | |
+| Task 4 (additive treatment) | | | | |
+| Task 5 (guards) | | | | |
+| Task 6 (V3 runs) | | | | |
