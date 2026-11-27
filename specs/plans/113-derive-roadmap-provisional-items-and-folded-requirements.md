@@ -1,5 +1,7 @@
 # derive-roadmap: provisional items and folded requirements Implementation Plan
 
+**Status: COMPLETE (2026-11-27)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Quarantine.** This plan, the spec, the record `specs/baseline/red-baseline-new-project-entry.md` and its folder
@@ -100,6 +102,32 @@ and D2). R1–R3 and V1–V4 below are the spec's.
   as proposed: the freed O-number, the third V1 case, fixture (a)'s two Ask paths, fixtures (a) and (c)'s launched Stage
   1, the ten guards, the $30 spend stop and the gap filed at the completion gate. Applied in: Global Constraints
   (Spend), Task 1 Step 2, Task 3 Step 1 (edit 4), Task 5, Plan completion.
+- **D2** (owner, completion gate, 2026-11-27): the V3 miss is accepted and goes to the backlog.
+  dr-known-progression-79 scored 3 of 5 at the final text (`2bd982d`, bar 4), and 5 of 5 at `BASE113` (`171e763`).
+  The plan 79 item "dr-tracks and dr-known-progression-79 miss conformance clause C at the final skill text" (spec
+  V3's item 5095) stays open with a dated note. A new item investigates the gap. No skill change in this PR. Applied
+  in: Task 6, Plan completion. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+- **D3** (owner, completion gate, 2026-11-27): the guard miss is accepted and goes to the backlog. dr-park-ranked
+  scored 1 of 5 at the final text (`2bd982d`) and 2 of 5 at `BASE113` (bar 3). The §5 Parking text is unchanged since
+  `2e91b05`, and the run date confounds the older 4 of 5. No wording round. A new item records the miss. Applied in:
+  Task 5, Plan completion. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+- **D4** (owner, completion gate, 2026-11-27): confirmed. Both clean-control cases, dr-provisional-alone and
+  dr-provisional-only, keep their edits. The new scoring readings stand as the record's owner-gate lists state them
+  ("Plan 113: summary" and "Plan 113 guards summary and spend", each under Owner gate), each with its other reading
+  unscored. This settles the summary's owner-gate items 3 to 5, the Date aside reading of dr-resume-blocked included.
+  Applied in: Tasks 2, 4, 5 and 6 (the verdicts), Plan completion.
+- **D5** (owner, completion gate, 2026-11-27): file these as deferred items. Applied in: Plan completion.
+  → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+  - (a) The Codex P2 finding of the final review: §5's Commit step does not name a declined provisional item, so a
+    fresh session that receives the handoff may read the old roadmap.
+  - (b) A track stop while a `suggested, not approved` item is still open.
+  - (c) What Stage 1's `Leaves out` reads after a provisional item is approved.
+  - (d) Numbered points inside the one question (raised since plan 85, not scored).
+  - (e) Open item 7's gap: a provisional file with no suggested item still gets its Stage 1 handed off at its first
+    resume, and no rule routes it back to §4.
+  - (f) The kit's dependence on the archived sec-edgar clone (`~/Projects/archive/sec-edgar-cloud`). `22c6767f` is
+    gone from `~/Projects/sec-edgar` and from GitHub.
+  - (g) The V3 gap of D2, and (h) the guard miss of D3.
 
 ## Open for plan review
 
@@ -148,7 +176,7 @@ The owner approves or amends these defaults as one batch. Each one was open in t
 - Produces: `CASES` keys `dr-provisional-ask`, `dr-provisional-alone`, `dr-provisional-only` and `dr-folded-req`,
   each `additive` with texts `DR` and task `STEP_TASK`. `dr-folded-req` carries `{'spec': SEC_SPEC}`.
 
-- [ ] **Step 1: Record the base and make the repos folder**
+- [x] **Step 1: Record the base and make the repos folder**
 
 Append `## Plan 113: base, cases and leak check` to the record. Give `BASE113` (short and full sha, and branch). Run
 `git diff --stat f620eba <BASE113> -- skills/derive-roadmap specs/baseline/red-baseline-new-project-entry`. Expected:
@@ -156,7 +184,9 @@ it prints nothing. If a line prints, stop and report it. Make `/tmp/plan113-work
 says. Run `claude --version`. If no record section has run the isolation probe at that version, run it as the record's
 "Isolation probe (Task 1 Step 5)" does, into `pilot/probe-p113/`, and record that all five lines read `NO`.
 
-- [ ] **Step 2: Write the constants and cases in `cases.py`**
+> Deviation: the Global Constraints' Order line cites the owner ruling of 2026-10-28, but the execution applied the owner's later rule of 2026-11-17 (up to three file-disjoint domain executions at once). No other execution was in flight at the start, and plan 112 had merged (#275).
+
+- [x] **Step 2: Write the constants and cases in `cases.py`**
 
 Each fixture is a `lines(...)` call that starts with `TODAY` and a repository line, and ends with
 `[now] Your partner: Resume the roadmap.` The implementer writes the fixture text, and the state each one must hold is
@@ -236,7 +266,7 @@ Leak words: the three `dr-provisional-*` cases use
 `r'folded|uncited|stamp alone|path:line'`. The format tokens that the fixtures must hold (`suggested, not approved`,
 `Leaves out`, `Ranked list`) are not leak words, and the patterns do not match them.
 
-- [ ] **Step 3: Check the cases load and build**
+- [x] **Step 3: Check the cases load and build**
 
 Run
 `uv run python -c "import sys; sys.path.insert(0, 'specs/baseline/red-baseline-new-project-entry/kit'); import cases; print(len(cases.CASES))"`.
@@ -244,7 +274,7 @@ Expected: `30`. Then
 `CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan113-work/leak dr-provisional-ask dr-provisional-alone dr-provisional-only dr-folded-req`.
 Expected: `wrote 4 prompts to /tmp/plan113-work/leak`.
 
-- [ ] **Step 4: Run the leak check**
+- [x] **Step 4: Run the leak check**
 
 As the record's `## Leak check` does: grep each new case's hand-written fixture lines, then its leak-view prompt,
 case-insensitively, for its leak words. Expected: 0 hits in hand-written lines. Trace every leak-view hit to its
@@ -252,7 +282,7 @@ source (a case-repository file read verbatim is exempt). Add the table to the re
 hits, then rebuild into `/tmp/plan113-work/leak-2`. Also grep the four prompts for `red-baseline`, `plan 113`,
 `micro-test` and `quarantine`. Expected: 0 hits.
 
-- [ ] **Step 5: Start the spend table and commit**
+- [x] **Step 5: Start the spend table and commit**
 
 Append `## Plan 113: spend` with the stop ($30), the per-rep cap ($1.00) and a row per task. Then:
 
@@ -271,7 +301,7 @@ git commit -m "test(specs): add plan 113's provisional-item and folded-requireme
 - Consumes: the four Task 1 cases.
 - Produces: one control verdict per case (RED, thin or clean), which Task 4 reads.
 
-- [ ] **Step 1: Build, then run five reps per case**
+- [x] **Step 1: Build, then run five reps per case**
 
 `CASE_REPOS=/tmp/plan113-work/repos uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <BASE113> /tmp/plan113-work/control dr-provisional-ask dr-provisional-alone dr-provisional-only dr-folded-req`.
 Expected: `wrote 4 prompts to /tmp/plan113-work/control`. Copy its `MANIFEST.txt` to `control/p113-MANIFEST.txt`. For
@@ -279,14 +309,16 @@ each case, run
 `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan113-work/control/<case>.txt specs/baseline/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`.
 Rerun a VOID rep with the next free rep number.
 
-- [ ] **Step 2: Score and record**
+- [x] **Step 2: Score and record**
 
 Run `show_reps.py` on each folder. Score each rep by hand, clause by clause. Write one `### Plan 113 control: <case>`
 section per case in the record's Task 7 form: a table, clause counts, one quote per failed clause, judgment calls and
 other readings. Name each case RED, thin (a bar clause fails in exactly 1 of 5) or clean. A clean control goes to the
 owner at the completion gate, and the case's treatment still runs. Add the spend row.
 
-- [ ] **Step 3: Commit**
+> Deviation: Task 2 set new scoring readings, and a controller ruling carried them, not yet confirmed, into Tasks 4 to 6, each reported with its other reading unscored. The owner confirmed them at the completion gate (D4).
+
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
@@ -306,7 +338,7 @@ git commit -m "test(specs): run plan 113's control arms"
 - Produces: the skill commit `T`, which Tasks 4 to 6 read. Edit 2b's handoff gate is what `dr-provisional-alone`
   scores.
 
-- [ ] **Step 1: Edit the skill text**
+- [x] **Step 1: Edit the skill text**
 
 Exact copy. Rewrap to the file's width. Change nothing else. "Old" is the match key at `BASE113`. Edit 2b gates the
 handoff, so that a resume with no stamped stage (fixture (b)) still reaches edit 1 before it routes a stage.
@@ -328,7 +360,7 @@ handoff, so that a resume with no stamped stage (fixture (b)) still reaches edit
 If the owner chose the burned alternative at plan review (Open item 1), edit 4's last clause and the interactive
 decline rule in the same paragraph use that form instead, and the Decisions section says so.
 
-- [ ] **Step 2: Check the edits**
+- [x] **Step 2: Check the edits**
 
 For each row, run `tr '\n' ' ' < <file> | tr -s ' ' | /usr/bin/grep -o -F '<phrase>' | wc -l` and expect the count.
 
@@ -350,7 +382,7 @@ Then
 `uv run --with pyyaml python -c "import sys; sys.path.insert(0, 'build'); import check_conformance as c; print(len(c.skill_body(open('skills/derive-roadmap/SKILL.md').read())[0]))"`.
 Expected: at most 20,000 (about 18,700). Run `uv run python build/check_links.py` and the commit gate.
 
-- [ ] **Step 3: Commit, then record `T`**
+- [x] **Step 3: Commit, then record `T`**
 
 ```bash
 git add skills/derive-roadmap/SKILL.md skills/derive-roadmap/references/roadmap-format.md
@@ -371,18 +403,20 @@ names the last one as `T`. Commit the record with the message `test(specs): reco
 - Consumes: `T` (Task 3) and Task 2's verdicts.
 - Produces: the V1 and V2 verdicts, and the last skill commit after any wording round here, which Tasks 5 and 6 read.
 
-- [ ] **Step 1: Build and run**
+- [x] **Step 1: Build and run**
 
 Build at `<T>` into `/tmp/plan113-work/t4`, as Task 2 Step 1 does. Expected: `wrote 4 prompts to /tmp/plan113-work/t4`.
 Copy its manifest. Run five reps per case into `treatment/<case>-p113/`.
 
-- [ ] **Step 2: Score, apply the additive bar, record**
+- [x] **Step 2: Score, apply the additive bar, record**
 
 Score as Task 2 Step 2, in `### Plan 113 treatment: <case>` sections. Each ends with its bar verdict against its
 control. For a miss, follow the Bars' wording round. It gives the new text, its commit as `T-r1`, the re-run cases in
 `-r1` folders, and why each other case was not re-run. A second miss is an owner gate. Add the spend row.
 
-- [ ] **Step 3: Commit**
+> Deviation: dr-provisional-ask passed 3 of 5 at `T` (`eee5cbf`), so the Bars' one wording round made a second skill commit, `T-r1` (`2bd982d`, the re-ranking leaves a suggested item out). It became `T-final`. dr-provisional-ask, -alone and -only re-ran in `-r1` folders, and dr-folded-req did not, because its decision sits in §6.
+
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
@@ -399,12 +433,12 @@ git commit -m "test(specs): run plan 113's treatment arms"
 - Consumes: the last skill commit, `T-final`.
 - Produces: the guard verdicts, which the summary (Task 6) reads.
 
-- [ ] **Step 1: Build and run**
+- [x] **Step 1: Build and run**
 
 Build at `<T-final>` into `/tmp/plan113-work/t5` with the ten cases below. Expected:
 `wrote 10 prompts to /tmp/plan113-work/t5`. Copy its manifest. Run five reps per case into `treatment/<case>-p113/`.
 
-- [ ] **Step 2: Score and apply the guard bar**
+- [x] **Step 2: Score and apply the guard bar**
 
 Each case is read as a guard, by its rule and its reading of record (plan 85's Open item 3 and the record sections
 named below). Other readings go under "Other readings" and never count.
@@ -427,12 +461,16 @@ guard fixture holds a `suggested, not approved` item, so any such ask is a false
 re-runs at `BASE113` into a `-p113-base` folder (Open item 5), then takes the Bars' wording round, then goes to an owner
 ruling. Add the spend row.
 
-- [ ] **Step 3: Commit**
+> Deviation: dr-park-ranked missed its bar (1 of 5 at `T-final`, 2 of 5 at `BASE113` in `treatment/dr-park-ranked-p113-base/`), and the task stopped at an owner gate before the wording round. By a controller ruling no round ran, since it would edit Parking text outside this plan's edits and change what Task 6 read. The owner accepted the miss (D3).
+
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
 git commit -m "test(specs): run plan 113's guards"
 ```
+
+> Deviation: Task 5 ran as three commits where the plan names one: the guards (`02e9dc8`) and two record fixes after the task review (`51b0dfa`, `fda543c`).
 
 ### Task 6: the dr-tracks runs (V3), and the summary
 
@@ -445,7 +483,7 @@ git commit -m "test(specs): run plan 113's guards"
 - Consumes: `T-final` (no skill commit may follow this task's runs).
 - Produces: the verdicts that the plan completion protocol reads to tick or note the three items.
 
-- [ ] **Step 1: Build and run**
+- [x] **Step 1: Build and run**
 
 Build at `<T-final>` into `/tmp/plan113-work/t6` with `dr-tracks` and `dr-known-progression-79`. Expected:
 `wrote 2 prompts to /tmp/plan113-work/t6`. Copy its manifest. Run three separate `run_reps.sh` calls, five reps each:
@@ -453,7 +491,7 @@ Build at `<T-final>` into `/tmp/plan113-work/t6` with `dr-tracks` and `dr-known-
 `dr-known-progression-79.txt` into `dr-known-progression-79-p113`. The two dr-tracks runs are independent: separate
 calls, separate folders, and neither is read before the other is complete.
 
-- [ ] **Step 2: Score against the V3 bar**
+- [x] **Step 2: Score against the V3 bar**
 
 Score each run by its case rule and the readings of record: Provenance on bytes (owner, 2026-11-11), and no Echo
 (owner, 2026-11-17). Under no Echo, the phrase "your partner can name its stages from first to last" next to an order
@@ -461,7 +499,9 @@ calls the order stages, and plan 78's round 2 rep5 verdict stands. For dr-tracks
 Stage word test (plan 85, Open item 3). Each run needs at least 4 of 5. A run below its bar is recorded and goes to the
 owner. No wording round follows (Bars, V3).
 
-- [ ] **Step 3: Write the summary**
+> Deviation: dr-known-progression-79 passed 3 of 5 (bar 4), and the task stopped at an owner gate. By a controller ruling the V3 runs double as guards (spec V3), so Open item 5's re-run at `BASE113` also ran, in fix round 1 (`treatment/dr-known-progression-79-p113-base/`, 5 of 5). No wording round ran. The owner accepted the miss (D2).
+
+- [x] **Step 3: Write the summary**
 
 `## Plan 113: summary` holds:
 - one table of every plan 113 arm (case, bar, control or comparison, treatment, result);
@@ -472,12 +512,14 @@ owner. No wording round follows (Bars, V3).
 
 Add the spend row.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
 git commit -m "test(specs): run plan 113's dr-tracks runs and summary"
 ```
+
+> Deviation: Task 6 ran as three commits where the plan names one: the runs and summary (`f2ae1fb`), then fix round 1 after the task review, with a record fix (`66eeb97`) and the `BASE113` re-run (`f9dfaf5`).
 
 ## Plan completion
 
@@ -494,4 +536,7 @@ The Plan Completion Protocol ticks these items in `specs/deferred_items.md` from
 
 The gate also files two new deferred items, unless the owner rules otherwise: Open item 7's gap, and the kit's
 dependence on the archived sec-edgar clone (the Fixtures constraint), since `~/Projects/sec-edgar` no longer holds
-`22c6767f`.
+`22c6767f`. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+
+Result (2026-11-27): the first two items are met and ticked. The third is not met (dr-known-progression-79 3 of 5) and
+stays open with a progress note. The gate filed eight new items (D5).
