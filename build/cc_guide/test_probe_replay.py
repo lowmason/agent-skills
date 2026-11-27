@@ -13,8 +13,9 @@ import pytest
 import probe_checks
 import probes
 from cc_fixtures import isolated_home  # noqa: F401
-from state import DIVERGES, ERROR, PASS, parse_probes
+from state import DIVERGES, ERROR, MANIFEST, PASS, parse_manifest, parse_probes
 
+REPO = Path(__file__).resolve().parents[2]
 FIXTURES = Path(__file__).resolve().parent / 'probe_streams'
 PROBES_LOG = Path(__file__).resolve().parent / 'PROBES.md'
 LOG_ROW_RE = re.compile(r'^\| \d{4}-\d{2}-\d{2} \|', re.MULTILINE)
@@ -40,6 +41,15 @@ def test_every_registered_probe_has_its_fixtures():
     for pid, probe in probes.PROBE_RUNS.items():
         for fixture in probe.fixtures.values():
             assert (FIXTURES / fixture).is_file(), f'{pid}: {fixture} is missing; record it with save_fixtures'
+
+
+def test_the_worktree_probe_backs_its_section_and_its_two_skills():
+    '''The manifest entry the owner chose (plan 114, Task 8): a worktree DIVERGES sends /cc-guide verify to the
+    guide's worktrees section and /cc-guide files to the two skills that act on it.'''
+    manifest = parse_manifest((REPO / MANIFEST).read_text(encoding='utf-8'))
+    assert manifest.probes['worktree-isolation'] == (
+        ['subagents.worktrees'],
+        ['skills/using-git-worktrees/SKILL.md', 'skills/finishing-a-development-branch/SKILL.md'])
 
 
 @pytest.mark.parametrize('pid', list(probes.PROBE_RUNS))
