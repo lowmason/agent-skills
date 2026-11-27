@@ -6333,6 +6333,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       arm. The guide is a docs-checked file that the `/cc-guide` refresh edits, so plan 103 left it alone. Size:
       quick-fix. Done when: guide line 255 says what the page says, and the owner has ruled whether the skill,
       rule and NOTICE sentences also name the "last open" arm.
+      → progress 2026-11-27 (/deferred pass): guide line 255 now says what the desktop page says (checked against https://code.claude.com/docs/en/desktop.md on 2026-11-27): the worktree stays on disk with its changes, and for a local session Desktop removes it about 30 days after the archive or the user's last open, whichever is later; `baseline accept subagents.worktrees --substantive` and `baseline stamp` recorded it, and `cli.py lint` and `check_conformance.py` pass. Still open: the owner's ruling on whether the skill, rule and NOTICE sentences also name the "last open" arm.
 - [ ] **Check whether `queued_turn_count` in a rep's JSON shows a peer turn (plan 103 Task 1 observation).** The
       rep JSON of Claude Code 2.1.323 holds a `queued_turn_count` field, 0 in every rep that the plan 103 kit ran.
       The kit's void rule reads only `result_index` and `origin`, the two fields that the 2026-11-18
