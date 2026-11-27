@@ -6531,13 +6531,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       if: an `explore-override` run reports ERROR "made 1 tool call(s)" for a rep whose only tool call is a hand-back.
 
 ## 110-build-runner-and-ci-kit-suites — 2026-11-26
-- [ ] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
+- [x] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
       `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_NOSYSTEM`, but git still reads `$XDG_CONFIG_HOME/git/ignore` (else
       `$HOME/.config/git/ignore`). A developer whose file lists `build/` or `skills/` could see lint-clone tests
       fail. Plan 110 fixed the same gap in `build/test_run_suites.py` (22f342a) and capped this file at one line and
       one test, so the owner deferred it (final review, 2026-11-26). Add `XDG_CONFIG_HOME` to a missing folder, as
       that fixture does. Size: quick-fix. Done when: `clean_env` sets `XDG_CONFIG_HOME` and a test shows the
       excludes file is not read.
+      → done 2026-11-27 (/deferred quick fix): `clean_env` sets `XDG_CONFIG_HOME` to `/dev/null/no-xdg-config`, and `test_clean_env_hides_the_users_default_excludes` shows a `$HOME/.config/git/ignore` that lists `build/` no longer hides `build/a.py` (it failed before the fix).
 - [ ] `build/run_suites.py --check` counts a test file by its path, not by what pytest collects. When a suite's only
       test files sit under a folder it skips (for example `tools` with tests only in `tools/build/`) and a nested
       suite collects them, `--check` stays clean but `--all` fails on the outer suite with pytest exit 5. It
