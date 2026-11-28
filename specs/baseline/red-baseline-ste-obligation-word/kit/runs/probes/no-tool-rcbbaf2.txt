@@ -1,0 +1,40 @@
+rep rcbbaf2 shape no-tool model claude-sonnet-5-5 status good
+init tools: []
+init skills: ['deep-research', 'design', 'design-sync', 'dataviz', 'update-config', 'verify', 'debug', 'code-review', 'simplify', 'batch', 'fewer-permission-prompts', 'doctor', 'loop', 'schedule', 'claude-api', 'workflow-authoring', 'run', 'run-skill-generator', 'plugin-authoring']
+init mcp: []
+
+## Instruction files and rules
+
+- `/private/tmp/ste114/rcbbaf2/.claude/rules/write-with-asd-ste100.md` is your private global rule file. It sets a plain technical English style (about 80% ASD-STE100) for prose written for people.
+- The Claude Code system prompt is also in context. It covers the harness, security limits, privacy and confirmation rules, and the environment.
+- I see no project instruction file such as a `CLAUDE.md`.
+
+## Memory
+
+- I see no memory.
+
+## Tools
+
+- No tool definitions are listed in this session. The system prompt mentions file and search tools and a shell, but gives me no names or schemas.
+- I cannot say which tools I can call until a definition appears.
+
+## Skills
+
+- `write-with-asd-ste100`, at `/private/tmp/ste114/rcbbaf2/skill/write-with-asd-ste100`. I see only its `SKILL.md` text.
+- That text refers to files I have not read: `references/agent-mode.md`, `references/strict.md`, `references/document-rewrite.md`, `references/examples.md`, `scripts/ste-lint.py` and `LICENSE-write-with-asd-ste100-sources`.
+- It also refers to a `writing-skills` skill. That skill is not in my context.
+
+## Other sessions or agents
+
+- I know of none that I can message.
+
+## User identity
+
+- I do not know your name.
+
+## Environment
+
+- Working directory: `/private/tmp/ste114/rcbbaf2/work` (not a git repository)
+- Platform: darwin, zsh, Darwin 27.2.0
+- Model: Sonnet 5.5 (`claude-sonnet-5-5`)
+- Date: 2026-11-27

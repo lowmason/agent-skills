@@ -933,6 +933,30 @@ Closed deferred items:
 - "Put the Census industry (IND) counts in `skills/classification-codes/SKILL.md` prose under the count test" (deferred by 111-codes-and-bls-reference-skills): `test_skill_census_ind_prose_counts_match_data` reads the four numbers from the prose and checks them against the IND list heights, the six-digit codes each expansion claims and the NAICS level-6 counts; it failed when 266 or 1,012 was changed by one.
 - "Add a note to `skills/classification-codes/SKILL.md` on bridging Census IND 2017 codes to 2022 codes (final" (deferred by 111-codes-and-bls-reference-skills): SKILL.md points to `references/revision-process.md`, which now gives the three-hop bridge `census_ind_2017_to_naics_2017` → `naics_2017_to_2022` → `census_ind_2022_to_naics_2022`, with counts read from `data/` (249 of 271 codes reach one 2022 code, six reach more, 16 have only `partial` rows or none) and a line that the workbook's own IND crosswalk is not bundled.
 
+## 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+Plan: specs/plans/completed/113-derive-roadmap-provisional-items-and-folded-requirements.md · Spec: specs/completed/derive-roadmap-provisional-items-and-folded-requirements.md (retired)
+
+Differences from the design:
+- Ruling (Task 2): Task 2 readings (Ranked before approval, Second asks in the one question, Routing field described, Proposed rank, Listed as unmet, Date) accepted as the record states them for Tasks 4 to 6, each reported with its other reading unscored. Approval as a default also accepted, but the Task 4 treatment of dr-provisional-ask also reports clause B's count under the stricter reading (a decline must be named), unscored. Owner sees all at the completion gate. Reviewer notes: ask rep3 firmest C fail; control verdicts for alone and only rest on Second asks (RED on the other reading); folded rep3/rep4 quotes in the reviewer's report.
+- Ruling (Task 5): dr-park-ranked guard miss (1/5 at T-final, 2/5 at BASE113, same conformance clauses C and D, Parking text byte-identical since 2e91b05) gets no wording round now — the BASE113 re-run shows plan 113's edits did not cause it, a round would edit Parking text outside this plan's edits and change what Task 6 reads (T-final); it goes to the owner at the completion gate as a pre-existing regression since 2e91b05 — if wrong, the owner can order a round after the PR with the same fixtures.
+- Ruling (Task 6): the V3 runs double as guards (spec V3 designer's call), so plan Open item 5's BASE113 diagnostic re-run applies to dr-known-progression-79 (3/5, guard bar 4) — Bars' "V3 gets no wording round" is about wording, and a re-run edits no skill text — about $1 of the $30 room (total $13.27) — if wrong, one extra $1 folder the owner can ignore.
+- Ruling (completion gate): the V3 miss is accepted. dr-known-progression-79 read 3 of 5 at `2bd982d` (bar 4) and 5 of 5 at `171e763`. The plan 79 item stays open with a dated note, a new item investigates the gap, and no skill text changed (owner, completion gate 2026-11-27, D2).
+- Ruling (completion gate): the dr-park-ranked guard miss is accepted with no wording round. It read 1 of 5 at `2bd982d` and 2 of 5 at `171e763` (bar 3). The Parking text is unchanged since `2e91b05`, and the run date confounds the older 4 of 5. A new item records the miss (owner, completion gate 2026-11-27, D3).
+- Ruling (completion gate): dr-provisional-alone and dr-provisional-only keep their edits, though their controls are clean. The new scoring readings, which Tasks 4 to 6 carried unconfirmed, stand as the record's owner-gate lists state them, each with its other reading unscored (owner, completion gate 2026-11-27, D4).
+- Ruling (completion gate): eight items go to the backlog, among them the Codex P2 finding of the final review: §5's Commit step does not name a declined provisional item, so a fresh-session handoff may read the old roadmap (owner, completion gate 2026-11-27, D5). Before the gate, the ledger's final-review ruling left the finding unfixed in this PR, because any skill commit re-runs the V3 runs.
+- Deviation (Task 1): the execution applied the owner's 2026-11-17 rule (up to three domain executions at once), not the Order line's 2026-10-28 ruling. Source: plan, Task 1.
+- Deviation (Task 2): a controller ruling carried Task 2's new readings, not yet confirmed, into Tasks 4 to 6. The older reading First stage per outcome (plan 79) is still not confirmed, and it decides no plan 113 count. Source: plan, Task 2; record, "Plan 113: summary".
+- Deviation (Task 4): dr-provisional-ask read 3 of 5 at `T` (`eee5cbf`), so one wording round made `T-r1` (`2bd982d`), the final skill text. Source: plan, Task 4.
+- Deviation (Task 5): dr-park-ranked missed its guard bar, and no wording round ran (controller ruling, then D3). Source: plan, Task 5.
+- Deviation (Task 5): three commits where the plan names one. Source: plan, Task 5.
+- Deviation (Task 6): dr-known-progression-79 missed its bar, and its `BASE113` re-run read 5 of 5. No wording round ran (controller ruling, then D2). Source: plan, Task 6.
+- Deviation (Task 6): three commits where the plan names one. Source: plan, Task 6.
+- Deferred: 8 items. Source: specs/deferred_items.md, § 113-derive-roadmap-provisional-items-and-folded-requirements.
+
+Closed earlier deferred items:
+- "**A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final" (deferred by 85-derive-roadmap-later-qualities-and-spec-refs).
+- "**A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final" (deferred by 85-derive-roadmap-later-qualities-and-spec-refs).
+
 ## 112-superpowers-agent-license-travel — 2026-11-27
 Plan: specs/plans/completed/112-superpowers-agent-license-travel.md · Spec: none
 
@@ -944,6 +968,23 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "License travel for single-file agents (plan 53's spec, Out of scope)." (deferred by 53-agent-skills-portability): both superpowers-derived agents and their four adapters carry a `# license:` pointer, `install.py` installs `LICENSE-superpowers` beside the agents, and `check_provenance.py` checks the pointers.
+
+## 114-ste-drift-and-obligation-word — 2026-11-27
+Plan: specs/plans/completed/114-ste-drift-and-obligation-word.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 1): the pin test pins SHA-256 of the bytes, not the git blob; the pin moves after the download, whose blob hash 0b48290f proves the bytes — the plan named the blob — none: the blob check still runs at Step 4.
+- Ruling (Task 2): kit.py (runner, scrub, void, judge, flags, tally) was written before its tests, against TDD order; each test added after is proved by a deliberate break that must make it fail — no-model kit code, not shipped skill text — a test that never failed could pass vacuously; the breaks guard that.
+- Ruling (Task 3): (owner D8) agent reps get Read; kit fix: a batch registers every rep before the alarm stops it (2 reps were unregistered at the stop, added from their streams).
+- Ruling (final review): test_unread_flags... and test_flag_ids... now write a passing judge table first; assertions unchanged — the Codex fail-closed fix makes a missing judge table a fail — none.
+- Deviation (Task 3): with `--tools ""`, Opus reps wrote tool calls as text and two hit the output limit; the owner gave agent reps the Read tool (D8, kit amendment 1), and the first 5 reps were set aside. Source: plan, Task 3.
+- Deviation (Task 5): the final review applied the plan's V3 (D10, kit amendment 2): 4 `doc-symlink` reps were void for writing to `/tmp`, and 4 replacements ran. Source: plan, Task 5.
+- Deviation: treatment `agent-instruction` on Sonnet missed the all-checks bar (2 of 5) on a guessed actor and a sentence cap, not on the obligation check. The owner chose to accept it and file an item (D9), so Step 5's wording fix and re-run did not run. Source: plan, § Execution notes.
+- Deferred: 3 items. Source: specs/deferred_items.md, § 114-ste-drift-and-obligation-word.
+
+Closed earlier deferred items:
+- "`SKILL.md` has no line that keeps the strength of an obligation word such as "should"" (deferred by 52-write-with-asd-ste100).
+- "The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and" (deferred by deferred-2026-11-17).
 
 ## 115-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
 Plan: specs/plans/completed/115-cc-guide-probe-upkeep-and-worktree-probe.md · Spec: none

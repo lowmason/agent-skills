@@ -1,0 +1,38 @@
+rep r20f9a4 shape agent model claude-sonnet-5-5 status good
+init tools: ['Read']
+init skills: ['deep-research', 'design', 'design-sync', 'dataviz', 'update-config', 'verify', 'debug', 'code-review', 'simplify', 'batch', 'fewer-permission-prompts', 'doctor', 'loop', 'schedule', 'claude-api', 'workflow-authoring', 'run', 'run-skill-generator', 'plugin-authoring']
+init mcp: []
+
+**Instruction files**
+- `/private/tmp/ste114/r20f9a4/.claude/rules/write-with-asd-ste100.md`. This is the user's private global rule. It sets a plain technical English style (about 80% of ASD-STE100) for prose written for people. It excludes code, config, data, quoted text and agent-facing text.
+- No other instruction file is visible. I see no CLAUDE.md.
+
+**Memory**
+- None.
+
+**Tools I can call now**
+- `Read`. It reads files, images, PDFs and notebooks by absolute path.
+- The harness says some tools are deferred. I can't see their names or schemas, so I can't call them.
+
+**Skills**
+- `write-with-asd-ste100`. Its base directory is `/private/tmp/ste114/r20f9a4/skill/write-with-asd-ste100`. I can see the text of its `SKILL.md`. It points to these files, which I have not read:
+  - `references/agent-mode.md`
+  - `references/strict.md`
+  - `references/document-rewrite.md`
+  - `references/examples.md`
+  - `scripts/ste-lint.py`
+  - `LICENSE-write-with-asd-ste100-sources`
+- I see no other skills.
+
+**Other sessions or agents**
+- None that I could message.
+
+**Environment**
+- Primary working directory: `/private/tmp/ste114/r20f9a4/work`. It is not a git repository.
+- Additional working directory: `/private/tmp/ste114/r20f9a4/skill`.
+- Platform: darwin, with zsh. The OS is Darwin 27.2.0.
+- Date: 2026-11-27.
+- Model: Sonnet 5.5 (`claude-sonnet-5-5`).
+
+**User's name**
+- I don't know it.

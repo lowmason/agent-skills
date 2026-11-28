@@ -145,7 +145,12 @@ made. From approval on it is an ordinary outcome, with no special case at a
 resume, at parking or in the completion review. When the session cannot ask,
 the provisional file lists each suggested quality at the end of the Ranked
 list, with its next free O-number and the label `suggested, not approved`.
-Each also gets an Outcomes row, marked `suggested, not approved`.
+Each also gets an Outcomes row, marked `suggested, not approved`. The first
+resume that can ask puts each such item to your partner (SKILL.md §5). On
+approval the label goes, the item takes the rank your partner gives, and it is
+an ordinary outcome. On a decline its Outcomes row and list item go, the
+stage's `Leaves out` entry reads `<quality>: declined, <YYYY-MM-DD>`, and its
+O-number is free again.
 
 An item leaves the list when your partner promotes it to a stage at a resume,
 or parks when the track stops or the whole roadmap parks (SKILL.md §5).

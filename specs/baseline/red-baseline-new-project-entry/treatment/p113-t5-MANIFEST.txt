@@ -1,0 +1,17 @@
+arm 2bd982d (2bd982d03fab6d46422252b2c63b413407298a61)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-quality-suggest.txt sha256 e80e79ab50a53402a57486169761a7e27b4268fac04b7e3acfe55d834064cff4 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-spec-column.txt sha256 e23183ccae283fbee9a46b2e25a8d6058bcc9550de67c5337847b0ba673b0abd model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-research-depth.txt sha256 2bc295560ca408975830e183c6b7a24ffb59348f5e3a5aae905d1874d4b870b9 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-prompt.md whole sha256 ff6ec94342e11045e0c0353b46801cb87b7e63b4ba845289b189728ec5f39b73
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-chatgpt.md excerpt 3000 sha256 399f007ce3ae3816d55fb942feaf0f8c1579e0c47f49f8d6e4839173509f5ee7
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-claude.md excerpt 3000 sha256 150383c5bc32bd8247641b954f7ee5b9f94c31170209679c244de12372e8f5a0
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-gemini.md excerpt 3000 sha256 0f4ec5d09858cc5e3fa86e5a23e8d4297a8ffc248907246c6159763b2d7c6a1c
+dr-resume-rerank.txt sha256 c04c48eb5d42ca8c3a945e791f832bebbc4df30100e672bf6c9d3bb91b42e285 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-rerank-second.txt sha256 43a2375b3a49dc55dd54c9cfcd130b8f87345a4a34a7d4b68070fee92ee3db92 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-stop-track.txt sha256 62ad32e2663f239e16e4edd9fc8a473bb03592d41cc1d9b949a0cbb85010b5cf model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-park-ranked.txt sha256 16f800e2f9381f7b4aca90687453fafa4e8a28d6dfc8abf035a649b03b926633 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-marker.txt sha256 adee76b307fa20fb6f9bd8b3577798341bc0079defe207728ab5bf2666f3b602 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-blocked.txt sha256 b1ae6979e446b46da40b2326d3e31d1ec1de041579ac71d54c1fd365b606da2e model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-legacy.txt sha256 76c021a8f4dc42bec83a7e332f60a13f793fd76161a883e7231fa2d63e225e74 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md

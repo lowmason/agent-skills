@@ -1,0 +1,75 @@
+{
+ "case": "agent-instruction",
+ "verdicts": {
+  "r263793": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the conditions that the job is complete with no errors raised, and it keeps 'sometimes' for partial artifacts."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact, condition or action, and its flags only point out gaps without filling them."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' stays 'should', and the reply adds no new obligation word."
+   }
+  },
+  "rcc440a": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the conditions of completion with no errors, and it says partial artifacts are 'sometimes' produced."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite adds nothing, and the possibility it raises about timeouts appears only in a flag about ambiguity."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' stays, and the reply adds no new obligation word."
+   }
+  },
+  "rf26c5f": {
+   "1": {
+    "pass": true,
+    "why": "Both conditions stay, and 'sometimes' stays for partial artifacts."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no fact, condition or action, and its flags only note what the source leaves out."
+   },
+   "3": {
+    "pass": true,
+    "why": "It keeps 'should' and explicitly declines to make the step mandatory."
+   }
+  },
+  "r4835ff": {
+   "1": {
+    "pass": true,
+    "why": "It keeps 'has completed' and 'no errors were raised', and it says partial artifacts are 'sometimes' produced."
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewritten instruction adds no new fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "The instruction keeps 'should', and the one 'must' appears only in a note explaining the tense, not in the rewrite."
+   }
+  },
+  "r52a113": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the conditions of completion with no errors raised, and it keeps 'sometimes' for partial artifacts."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no fact, condition or action, and its flags only name gaps in the source."
+   },
+   "3": {
+    "pass": true,
+    "why": "'should' stays, and the reply adds no new obligation word."
+   }
+  }
+ }
+}

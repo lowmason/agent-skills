@@ -1,0 +1,11 @@
+{
+ "status": " M docs/manual.md\n",
+ "commits": 1,
+ "files": {
+  "docs/manual.md": "---\ntitle: Label printer setup\nowner: facilities\n---\n\n# Label printer setup\n\nEveryone on the floor can use the label printer in room 2.14. Before you send the first print job, you need to install the driver.\n\n## Install the driver\n\nTo install the driver, run this command in a terminal window:\n\n```bash\nsudo ./install-driver.sh --model LP-200 --queue floor2\n```\n\nIf the installer reports \"E_QUEUE: queue busy\", you should wait about 1 minute and try again.\n\n## Paper sizes\n\n| Size | Use it for |\n|---|---|\n| 62 mm | address labels for post |\n| 29 mm | small labels for shelves |\n\n> Do not load third-party rolls. The warranty is void if you do.\n\nFor more options, see the [vendor manual](https://example.com/lp-200/manual.pdf).\n\nLast checked by facilities on 2026-10-01.\n",
+  "docs/guide.ste.md": null
+ },
+ "links": {
+  "docs/guide.md": "manual.md"
+ }
+}

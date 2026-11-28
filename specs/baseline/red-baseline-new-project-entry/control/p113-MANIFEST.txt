@@ -1,0 +1,7 @@
+arm 171e7631be8d5c6c97a230c51fc94d1e16127a5b (171e7631be8d5c6c97a230c51fc94d1e16127a5b)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-provisional-ask.txt sha256 890c1ca1e73b64de623c152c088fa0fc1df9f87eaf5e5317a4abfd244ed38e17 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-provisional-alone.txt sha256 d20c5574edde3cccd152439f09046c89236311213be556077541852038ffb479 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-provisional-only.txt sha256 129036dc5d6629f8bedba928a4f42527a37637020138d055e06e1aa0646a7a53 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-folded-req.txt sha256 ad49c655f6f51b3e8f3b0bdb3abbc3f0062979ea1fd0d74eaceb5035639dd458 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6

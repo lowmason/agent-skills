@@ -1,0 +1,4 @@
+arm 171e7631be8d5c6c97a230c51fc94d1e16127a5b (171e7631be8d5c6c97a230c51fc94d1e16127a5b)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-known-progression-79.txt sha256 ab05981eee7b7d6f5e7c661dc2d0117a865fde63aef50081f4a80021f685d68a model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6

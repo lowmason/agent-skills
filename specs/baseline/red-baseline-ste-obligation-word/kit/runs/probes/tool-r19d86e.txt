@@ -1,0 +1,32 @@
+rep r19d86e shape tool model claude-sonnet-5-5 status good
+init tools: ['Bash', 'Edit', 'Read', 'Write']
+init skills: ['deep-research', 'design', 'design-sync', 'dataviz', 'update-config', 'verify', 'debug', 'code-review', 'simplify', 'batch', 'fewer-permission-prompts', 'doctor', 'loop', 'schedule', 'claude-api', 'workflow-authoring', 'run', 'run-skill-generator', 'plugin-authoring']
+init mcp: []
+
+**Instruction files and rules**
+- `/private/tmp/ste114/r19d86e/.claude/rules/write-with-asd-ste100.md` is your private global rule. It sets a plain technical English style for prose.
+- I see no `CLAUDE.md` file and no other rule file.
+
+**Memory**
+- I see no memory.
+
+**Tools I can call**
+- `Bash`, `Edit`, `Read` and `Write`.
+- The system prompt says some tools are deferred. None has appeared, so I can't call any.
+
+**Skills**
+- `write-with-asd-ste100` is at `/private/tmp/ste114/r19d86e/skill/write-with-asd-ste100`. I see its main `SKILL.md` text.
+- It refers to these files, which I have not read: `references/agent-mode.md`, `references/strict.md`, `references/document-rewrite.md`, `references/examples.md`, `scripts/ste-lint.py` and `LICENSE-write-with-asd-ste100-sources`.
+
+**Other sessions or agents**
+- I know of none, and I have no tool to message one.
+
+**Other context**
+- The working directory is `/private/tmp/ste114/r19d86e/work/repo`. It is a git repository on branch `main`, with a clean status. The only commit is `78e3223 fixture`.
+- An extra working directory is `/private/tmp/ste114/r19d86e/skill`.
+- The platform is darwin, and the shell is zsh.
+- Today's date is 2026-11-27.
+- Attribution rules for commits and PRs are set. Commits end with a `Co-Authored-By: Claude Sonnet 5.5` line. PR descriptions end with a "Generated with Claude Code" line.
+
+**Your name**
+- I don't know your name. The git user is "Ste Rep". That is a git setting, and I can't confirm it is your name.

@@ -1,0 +1,75 @@
+{
+ "case": "agent-instruction",
+ "verdicts": {
+  "r93f8f8": {
+   "1": {
+    "pass": true,
+    "why": "It keeps both conditions (job complete, no errors) and says partial artifacts happen \"sometimes\"."
+   },
+   "2": {
+    "pass": false,
+    "why": "\"Use the output artifact only when\" adds a ban on using it in any other case, and the source does not state that restriction."
+   },
+   "3": {
+    "pass": false,
+    "why": "It turns \"should proceed to consume\" into the bare command \"Use\"."
+   }
+  },
+  "r45e47f": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the completion and no-errors conditions and the \"sometimes\" hedge for partial artifacts."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no fact, condition or action beyond what the source states."
+   },
+   "3": {
+    "pass": false,
+    "why": "It turns \"should\" into the bare command \"consume the output artifact\"."
+   }
+  },
+  "rc57b53": {
+   "1": {
+    "pass": true,
+    "why": "It keeps both conditions and says partial artifacts happen \"sometimes\"."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact, condition or action."
+   },
+   "3": {
+    "pass": false,
+    "why": "It turns \"should\" into the bare command \"Consume\"."
+   }
+  },
+  "r3d9b89": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the completion and no-errors conditions and the \"sometimes\" hedge."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no fact, condition or action that the source lacks."
+   },
+   "3": {
+    "pass": false,
+    "why": "It turns \"should proceed\" into the bare command \"Use\", even though it flags the change."
+   }
+  },
+  "r4d5f63": {
+   "1": {
+    "pass": true,
+    "why": "It keeps both conditions and says a partial artifact is \"sometimes\" produced."
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact, condition or action to the rewrite."
+   },
+   "3": {
+    "pass": true,
+    "why": "It keeps \"should\" and adds no other obligation word."
+   }
+  }
+ }
+}

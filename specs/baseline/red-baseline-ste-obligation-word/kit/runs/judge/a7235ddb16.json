@@ -1,0 +1,35 @@
+{
+ "case": "doc-clean",
+ "verdicts": {
+  "r6b52f4": {
+   "1": {
+    "pass": true,
+    "why": "It says the original had 9 findings (3 hard) and the rewrite has 0 findings."
+   }
+  },
+  "r51ae2a": {
+   "1": {
+    "pass": true,
+    "why": "Its table shows 9 findings (3 hard) before and 2 findings (0 hard) after."
+   }
+  },
+  "r083e0f": {
+   "1": {
+    "pass": true,
+    "why": "It lists 9 findings (3 hard) before and 1 finding (0 hard) after."
+   }
+  },
+  "ra35651": {
+   "1": {
+    "pass": true,
+    "why": "Its table gives 9 total and 3 hard findings before, and 2 total and 0 hard after."
+   }
+  },
+  "rc2a167": {
+   "1": {
+    "pass": true,
+    "why": "It states 9 findings (3 hard) before and 1 finding (0 hard) after."
+   }
+  }
+ }
+}

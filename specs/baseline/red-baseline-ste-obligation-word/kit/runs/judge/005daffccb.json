@@ -1,0 +1,75 @@
+{
+ "case": "agent-tool-description",
+ "verdicts": {
+  "r1b0740": {
+   "1": {
+    "pass": true,
+    "why": "It keeps the hedges: the tool \"tries to synchronize\" and \"may resolve the conflict automatically.\""
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact; rendering \"otherwise\" as \"if the tool does not resolve the conflict\" is a reading it flags openly, and the other flags only point out gaps."
+   },
+   "3": {
+    "pass": true,
+    "why": "The source has no obligation words, and the rewrite adds none."
+   }
+  },
+  "r22abf7": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"tries to synchronize\" and \"may resolve the conflict automatically.\""
+   },
+   "2": {
+    "pass": true,
+    "why": "The bullets restate only the source's two outcomes; \"shows\" stands in for \"surface\" and adds nothing."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no must, shall, always or similar obligation words."
+   }
+  },
+  "r0226a8": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"tries to synchronize\" and \"may resolve.\""
+   },
+   "2": {
+    "pass": true,
+    "why": "The rewrite covers only the source's facts, and the flags only note what the source leaves out."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  },
+  "r1b2820": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"tries to synchronize\" and \"may resolve the conflict automatically.\""
+   },
+   "2": {
+    "pass": true,
+    "why": "It adds no new fact; it rewords \"otherwise\" and flags that reading as its interpretation."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  },
+  "r8bb20e": {
+   "1": {
+    "pass": true,
+    "why": "It keeps \"tries to synchronize\" and \"may resolve the conflict automatically.\""
+   },
+   "2": {
+    "pass": true,
+    "why": "It follows the source closely and adds no fact, condition or action."
+   },
+   "3": {
+    "pass": true,
+    "why": "It adds no obligation words."
+   }
+  }
+ }
+}

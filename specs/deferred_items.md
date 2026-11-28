@@ -768,7 +768,7 @@
       `audited` while leaving a newer `checked` alone needs a `baseline.py` change; the simpler
       remedy is for the skill to tell the owner to rebuild the audit packet. Size: quick-fix.
       Revisit if: a live audit's `audited --to` is refused this way.
-- [ ] The audit verifier's omission recall was 3 of 7 known positives (plan 44's Live run,
+- [x] The audit verifier's omission recall was 3 of 7 known positives (plan 44's Live run,
       step B, 2026-10-13). `/cc-guide audit models` (packet `20261013T113847-audit`, 2.1.296
       snapshot) found the effort-change cache caveat and `ANTHROPIC_DEFAULT_MODEL` as PARTIAL
       rows, and `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` as a B and a C row. It missed
@@ -824,6 +824,7 @@
       > done-when, not the other misses.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): the changed arm met P11 in 5 of 5 valid reps against 0 of 5 (3 by the mechanical B-row line, 2 by C rows rated by hand), but gate A failed and Part A is reverted, so an audit at HEAD still misses `deniedModels`. Kept open by the owner's word. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A and Disposition.
+      → retired 2026-11-27: the owner retired it after plan 102's gate A failed and Part A was reverted; no new verifier-recall round will run, so its `deniedModels` done-when cannot be met.
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
@@ -1099,7 +1100,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       not-covered row the owner has not ruled on, and cites it once each row is ruled. A
       micro-test of the step (5 reps per arm, claude -p from a fresh /tmp folder) held the
       file in 5 of 5 runs with the new step and 0 of 5 with the old one.
-- [ ] The audit verifier writes no B row for the changelog entries behind P11 (`deniedModels`
+- [x] The audit verifier writes no B row for the changelog entries behind P11 (`deniedModels`
       beside `availableModels`, the audit packet's `changelog.md:1288`) and P8 (a top-level
       `effortLevel` no longer counting for Opus 5.5, `changelog.md:1702`), though the packet's
       changelog carries both (plan 45's key, `specs/plans/completed/45-claude-code-drift-automation.md`
@@ -1115,6 +1116,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `44-claude-code-drift-automation — 2026-10-13`); close both together when P11 is met.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): gate A failed (P8 in 2 of 5 changed reps, where 4 are needed; P13 retention 1 against the control's 4), so Part A was reverted whole. The changed arm answered every listed item (0 of 206 unanswered in 5 of 5 reps, against 202 to 206 in the control) and met P11 in 5 of 5. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A. A new round needs the owner's word.
+      → retired 2026-11-27: the owner retired it with the P11 item in section `44-claude-code-drift-automation — 2026-10-13`, after plan 102's gate A failed and Part A was reverted; no new verifier-recall round will run.
 - [x] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
       checkpoint on 2026-10-14 turned on contested readings of the changed arm's
       `hooks/README.md` rows: r11 and r27 kept 3 and 4 `contradicts` rows on cases that are
@@ -2769,7 +2771,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → done 2026-10-19 (/deferred quick fix): --no-rules leaves the user-level rules out of a
       full Claude install, and --rule on Codex or Gemini prints a one-line notice. Tests in
       build/test_runtime_support.py, and README.md documents both.
-- [ ] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
+- [x] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
       (the `skill-r2` reading). In that re-run, 3 of the 5 `agent-instruction` replies
       turned "should" into a bare command or "must". The case's pre-registered checks cover
       the conditions and the "sometimes" hedge, not "should", so all five runs passed. The
@@ -2782,6 +2784,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       pre-registered check covers obligation words and the three agent cases pass it at 4 of
       5 or more.
       → progress 2026-11-17 (owner ruling): go ahead. Add one line to `SKILL.md`'s meaning rules and a pre-registered obligation-word check to the kit's `cases.py`, then re-run the three agent cases.
+      → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
+      → done 2026-11-27 (plan 114): `SKILL.md`'s meaning rules gain the **Obligation** line (commit `546181a`). The pre-registered obligation check passes at 5 of 5 in every treatment cell on Opus 5.5 and Sonnet 5.5; the control's Sonnet `agent-instruction` passed it at 1 of 5. The registered all-checks bar was missed on treatment `agent-instruction` Sonnet (2 of 5, a guessed actor and a sentence cap), and the owner accepted that under this item's done-when (plan 114 D9). Record: `specs/baseline/red-baseline-ste-obligation-word.md`. The actor-guess fault is filed → item: 114-ste-drift-and-obligation-word — 2026-11-27
 - [ ] Three review fixes have no test that would catch a regression (final review). They are
       the `python3` call in `references/agent-mode.md`, the kept "should" in
       `references/examples.md`, and the symbolic-link check in
@@ -2790,6 +2794,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
+      → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
+      → progress 2026-11-27 (plan 114): the kit gained `doc-symlink` (a tracked link to a tracked target with uncommitted edits), and all four document cases ran on Opus 5.5 and Sonnet 5.5. `doc-symlink` passes its registered end-state checks (Opus 5/5, Sonnet 4/5), but 7 of its 14 reps wrote through the link into the dirty target first, so the owner left the symbolic-link part open (D11) and the step 3 wording is filed → item: 114-ste-drift-and-obligation-word — 2026-11-27. The `python3` call in `references/agent-mode.md` and the kept "should" in `references/examples.md` stay unreached: every agent rep opened `agent-mode.md` but had no shell, and no rep opened `examples.md`.
 - [x] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
       2026-10-31 read danyuchn/asd-ste100-skill through `255631a3` and prithivrajmu/asd-ste100
       through `058c1f58`. Size: quick-fix. Revisit if: a compare from `255631a3` (danyuchn) or
@@ -5075,7 +5081,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       unruled. The item stays open: its `Done when:` still needs the Echo ruling or a wording change, and the
       independent runs. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary, Owner ruling).
       → progress 2026-11-17 (owner ruling): no Echo. The reading of record stands: the phrase next to an order calls the order stages, and plan 78's round 2 rep5 verdict stands. The `Done when:` still needs the independent runs.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
+      → progress 2026-11-27 (plan 113): at `2bd982d`, plan 113's final skill text, the two independent five-rep `dr-tracks` runs pass 5 of 5 each, and the `dr-known-progression-79` run passes 3 of 5 (bar 4). Its two fails leave traceability out of every stage. Its re-run at `171e763` passes 5 of 5. The owner accepted the miss at the completion gate (plan 113, D2). The item stays open: at `2bd982d` the `dr-tracks` runs meet its `Done when:`, and the `dr-known-progression-79` run does not. See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary). The gap between the two texts has its own item. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -5333,7 +5340,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-11 (/deferred quick fix): `test-run` removes its temporary file only after the run file is written, so a killed run leaves its output so far in `test-run.<random>`, which the "No `run:` line" bullet of `references/test-run.md` names. Two tests in `test_sdd_scripts.py` cover a killed run and a finished one.
 
 ## 85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10
-- [ ] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final
+- [x] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final
       review, Codex P2 and the code-reviewer's Declined line; owner ruled defer at the completion gate).**
       `skills/derive-roadmap/SKILL.md` §5 says a quality found at a resume "joins the same question in §4's
       form". A resume that adds, splits, drops or reorders no stage asks no such question, and the spec's R7
@@ -5344,7 +5351,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quality when no other question is open, and what it does with a `suggested, not approved` item, and a
       case covers each path with a control run.
       → progress 2026-11-17 (owner ruling): narrow this item to its second gap. The resume half of R7 is dropped (the spec is amended), and the §5 sentence quoted above is gone, so a resume no longer adds a later quality to any question. Done when now needs only: §5 says what a resume does with a `suggested, not approved` item, and a case covers that path with a control run.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
+      → done 2026-11-27 (plan 113): at `2bd982d`, §5's Ask puts each `suggested, not approved` item into the ONE question, to approve with a rank or to decline, and opens the Ask with them when nothing else is open. The waiting-Ranked-list paragraph keeps such an item out of promotion, counting and the re-ranking, and no stage is handed off while one is open. `references/roadmap-format.md` says what an approval and a decline record. Three cases cover the path, each with a control run at `171e763`: dr-provisional-ask (control RED, treatment 5 of 5), and dr-provisional-alone and dr-provisional-only (controls clean, treatments 5 of 5, edits kept by the owner at the completion gate). See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary). The decline commit, the Leaves out entry after approval, a track stop with an open item and a provisional file with no suggested item have new items. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
 - [x] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
       `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
@@ -5366,14 +5374,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       source that survives a squash merge, such as the tracked file, and `build_prompts.py` rebuilds
       `wp-stage-plan` on a clone that holds only the merged branch.
       → retired 2026-11-11: the squash merge did not happen. Plan 85 merged as a true merge (2394a6e), so `git merge-base --is-ancestor ede95b8 main` succeeds and a clone of `main` holds the commit.
-- [ ] **A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final
+- [x] **A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final
       review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §6. When `Source` is a spec, the review
       lists each numbered spec requirement that no outcome's `Spec` cell cites as unmet. A requirement the
       partner folded into a stage's constraints, with no outcome of its own, therefore reads as unmet. This is
       R12 as the spec wrote it, and it exits by a new stage or a written deferral. Size: design. Done when: §6
       says how the review treats a folded requirement, and a case on a spec-sourced roadmap shows the
       behavior with a control run.
-      → planned 2026-11-27: specs/derive-roadmap-provisional-items-and-folded-requirements.md
+      → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
+      → done 2026-11-27 (plan 113): at `eee5cbf`, §6 runs the gap rubric over each numbered spec requirement that no `Spec` cell cites. It is met only on a path:line or a test name, the verdict names the stage plan that built it, and a stamp alone is not evidence. With no evidence it is unmet. dr-folded-req, on the sec-edgar spec's roadmap, shows it: the control at `171e763` fails bar clause A in 4 of 5, and the treatment passes 5 of 5. See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary).
 
 ## superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 - [x] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
@@ -5497,6 +5506,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       whitespace when finding the first key. Then re-vendor, move the pin in `NOTICE` and both sources files, and add
       a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `a4905d92` to danyuchn's HEAD
       changes `_front_matter`, or the linter's indented-comment case is reported as fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. The compare from `70736273` leaves `_front_matter` (now line 1829) unchanged, and the item's reproduction still gives a `semicolon` finding at 2:13 with exit 1 on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 - [ ] **The re-vendored ste-lint.py lints a quoted front-matter description without decoding it (Codex [P2],
       carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1355-1360` (upstream danyuchn
       `a4905d92`) lints the scalar's source text, not its value. `description: 'It can''t have failed.'` gives a
@@ -5508,6 +5518,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       path. Then re-vendor, move the pin and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a
       compare from `a4905d92` to danyuchn's HEAD changes how `_front_matter` or `_scalar_pieces` reads a quoted
       value, or the quoted-description case is reported as fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. `_front_matter` and `_scalar_pieces` (now line 1794) are unchanged. The item's reproduction still gives `present-perfect` at 3:25 on both copies, and a quoted description split across a line break gives `present-perfect` at 4:10 on both, so the new wrapped-phrase pass adds nothing here. Not fixed upstream; the next compare starts from `d714e536`.
 
 ## 91-causal-design-heldout-eval — 2026-11-12
 - [ ] **recommend-causal-design asks for an outcome-observation node that plan 91's reading rules count as an import
@@ -6038,13 +6049,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       case-sensitive file system, and the weekly job's 3.13 pass no longer lists `build` as failed.
       → progress 2026-11-17 (/deferred quick fix): fixed in `7642a19` and `f05293c`. The case suffix now comes from `differs_only_in_case` in `build/check_links.py`, which reads the directory listings, not `path.exists()`, and needs one name to differ in case. A case-sensitive APFS disk image reproduced the 2 CI failures first, and `test_check_links.py` passed 14 of 14 there at `7642a19` and passes 15 of 15 on this Mac at `f05293c`. The weekly job reads `main`, so the item stays open until its first 3.13 pass after the merge, by the owner's ruling at the branch's Step 4b review.
       → retired 2026-11-26: the done-when is met. The weekly job's 3.13 pass in run 45125177458 (2026-11-23) no longer lists `build` as failed. It lists three kit suites instead, a new failure → item: deferred-2026-11-26-parallel (no plan; /deferred pass, branch claude/deferred-task-parallelization-414a9a) — 2026-11-26
-- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+- [x] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-17 read
       danyuchn/asd-ste100-skill through `70736273` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
       re-vendored `scripts/ste-lint.py` at `70736273`. Size: quick-fix. Revisit if: a compare from `70736273`
       (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
       → triggered 2026-11-27: danyuchn HEAD is `d714e536`, and its `65c8ab6e` changes `scripts/ste-lint.py` (it skips bare URLs and finds phrases that a line break splits); prithivrajmu HEAD is still `cf9787b6`.
+      → planned 2026-11-27: specs/plans/114-ste-drift-and-obligation-word.md
+      → done 2026-11-27 (plan 114): danyuchn's compare `70736273...d714e536` has 2 commits. `65c8ab6e` (#72, Anton, `v-anton`) changes only `scripts/ste-lint.py`: it skips bare URLs and finds phrases that a line break splits. `d714e536` (#73) adds a version to `.claude-plugin/plugin.json`, which the skill does not adapt. No rule-set file or LICENSE changed, and prithivrajmu is still at `cf9787b6`. The owner chose to re-vendor: `scripts/ste-lint.py` is byte-identical to `d714e536` (blob `0b48290f`, mode kept 100644), in commit `0c2eb44`. Two new tests failed on the `70736273` copy, and the suite passes under 3.13 and `/usr/bin/python3` 3.9.6. NOTICE and both sources files move the pin and credit #72. The linter counts of `SKILL.md` and the rule do not change. The next review is filed → item: 114-ste-drift-and-obligation-word — 2026-11-27
 
 ## claude/deferred-a35864 Step 4b review — 2026-11-17
 - [ ] **The re-vendored ste-lint.py skips the prose after an unclosed fence in a list item (Codex [P2] at
@@ -6060,6 +6073,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to
       danyuchn's HEAD changes how the main pass ends a fence opened on a list-marker line, or the case is reported
       fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. The main-pass fence code moved from lines 1977-1980 to 2024-2027 with no change, and the item's reproduction still gives no finding on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 - [ ] **The re-vendored ste-lint.py reads a semicolon inside a multi-line code span as prose (Codex [P2] at
       `12c6bac`, carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:271-276` (upstream
       danyuchn `70736273`, from the commit of the same name) never lets a backtick after a backslash, or inside
@@ -6072,6 +6086,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to danyuchn's HEAD
       changes how a backtick after a backslash or in autolink-like text is read inside an open span, or the case
       is reported fixed upstream.
+      → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. #72 fills autolink ranges after `_gfm_autolinks`, but `_run_in_autolink` (line 246) and the span scan (lines 271-276) are unchanged. The item's reproduction, and the same span closed by a backtick inside `<https://x.io/`>`, both still give a `semicolon` finding at 2:5 with exit 1 on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 
 ## cc-guide-2.1.326-worktree-isolation (no plan; /cc-guide pass and the worktree-isolation owner ruling, branch claude/keen-khorana-08c3a1) — 2026-11-17
 - [x] Watch the probe-backed facts of the guide's worktree-isolation section with a registered probe.
@@ -6190,7 +6205,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] The working-tree `Source.read` in `build/cc_guide/state.py` follows a tracked symlink to its target, while a ref source reads the link text (`git cat-file blob`). A `/cc-guide files` packet therefore copies the target's text for a tracked symlink under a skill folder, and `citing_files` does the same for a citing file, although its docstring says a tracked symlink is git's link text. Codex found it in plan 102's final review (2026-11-19, `[P1]`, `state.py:622-626`). The behavior predates plan 102. The repo tracks one symlink (`.claude/rules/clean-code-python.md`), outside every skill folder, so no packet meets it today. A symlink that points outside the repo would put that file's text into a verifier packet. Size: design. Done when: the owner has ruled whether a tracked symlink is read as its link text or as its target, and a `Source` test pins that choice for both the working tree and a ref.
 - [x] The plan 102 micro-test kit has two defects that Codex found in plan 102's final review (2026-11-19, both `[P2]`). In `kit/run.py:235-238`, `stop_group` sends SIGKILL only while the parent still runs after the grace period, so a child in the process group that ignores SIGTERM outlives its parent, and the next rep can start while it runs. In `kit/grade.py:535-536`, V6 reads `stream.jsonl` through `probe_checks.parse_stream`, which skips a line that is no JSON object, so a stream with a plain-text line can still count as valid. No result depended on either: all 26 reps exited 0 within their timeouts, and no stream holds a non-JSON line. Both files are frozen, and a new round freezes the kit again. Size: quick-fix. Done when: `stop_group` sends SIGKILL to the process group after the parent exits, and V6 marks a stream with a non-JSON line invalid, each with a no-model test, before any new gate A or gate F round runs.
       → done 2026-11-27 (/deferred quick fix): `stop_group` now sends SIGKILL to the group after the parent exits, and V6 reads the stream through `grade.stream_events`, which voids a line that is no JSON object; three no-model tests failed before the fixes; `specs/baseline/red-baseline-cc-guide-verifier-recall.md` records that a new round must freeze the kit again.
-- [ ] Gate A's sheets and reports show each rep's arm, so its hand ratings cannot be blind. Settle's `listed items:` line (0 unanswered in the changed arm, about 200 in the control) and the report's `none` rows differ by arm, and the kit `README.md` line 209 says that no sheet names an arm. The final review of plan 102 found it (2026-11-19), and `specs/baseline/red-baseline-cc-guide-verifier-recall.md` (Gate A) states the effect. The README is a frozen kit file, so the fix needs a new freeze. Size: plan. Done when: the sheets and the reports that a controller can open hide the listed-item counts and the `none` rows, the README says what the sheets show, and a no-model test shows that no sheet line differs by arm, before any new gate A round runs.
+- [x] Gate A's sheets and reports show each rep's arm, so its hand ratings cannot be blind. Settle's `listed items:` line (0 unanswered in the changed arm, about 200 in the control) and the report's `none` rows differ by arm, and the kit `README.md` line 209 says that no sheet names an arm. The final review of plan 102 found it (2026-11-19), and `specs/baseline/red-baseline-cc-guide-verifier-recall.md` (Gate A) states the effect. The README is a frozen kit file, so the fix needs a new freeze. Size: plan. Done when: the sheets and the reports that a controller can open hide the listed-item counts and the `none` rows, the README says what the sheets show, and a no-model test shows that no sheet line differs by arm, before any new gate A round runs.
+      → retired 2026-11-27: the owner retired the two verifier-recall items it served (sections `44-claude-code-drift-automation — 2026-10-13` and `45-claude-code-drift-automation — 2026-10-14`), so no new gate A round will run and its precondition has no use.
 
 ## 101-plan-completion-triage-and-gate-revert — 2026-11-19
 - [x] **Triage rubric step 4 says to stop and wait, while Protocol step 4 says to go on to step 5 (plan 101 final review, Codex finding P2).** `skills/writing-plans/SKILL.md` step 4 runs steps 1 to 4 of the Triage rubric when the aged tail is above 0, presents the proposal in the completion batch, and goes on to step 5. Step 4 of the Triage rubric in `skills/writing-plans/references/deferred-backlog.md` ends "Then stop and wait for the user's selection." An agent that follows the referenced step to its end can halt the completion. The base text has the same structure. The `triage-aged` case reads both files and passed 5 of 5 at the shipped text, so its reps resolve it. Plan 101's spec said to leave the rubric alone, and a change to that file voids the case's evidence. Size: quick-fix. Done when: the rubric's step 4 says what to do at plan completion (present the proposal in the completion batch and go on to step 5), and `triage-aged` and `triage-narrow` still pass 5 of 5 under `specs/baseline/red-baseline-completion-triage/kit/`.
@@ -6547,6 +6563,90 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Done when: SKILL.md says how to bridge IND 2017 and 2022, or the owner rules that no note is wanted.
       → done 2026-11-27 (/deferred quick fix): SKILL.md points to `references/revision-process.md`, which now gives the three-hop bridge `census_ind_2017_to_naics_2017` → `naics_2017_to_2022` → `census_ind_2022_to_naics_2022`, with counts read from `data/` (249 of 271 codes reach one 2022 code, six reach more, 16 have only `partial` rows or none) and a line that the workbook's own IND crosswalk is not bundled.
 
+## 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+- [ ] **§5's Commit step does not name a declined provisional item (plan 113 final review, Codex P2; owner ruled
+      defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md` §5, the Commit bullet: "Commit the
+      amendments, and whatever your partner approved at the Ask, on the current branch before the handoff". A
+      decline of a `suggested, not approved` item removes its Outcomes row and list item. The stage's `Leaves
+      out` entry then reads `<quality>: declined, <YYYY-MM-DD>` (`references/roadmap-format.md`, Ranked list). A
+      decline is neither an amendment nor an approval, so the Commit step does not name it. A fresh session that
+      receives the handoff may then read the old roadmap, with the item still marked. No plan 113 arm
+      scores the answer path, because every rep stops before the partner answers. Plan 113 left the one-line
+      edit out because any skill commit re-runs the V3 runs and the guards that read §5. Size: plan. Done when:
+      the Commit bullet names a decline, and the kit cases whose decision that bullet can reach re-run at the
+      new text and meet their bars under specs/baseline/red-baseline-new-project-entry/kit/.
+- [ ] **No rule says what a track stop does with a `suggested, not approved` item that is still open (plan 113
+      Review Focus 3; owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md` §5, the
+      waiting-Ranked-list paragraph and Parking. When the partner stops a research track, that track's remaining
+      Ranked-list items park, one deferred item each. The spec and the skill do not say whether an item the
+      partner has not approved also parks as an item, or goes. §5's Ask puts the item into the one question, but
+      the partner's answer can stop the track and leave the item unanswered. A park of the whole roadmap meets
+      the same question. The dr-stop-track and dr-park-ranked guards hold no suggested item, so no arm scores
+      this path (specs/baseline/red-baseline-new-project-entry.md, "Plan 113: summary", Untested passages item
+      3). Size: design. Done when: §5 says what a track stop does with an open `suggested, not approved` item,
+      and a case with such an item covers the stop with a control run and a treatment run.
+- [ ] **The format does not say what a stage's `Leaves out` reads for a provisional item after approval (plan 113;
+      owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/references/roadmap-format.md`,
+      Ranked list. For a session that can ask, the paragraph gives two forms. Before the answer the entry is
+      `<quality>: suggested, see the approval question`, and after approval it points at the O-number. For a
+      provisional file it gives the O-number, the list item, the Outcomes row and the decline form. It does not
+      say what Stage 1's `Leaves out` entry reads in the file or after an approval. Plan 113's fixtures chose
+      `traceability (O6)` ("Plan 113: fixture judgment calls", item 4, in
+      specs/baseline/red-baseline-new-project-entry.md). Some control replies of dr-provisional-ask and
+      dr-provisional-alone proposed the interim form instead. Size:
+      plan. Done when: the Ranked list paragraph says what a provisional item's `Leaves out` entry reads in the
+      file and after approval, and the three `dr-provisional-*` cases re-run at the new text and meet their bars
+      under the kit.
+- [ ] **Numbered points inside the ONE question are not scored (first found in
+      specs/baseline/red-baseline-new-project-entry.md, "Plan 85: summary", Unscored observations item 5,
+      2026-11-10; raised again in plan 113; owner ruled defer at the completion gate, D5).**
+      `skills/derive-roadmap/SKILL.md` §5 Ask: "Put every such change to your human partner as ONE question, not
+      a numbered list". Replies in plan 85 (dr-resume-rerank, dr-rerank-second) and plan 113 (for example the
+      dr-provisional-alone control's rep1, three numbered points under one question) number their points inside
+      one approve-or-amend request. No clause scores the list form, so no record says whether it meets the rule.
+      Size: design. Done when: the owner rules whether numbered points inside one question meet §5's "ONE
+      question, not a numbered list", and the Ask text states the ruling or a kit clause scores the form.
+- [ ] **A provisional roadmap with no suggested item still hands off Stage 1 at its first resume (plan 113 Open
+      for plan review item 7; owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md`
+      §5 and its entry rules. A provisional file, written by a session that could not ask, carries the roadmap
+      header, so entry rule 1 sends every later session to §5, Resume. No rule routes such a file back to §4 for
+      an approval of the partition (spec D2's builder check, in
+      specs/completed/derive-roadmap-provisional-items-and-folded-requirements.md). With no `suggested, not
+      approved` item open, §5's handoff gate does not hold, so Stage 1 can be handed off with no approval. The
+      spec rejected a new provisional marker with an entry rule to §4 (D2, option B), because it adds a format
+      field. dr-provisional-alone holds a suggested item, so it does not test this path. Size: design. Done
+      when: §5 says what the first resume that can ask does with a provisional file that holds no suggested
+      item, and a case covers that path with a control run.
+- [ ] **The kit's sec-edgar cases depend on an archived clone (plan 113 Fixtures constraint; owner ruled defer at
+      the completion gate, D5).** `specs/baseline/red-baseline-new-project-entry/kit/cases.py` (`SEC_SPEC`) pins
+      commit `22c6767f`, and `build_prompts.py` reads it under `CASE_REPOS`. That commit is gone from
+      `~/Projects/sec-edgar` and from GitHub (checked 2026-11-27). Only the archived clone
+      `~/Projects/archive/sec-edgar-cloud` holds it, so every plan 113 build ran with
+      `CASE_REPOS=/tmp/plan113-work/repos`, a folder of links. A build with the default `CASE_REPOS` cannot read
+      the spec, and if the archive goes, no sec-edgar case rebuilds. Size: design (choose the source of record).
+      Done when: every sec-edgar case builds from a named source of record that holds the bytes with sha256
+      `c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6`, and the kit's notes name that source.
+- [ ] **dr-known-progression-79 drops from 5 of 5 at plan 113's base to 3 of 5 at its final text (plan 113 Task 6;
+      owner accepted the miss at the completion gate, D2).** At `2bd982d`, reps 2 and 3 leave traceability out
+      of every stage and name "manifests and replay" instead, so clause C fails by Provenance on bytes. The
+      re-run at `171e763` (`BASE113`), on the same day, passes 5 of 5. The case's earlier arms passed 3, 5, 4
+      and 5 of 5. No line of the `171e763` to `2bd982d` diff names traceability, and five-rep arms cannot show
+      that plan 113's edits cause the drop. See specs/baseline/red-baseline-new-project-entry.md ("Plan 113:
+      summary", Owner gate item 1). The item "dr-tracks and dr-known-progression-79 miss conformance clause C at
+      the final skill text" (§ 79-derive-roadmap-resume-and-route-tests) stays open on this miss. Size: plan.
+      Done when: the record holds a same-day comparison of dr-known-progression-79 at the current skill text and
+      at `171e763`, with at least ten reps per arm under the kit, and it says whether the drop repeats and names
+      its cause or calls it sampling.
+- [ ] **dr-park-ranked misses its guard bar at plan 113's final text and at its base (plan 113 Task 5; owner
+      accepted the miss at the completion gate, D3).** It passes 1 of 5 at `2bd982d` and 2 of 5 at `171e763`
+      (`BASE113`), against 4 of 5 at `2e91b05` and a guard bar of 3. The §5 Parking paragraph is the same at all
+      three commits. Both bar clauses pass in all 10 reps. Every fail is a placeholder date heading (clause C) or
+      table-form items (clause D). The run date confounds the drop: every fixture says "Today is 2026-11-06", and
+      the gap to the run day grew from four days to three weeks. No wording round ran. See
+      specs/baseline/red-baseline-new-project-entry.md ("Plan 113 guards summary and spend", Owner gate). Size:
+      plan. Done when: the record names the cause of the drop from 4 of 5, and dr-park-ranked passes at least 3
+      of 5 at the current skill text under the kit.
+
 ## 112-superpowers-agent-license-travel — 2026-11-27
 - [ ] Probe live loading of the pointed agents after a default install (final review of plan 112, owner ruled defer).
       Decision D5's owner check on 2026-11-27 put a regular-file copy of `LICENSE-superpowers` beside agents that
@@ -6555,6 +6655,33 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: after `uv run python install.py all --companions` on the owner's Mac, `agy agents`, Codex `/agents`
       and Claude Code `/agents` each list the same agents as before, with no `LICENSE-superpowers` entry and no
       startup warning, and the result is noted here.
+
+## 114-ste-drift-and-obligation-word — 2026-11-27
+- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+      `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-27 (plan 114) read
+      danyuchn/asd-ste100-skill through `d714e536` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
+      re-vendored `scripts/ste-lint.py` at `d714e536`. Size: quick-fix. Revisit if: a compare from `d714e536`
+      (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.
+- [ ] **Agent-mode rewrites guess an actor that the source does not name (plan 114, D9).** In plan 114's
+      micro-test, Sonnet 5.5 named "the upstream job" as the producer of partial artifacts in 2 of 5 treatment
+      `agent-instruction` replies, where the source is passive, and "the system" as the processing actor in 2 of 5
+      control `agent-error-message` replies. `skills/write-with-asd-ste100/SKILL.md`'s **Unknown actors** rule already
+      says "Do not guess an actor", so the guess comes from context the rep reads as an actor. It would take one
+      wording change to that rule, micro-tested against a control on both models with the kit at
+      `specs/baseline/red-baseline-ste-obligation-word/kit/` (record: `specs/baseline/red-baseline-ste-obligation-word.md`,
+      section 5). A wording change to measured text needs the owner's go-ahead. Size: plan. Done when: the
+      `agent-instruction` and `agent-error-message` cases pass the no-additions check at 4 of 5 or more on both models.
+- [ ] **Step 3 of `references/document-rewrite.md` lets an agent write through a symbolic link first (plan 114, D11).**
+      In plan 114's `doc-symlink` case, 7 of 14 reps (Opus 5.5 and Sonnet 5.5) rewrote `docs/guide.md`, a tracked link,
+      in place, which changed the link's dirty target `docs/manual.md`. Most ran the step's three checks as one `&&`
+      chain. On a link `test ! -L` fails, the chain stops and prints nothing, and the rep read the silence as an empty
+      status. Six restored the target, and one lost the uncommitted edit. The step lists the commands in one block and
+      says "Run all three commands", but not how to read a failed first command. It would take one wording change (for
+      example, run each check alone and read its exit status) and a re-run of `doc-symlink` on both models with the kit
+      above, plus a mechanical check that the target is never written. A wording change to measured text needs the
+      owner's go-ahead. Size: plan. Done when: at most 1 of 10 `doc-symlink` reps writes through the link, read from
+      the tool calls, and the case still passes at 4 of 5.
 
 ## 115-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
 - [ ] `probes.save_fixtures` (`build/cc_guide/probes.py`) replaces a scratch folder name (`probe_checks.SCRATCH_RE`,

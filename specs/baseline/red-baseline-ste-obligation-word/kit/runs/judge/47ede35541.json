@@ -1,0 +1,35 @@
+{
+ "case": "skill-md",
+ "verdicts": {
+  "r7703c3": {
+   "1": {
+    "pass": true,
+    "why": "It says it did not rewrite the file because skill edits go to the writing-skills skill, and that skill is not available."
+   }
+  },
+  "rf5fb10": {
+   "1": {
+    "pass": true,
+    "why": "It says the writing-skills skill must do the rewrite and is not available, so it stopped."
+   }
+  },
+  "r9a3586": {
+   "1": {
+    "pass": true,
+    "why": "It explains that it did not rewrite the file because SKILL.md edits go to a skill-writing skill that is not available."
+   }
+  },
+  "rb36c1c": {
+   "1": {
+    "pass": true,
+    "why": "It says the procedure sends SKILL.md edits to the writing-skills skill, which is not available, so it made no changes."
+   }
+  },
+  "r6c4cf5": {
+   "1": {
+    "pass": true,
+    "why": "It gives the reason: rewriting a SKILL.md is a skill edit that goes to the writing-skills skill, which is not available."
+   }
+  }
+ }
+}

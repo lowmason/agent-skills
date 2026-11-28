@@ -1,0 +1,8 @@
+{
+ "status": "",
+ "commits": 1,
+ "files": {
+  "skills/format-changelog/SKILL.md": "---\nname: format-changelog\ndescription: Use when a changelog needs formatting before a release.\n---\n\n# Format changelog\n\nWhen the user asks for a changelog to be formatted, the entries should be grouped by type, and it is important that each entry is kept to a single line so that the release tooling can parse it.\n"
+ },
+ "links": {}
+}
