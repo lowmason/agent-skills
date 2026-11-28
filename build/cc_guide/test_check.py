@@ -409,6 +409,54 @@ def test_the_swap_keeps_the_generation_it_replaced(tmp_path, docs_dir):
     assert generations(cache) == sorted([second.name, third.name])
 
 
+def test_a_replaced_generation_survives_the_next_swap_within_the_grace(tmp_path):
+    '''prune_generations ages a generation by its folder mtime, so one last
+    written long ago would go in the very next swap, though a reader may have
+    resolved it just before the swap that replaced it. A swap touches the
+    generation it replaces, so that one keeps a full STAGING_GRACE.'''
+    cache = tmp_path / 'cache'
+    cache.mkdir()
+    first, second, third = (cache / f'{state.GENERATION_PREFIX}{name}' for name in 'abc')
+    for folder in (first, second, third):
+        folder.mkdir()
+    check.swap_latest(cache, first)
+    os.utime(first, (time.time() - 2 * check.STAGING_GRACE,) * 2)
+    check.swap_latest(cache, second)
+    check.swap_latest(cache, third)
+    assert generations(cache) == sorted([first.name, second.name, third.name])
+    assert state.latest_dir(cache) == third
+
+
+def test_a_migrated_legacy_folder_survives_the_next_swap_within_the_grace(tmp_path):
+    '''As the swap touches a generation it replaces, so it touches the
+    legacy latest/ folder it renames aside.'''
+    cache = tmp_path / 'cache'
+    legacy = cache / state.LATEST
+    legacy.mkdir(parents=True)
+    os.utime(legacy, (time.time() - 2 * check.STAGING_GRACE,) * 2)
+    first, second = (cache / f'{state.GENERATION_PREFIX}{name}' for name in 'ab')
+    for folder in (first, second):
+        folder.mkdir()
+    check.swap_latest(cache, first)
+    (aside,) = [cache / name for name in generations(cache) if name != first.name and name != second.name]
+    check.swap_latest(cache, second)
+    assert aside.is_dir()
+
+
+def test_a_swap_over_a_link_to_a_removed_generation_still_swaps(tmp_path):
+    '''A latest link left dangling, say by hand, is repaired by the next swap
+    rather than refused.'''
+    cache = tmp_path / 'cache'
+    cache.mkdir()
+    first, second = (cache / f'{state.GENERATION_PREFIX}{name}' for name in 'ab')
+    for folder in (first, second):
+        folder.mkdir()
+    check.swap_latest(cache, first)
+    shutil.rmtree(first)
+    check.swap_latest(cache, second)
+    assert state.latest_dir(cache) == second
+
+
 def test_the_swap_never_leaves_latest_missing(tmp_path, docs_dir, monkeypatch):
     '''D3: the swap makes the new link under a temp name and moves it onto
     latest by one os.replace, so when the new link is made, latest still

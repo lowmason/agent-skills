@@ -1,8 +1,11 @@
 '''Tests for cli.py: exit codes, which inputs each subcommand reads, each
 `baseline` subcommand's write set, and the manual bookkeeping that brings
 check to exit 0 (drift spec R5, R6.1, R7; Validation 1).'''
+import io
 import json
+import os
 import shutil
+import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -1360,11 +1363,29 @@ def test_probes_passes_the_newest_cached_release_and_its_flags(world, monkeypatc
     assert capsys.readouterr().out == 'agent-tools: ERROR: no init event\n'
 
 
-@pytest.mark.parametrize('argv', [['probes'], ['probes', '--claude', 'c', '--only', 'a', '--force']])
-def test_probes_needs_claude_and_takes_only_or_force_not_both(world, argv, capsys):
+@pytest.mark.parametrize('argv, error', [
+    (['probes'], 'the following arguments are required: --claude'),
+    (['probes', '--claude', 'c', '--only', 'a', '--force'], 'argument --force: not allowed with argument --only'),
+], ids=['no-claude', 'only-and-force'])
+def test_probes_needs_claude_and_takes_only_or_force_not_both(world, argv, error, capsys):
+    '''argparse names the missing or clashing option. A parser without the
+    subcommand says `invalid choice: 'probes'` instead, so each case also
+    fails before the subcommand exists.'''
     with pytest.raises(SystemExit) as exit_:
         main(world[1], *argv)
     assert exit_.value.code == 2
+    assert error in capsys.readouterr().err
+
+
+def test_probes_expands_a_tilde_in_claude(world, isolated_home, monkeypatch):
+    seen = []
+
+    def fake_run(root, cache_dir, claude, **given):
+        seen.append(claude)
+        return 0, ['probes: none due']
+    monkeypatch.setattr(probes, 'run', fake_run)
+    assert main(world[1], 'probes', '--claude', '~/bin/claude') == 0
+    assert seen == [isolated_home / 'bin' / 'claude']
 
 
 def test_probes_without_a_cached_changelog_is_a_setup_error(tmp_path, capsys):
@@ -1376,6 +1397,47 @@ def test_binaries_exits_two_when_no_claude_is_found(tmp_path, monkeypatch, capsy
     monkeypatch.setenv('PATH', str(tmp_path))
     assert main(tmp_path / 'cache', 'binaries') == 2
     assert capsys.readouterr().err == 'cc-guide: no claude binary on PATH or in the Desktop app bundle\n'
+
+
+@pytest.fixture
+def claude_on_path(tmp_path, isolated_home, monkeypatch):
+    '''A claude that prints its version, then one that prints none, on PATH
+    in that order, with no Desktop app bundle under the isolated home.'''
+    found = []
+    for folder, body in (('bin1', "echo '2.1.303 (Claude Code)'"), ('bin2', 'echo hello')):
+        claude = tmp_path / folder / 'claude'
+        claude.parent.mkdir()
+        claude.write_text(f'#!/bin/sh\n{body}\n')
+        claude.chmod(0o755)
+        found.append(claude)
+    monkeypatch.setenv('PATH', os.pathsep.join(str(c.parent) for c in found))
+    return found
+
+
+@pytest.fixture
+def no_default_cache(monkeypatch):
+    def refuse():
+        raise RuntimeError('default_cache was called')
+    monkeypatch.setattr(cli, 'default_cache', refuse)
+
+
+def test_binaries_prints_each_candidate_and_exits_zero(tmp_path, claude_on_path, capsys):
+    first, second = claude_on_path
+    assert main(tmp_path / 'cache', 'binaries') == 0
+    assert capsys.readouterr() == (f'2.1.303  {first}  (PATH)\nversion unknown  {second}  (PATH)\n', '')
+
+
+def test_binaries_never_computes_the_cache(claude_on_path, no_default_cache):
+    assert cli.main(['binaries']) == 0
+
+
+@pytest.mark.parametrize('command, code', [('quotes --in', 0), ('settle', 2)])
+def test_quotes_and_settle_never_compute_the_cache(tmp_path, monkeypatch, capsys, no_default_cache, command, code):
+    '''An empty stdin leaves quotes nothing to find. An empty folder is no
+    packet, which settle refuses as a setup error, not as a crash.'''
+    monkeypatch.setattr(sys, 'stdin', io.StringIO(''))
+    assert cli.main([*command.split(), str(tmp_path)]) == code
+    assert 'default_cache was called' not in capsys.readouterr().err
 
 
 def test_the_registry_names_exactly_the_probes_that_probes_py_runs():

@@ -1,4 +1,4 @@
-# cc-guide: subagents.frontmatter subagents.tools subagents.models hooks.events hooks.exit-codes hooks.patterns @2.1.326
+# cc-guide: subagents.frontmatter subagents.tools subagents.models hooks.events hooks.exit-codes hooks.patterns subagents.worktrees @2.1.326
 '''The probe assertions (drift spec R10.2, R10.5): pure functions over a probe
 run's raw stream-json events and the side files the run leaves, each giving
 an outcome and a one-line finding. They read event fields, never the model's
@@ -13,6 +13,7 @@ never a pass.'''
 import json
 import os.path
 import re
+import shlex
 from typing import NamedTuple
 
 from state import DIVERGES, ERROR, PASS
@@ -43,13 +44,20 @@ GUARD_MARKER = 'readonly-agent-guard:'
 # whether the guard must deny it.
 GUARD_CHECKS = (('git status --porcelain', False), ('git fetch --dry-run origin', True),
                 ('git config --global --list', True))
+ERROR_SUBTYPE_PREFIX = 'error'  # a result event's subtype for a run that ended in error, such as error_max_turns
 UUID_RE = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 TOOL_ID_RE = re.compile(r'toolu_[A-Za-z0-9]+')
 MCP_PREFIX = 'mcp__'
 MCP_MARK = '<mcp-tool>'
-# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
-MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
+# A tool name that starts with the MCP prefix, up to white space, a quote, a closing bracket or one of `,;:`.
+MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>,;:]*''')
 PRIVATE_MARK = '<private>'
+# A scratch folder: tempfile.mkdtemp's prefix, cc-guide-probe-<probe id>-, then the eight characters it adds, from
+# lowercase letters, digits and underscore. A probe id is lowercase words joined by hyphens, and several end in a word
+# of eight letters (guard-liveness), so the id takes as much as leaves a suffix of exactly eight characters, and the
+# name ends at one more character that a name cannot hold, so a path segment after it stays.
+SCRATCH_MARK = '<scratch>'
+SCRATCH_RE = re.compile(r'cc-guide-probe-[a-z]+(?:-[a-z]+)*-[a-z0-9_]{8}(?![A-Za-z0-9_])')
 # compaction-cut: two probe skills whose bodies differ only in their filler. Text and digits split into tokens at
 # different rates, so the two cuts tell a limit in characters from one in tokens. The names have the same
 # length, so the two headers do too.
@@ -79,14 +87,18 @@ def parse_stream(text: str) -> list[dict] | None:
             event = json.loads(line)
         except json.JSONDecodeError:
             return None
-        if not isinstance(event, dict):
-            return None
         events.append(event)
     return events
 
 
 def is_init(event: dict) -> bool:
     return event.get('type') == 'system' and event.get('subtype') == 'init'
+
+
+def is_error_result(event: dict) -> bool:
+    '''Whether a result event reports an error: is_error is set, or its
+    subtype names one, as `error_max_turns` does with is_error false.'''
+    return bool(event.get('is_error')) or str(event.get('subtype')).startswith(ERROR_SUBTYPE_PREFIX)
 
 
 def broken(events: list[dict] | None) -> str | None:
@@ -100,7 +112,7 @@ def broken(events: list[dict] | None) -> str | None:
     results = [e for e in events if e.get('type') == 'result']
     if not results:
         return 'no result event'
-    failed = next((r for r in results if r.get('is_error')), None)
+    failed = next((r for r in results if is_error_result(r)), None)
     if failed is not None:
         return f"a result event is an error ({failed.get('subtype')})"
     return None
@@ -573,17 +585,39 @@ EXPLORE_AGENT, EXPLORE_MARK = 'Explore', 'EXPLORE-OVERRIDE'
 CANARY_AGENT, CANARY_MARK = 'canary-control', 'CANARY-CONTROL'
 EXPLORE_MARKS = {EXPLORE_AGENT: EXPLORE_MARK, CANARY_AGENT: CANARY_MARK}
 EXPLORE_REPS = 3
+# A CLI may have its subagents answer through a tool call, as SubagentHandback appears in the agent-model-pins
+# recording (2.1.330). Such a call reads nothing, and its input holds the subagent's answer.
+HANDBACK_TOOLS = frozenset({'SubagentHandback'})
+HANDBACK_FIELD = 'message'
 CANARY_NAMES = {'claude_md': 'CLAUDE.md', 'git_status': 'git-status'}  # canaries.json key -> its name in a finding
+
+
+def spoken_text(block: dict) -> str:
+    '''What a subagent's content block says: a text block's text, or the
+    HANDBACK_FIELD of a HANDBACK_TOOLS call when that is a string.'''
+    if block.get('type') == 'text':
+        return str(block.get('text') or '')
+    if block.get('type') == 'tool_use' and block.get('name') in HANDBACK_TOOLS:
+        message = (block.get('input') or {}).get(HANDBACK_FIELD)
+        return message if isinstance(message, str) else ''
+    return ''
+
+
+def reads_a_file(block: dict) -> bool:
+    '''Whether a subagent's content block is a tool call that may read a file: any tool_use but a hand-back.'''
+    return block.get('type') == 'tool_use' and block.get('name') not in HANDBACK_TOOLS
 
 
 def explore_sightings(events: list[dict] | None, canaries: dict[str, str]) -> dict:
     '''One explore-override rep, read from its raw stream: why the run
     broke, or None; whether a canary leaked into an input of the parent's
     Agent calls; and, for each agent, how many tool_use blocks its forwarded
-    messages hold and whether their text holds its mark and each canary.
-    The parent loads CLAUDE.md and the git status too, so only the messages
-    forwarded under a dispatch of that agent's type count. An agent the
-    parent never dispatched has no text, so it sees nothing.'''
+    messages hold and whether what it said holds its mark and each canary.
+    A hand-back call (HANDBACK_TOOLS) is not counted, and its message is
+    what the agent said, as its text blocks are. The parent loads CLAUDE.md
+    and the git status too, so only the messages forwarded under a dispatch
+    of that agent's type count. An agent the parent never dispatched has no
+    text, so it sees nothing.'''
     stream = events or []
     leaked = any(value in json.dumps(block.get('input') or {}) for block in dispatch_blocks(stream)
                  for value in canaries.values())
@@ -593,18 +627,19 @@ def explore_sightings(events: list[dict] | None, canaries: dict[str, str]) -> di
         ids = {tid for tid, kind in sent.items() if kind == agent}
         blocks = [block for e in stream if e.get('type') == 'assistant' and e.get('parent_tool_use_id') in ids
                   for block in (e.get('message') or {}).get('content') or [] if isinstance(block, dict)]
-        said = '\n'.join(str(block.get('text') or '') for block in blocks if block.get('type') == 'text')
-        tool_calls[agent] = sum(block.get('type') == 'tool_use' for block in blocks)
+        said = '\n'.join(filter(None, map(spoken_text, blocks)))
+        tool_calls[agent] = sum(map(reads_a_file, blocks))
         seen[agent] = {'mark': mark in said, **{key: canaries[key] in said for key in CANARY_NAMES}}
     return {'broken': broken(events), 'leaked': leaked, 'tool_calls': tool_calls, 'seen': seen}
 
 
 def explore_void(sighting: dict) -> str | None:
     '''Why a rep proves nothing, or None: the run broke, a canary leaked
-    into the parent's Agent call, an agent called a tool (it may have read
-    the canary instead of being given it), an agent gave no mark (another
-    definition served, or it ignored its instructions), or the control
-    missed a canary, so a canary the override missed proves nothing.'''
+    into the parent's Agent call, an agent called a tool other than a
+    hand-back (it may have read the canary instead of being given it), an
+    agent gave no mark (another definition served, or it ignored its
+    instructions), or the control missed a canary, so a canary the override
+    missed proves nothing.'''
     if sighting.get('broken'):
         return f"the run broke: {sighting['broken']}"
     if sighting.get('leaked'):
@@ -664,6 +699,8 @@ TEARDOWN_FIRST = 'TERM'
 TEARDOWN_WAIT = 5  # seconds probes.collect_teardown waits for the hook to go once claude -p has ended
 TEARDOWN_START_RE = re.compile(r'start ([0-9]+)')  # the hook's first log line, with its pid
 TEARDOWN_GONE, TEARDOWN_ALIVE = 'gone', 'alive'  # the line collect_teardown adds after its wait
+TEARDOWN_LIFETIME = 120  # seconds the probe hook runs at most: its loop's one-second sleeps
+TEARDOWN_EXPIRED = 'expired'  # the hook's last line when its lifetime ran out
 CANCELLED = 'cancelled'  # the outcome claude -p finalizes such a hook with (guide, hooks.pitfalls)
 NO_TRAP_RUNS = ", so notice.sh's trap never runs"  # a hook that got none of TEARDOWN_SIGNALS
 
@@ -675,7 +712,12 @@ def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
     hook_response in the stream has an outcome other than cancelled; a
     stream with none is no finding. A broken run, a log with no start line,
     and a log that holds another line or does not end in gone or alive are
-    ERROR.'''
+    ERROR. A log that holds expired is ERROR before any other reading: the
+    hook ended by itself, so the log shows nothing about claude's
+    teardown.'''
+    if TEARDOWN_EXPIRED in log:
+        return Verdict(ERROR, f'the async SessionStart hook ran out its {TEARDOWN_LIFETIME} s lifetime before '
+                              'claude -p ended, so its log shows nothing about teardown')
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
@@ -699,10 +741,298 @@ def assess_async_teardown(events: list[dict] | None, log: list[str]) -> Verdict:
     return Verdict(DIVERGES, shown)
 
 
-def _trim_block(block: dict) -> dict | None:
+# worktree-isolation: four claude -p runs in scratch repos, watching the guide's four probe-backed facts on worktree
+# isolation (subagents.worktrees; deferred item R122). The commands are shared with probe_worktrees.py's prompts, and
+# a step is found only by its exact command, so a reworded command reads as never run, not as a changed behaviour.
+WT_CONTROL = 'git rev-parse --show-toplevel'
+WT_GIT_SUBSHELL = 'TOP=$(git rev-parse --show-toplevel); echo "$TOP"'
+WT_PLAIN_SUBSHELL = 'HERE=$(pwd); echo "$HERE"'
+WT_LIST = 'git worktree list --porcelain'
+WT_PWD = 'pwd'
+WT_MAIN_GIT = 'git -C {main} rev-parse --show-toplevel'
+WT_LOG = 'git log --format=%s'
+WT_PUSHED, WT_UNPUSHED = 'probe: pushed', 'probe: unpushed'  # the base runs' commit subjects
+WT_ISOLATION_MARK = 'isolated in the worktree'  # in the harness's refusal of a command that leaves the worktree
+WT_NOOP_MARK = 'No-op'  # in ExitWorktree's refusal in a session that EnterWorktree did not start
+WT_LOCKED = 'locked'  # a porcelain line in a locked worktree's block
+WT_BLOCK = 'worktree '  # the porcelain line that opens a worktree's block, before its path
+WT_PARTS = ('isolation', 'noop', 'base-no-remote', 'base-failed-fetch')
+WT_BASE_PARTS = ('base-no-remote', 'base-failed-fetch')
+WT_NO_REMOTE, WT_FAILED_FETCH = WT_BASE_PARTS
+WT_MAIN, WT_PLAIN, WT_OTHER = 'main', 'plain-worktree', 'other'  # place names; WT_OTHER is a path in no place
+WT_STEPS = {'control': WT_CONTROL, 'main_git_before': WT_MAIN_GIT, 'git_subshell': WT_GIT_SUBSHELL,
+            'plain_subshell': WT_PLAIN_SUBSHELL, 'main_git_after': WT_MAIN_GIT}
+WT_AFTER_STEPS = frozenset({'main_git_after'})  # run after ExitWorktree; the rest run before it
+WT_REFUSED_STEPS = frozenset({'main_git_before', 'git_subshell'})  # the steps the guide says the harness refuses
+EXIT_TOOL, ENTER_TOOL = 'ExitWorktree', 'EnterWorktree'
+WT_KEEP = 'keep'  # the ExitWorktree action both runs call; a call with another action is not the step
+WT_NOT_RUN = {'ran': False, 'refused': None, 'marked': None}
+WT_FINDING = ('a $(...) naming git was refused and HERE=$(pwd) ran; ExitWorktree keep left a --worktree launch and '
+              'its lock; it was a no-op in a plain-git worktree; a failed fetch left the unpushed commit out, and no '
+              'remote kept it')
+
+
+def main_git_command(main: str) -> str:
+    '''The git -C step's command for the main checkout at `main`, its path shell-quoted, since the model runs the
+    text as written: both the isolation prompt and the assertion take it from here.'''
+    return WT_MAIN_GIT.format(main=shlex.quote(main))
+
+
+def positioned_calls(events: list[dict], name: str) -> list[tuple[tuple[int, int], str, dict]]:
+    '''(position, tool-use id, input) for each call of the named tool, in stream order. A position is the
+    event's index and the block's index in it, so calls before and after another call can be told apart.'''
+    return [((n, k), block.get('id'), block.get('input') or {})
+            for n, e in enumerate(events) if e.get('type') == 'assistant'
+            for k, block in enumerate((e.get('message') or {}).get('content') or [])
+            if isinstance(block, dict) and block.get('type') == 'tool_use' and block.get('name') == name]
+
+
+def first_run(events: list[dict], calls: list, command: str) -> tuple[str, str] | None:
+    '''(tool-use id, result text) of the first of `calls` whose command is `command` after strip() and that has
+    a result, or None.'''
+    for _, tid, given in calls:
+        text = tool_result_text(events, tid) if str(given.get('command') or '').strip() == command else None
+        if text is not None:
+            return tid, text
+    return None
+
+
+def call_is_error(events: list[dict], tid: str) -> bool:
+    return any(tool_result_errors(events, [tid]))
+
+
+def place_of(text: str, places: dict[str, str]) -> str:
+    '''The name of the place whose realpath is the realpath of a printed path, else WT_OTHER.'''
+    seen = os.path.realpath(text.strip())
+    return next((name for name, path in places.items() if os.path.realpath(path) == seen), WT_OTHER)
+
+
+def split_at(events: list[dict], tool: str) -> tuple[tuple[str, str] | None, list, list]:
+    '''The first call of `tool` as (id, result text or None), or None, and the Bash calls before and after it.
+    With no such call, every Bash call is before it.'''
+    return split_around(events, positioned_calls(events, tool))
+
+
+def split_at_keep(events: list[dict]) -> tuple[tuple[str, str] | None, list, list]:
+    '''split_at for ExitWorktree calls whose action is WT_KEEP: the first that succeeded or whose refusal carries
+    WT_NOOP_MARK, else the first, so a stray call the harness refused before ToolSearch loaded the tool is not
+    the step, and a later keep cannot hide a No-op.'''
+    keeps = [c for c in positioned_calls(events, EXIT_TOOL) if c[2].get('action') == WT_KEEP]
+    answered = [c for c in keeps if keep_answered(events, c[1])]
+    return split_around(events, answered or keeps)
+
+
+def keep_answered(events: list[dict], tid: str) -> bool:
+    '''Whether an ExitWorktree call succeeded, or was refused with WT_NOOP_MARK, the CLI's own answer to keep.'''
+    text = tool_result_text(events, tid)
+    return text is not None and (not call_is_error(events, tid) or WT_NOOP_MARK in text)
+
+
+def other_exit(events: list[dict]) -> str | None:
+    '''The action of the first ExitWorktree call with an action other than WT_KEEP that succeeded, or None.'''
+    ran = [given for _, tid, given in positioned_calls(events, EXIT_TOOL)
+           if given.get('action') != WT_KEEP and call_failed(events, (tid, tool_result_text(events, tid))) is False]
+    return str(ran[0].get('action')) if ran else None
+
+
+def entered_by_model(events: list[dict]) -> bool:
+    '''Whether an EnterWorktree call was not refused, in a run whose prompt asks for none: its worktree, not the one
+    the run reads, could decide what ExitWorktree did. It fails closed: a call with no result, or with a result that
+    is not an error, counts as entered.'''
+    return any(call_failed(events, (tid, tool_result_text(events, tid))) is not True
+               for _, tid, _ in positioned_calls(events, ENTER_TOOL))
+
+
+def split_around(events: list[dict], marks: list) -> tuple[tuple[str, str] | None, list, list]:
+    '''The first of `marks` (positioned_calls) as (id, result text or None), or None, and the Bash calls before
+    and after it.'''
+    bash = positioned_calls(events, 'Bash')
+    if not marks:
+        return None, bash, []
+    at, tid, _ = marks[0]
+    return ((tid, tool_result_text(events, tid)), [c for c in bash if c[0] < at], [c for c in bash if c[0] > at])
+
+
+def call_failed(events: list[dict], call: tuple[str, str] | None) -> bool | None:
+    '''Whether a call's result (from split_at) is an error, or None when there is no call or no result.'''
+    if call is None or call[1] is None:
+        return None
+    return call_is_error(events, call[0])
+
+
+def pwd_after(events: list[dict], after: list, places: dict[str, str]) -> str | None:
+    run = first_run(events, after, WT_PWD)
+    return None if run is None else place_of(run[1], places)
+
+
+def worktree_block(text: str, path: str) -> list[str] | None:
+    '''The lines of the porcelain block whose worktree is `path` (compared by realpath, as place_of does), or None.'''
+    for chunk in re.split(r'\n\s*\n', text):
+        lines = chunk.strip().splitlines()
+        if lines and lines[0].startswith(WT_BLOCK) and (
+                os.path.realpath(lines[0][len(WT_BLOCK):]) == os.path.realpath(path)):
+            return lines
+    return None
+
+
+def is_locked(block: list[str] | None) -> bool:
+    return block is not None and any(line.startswith(WT_LOCKED) for line in block)
+
+
+def kept_and_locked(events: list[dict], calls: list, path: str) -> tuple[bool | None, bool | None]:
+    '''Whether the first WT_LIST of `calls`, when it succeeded, has the worktree's block, and then whether that
+    block is locked; None for what it does not show.'''
+    run = first_run(events, calls, WT_LIST)
+    if run is None or call_is_error(events, run[0]):
+        return None, None
+    block = worktree_block(run[1], path)
+    return block is not None, None if block is None else is_locked(block)
+
+
+def isolation_sighting(events: list[dict], places: dict[str, str]) -> dict:
+    exit_call, before, after = split_at_keep(events)
+    steps = {}
+    for step, command in WT_STEPS.items():
+        command = main_git_command(places[WT_MAIN]) if command == WT_MAIN_GIT else command
+        run = first_run(events, after if step in WT_AFTER_STEPS else before, command)
+        steps[step] = dict(WT_NOT_RUN) if run is None else {
+            'ran': True, 'refused': call_is_error(events, run[0]), 'marked': WT_ISOLATION_MARK in run[1]}
+    refused = call_failed(events, exit_call)
+    kept_before, locked_before = kept_and_locked(events, before, places['worktree'])
+    kept_after, locked_after = kept_and_locked(events, after, places['worktree'])
+    return {'exited': None if refused is None else not refused,
+            'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
+            'pwd_after': pwd_after(events, after, places),
+            'locked_before': locked_before, 'kept_before': kept_before, 'kept_after': kept_after,
+            'locked_after': locked_after, 'other_exit': other_exit(events),
+            'entered_by_model': entered_by_model(events), 'steps': steps}
+
+
+def noop_sighting(events: list[dict], places: dict[str, str]) -> dict:
+    exit_call, _, after = split_at_keep(events)
+    refused = call_failed(events, exit_call)
+    return {'exit_refused': refused, 'exit_marked': None if refused is None else WT_NOOP_MARK in exit_call[1],
+            'other_exit': other_exit(events), 'entered_by_model': entered_by_model(events),
+            'pwd_after': pwd_after(events, after, places)}
+
+
+def base_sighting(events: list[dict]) -> dict:
+    enter_call, _, after = split_at(events, ENTER_TOOL)
+    entered = call_failed(events, enter_call) is False
+    run = first_run(events, after, WT_LOG) if entered else None
+    subjects = None if run is None else {line.strip() for line in run[1].splitlines()}
+    return {'entered': entered, 'has_pushed': None if subjects is None else WT_PUSHED in subjects,
+            'has_unpushed': None if subjects is None else WT_UNPUSHED in subjects}
+
+
+def worktree_sightings(streams: dict[str, list[dict] | None], places: dict[str, str]) -> dict:
+    '''The four worktree-isolation runs, read from their raw streams as booleans, place names and None, never a path or
+    tool output. `places` maps main, worktree and plain-worktree to absolute paths. In isolation, a step is the first
+    Bash call of its exact command, before ExitWorktree (main_git_after: after it), with a result: whether it ran, its
+    result is an error (refused), and the result holds WT_ISOLATION_MARK (marked). In both ExitWorktree runs,
+    ExitWorktree is split_at_keep's call: the first keep call that succeeded or was refused with WT_NOOP_MARK, else the
+    first keep call, and other_exit is the action of the first ExitWorktree call with another action that succeeded;
+    entered_by_model, whether an EnterWorktree call there was not refused (no result counts).
+    exited is whether its result is not an error, and exit_marked whether it holds WT_NOOP_MARK; kept_before and
+    kept_after, whether the first WT_LIST result before or after ExitWorktree has the worktree's own block, None when
+    that list never ran or its result is an error; locked_before and locked_after, whether that block has a WT_LOCKED
+    line, None unless kept_before or kept_after; pwd_after, the place the first WT_PWD after ExitWorktree printed
+    (place_of). In noop, exit_refused is ExitWorktree's error flag, and exit_marked whether its result holds
+    WT_NOOP_MARK. In a base run, entered is an EnterWorktree call whose result is not an error, and has_pushed and
+    has_unpushed read the first WT_LOG result after it, line by line. A value that no call shows is None.'''
+    seen = {}
+    for part in WT_PARTS:
+        events = streams.get(part)
+        stream = events or []
+        reading = (isolation_sighting(stream, places) if part == 'isolation'
+                   else noop_sighting(stream, places) if part == 'noop' else base_sighting(stream))
+        seen[part] = {'broken': broken(events), **reading}
+    return seen
+
+
+def worktree_errors(sightings: dict) -> list[str]:
+    '''Why the runs prove nothing: a run broke, a step never ran, a step was refused without the isolation
+    mark or an ExitWorktree without WT_NOOP_MARK (refused for another reason), an ExitWorktree with another
+    action than keep succeeded, the model entered a worktree in a run that asks for none, the list before
+    ExitWorktree did not show the worktree, or a base run never entered a worktree or logged no WT_PUSHED.'''
+    errors = [f"{part}: the run broke: {sightings[part]['broken']}" for part in WT_PARTS if sightings[part]['broken']]
+    if errors:
+        return errors
+    isolation, noop = sightings['isolation'], sightings['noop']
+    for step, seen in isolation['steps'].items():
+        if not seen['ran']:
+            errors.append(f'isolation: {step} never ran')
+        elif seen['refused'] and not seen['marked']:
+            errors.append(f'isolation: {step} was refused without the isolation mark')
+    errors += [f'{part}: {what} never ran' for part, what, value in (
+        ('isolation', f'{EXIT_TOOL} {WT_KEEP}', isolation['exited']),
+        ('isolation', f'{WT_LIST} before {EXIT_TOOL}', isolation['kept_before']),
+        ('isolation', f'{WT_LIST} after {EXIT_TOOL}', isolation['kept_after']),
+        ('isolation', f'{WT_PWD} after {EXIT_TOOL}', isolation['pwd_after']),
+        ('noop', EXIT_TOOL, noop['exit_refused']),
+        ('noop', f'{WT_PWD} after {EXIT_TOOL}', noop['pwd_after'])) if value is None]
+    errors += [f'{part}: {EXIT_TOOL} ran with action {sightings[part]["other_exit"]}, not {WT_KEEP}'
+               for part in ('isolation', 'noop') if sightings[part]['other_exit'] is not None]
+    errors += [f'{part}: the model called {ENTER_TOOL}, which the prompt does not ask for'
+               for part in ('isolation', 'noop') if sightings[part]['entered_by_model']]
+    if isolation['kept_before'] is False:
+        errors.append(f'isolation: {WT_LIST} before {EXIT_TOOL} did not list the worktree, so its lock reading proves '
+                      'nothing')
+    if isolation['exited'] is False and not isolation['exit_marked']:
+        errors.append(f'isolation: {EXIT_TOOL} was refused without the {WT_NOOP_MARK} mark')
+    if noop['exit_refused'] and not noop['exit_marked']:
+        errors.append(f'noop: {EXIT_TOOL} was refused without the {WT_NOOP_MARK} mark')
+    for part in WT_BASE_PARTS:
+        base = sightings[part]
+        if not base['entered']:
+            errors.append(f'{part}: never entered a worktree')
+        elif base['has_pushed'] is None:
+            errors.append(f'{part}: {WT_LOG} never ran after {ENTER_TOOL}')
+        elif not base['has_pushed']:
+            errors.append(f'{part}: the log has no {WT_PUSHED!r} commit')
+    return errors
+
+
+def worktree_differences(sightings: dict) -> list[str]:
+    '''How valid runs differ from the guide's four facts.'''
+    isolation, noop = sightings['isolation'], sightings['noop']
+    wrong = [f"isolation: {step} was {'not ' if step in WT_REFUSED_STEPS else ''}refused"
+             for step, seen in isolation['steps'].items() if seen['refused'] != (step in WT_REFUSED_STEPS)]
+    wrong += [*([] if isolation['exited'] else [f'isolation: {EXIT_TOOL} was refused']),
+              *([] if isolation['pwd_after'] == WT_MAIN else
+                [f"isolation: pwd after {EXIT_TOOL} was {isolation['pwd_after']}, not {WT_MAIN}"]),
+              *([] if isolation['locked_before'] else [f'isolation: the worktree was not locked before {EXIT_TOOL}']),
+              *([] if isolation['kept_after'] else [f'isolation: {EXIT_TOOL} {WT_KEEP} removed the worktree']),
+              *([f'isolation: the worktree was still locked after {EXIT_TOOL}'] if isolation['locked_after'] else []),
+              *([] if noop['exit_refused'] else [f'noop: {EXIT_TOOL} was not refused']),
+              *([] if noop['pwd_after'] == WT_PLAIN else
+                [f"noop: pwd after {EXIT_TOOL} was {noop['pwd_after']}, not {WT_PLAIN}"]),
+              *([f'{WT_FAILED_FETCH} kept the unpushed commit'] if sightings[WT_FAILED_FETCH]['has_unpushed'] else []),
+              *([] if sightings[WT_NO_REMOTE]['has_unpushed'] else [f'{WT_NO_REMOTE} left the unpushed commit out'])]
+    return wrong
+
+
+def assess_worktree_isolation(sightings: dict) -> Verdict:
+    '''worktree-isolation: ERROR when worktree_errors finds anything, naming each; else DIVERGES when a fact
+    differs, naming each, joined by `; `; else PASS.'''
+    errors = worktree_errors(sightings)
+    if errors:
+        return Verdict(ERROR, '; '.join(errors))
+    wrong = worktree_differences(sightings)
+    if wrong:
+        return Verdict(DIVERGES, '; '.join(wrong))
+    return Verdict(PASS, WT_FINDING)
+
+
+DISPATCH_INPUT_KEYS = ('subagent_type', 'model')  # the input fields the dispatch checks read
+COMMAND_KEY = 'command'  # a Bash call's input field, which only assess_guard_liveness reads
+
+
+def _trim_block(block: dict, keep_commands: bool = True) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
-        kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'model', 'command')}
+        keys = (*DISPATCH_INPUT_KEYS, COMMAND_KEY) if keep_commands else DISPATCH_INPUT_KEYS
+        kept = {k: v for k, v in (block.get('input') or {}).items() if k in keys}
         name = block.get('name')
         if isinstance(name, str) and name.startswith(MCP_PREFIX):
             name = MCP_MARK  # a call to an MCP tool names a server the recording machine has installed
@@ -716,7 +1046,7 @@ def _trim_block(block: dict) -> dict | None:
     return None
 
 
-def _trim_event(event: dict) -> dict | None:
+def _trim_event(event: dict, keep_commands: bool = True) -> dict | None:
     kind, sub = event.get('type'), event.get('subtype')
     if is_init(event):
         # An MCP tool's name names a server the recording machine has installed.
@@ -737,7 +1067,8 @@ def _trim_event(event: dict) -> dict | None:
     if kind in ('assistant', 'user'):
         message = event.get('message') or {}
         content = message.get('content')
-        blocks = [_trim_block(b) for b in content if isinstance(b, dict)] if isinstance(content, list) else []
+        blocks = ([_trim_block(b, keep_commands) for b in content if isinstance(b, dict)]
+                  if isinstance(content, list) else [])
         trimmed = {'content': [b for b in blocks if b]}
         if kind == 'assistant':
             trimmed['model'] = message.get('model')
@@ -754,17 +1085,33 @@ def redact(text: str, private: list[str]) -> str:
     return text
 
 
-def scrub_events(events: list[dict], private: list[str]) -> str:
+def json_escaped(value: str, *, ensure_ascii: bool = False) -> str:
+    '''`value` as it reads inside a JSON string: a quote or a backslash gets a backslash before it, and with
+    ensure_ascii, which json.dumps does by default, a non-ASCII character becomes a \\u escape.'''
+    return json.dumps(value, ensure_ascii=ensure_ascii)[1:-1]
+
+
+def private_forms(private: list[str]) -> list[str]:
+    '''Each string in `private` as given and as it reads inside a JSON string written with ensure_ascii False and
+    with True, so a value with a quote, a backslash or a non-ASCII character is found in either kind of file.'''
+    return [form for value in private
+            for form in (value, json_escaped(value), json_escaped(value, ensure_ascii=True))]
+
+
+def scrub_events(events: list[dict], private: list[str], *, keep_commands: bool = True) -> str:
     '''A recorded stream as a committable fixture (R12.6; owner, plan 58
     decision D3): cut to the fields the assertions read, so text blocks and
     tool output lose their text, and stripped of what must stay out of a
     public repo: MCP tool names leave the init tool list and become
     <mcp-tool> in a tool call and in a hook's name, each string in
-    `private` (home and scratch paths, the login name), longest first,
-    becomes <private>, and uuids and tool-use ids become stable
-    placeholders.'''
-    kept = [t for t in map(_trim_event, events) if t is not None]
-    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n', private)
+    `private` (home and scratch paths, the login name) and its forms inside
+    a JSON string, longest first, becomes <private>, a scratch folder's
+    name becomes <scratch>, and uuids and tool-use ids become stable
+    placeholders. A Bash call keeps its command only with `keep_commands`,
+    which a probe that reads commands sets (Probe.reads_commands).'''
+    kept = [t for t in (_trim_event(e, keep_commands) for e in events) if t is not None]
+    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n', private_forms(private))
+    text = SCRATCH_RE.sub(SCRATCH_MARK, text)
     ids: dict[str, str] = {}
     text = TOOL_ID_RE.sub(lambda m: ids.setdefault(m.group(0), f'toolu_fixture{len(ids) + 1}'), text)
     uuids: dict[str, str] = {}

@@ -9,12 +9,12 @@
 {"type": "user", "parent_tool_use_id": null, "message": {"content": [{"type": "tool_result", "tool_use_id": "toolu_fixture1", "is_error": null, "content": "<output>"}]}}
 {"type": "user", "parent_tool_use_id": null, "message": {"content": [{"type": "tool_result", "tool_use_id": "toolu_fixture3", "is_error": null, "content": "<output>"}]}}
 {"type": "assistant", "parent_tool_use_id": null, "message": {"content": [{"type": "text", "text": "<text>"}], "model": "claude-sonnet-5-5"}}
-{"type": "assistant", "parent_tool_use_id": "toolu_fixture1", "message": {"content": [{"type": "tool_use", "id": "toolu_fixture4", "name": "Bash", "input": {"command": "ls -A \"<private>/cc-guide-probe-agent-model-pins-7665i08q\""}}], "model": "claude-haiku-5-5"}}
+{"type": "assistant", "parent_tool_use_id": "toolu_fixture1", "message": {"content": [{"type": "tool_use", "id": "toolu_fixture4", "name": "Bash", "input": {}}], "model": "claude-haiku-5-5"}}
 {"type": "assistant", "parent_tool_use_id": "toolu_fixture3", "message": {"content": [{"type": "tool_use", "id": "toolu_fixture5", "name": "Read", "input": {}}], "model": "claude-opus-5-5"}}
 {"type": "user", "parent_tool_use_id": "toolu_fixture3", "message": {"content": [{"type": "tool_result", "tool_use_id": "toolu_fixture5", "is_error": null, "content": "<output>"}]}}
 {"type": "user", "parent_tool_use_id": "toolu_fixture1", "message": {"content": [{"type": "tool_result", "tool_use_id": "toolu_fixture4", "is_error": false, "content": "<output>"}]}}
 {"type": "assistant", "parent_tool_use_id": "toolu_fixture2", "message": {"content": [], "model": "claude-haiku-5-5"}}
-{"type": "assistant", "parent_tool_use_id": "toolu_fixture2", "message": {"content": [{"type": "tool_use", "id": "toolu_fixture6", "name": "Bash", "input": {"command": "true; echo \"exit=$?\""}}], "model": "claude-haiku-5-5"}}
+{"type": "assistant", "parent_tool_use_id": "toolu_fixture2", "message": {"content": [{"type": "tool_use", "id": "toolu_fixture6", "name": "Bash", "input": {}}], "model": "claude-haiku-5-5"}}
 {"type": "assistant", "parent_tool_use_id": "toolu_fixture1", "message": {"content": [], "model": "claude-haiku-5-5"}}
 {"type": "assistant", "parent_tool_use_id": "toolu_fixture1", "message": {"content": [{"type": "tool_use", "id": "toolu_fixture7", "name": "SubagentHandback", "input": {}}], "model": "claude-haiku-5-5"}}
 {"type": "user", "parent_tool_use_id": "toolu_fixture2", "message": {"content": [{"type": "tool_result", "tool_use_id": "toolu_fixture6", "is_error": false, "content": "<output>"}]}}

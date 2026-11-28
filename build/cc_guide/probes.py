@@ -28,14 +28,16 @@ from pathlib import Path
 from typing import Callable, NamedTuple, Sequence
 
 import probe_checks
+import probe_worktrees
 from check import due_probes
 from docs import version_key
 from probe_checks import Verdict
+from probe_process import (GIT_ROUTING, PROBE_TIMEOUT, Execute, Invocation, Probe, Read, claude_args,
+                           environ_without, execute, inherited_env, inherited_remaps, term_as_exit)
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
 VERSION_TIMEOUT = 30  # seconds for `claude --version`
-PROBE_TIMEOUT = 600  # seconds for one probe invocation
 PINS_TIMEOUT = 1200  # agent-model-pins waits on three background agents
 # claude -p stops background agents 10 minutes after the main turn unless this
 # says otherwise. 15 minutes is above PROBE_TIMEOUT and below PINS_TIMEOUT, so
@@ -44,22 +46,9 @@ PINS_CEILING_MS = 900_000
 # agent-payload's two dispatches may run in the background too. This ceiling sits under PROBE_TIMEOUT, so claude
 # ends its own wait before the harness stops the run.
 PAYLOAD_CEILING_MS = 300_000
-KILL_GRACE = 5  # seconds between SIGTERM and SIGKILL when a run is stopped, and for each reap after
-# SystemExit while probes run (term_as_exit). SIGHUP and SIGQUIT are POSIX-only, and cli.py imports this
-# module for every subcommand, so a platform without them still imports it.
-EXIT_SIGNALS = tuple(getattr(signal, name) for name in ('SIGTERM', 'SIGHUP', 'SIGQUIT') if hasattr(signal, name))
-HELD_SIGNALS = (signal.SIGINT, *EXIT_SIGNALS)  # held while a run starts or is stopped (held_signals)
 # A setup or output problem inside a probe: an ERROR row, never a crash (R10.5).
-PROBE_FAILURES = (OSError, subprocess.SubprocessError, ValueError, TypeError, KeyError, AttributeError)
-# Variables a run never inherits from the caller. CLAUDE_CODE_EFFORT_LEVEL outranks an agent's effort
-# field (subagents.frontmatter), so a value in the caller's shell would decide the effort agent-model-pins reads.
-SCRUBBED_ENV = frozenset({'CLAUDE_CODE_EFFORT_LEVEL'})
-# Variables that decide what each model alias resolves to (guide, lean.model-routing). A run keeps them, since on
-# Bedrock, Google Cloud or Foundry a remap can be the owner's own setup, and its row names each one it inherits, so a
-# DIVERGES from agent-model-pins can be read against them (owner ruling, 2026-10-31).
-ALIAS_REMAPS = ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL', 'ANTHROPIC_DEFAULT_HAIKU_MODEL',
-                'ANTHROPIC_DEFAULT_FABLE_MODEL')
-BUDGET_USD = '0.50'  # --max-budget-usd for one probe invocation
+PROBE_FAILURES = (OSError, subprocess.SubprocessError, ValueError, TypeError, KeyError, AttributeError,
+                  SetupError)
 PINS_BUDGET_USD = '0.75'  # three agents, one of them Opus at xhigh
 TOOLS_TURNS, STOP_TURNS, PINS_TURNS, PAYLOAD_TURNS = 1, 6, 8, 6
 GUARD_SCRIPT = 'hooks/probe-readonly-guard.sh'
@@ -76,126 +65,6 @@ LOG_TEXT = '\n'.join([
     '|---|---|---|---|---|---|---|', ''])
 
 
-class Invocation(NamedTuple):
-    name: str             # its stdout goes to <name><suffix>, its stderr to <name>.err
-    argv: list[str]
-    env: dict[str, str]   # added to the caller's environment, less SCRUBBED_ENV
-    timeout: int          # seconds
-    suffix: str = '.jsonl'
-
-
-# Runs one invocation from a directory, writing its stdout and stderr to the
-# two paths; returns its exit code, or None when it timed out.
-Execute = Callable[[Invocation, Path, Path, Path], int | None]
-# Reads a run directory's file by name: its text, or None when absent.
-Read = Callable[[str], str | None]
-
-
-def inherited_env() -> dict[str, str]:
-    '''The caller's environment less SCRUBBED_ENV: what every run starts from.'''
-    return {name: value for name, value in os.environ.items() if name not in SCRUBBED_ENV}
-
-
-def inherited_remaps() -> list[str]:
-    '''The ALIAS_REMAPS names that a run inherits with a value, in ALIAS_REMAPS order.
-    Names only: a value can be a provider's model path, and the log is public. An empty
-    value remaps nothing, so it is not named.'''
-    env = inherited_env()
-    return [name for name in ALIAS_REMAPS if env.get(name)]
-
-
-def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
-    '''R10.4: the prompt goes first and stdin is /dev/null, since claude -p
-    waits on a piped stdin. The run gets its own process group, so a timeout
-    or a stop ends everything it started, such as the claude under Gate B's
-    bash: the group gets no terminal signal of its own. A stop signal while
-    the run starts is held until `proc` is bound, so it cannot orphan it.
-    The run inherits the caller's environment less SCRUBBED_ENV, then
-    takes what the invocation adds.'''
-    env = inherited_env() | inv.env
-    with out.open('wb') as stdout, err.open('wb') as stderr:
-        proc = None
-        try:
-            with held_signals():
-                proc = subprocess.Popen(inv.argv, cwd=cwd, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                        env=env, start_new_session=True)
-            return proc.wait(timeout=inv.timeout)
-        except subprocess.TimeoutExpired:
-            stop_group(proc)
-            return None
-        except BaseException:  # Ctrl-C, or term_as_exit's SystemExit
-            if proc is not None:
-                stop_group(proc)
-            raise
-
-
-def stop_group(proc: subprocess.Popen) -> None:
-    '''SIGTERM to a run's process group, which lets a script's EXIT trap
-    run, then SIGKILL to whatever is left after KILL_GRACE. Stop signals are
-    held meanwhile, so a second Ctrl-C cannot skip the SIGKILL. macOS answers
-    EPERM for a group whose members have all exited but are not reaped. The
-    reaps are bounded, since an interrupted wait can leave Popen's lock held.'''
-    with held_signals():
-        with contextlib.suppress(ProcessLookupError, PermissionError):
-            os.killpg(proc.pid, signal.SIGTERM)
-        with contextlib.suppress(subprocess.TimeoutExpired):
-            proc.wait(timeout=KILL_GRACE)
-        with contextlib.suppress(ProcessLookupError, PermissionError):
-            os.killpg(proc.pid, signal.SIGKILL)
-        with contextlib.suppress(subprocess.TimeoutExpired):
-            proc.wait(timeout=KILL_GRACE)
-
-
-@contextlib.contextmanager
-def held_signals():
-    '''Record the stop signals instead of acting on them, then act on the
-    first once the block is done, through the handler in force before it.
-    Starting a run and stopping one must not be cut short. A signal already
-    ignored, as nohup ignores SIGHUP, stays ignored and is not recorded, so
-    a stop after it is still acted on. Main thread only, as signal.signal
-    requires.'''
-    got: list[int] = []
-    held = [s for s in HELD_SIGNALS if signal.getsignal(s) is not signal.SIG_IGN]
-    previous = {s: signal.signal(s, lambda signum, frame: got.append(signum)) for s in held}
-    try:
-        yield
-    finally:
-        for s, handler in previous.items():
-            signal.signal(s, handler)
-        if got:
-            signal.raise_signal(got[0])
-
-
-@contextlib.contextmanager
-def term_as_exit():
-    '''While probes run, SIGTERM (a stopped tool), SIGHUP (a closed
-    terminal) and SIGQUIT raise SystemExit, so a stopped run still ends its
-    probe's process group and removes its scratch directory: by default each
-    ends Python with no except or finally. A signal already ignored, as
-    nohup ignores SIGHUP, stays ignored.'''
-    exits = [s for s in EXIT_SIGNALS if signal.getsignal(s) is not signal.SIG_IGN]
-    previous = {s: signal.signal(s, lambda signum, frame: sys.exit(128 + signum)) for s in exits}
-    try:
-        yield
-    finally:
-        for s, handler in previous.items():
-            signal.signal(s, handler)
-
-
-def claude_args(claude: str, prompt: str, *, turns: int, sources: str, mode: str, allow: tuple[str, ...] = (),
-                budget: str = BUDGET_USD, persist: bool = False, extra: tuple[str, ...] = ()) -> list[str]:
-    '''R10.4's command line: the prompt first, raw stream-json events, only
-    the setting sources the probe needs, its permission mode pinned and its
-    tools pre-allowed through --settings, Sonnet at low effort, and a bounded
-    turn count and spend. Sessions are not persisted unless the probe reads
-    its transcript.'''
-    permissions = {'defaultMode': mode, **({'allow': list(allow)} if allow else {})}
-    argv = [claude, prompt, '-p', '--output-format', 'stream-json', '--verbose',
-            '--setting-sources', sources, '--settings', json.dumps({'permissions': permissions}),
-            '--model', 'sonnet', '--effort', 'low', '--max-turns', str(turns), '--max-budget-usd', budget, *extra]
-    return argv if persist else [*argv, '--no-session-persistence']
-
-
 def stream_of(text: str | None) -> list[dict] | None:
     return None if text is None else probe_checks.parse_stream(text)
 
@@ -203,17 +72,6 @@ def stream_of(text: str | None) -> list[dict] | None:
 def copy_if_there(source: Path, target: Path) -> None:
     if source.is_file():
         shutil.copy(source, target)
-
-
-class Probe(NamedTuple):
-    # (scratch directory, claude, repo) -> the invocations to run there
-    prepare: Callable[[Path, str, Path], list[Invocation]]
-    # (scratch directory, run directory): copy what the run left beside its streams
-    collect: Callable[[Path, Path], None]
-    # the verdict from the run directory's files, the same path R12.6's replay takes
-    assess: Callable[[Read], Verdict]
-    # run-directory file -> the fixture file it is scrubbed into (R12.6)
-    fixtures: dict[str, str]
 
 
 def prepare_guard(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
@@ -598,18 +456,20 @@ def assess_explore(read: Read) -> Verdict:
 
 # async-teardown: an async SessionStart hook that logs `start <pid>`, then the name of each TEARDOWN_SIGNALS signal
 # it gets, and keeps running, since each trap only logs. `sleep 1 & wait $!` lets a trap run at once, not once a sleep
-# ends, and the loop ends by itself within TEARDOWN_LIFETIME seconds, so the hook never runs unbounded. It writes
-# nothing to stdout or stderr, so a pipe that claude closes cannot end it with SIGPIPE.
+# ends, and the loop ends by itself within TEARDOWN_LIFETIME seconds, so the hook never runs unbounded; it then logs
+# TEARDOWN_EXPIRED, which the assessment reads as ERROR. It writes nothing to stdout or stderr, so a pipe that claude
+# closes cannot end it with SIGPIPE.
 TEARDOWN_WAIT = probe_checks.TEARDOWN_WAIT  # seconds collect_teardown waits for the hook to go
 TEARDOWN_POLL = 0.1  # seconds between two looks for the hook
-TEARDOWN_LIFETIME = 120  # seconds the hook runs at most: its loop's one-second sleeps
+TEARDOWN_LIFETIME = probe_checks.TEARDOWN_LIFETIME  # seconds the hook runs at most
 TEARDOWN_TURNS = 1
 TEARDOWN_LOG = 'teardown.log'
+TEARDOWN_SCRIPT = 'teardown-hook.sh'
 TEARDOWN_TRAP = '''trap 'printf "{name}\\n" >> "$log"' {name}'''
 TEARDOWN_HOOK = '\n'.join(['#!/bin/sh', 'log=$1', 'echo "start $$" >> "$log"',
                            *(TEARDOWN_TRAP.format(name=name) for name in probe_checks.TEARDOWN_SIGNALS),
                            'n=0', f'while [ "$n" -lt {TEARDOWN_LIFETIME} ]; do', '    sleep 1 & wait $!',
-                           '    n=$((n + 1))', 'done', ''])
+                           '    n=$((n + 1))', 'done', f'echo {probe_checks.TEARDOWN_EXPIRED} >> "$log"', ''])
 
 
 def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
@@ -618,8 +478,9 @@ def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]
     matcher, as .claude/settings.json registers notice.sh's refresh, and
     asks for hook events in the stream, where claude -p may finalize the
     hook as cancelled. The reply takes one turn, so the hook is still
-    running when the run ends.'''
-    hook = scratch / 'teardown-hook.sh'
+    running when the run ends. The run is not swept, so collect_teardown
+    sees whether claude itself ended the hook.'''
+    hook = scratch / TEARDOWN_SCRIPT
     hook.write_text(TEARDOWN_HOOK, encoding='utf-8')
     hook.chmod(0o755)
     command = f'{shlex.quote(str(hook))} {shlex.quote(str(scratch / TEARDOWN_LOG))}'
@@ -629,7 +490,7 @@ def prepare_teardown(scratch: Path, claude: str, repo: Path) -> list[Invocation]
     (scratch / '.claude' / 'settings.json').write_text(json.dumps(settings, indent=1) + '\n', encoding='utf-8')
     argv = claude_args(claude, 'Reply with the word OK.', turns=TEARDOWN_TURNS, sources='project', mode='default',
                        extra=('--include-hook-events',))
-    return [Invocation('teardown', argv, {}, PROBE_TIMEOUT)]
+    return [Invocation('teardown', argv, {}, PROBE_TIMEOUT, sweep=False)]
 
 
 def read_lines(path: Path) -> list[str]:
@@ -648,6 +509,18 @@ def running(pid: int) -> bool:
     return True
 
 
+def is_hook(pid: int, hook: Path) -> bool:
+    '''Whether the process with the pid runs the hook script: its command
+    line, as `ps -o args=` shows it, holds the script's path. A pid alone is
+    not a process identity, since the OS may reuse a gone hook's pid. A ps
+    that fails, as it does for a pid no process holds, is False.'''
+    try:
+        proc = subprocess.run(['ps', '-o', 'args=', '-p', str(pid)], capture_output=True, text=True)
+    except OSError:
+        return False
+    return proc.returncode == 0 and str(hook) in proc.stdout
+
+
 def hook_pids(lines: list[str]) -> list[int]:
     '''The pid on each start line of the hook's log, less those os.kill
     must never get: 0, which is the caller's own process group, 1, which is
@@ -661,20 +534,25 @@ def collect_teardown(scratch: Path, run_dir: Path) -> None:
     each pid on its start lines was gone within TEARDOWN_WAIT seconds of
     claude -p's end. Each one still there after the wait, or when the wait
     is cut short, gets SIGKILL, which no trap catches, so the hook never
-    outlives the probe. The log is read again after the wait, so a signal
+    outlives the probe. A pid counts as there only while it runs the hook
+    (is_hook): a process that took a gone hook's pid reads as gone and is
+    never signalled. The log is read again after the wait, so a signal
     the hook logs late still counts. A log with no start line is copied as
     it is, and an absent one as empty: the assessment reads either as
     ERROR.'''
-    log = scratch / TEARDOWN_LOG
+    log, hook = scratch / TEARDOWN_LOG, scratch / TEARDOWN_SCRIPT
     pids, end = hook_pids(read_lines(log)), []
+
+    def there(pid: int) -> bool:
+        return running(pid) and is_hook(pid, hook)
     try:
         deadline = time.monotonic() + TEARDOWN_WAIT
-        while any(map(running, pids)) and time.monotonic() < deadline:
+        while any(map(there, pids)) and time.monotonic() < deadline:
             time.sleep(TEARDOWN_POLL)
         if pids:
-            end = [probe_checks.TEARDOWN_ALIVE if any(map(running, pids)) else probe_checks.TEARDOWN_GONE]
+            end = [probe_checks.TEARDOWN_ALIVE if any(map(there, pids)) else probe_checks.TEARDOWN_GONE]
     finally:
-        for pid in filter(running, pids):
+        for pid in filter(there, pids):
             with contextlib.suppress(ProcessLookupError, PermissionError):
                 os.kill(pid, signal.SIGKILL)
     (run_dir / TEARDOWN_LOG).write_text(''.join(f'{line}\n' for line in [*read_lines(log), *end]), encoding='utf-8')
@@ -687,7 +565,8 @@ def assess_teardown(read: Read) -> Verdict:
 
 PROBE_RUNS = {
     'guard-liveness': Probe(prepare_guard, collect_guard, assess_guard,
-                            {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)}),
+                            {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)},
+                            reads_commands=True),
     'agent-tools': Probe(prepare_agent_tools, collect_nothing, assess_agent_tools,
                          {'probe-with-bash.jsonl': 'agent-tools.with-bash.jsonl',
                           'probe-without-bash.jsonl': 'agent-tools.without-bash.jsonl'}),
@@ -702,6 +581,7 @@ PROBE_RUNS = {
                               {'sightings.json': 'explore-override.sightings.json'}),
     'async-teardown': Probe(prepare_teardown, collect_teardown, assess_teardown,
                             {'teardown.jsonl': 'async-teardown.jsonl', 'teardown.log': 'async-teardown.log'}),
+    'worktree-isolation': probe_worktrees.WORKTREE_PROBE,
 }
 
 
@@ -732,19 +612,21 @@ def private_strings() -> list[str]:
 def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
     '''R12.6: turn one recorded run into the fixtures its replay test reads,
     each stream cut down and scrubbed of the home directory, the temporary
-    directory and the login name, and each other file scrubbed of the same
-    (owner, plan 58 decision D3).'''
-    private = private_strings()
+    directory and the login name, and each other file scrubbed of the same,
+    and of each one's JSON-escaped forms, since a side file is JSON text
+    (owner, plan 58 decision D3). A stream keeps a Bash command only when
+    the probe reads commands.'''
+    probe, private = PROBE_RUNS[pid], private_strings()
     written = []
-    for name, fixture in PROBE_RUNS[pid].fixtures.items():
+    for name, fixture in probe.fixtures.items():
         text = (run_dir / name).read_text(encoding='utf-8')
         if name.endswith('.jsonl'):
             events = probe_checks.parse_stream(text)
             if events is None:
                 raise SetupError(f'{run_dir / name}: not a stream-json file')
-            text = probe_checks.scrub_events(events, private)
+            text = probe_checks.scrub_events(events, private, keep_commands=probe.reads_commands)
         else:
-            text = probe_checks.redact(text, private)
+            text = probe_checks.redact(text, probe_checks.private_forms(private))
         dest.mkdir(parents=True, exist_ok=True)
         (dest / fixture).write_text(text, encoding='utf-8')
         written.append(dest / fixture)
@@ -752,7 +634,10 @@ def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
 
 
 def inside_a_repo(path: Path) -> bool:
-    proc = subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'], cwd=path, capture_output=True, text=True)
+    '''Whether git calls `path` part of a work tree, with no inherited GIT_ variable, since a git hook's GIT_DIR
+    would make git call any folder its repository's work tree.'''
+    proc = subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'], cwd=path, capture_output=True, text=True,
+                          env=inherited_env(GIT_ROUTING))
     return proc.returncode == 0 and proc.stdout.strip() == 'true'
 
 
@@ -774,11 +659,12 @@ def new_run_dir(parent: Path, stem: str) -> Path:
 def run_probe(pid: str, claude: str, repo: Path, run_dir: Path, execute: Execute = execute) -> Verdict:
     '''One probe, from a fresh temporary directory that is removed after the
     verdict; its raw output stays in run_dir. A setup failure, a timeout or
-    unreadable output is ERROR, never a pass.'''
-    probe = PROBE_RUNS[pid]
-    run_dir.mkdir(parents=True, exist_ok=True)
-    scratch = Path(tempfile.mkdtemp(prefix=f'cc-guide-probe-{pid}-')).resolve()
+    unreadable output is ERROR, never a pass, and so is a run directory or
+    a scratch directory that cannot be made.'''
+    probe, scratch = PROBE_RUNS[pid], None
     try:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        scratch = Path(tempfile.mkdtemp(prefix=f'cc-guide-probe-{pid}-')).resolve()
         if inside_a_repo(scratch):
             return Verdict(ERROR, f'the temporary directory {scratch} is inside a git work tree')
         for inv in probe.prepare(scratch, claude, repo):
@@ -790,7 +676,8 @@ def run_probe(pid: str, claude: str, repo: Path, run_dir: Path, execute: Execute
     except PROBE_FAILURES as exc:
         return Verdict(ERROR, f'{type(exc).__name__}: {exc}')
     finally:
-        shutil.rmtree(scratch, ignore_errors=True)
+        if scratch is not None:
+            shutil.rmtree(scratch, ignore_errors=True)
 
 
 def binary_version(claude: Path) -> str:
@@ -807,9 +694,13 @@ def binary_version(claude: Path) -> str:
 
 
 def shown_path(path: Path) -> str:
-    '''A path as the log shows it, with ~ for the home directory (R10.6).'''
-    home, text = str(Path.home()), str(path)
-    return '~' + text[len(home):] if text == home or text.startswith(home + os.sep) else text
+    '''A path as the log shows it, with ~ for the home directory, as given
+    or resolved (R10.6).'''
+    text = str(path)
+    for home in (str(Path.home()), str(Path.home().resolve())):
+        if text == home or text.startswith(home + os.sep):
+            return '~' + text[len(home):]
+    return text
 
 
 def cell(text: str) -> str:
@@ -817,19 +708,26 @@ def cell(text: str) -> str:
     return ' '.join(text.split()).replace('|', '\\|')
 
 
+def public_finding(verdict: Verdict) -> str:
+    '''The finding with each MCP tool name and each private string hidden
+    (owner, plan 58 decision D3). The MCP pass runs first: a private string
+    inside an MCP name would otherwise become <private>, and the pass would
+    stop at its > and leave the rest of the name in the text.'''
+    return probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
+                               private_strings())
+
+
 def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, allow_old: bool,
             remaps: Sequence[str] = ()) -> str:
     '''One log row. PROBES.md is committed to a public repo, and a finding can
     carry a home or temporary path, the login name or an MCP tool name, so
-    the finding is scrubbed as a fixture is (owner, plan 58 decision D3). The
-    MCP pass runs first: a private string inside an MCP name would otherwise
-    become <private>, and the pass would stop at its > and leave the rest of
-    the name in the log. The Flags cell holds `--allow-old` when used, then
-    the names of the alias remaps the run inherited (inherited_remaps).'''
-    finding = probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
-                                  private_strings())
+    the finding is scrubbed as a fixture is (public_finding), and the Binary
+    cell, past its ~, is scrubbed of the same private strings. The Flags
+    cell holds `--allow-old` when used, then the names of the alias remaps
+    the run inherited (inherited_remaps).'''
     flags = [*(['--allow-old'] if allow_old else []), *remaps]
-    cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding, ' '.join(flags)]
+    binary = probe_checks.redact(shown_path(claude), private_strings())
+    cells = [day.isoformat(), version, binary, pid, verdict.outcome, public_finding(verdict), ' '.join(flags)]
     return '| ' + ' | '.join(map(cell, cells)) + ' |'
 
 
@@ -904,13 +802,13 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
         return 0, ['probes: none due']
     lines, outcomes = [f'probes: {version} at {shown_path(claude)}'], []
     remaps = inherited_remaps()
-    with term_as_exit():
+    with term_as_exit(), environ_without(GIT_ROUTING):
         for pid in dict.fromkeys(chosen):
             run_dir = new_run_dir(cache / 'probes', f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}")
             verdict = run_probe(pid, str(claude), repo, run_dir, execute)
             append_row(repo / PROBES, log_row(today, version, claude, pid, verdict, allow_old, remaps))
             outcomes.append(verdict.outcome)
-            lines += [f'{pid}: {verdict.outcome}: {verdict.finding}', f'  raw output: {run_dir}']
+            lines += [f'{pid}: {verdict.outcome}: {public_finding(verdict)}', f'  raw output: {run_dir}']
     lines.append(f'appended {len(outcomes)} row(s) to {PROBES}; nothing is committed')
     return (0 if all(o == PASS for o in outcomes) else 1), lines
 

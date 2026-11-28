@@ -3463,7 +3463,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `probe_checks.py`, and `_trim_event` replaces each `mcp__` token in `hook_name` with
       `<mcp-tool>`, as the log row does, so `PreToolUse:mcp__x__y` becomes
       `PreToolUse:<mcp-tool>`. A scrub test pins it.
-- [ ] Review Minors from the per-task and final reviews of plan 58, one batch (the owner chose to
+- [x] Review Minors from the per-task and final reviews of plan 58, one batch (the owner chose to
       defer). In `build/cc_guide/state.py`: (a) the log-table header test is written twice
       (`is_probe_header` and `parse_probes`'s `PROBE_COLUMNS <= set(header)`); (b) the empty-probe
       branch of `parse_probes` has no test. In `build/cc_guide/probe_checks.py`: (c) `scrub_events`
@@ -3503,6 +3503,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the owner rules here that it stays.
       → progress 2026-11-11 (plan 87): the trigger of (l) fired. `build/cc_guide/probes.py` grew from 660 to 785 lines (`drive_cut` with its `drive-cut` entry point, and the compaction-cut probe). Plan 87 did not split it, as it said. Process control is still the part to move out.
       → triggered 2026-11-14: later edits touched `build/cc_guide/probes.py`. Plan 87's `244edd3` and `049d390` (2026-11-10) added the compaction-cut runner and probe, and `d778c3e` (2026-11-12) edited it again. The file is now 785 lines (the item recorded about 550).
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `build/cc_guide/` fixes points (a)–(aa) in Tasks 1–5; process control moved into `probe_process.py` (l)
 - [ ] The Stop-hook block cap probe (drift spec, Out of scope; logged at plan completion, as the
       spec's heading says). Size: plan. Revisit if: drift #2 (the Stop-hook continuation reading) is
       resolved toward re-checking.
@@ -6087,7 +6089,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → progress 2026-11-27 (plan 114): rechecked at danyuchn `d714e536`. #72 fills autolink ranges after `_gfm_autolinks`, but `_run_in_autolink` (line 246) and the span scan (lines 271-276) are unchanged. The item's reproduction, and the same span closed by a backtick inside `<https://x.io/`>`, both still give a `semicolon` finding at 2:5 with exit 1 on both copies. Not fixed upstream; the next compare starts from `d714e536`.
 
 ## cc-guide-2.1.326-worktree-isolation (no plan; /cc-guide pass and the worktree-isolation owner ruling, branch claude/keen-khorana-08c3a1) — 2026-11-17
-- [ ] Watch the probe-backed facts of the guide's worktree-isolation section with a registered probe.
+- [x] Watch the probe-backed facts of the guide's worktree-isolation section with a registered probe.
       `specs/guides/claude-code-customization-guide.md` § 5, Worktree isolation (`subagents.worktrees`), ends with
       five facts that rest on probes, not the docs, so the docs drift check cannot see them change: a `$(...)`
       command is refused only when it names git; ExitWorktree keep exits a `--worktree` launch; ExitWorktree is a
@@ -6101,6 +6103,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       for `build/cc_guide/test_probe_replay.py`. The desktop case cannot run under `claude -p`, so it stays a hand
       check. Size: plan. Done when: a registered probe that covers the first four facts has a PASS row in
       `build/cc_guide/PROBES.md` on a current binary, or the docs state each of them.
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `worktree-isolation` is registered (`probe_worktrees.py`, `manifest.toml`) and has a PASS row in `build/cc_guide/PROBES.md` on 2.1.330, the newest installed binary, run with `--allow-old` on the owner's go-ahead (D2); the desktop fact stays a hand check
 - [x] Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two
       facts from it: the Code tab ignores `worktree.baseRef` for the worktree it makes, and archiving a session
       can discard the worktree's uncommitted changes and removes a kept worktree about 30 days later. No group in
@@ -6496,30 +6500,38 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-26 (plan 110): the workflow now sets `fetch-depth: 0` and `TMPDIR: /var/tmp`. The branch run 45885612117 printed `suite runs passed` for its 3.13 pass. The owner changed D2 from `runner.temp`, which broke three writing-skills kits. The `main` run after the merge is in the completion report.
 
 ## 109-cc-guide-fetch-notice-and-probes — 2026-11-26
-- [ ] `collect_teardown` could SIGKILL an unrelated process if the OS reuses the hook's logged pid during the 5 s
+- [x] `collect_teardown` could SIGKILL an unrelated process if the OS reuses the hook's logged pid during the 5 s
       poll (Codex P1 on the final review of plan 109; the owner-gate ruling declined it). `build/cc_guide/probes.py`
       sends `os.kill(pid, SIGKILL)` to each pid from the log after `os.kill(pid, 0)` polling, and a pid alone is not
       a process identity. Pids 0, 1 and the probe's own are excluded already, and reuse inside 5 s needs a wrap of the
       pid space. Size: quick-fix (check the process start time or command line before the kill). Revisit if: a probe
       run's `collect_teardown` kills a process other than the probe's own hook.
-- [ ] The `async-teardown` hook lives 120 s (`TEARDOWN_HOOK` in `build/cc_guide/probes.py`), but the probe's `claude -p`
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `collect_teardown` signals a pid only when `probes.is_hook` finds the hook path in its `ps -o args=` command line
+- [x] The `async-teardown` hook lives 120 s (`TEARDOWN_HOOK` in `build/cc_guide/probes.py`), but the probe's `claude -p`
       call may run up to 600 s. A successful turn longer than 120 s would find the hook gone before teardown, log
       `start <pid>` then `gone` with no signal, and read DIVERGES with no real drift (Codex P2 on the final review of
       plan 109, declined; the probe turn is one short reply). Size: quick-fix (keep the hook alive past the call's
       timeout, or read natural expiry as inconclusive). Revisit if: an `async-teardown` run reports DIVERGES with a
       log of `start` and `gone` only, while its stream shows a turn longer than 120 s.
-- [ ] `prune_generations` (`build/cc_guide/check.py`) measures a generation's age from its folder mtime, not from the
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): the hook logs `expired` when its 120 s loop ends, and `assess_async_teardown` reads that log as ERROR
+- [x] `prune_generations` (`build/cc_guide/check.py`) measures a generation's age from its folder mtime, not from the
       time it was replaced. A reader that pinned a generation older than an hour, just before two checks swap
       `latest` one after the other, finds the generation removed in the second swap (Codex P2 on the final review of
       plan 109, declined; the read lasts milliseconds). Size: quick-fix (touch the replaced generation in
       `swap_latest`, or keep the two latest replaced ones). Revisit if: a `packets.load` or `rebaseline` run fails
       with a missing file under a generation folder after two checks ran within one minute.
-- [ ] `explore_void` (`build/cc_guide/probe_checks.py`) treats any tool call by a subagent as a file read and voids
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `swap_latest` touches the replaced generation before `prune_generations`, so a quick second swap keeps it
+- [x] `explore_void` (`build/cc_guide/probe_checks.py`) treats any tool call by a subagent as a file read and voids
       the rep. A CLI that has these subagents hand back their answer through a tool call, as `SubagentHandback`
       appears in the `agent-model-pins` fixture, would make every `explore-override` rep read ERROR even though the
       answer sits in a tool input (the final review of plan 109, Declined to judge; none of the three 2.1.330 reps
       holds one). Size: quick-fix (read the answer from a hand-back tool input, or exempt that tool by name). Revisit
       if: an `explore-override` run reports ERROR "made 1 tool call(s)" for a rep whose only tool call is a hand-back.
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `explore_sightings` leaves `HANDBACK_TOOLS` calls out of the tool-call count and reads each one's `message` as part of the answer
 
 ## 110-build-runner-and-ci-kit-suites — 2026-11-26
 - [x] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
@@ -6670,3 +6682,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       above, plus a mechanical check that the target is never written. A wording change to measured text needs the
       owner's go-ahead. Size: plan. Done when: at most 1 of 10 `doc-symlink` reps writes through the link, read from
       the tool calls, and the case still passes at 4 of 5.
+
+## 115-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
+- [ ] `probes.save_fixtures` (`build/cc_guide/probes.py`) replaces a scratch folder name (`probe_checks.SCRATCH_RE`,
+      `cc-guide-probe-<id>-<suffix>`) only in `.jsonl` streams, not in side files such as `canaries.json` or a
+      sightings file (Task 4 review of plan 115, Declined to judge; the controller deferred it). No committed side
+      fixture holds one today, and the `worktree-isolation` sightings file holds no path by test. A name left behind
+      is a random suffix, not a private string. Size: quick-fix (run the `SCRATCH_RE` pass in the side-file branch of
+      `save_fixtures`). Revisit if: a committed file under `build/cc_guide/probe_streams/` other than a `.jsonl`
+      holds a `cc-guide-probe-` name.

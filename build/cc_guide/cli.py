@@ -480,6 +480,12 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
     hook = args.command == 'check' and args.hook
     cache = None
     try:
+        if args.command == 'quotes':  # these three read no cache
+            return run_quotes(args)
+        if args.command == 'settle':
+            return run_settle(args)
+        if args.command == 'binaries':
+            return run_binaries()
         cache = args.cache or default_cache()
         now = now or datetime.now().astimezone()
         today = today or now.date()
@@ -489,14 +495,8 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_check(args, cache, today, now, fetch or http_get, version_text or cli_versions.run_version)
         if args.command == 'packets':
             return run_packets(args, cache, today, now)
-        if args.command == 'quotes':
-            return run_quotes(args)
-        if args.command == 'settle':
-            return run_settle(args)
         if args.command == 'probes':
             return run_probes(args, cache, today, now)
-        if args.command == 'binaries':
-            return run_binaries()
         return run_baseline(args, cache, today)
     except SetupError as exc:
         if hook:

@@ -168,3 +168,12 @@ id = 'async-teardown'
 # (owner ruling on the G7 gap, 2026-10-20; Stage 5 probe candidate (b)).
 sections = ['hooks.pitfalls']
 files = ['build/cc_guide/notice.sh']
+
+[[probe]]
+id = 'worktree-isolation'
+# The four probe-backed facts of the guide's worktree-isolation section: a $(...) command is refused only when it names
+# git; ExitWorktree keep exits a --worktree launch and its lock; ExitWorktree is a no-op in a plain-git worktree; a
+# failed fetch with no origin/HEAD leaves unpushed commits out, and no remote keeps them. The desktop-app fact stays a
+# hand check (plan 115, R122).
+sections = ['subagents.worktrees']
+files = ['skills/using-git-worktrees/SKILL.md', 'skills/finishing-a-development-branch/SKILL.md']

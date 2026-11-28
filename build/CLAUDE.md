@@ -145,19 +145,25 @@ its guide has a stamp. A missing stamp, a CLI not on PATH and a failed
 report names them. A session started with launchd's bare PATH skips both
 CLIs. A refresh of either guide updates its stamp line with its header, and
 `test_cli_versions.py` checks that the two agree.
+
 `cli.py probes --claude <path>` runs the live probes that `manifest.toml`
-registers (spec R10): short `claude -p` runs that check behaviour the guide
-states, each from its own scratch directory under the system temp directory.
+registers (spec R10) and commits nothing for you. A probe is a short
+`claude -p` run that checks behaviour the guide states. Each probe runs from
+its own scratch directory under the system temp directory.
 `cli.py binaries` lists the binaries to choose from. A probe keeps its raw
 output under `~/.cache/agent-skills/cc-guide/probes/` and appends one row to
 `cc_guide/PROBES.md`; a DIVERGES or ERROR row stays due until a later PASS.
 `agent-model-pins` also leaves its session under `~/.claude/projects/`, since
 it reads effort from the subagents' transcripts.
 `probe_checks.py` holds the assertions, which read the raw stream-json.
+`probe_process.py` holds process control for a probe run: its
+environment, process groups, signals and command line.
+`probe_worktrees.py` is the `worktree-isolation` runner, whose collect
+step reduces the four streams to a sightings file that is its fixture.
 `probe_streams/` holds recorded runs, cut down and scrubbed by
 `probes.save_fixtures`, which `test_probe_replay.py` replays (R12.6); re-record
 them only through `save_fixtures`, since a raw stream holds home paths and
 session ids.
-Nothing is committed for you.
+
 `cd build && pytest` collects this suite too, so module and test basenames
 stay unique across `build/`.

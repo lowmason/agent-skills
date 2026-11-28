@@ -2,6 +2,7 @@
 directory and the PROBES.md row each probe leaves (R10.6), the version
 refusal (R10.3), which probes run, and binaries. Every claude here is a
 fake, so no test spends a token or reads the real ~/.claude.'''
+import builtins
 import contextlib
 import json
 import os
@@ -20,6 +21,7 @@ from pathlib import Path
 import pytest
 
 import probe_checks
+import probe_process
 import probes
 import state
 import test_probe_checks as tpc
@@ -90,7 +92,7 @@ def claude(tmp_path):
 @pytest.fixture(autouse=True)
 def no_alias_remaps(monkeypatch):
     '''A remap in the machine running the suite would add its name to every row; each test starts without one.'''
-    for name in probes.ALIAS_REMAPS:
+    for name in probe_process.ALIAS_REMAPS:
         monkeypatch.delenv(name, raising=False)
 
 
@@ -205,7 +207,7 @@ def test_an_inherited_alias_remap_is_named_in_the_row_and_its_value_is_not(repo,
 
 
 def test_every_inherited_alias_remap_is_named_after_the_allow_old_flag(repo, tmp_path, claude, monkeypatch):
-    for name in probes.ALIAS_REMAPS:
+    for name in probe_process.ALIAS_REMAPS:
         monkeypatch.setenv(name, 'a-model')
     monkeypatch.setenv('ANTHROPIC_DEFAULT_MODEL', 'a-model')  # the default model, not an alias remap
     monkeypatch.setenv('CLAUDE_CODE_SUBAGENT_MODEL', 'a-model')  # outranked by an agent's model field
@@ -321,7 +323,47 @@ def test_the_log_shows_the_home_directory_as_a_tilde(isolated_home):
     assert probes.shown_path(Path('/opt/claude')) == '/opt/claude'
 
 
-def planted_privates(monkeypatch) -> list[str]:
+def test_the_binary_cell_hides_the_resolved_home_and_the_login(tmp_path, monkeypatch):
+    '''HOME may be a symlink, and a binary found through PATH is often given by its resolved path.'''
+    real = tmp_path / 'real-home'
+    (real / 'zzlogin' / 'bin').mkdir(parents=True)
+    link = tmp_path / 'home-link'
+    link.symlink_to(real)
+    monkeypatch.setenv('HOME', str(link))
+    monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
+    binary = real / 'zzlogin' / 'bin' / 'claude'
+    row = probes.log_row(TODAY, '2.1.902', binary, 'agent-tools', probes.Verdict(PASS, 'ok'), False)
+    shown = row.split(' | ')[2]
+    assert shown.startswith('~')
+    assert str(real) not in row and 'zzlogin' not in row
+    assert shown == '~/<private>/bin/claude'
+    assert probes.shown_path(real) == '~'
+
+
+def test_run_prints_the_scrubbed_finding(repo, tmp_path, claude, isolated_home, monkeypatch):
+    '''The terminal gets the finding the log gets: a transcript of a run can be pasted anywhere.'''
+    finding = f'OSError: {Path.home()}/x refused mcp__srv__tool'
+    monkeypatch.setattr(probes, 'run_probe', lambda *args: probes.Verdict(ERROR, finding))
+    code, lines = run(repo, tmp_path, claude, FakeRuns({}), only=['agent-tools'])
+    assert code == 1
+    (printed,) = [line for line in lines if line.startswith('agent-tools: ')]
+    assert printed == 'agent-tools: ERROR: OSError: <private>/x refused <mcp-tool>'
+    assert str(Path.home()) not in printed
+    assert probes.public_finding(probes.Verdict(ERROR, finding)) == 'OSError: <private>/x refused <mcp-tool>'
+
+
+@pytest.fixture
+def symlinked_home(isolated_home, tmp_path, monkeypatch) -> Path:
+    '''HOME as a symlink to isolated_home, so Path.home() and Path.home().resolve() are two strings, as they are on
+    a machine whose home is a link (plan 58's Minor (w)). A test that plants both asserts that they differ.'''
+    link = tmp_path / 'linked'
+    link.symlink_to(isolated_home)
+    monkeypatch.setenv('HOME', str(link))
+    return link
+
+
+@pytest.fixture
+def planted_privates(symlinked_home, monkeypatch) -> list[str]:
     '''The five strings a committed probe file must not show (owner, plan 58 decision D3), the login name set
     to a value no path or word in a test holds.'''
     monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
@@ -329,9 +371,9 @@ def planted_privates(monkeypatch) -> list[str]:
             os.path.realpath(tempfile.gettempdir()), 'zzlogin']
 
 
-def test_the_log_row_holds_no_private_text_and_no_mcp_tool_name(isolated_home, monkeypatch):
+def test_the_log_row_holds_no_private_text_and_no_mcp_tool_name(isolated_home, planted_privates):
     '''A finding built from an OSError, a scratch path or a tool name reaches a public repo through PROBES.md.'''
-    planted = planted_privates(monkeypatch)
+    planted = planted_privates
     finding = f"OSError: {' '.join(planted)} refused 'mcp__srv__tool' for mcp__plug__other"
     verdict = probes.Verdict(ERROR, finding)
     row = probes.log_row(TODAY, '2.1.902', isolated_home / 'bin' / 'claude', 'agent-tools', verdict, True)
@@ -777,6 +819,16 @@ def log_reads(log: Path, lines: list[str], wait: float) -> bool:
     return False
 
 
+def written(path: Path, wait: float = 5) -> bool:
+    '''Whether the file holds text within `wait` seconds.'''
+    deadline = time.monotonic() + wait
+    while time.monotonic() < deadline:
+        if path.is_file() and path.read_text(encoding='utf-8').strip():
+            return True
+        time.sleep(0.01)
+    return False
+
+
 @contextlib.contextmanager
 def reaped(proc: subprocess.Popen):
     try:
@@ -815,14 +867,16 @@ def test_the_teardown_hook_logs_each_signal_at_once_and_keeps_running(tmp_path):
             assert proc.poll() is None, f'the hook ended on {name}'
 
 
-def test_the_teardown_hook_ends_by_itself_after_its_lifetime(tmp_path):
-    '''Nothing the probe starts runs unbounded: with its 120-second bound cut to 2, the hook ends on its own.'''
+def test_the_teardown_hook_logs_expired_once_its_lifetime_ends(tmp_path):
+    '''Nothing the probe starts runs unbounded: with its 120-second bound cut to 2, the hook ends on its own, and
+    its last line says so, so the assessment never reads its natural end as claude's teardown.'''
     bound = f'-lt {probes.TEARDOWN_LIFETIME} ]'
     assert probes.TEARDOWN_LIFETIME == 120 and bound in probes.TEARDOWN_HOOK
     proc, log = start_hook(tmp_path, probes.TEARDOWN_HOOK.replace(bound, '-lt 2 ]'))
     with reaped(proc):
         assert proc.wait(timeout=10) == 0
-        assert log.read_text(encoding='utf-8') == f'start {proc.pid}\n'
+        assert log.read_text(encoding='utf-8').splitlines()[-1] == 'expired'
+        assert log.read_text(encoding='utf-8') == f'start {proc.pid}\nexpired\n'
 
 
 def test_the_teardown_probe_reads_its_run_like_a_live_one(tmp_path):
@@ -837,10 +891,58 @@ def test_the_teardown_probe_reads_its_run_like_a_live_one(tmp_path):
                                                          'teardown.log']
 
 
+def test_the_teardown_run_is_not_swept_so_collect_sees_what_claude_left(tmp_path):
+    '''A sweep after claude -p ends would kill a hook claude left behind, and the log would read gone.'''
+    (inv,) = probes.prepare_teardown(tmp_path, 'claude', REPO)
+    assert inv.sweep is False
+    tools = tmp_path / 'tools'
+    tools.mkdir()
+    assert all(inv.sweep for inv in probes.prepare_agent_tools(tools, 'claude', REPO))
+
+
+def test_collect_teardown_never_kills_a_pid_that_is_not_its_hook(tmp_path, monkeypatch):
+    '''The OS may reuse a hook's pid once the hook is gone: that process is never signalled and never read as the
+    hook (Review Focus 5).'''
+    real_kill, sent = os.kill, []
+
+    def spy(pid, signum):
+        if signum:
+            sent.append((pid, signum))
+        return real_kill(pid, signum)
+    with reaped(subprocess.Popen(['sleep', '60'])) as other:
+        (tmp_path / 'teardown.log').write_text(f'start {other.pid}\nTERM\n', encoding='utf-8')
+        run_dir = tmp_path / 'run'
+        run_dir.mkdir()
+        monkeypatch.setattr(probes.os, 'kill', spy)
+        probes.collect_teardown(tmp_path, run_dir)
+        monkeypatch.undo()
+        assert sent == []
+        assert (run_dir / 'teardown.log').read_text(encoding='utf-8').splitlines()[-1] == 'gone'
+        assert other.poll() is None
+
+
+def test_is_hook_reads_the_command_line_of_the_pid(tmp_path, monkeypatch):
+    proc, log = start_hook(tmp_path)
+    with reaped(proc):
+        assert written(log)
+        assert probes.is_hook(proc.pid, tmp_path / probes.TEARDOWN_SCRIPT)
+        assert not probes.is_hook(proc.pid, tmp_path / 'other-hook.sh')
+        # Another probe's hook has the same file name in its own scratch directory.
+        assert not probes.is_hook(proc.pid, tmp_path / 'other-scratch' / probes.TEARDOWN_SCRIPT)
+    assert not probes.is_hook(gone_pid(), tmp_path / probes.TEARDOWN_SCRIPT)
+
+    def no_ps(*args, **kwargs):
+        raise OSError('no ps')
+    monkeypatch.setattr(probes.subprocess, 'run', no_ps)
+    assert not probes.is_hook(os.getpid(), Path(sys.argv[0]))
+
+
 def test_collect_teardown_waits_for_a_hook_that_goes_late_and_reads_its_log_after(tmp_path):
     '''A hook that logs TERM and ends a second after collect starts reads gone, with that TERM in the log.'''
     log = tmp_path / 'teardown.log'
-    pid = orphan(f"sleep 1; printf 'TERM\\n' >> {shlex.quote(str(log))}")
+    body = f"#!/bin/sh\nsleep 1\nprintf 'TERM\\n' >> {shlex.quote(str(log))}\n"
+    hook = executable(tmp_path / probes.TEARDOWN_SCRIPT, body)
+    pid = orphan(shlex.quote(str(hook)))
     log.write_text(f'start {pid}\n', encoding='utf-8')
     run_dir = tmp_path / 'run'
     run_dir.mkdir()
@@ -900,6 +1002,7 @@ def test_collect_teardown_counts_a_pid_it_may_not_signal_as_alive(tmp_path, monk
         raise PermissionError(1, 'Operation not permitted')
 
     monkeypatch.setattr(probes, 'TEARDOWN_WAIT', 0.2)
+    monkeypatch.setattr(probes, 'is_hook', lambda pid, hook: True)
     monkeypatch.setattr(probes.os, 'kill', refuse)
     (tmp_path / 'teardown.log').write_text('start 99999\nTERM\n', encoding='utf-8')
     run_dir = tmp_path / 'run'
@@ -1107,202 +1210,6 @@ def test_the_cut_probe_reads_its_run_like_a_live_one(tmp_path, isolated_home):
     assert json.loads((tmp_path / 'absent' / 'cut.json').read_text(encoding='utf-8')) == {}
 
 
-# Prints the effort override, or "unset", then the variable its invocation adds.
-ENV_ECHO = '#!/bin/sh\nprintf "%s %s" "${CLAUDE_CODE_EFFORT_LEVEL-unset}" "${PROBE_ADDED-unset}"\n'
-
-
-def test_a_run_never_inherits_the_effort_override(tmp_path, monkeypatch):
-    '''CLAUDE_CODE_EFFORT_LEVEL outranks an agent's effort field
-    (subagents.frontmatter), so one set in the caller's shell would decide
-    the effort that agent-model-pins reads. A run goes without it, and still
-    gets what its invocation adds.'''
-    monkeypatch.setenv('CLAUDE_CODE_EFFORT_LEVEL', 'low')
-    inv = probes.Invocation('echo', [str(executable(tmp_path / 'echo', ENV_ECHO))], {'PROBE_ADDED': 'yes'}, 30)
-    assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
-    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'unset yes'
-
-
-def test_a_run_keeps_an_inherited_alias_remap(tmp_path, monkeypatch):
-    '''Owner ruling, 2026-10-31: record a remap, never scrub it. On Bedrock, Google Cloud or Foundry it can be the
-    owner's own setup, so the probe tests the model the owner runs.'''
-    monkeypatch.setenv('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'a-model')
-    echo = executable(tmp_path / 'echo', '#!/bin/sh\nprintf "%s" "${ANTHROPIC_DEFAULT_HAIKU_MODEL-unset}"\n')
-    inv = probes.Invocation('echo', [str(echo)], {}, 30)
-    assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
-    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'a-model'
-    assert not set(probes.ALIAS_REMAPS) & probes.SCRUBBED_ENV
-
-
-# A run whose leader starts a child, as Gate B's bash starts claude. It writes "<leader> <child>" to $1.
-SLOW = '#!/bin/sh\nsleep 300 &\necho "$$ $!" > "$1"\nsleep 300\n'
-# The same, but the leader and its child ignore SIGTERM, as a stuck claude might, so only SIGKILL ends them.
-STUBBORN = "#!/bin/sh\ntrap '' TERM\nsleep 300 &\necho \"$$ $!\" > \"$1\"\nwait\n"
-
-
-def written(path: Path, wait: float = 5) -> bool:
-    '''Whether the file holds text within `wait` seconds.'''
-    deadline = time.monotonic() + wait
-    while time.monotonic() < deadline:
-        if path.is_file() and path.read_text(encoding='utf-8').strip():
-            return True
-        time.sleep(0.01)
-    return False
-
-
-def gone(pid: int, wait: float = 5) -> bool:
-    '''Whether the process ends within `wait` seconds.'''
-    deadline = time.monotonic() + wait
-    while time.monotonic() < deadline:
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            return True
-        time.sleep(0.05)
-    return False
-
-
-@pytest.fixture
-def pids(tmp_path):
-    '''The pid file a SLOW or STUBBORN run writes. Teardown kills what is
-    left of its process group, so a failing test leaks no sleep.'''
-    path = tmp_path / 'pids'
-    yield path
-    if path.is_file() and path.read_text(encoding='utf-8').split():
-        with contextlib.suppress(ProcessLookupError, PermissionError):
-            os.killpg(int(path.read_text(encoding='utf-8').split()[0]), signal.SIGKILL)
-
-
-def child_of(path: Path) -> int:
-    return int(path.read_text(encoding='utf-8').split()[1])
-
-
-def test_a_timeout_stops_everything_the_run_started(tmp_path, pids):
-    '''Gate B runs claude under bash: a timeout must stop the grandchild too,
-    not only the bash that started it.'''
-    inv = probes.Invocation('slow', [str(executable(tmp_path / 'slow', SLOW)), str(pids)], {}, 3)
-    assert probes.execute(inv, tmp_path, tmp_path / 'slow.out', tmp_path / 'slow.err') is None
-    assert written(pids), 'the run was stopped before it started its child'
-    assert gone(child_of(pids))
-
-
-def test_an_interrupt_stops_everything_the_run_started_and_still_propagates(tmp_path, pids, monkeypatch):
-    '''Ctrl-C while a probe runs: its own process group gets no SIGINT from
-    the terminal, so execute stops the group itself before re-raising.'''
-    real_wait = subprocess.Popen.wait
-
-    def interrupted(proc, timeout=None):
-        if timeout == 30:  # the probe's own wait, once its child is running
-            assert written(pids), 'the run never started its child'
-            raise KeyboardInterrupt
-        return real_wait(proc, timeout)
-    monkeypatch.setattr(subprocess.Popen, 'wait', interrupted)
-    inv = probes.Invocation('slow', [str(executable(tmp_path / 'slow', SLOW)), str(pids)], {}, 30)
-    with pytest.raises(KeyboardInterrupt):
-        probes.execute(inv, tmp_path, tmp_path / 'slow.out', tmp_path / 'slow.err')
-    assert gone(child_of(pids))
-
-
-def test_a_stop_while_the_run_starts_still_stops_it(tmp_path, pids, monkeypatch):
-    '''A SIGTERM that lands while Popen starts the run is held until proc
-    is bound, so the run is stopped, not orphaned.'''
-    real_popen, leaders = subprocess.Popen, []
-
-    def starting(*args, **kwargs):
-        proc = real_popen(*args, **kwargs)
-        leaders.append(proc.pid)
-        os.kill(os.getpid(), signal.SIGTERM)
-        return proc
-    monkeypatch.setattr(subprocess, 'Popen', starting)
-    inv = probes.Invocation('slow', [str(executable(tmp_path / 'slow', SLOW)), str(pids)], {}, 30)
-    with pytest.raises(SystemExit):
-        with probes.term_as_exit():
-            probes.execute(inv, tmp_path, tmp_path / 'slow.out', tmp_path / 'slow.err')
-    assert gone(leaders[0])
-
-
-def test_a_second_signal_during_the_grace_still_ends_with_sigkill(tmp_path, pids, monkeypatch):
-    '''Ctrl-C while stop_group waits out SIGTERM's grace is held, so the
-    SIGKILL still goes out, and the interrupt is raised after it.'''
-    monkeypatch.setattr(probes, 'KILL_GRACE', 1)
-    proc = subprocess.Popen([str(executable(tmp_path / 'stubborn', STUBBORN)), str(pids)], start_new_session=True)
-    assert written(pids)
-    threading.Timer(0.3, os.kill, (os.getpid(), signal.SIGINT)).start()
-    with pytest.raises(KeyboardInterrupt):
-        probes.stop_group(proc)
-    assert gone(child_of(pids))
-
-
-# Run in a child Python, so a signal left at its default ends the child, not pytest.
-STOP_CHECK = """
-import os, signal, sys, time
-import probes
-signum = int(sys.argv[1])
-before = signal.getsignal(signum)
-try:
-    with probes.term_as_exit():
-        os.kill(os.getpid(), signum)
-        time.sleep(5)
-except SystemExit:
-    assert signal.getsignal(signum) is before
-    raise
-"""
-
-
-@pytest.mark.parametrize('signum', [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT])
-def test_a_stop_signal_while_probes_run_exits_through_the_cleanup_path(signum):
-    '''SIGTERM (a stopped tool), SIGHUP (a closed terminal) and SIGQUIT end
-    Python with no except or finally by default; while probes run each one
-    raises SystemExit instead, and the old handler comes back after. A
-    negative exit code means the signal ended the child unhandled.'''
-    proc = subprocess.run([sys.executable, '-c', STOP_CHECK, str(int(signum))], cwd=Path(__file__).parent,
-                          capture_output=True, text=True, timeout=30)
-    assert (proc.returncode, proc.stderr) == (128 + signum, '')
-
-
-def test_a_hangup_ignored_by_nohup_stays_ignored():
-    before = signal.signal(signal.SIGHUP, signal.SIG_IGN)
-    try:
-        with probes.term_as_exit():
-            assert signal.getsignal(signal.SIGHUP) is signal.SIG_IGN
-    finally:
-        signal.signal(signal.SIGHUP, before)
-
-
-def test_held_signals_act_once_the_block_is_done():
-    reached = []
-    with pytest.raises(SystemExit):
-        with probes.term_as_exit():
-            with probes.held_signals():
-                os.kill(os.getpid(), signal.SIGTERM)
-                time.sleep(0.2)
-                reached.append('end of block')
-    assert reached == ['end of block']
-
-
-# Run in a child Python, started as nohup starts it: SIGHUP ignored.
-HELD_CHECK = """
-import os, signal, time
-import probes
-signal.signal(signal.SIGHUP, signal.SIG_IGN)
-acted = []
-signal.signal(signal.SIGTERM, lambda signum, frame: acted.append(signum))
-with probes.held_signals():
-    os.kill(os.getpid(), signal.SIGHUP)
-    os.kill(os.getpid(), signal.SIGTERM)
-    time.sleep(0.2)
-print(acted, signal.getsignal(signal.SIGHUP) is signal.SIG_IGN)
-"""
-
-
-def test_an_ignored_signal_is_not_held_so_a_stop_after_it_is_acted_on_once():
-    '''A SIGHUP that nohup ignores, landing in a held window, is not
-    recorded: the SIGTERM after it is acted on once when the window ends,
-    and SIGHUP stays ignored.'''
-    proc = subprocess.run([sys.executable, '-c', HELD_CHECK], cwd=Path(__file__).parent,
-                          capture_output=True, text=True, timeout=30)
-    assert (proc.returncode, proc.stdout, proc.stderr) == (0, f'[{int(signal.SIGTERM)}] True\n', '')
-
-
 def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
     def broken(scratch, claude, repo):
         raise OSError('disk full')
@@ -1311,34 +1218,210 @@ def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
         ERROR, 'OSError: disk full')
 
 
-def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_run(tmp_path, isolated_home,
+def test_a_setup_error_from_prepare_is_an_error_row(tmp_path, monkeypatch):
+    '''worktree-isolation's prepare raises SetupError when a scratch repo misses a precondition.'''
+    def broken(scratch, claude, repo):
+        raise state.SetupError('gone: git fetch origin succeeded')
+    monkeypatch.setitem(probes.PROBE_RUNS, 'agent-tools', probes.PROBE_RUNS['agent-tools']._replace(prepare=broken))
+    assert probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'run', FakeRuns({})) == (
+        ERROR, 'SetupError: gone: git fetch origin succeeded')
+
+
+def test_the_moved_probe_names_still_resolve_through_probes():
+    assert (probes.Probe, probes.Read, probes.PROBE_TIMEOUT) == (
+        probe_process.Probe, probe_process.Read, probe_process.PROBE_TIMEOUT)
+
+
+def test_a_run_dir_that_cannot_be_made_is_an_error_row(tmp_path):
+    '''(i): run_probe returns ERROR, never a traceback, so the row is still written.'''
+    parent = tmp_path / 'a-file'
+    parent.write_text('', encoding='utf-8')
+    verdict = probes.run_probe('agent-tools', 'claude', REPO, parent / 'run', FakeRuns(TOOLS_PASS))
+    assert verdict.outcome == ERROR
+    name = verdict.finding.partition(':')[0]
+    assert issubclass(getattr(builtins, name), OSError), verdict.finding
+
+
+def test_a_scratch_folder_that_cannot_be_made_is_an_error_row(tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path / 'missing'))
+    verdict = probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'run', FakeRuns(TOOLS_PASS))
+    assert verdict.outcome == ERROR and verdict.finding.startswith('FileNotFoundError: ')
+
+
+def scratch_folders(tmp: Path) -> list[Path]:
+    return sorted(tmp.glob('cc-guide-probe-*'))
+
+
+def test_a_scratch_folder_inside_a_work_tree_is_an_error_and_is_removed(tmp_path, monkeypatch):
+    work = (tmp_path / 'work').resolve()
+    (work / 'tmp').mkdir(parents=True)
+    subprocess.run(['git', 'init', '-q'], cwd=work, check=True, capture_output=True)
+    monkeypatch.setattr(tempfile, 'tempdir', str(work / 'tmp'))
+    fake = FakeRuns(TOOLS_PASS)
+    verdict = probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'run', fake)
+    assert verdict.outcome == ERROR and 'inside a git work tree' in verdict.finding
+    assert f'{work}{os.sep}' in verdict.finding
+    assert fake.ran == []
+    assert scratch_folders(work / 'tmp') == []
+
+
+def test_an_inherited_git_dir_does_not_make_a_scratch_folder_read_as_inside_a_repo(tmp_path, monkeypatch):
+    '''A git hook exports GIT_DIR for its own repository; git would then call any folder that repository's work
+    tree, so every probe would read ERROR before it ran.'''
+    other = tmp_path / 'other'
+    other.mkdir()
+    subprocess.run(['git', 'init', '-q'], cwd=other, check=True, capture_output=True)
+    (tmp_path / 'scratch').mkdir()
+    monkeypatch.setenv('GIT_DIR', str(other / '.git'))
+    assert not probes.inside_a_repo(tmp_path / 'scratch')
+
+
+GUARD_REGISTRY = '\n'.join(['[[probe]]', "id = 'guard-liveness'", "sections = ['beta.reference']", ''])
+
+
+def with_the_guard_probe(repo):
+    '''The test manifest with guard-liveness registered too, whose prepare runs git init in the scratch folder.'''
+    write_tree(repo, {state.MANIFEST: MANIFEST_TOML + REGISTRY + GUARD_REGISTRY})
+
+
+def a_repo_elsewhere(tmp_path):
+    other = tmp_path / 'other'
+    other.mkdir()
+    subprocess.run(['git', 'init', '-q'], cwd=other, check=True, capture_output=True)
+    return other, {p: p.read_bytes() for p in sorted((other / '.git').rglob('*')) if p.is_file()}
+
+
+def test_a_run_drops_inherited_git_names_for_prepare_and_execute_and_restores_them(repo, tmp_path, claude,
                                                                                    monkeypatch):
+    '''F10: a git hook exports GIT_DIR and GIT_WORK_TREE for its own repository. While probes run, no GIT_ name is
+    in os.environ, so a probe's setup git (guard-liveness runs git init) and every child run use the scratch
+    repo; the prior environment comes back afterwards, less any GIT_ name the run added.'''
+    other, before = a_repo_elsewhere(tmp_path)
+    monkeypatch.setenv('GIT_DIR', str(other / '.git'))
+    monkeypatch.setenv('GIT_WORK_TREE', str(other))
+    seen = []
+
+    def fake(inv, cwd, out, err):
+        seen.append((sorted(n for n in os.environ if n.startswith('GIT_')),
+                     (cwd / '.git' / 'HEAD').is_file()))
+        os.environ['GIT_ADDED_BY_RUN'] = 'x'
+        out.write_text('', encoding='utf-8')
+        err.write_text('', encoding='utf-8')
+        return 0
+
+    with_the_guard_probe(repo)
+    run(repo, tmp_path, claude, fake, only=['guard-liveness'])
+    assert seen == [([], True)]
+    assert {p: p.read_bytes() for p in sorted((other / '.git').rglob('*')) if p.is_file()} == before
+    assert (os.environ['GIT_DIR'], os.environ['GIT_WORK_TREE']) == (str(other / '.git'), str(other))
+    assert 'GIT_ADDED_BY_RUN' not in os.environ
+
+
+def test_a_stopped_run_still_restores_the_inherited_git_names(repo, tmp_path, claude, monkeypatch):
+    monkeypatch.setenv('GIT_DIR', str(tmp_path / 'elsewhere.git'))
+
+    def stopped(inv, cwd, out, err):
+        raise KeyboardInterrupt
+
+    with_the_guard_probe(repo)
+    with pytest.raises(KeyboardInterrupt):
+        run(repo, tmp_path, claude, stopped, only=['guard-liveness'])
+    assert os.environ['GIT_DIR'] == str(tmp_path / 'elsewhere.git')
+
+
+def test_scratch_is_removed_after_an_error_and_after_a_timeout(tmp_path, monkeypatch):
+    tmp = tmp_path / 'tmp'
+    tmp.mkdir()
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp))
+
+    def broken(inv, cwd, out, err):
+        raise OSError('no claude')
+    timeout = probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'r1', lambda inv, cwd, out, err: None)
+    assert timeout.outcome == ERROR and 'timed out' in timeout.finding
+    assert scratch_folders(tmp) == []
+    assert probes.run_probe('agent-tools', 'claude', REPO, tmp_path / 'r2', broken) == (ERROR, 'OSError: no claude')
+    assert scratch_folders(tmp) == []
+
+
+def guard_dir(run_dir: Path, command: str = 'git status --porcelain', **given) -> Path:
+    '''A guard-liveness run directory whose first check ran `command`, which passes the guard.'''
+    first = tpc.guard_run(command, '(Bash completed with no output)')
+    first[1]['message']['content'][0]['input'].update(given)
+    streams = [first, *tpc.guard_streams()[1:]]
+    write_tree(run_dir, {f'guard-{n}.jsonl': stream(*events) for n, events in enumerate(streams, start=1)})
+    return run_dir
+
+
+def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_run(tmp_path, isolated_home,
+                                                                                   symlinked_home, planted_privates):
     # The trim drops an init event's cwd and memory_paths, so those prove nothing. The private strings go where the
-    # trim keeps them, a Bash command, and each must come out as <private> on its own: a path that another entry
-    # covers by its prefix, as the temporary directory covers a home inside it, must not hide an uncovered one.
-    monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
-    planted = [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
-               os.path.realpath(tempfile.gettempdir()), 'zzlogin']
-    ran = {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'm', 'content': [
-        {'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': 'ls ' + ' '.join(planted)}}]}}
+    # trim keeps them, a Bash command of the guard probe, and each must come out as <private> on its own: a path that
+    # another entry covers by its prefix, as the temporary directory covers a home inside it, must not hide an
+    # uncovered one. Home and its resolved path are two strings, so a dropped entry shows.
+    planted = planted_privates
+    assert str(Path.home()) != str(Path.home().resolve())
     run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
-    with_bash = stream({**init(), 'cwd': str(isolated_home / 'work'), 'memory_paths': [str(isolated_home)]}, ran,
-                       RESULT)
-    write_tree(run_dir, {'probe-with-bash.jsonl': with_bash,
-                         'probe-without-bash.jsonl': TOOLS_PASS['probe-without-bash']})
-    probe = probes.PROBE_RUNS['agent-tools']
-    written = probes.save_fixtures(run_dir, 'agent-tools', dest)
-    assert sorted(p.name for p in written) == ['agent-tools.with-bash.jsonl', 'agent-tools.without-bash.jsonl']
-    scrubbed = (dest / 'agent-tools.with-bash.jsonl').read_text()
-    assert str(isolated_home) not in scrubbed
+    guard_dir(run_dir, 'git status --porcelain ' + ' '.join(planted))
+    probe = probes.PROBE_RUNS['guard-liveness']
+    written = probes.save_fixtures(run_dir, 'guard-liveness', dest)
+    assert sorted(p.name for p in written) == ['guard-liveness.1.jsonl', 'guard-liveness.2.jsonl',
+                                               'guard-liveness.3.jsonl']
+    scrubbed = (dest / 'guard-liveness.1.jsonl').read_text()
+    assert str(isolated_home) not in scrubbed and str(symlinked_home) not in scrubbed
     for value in planted:
         assert value not in scrubbed
     assert '<private>' in scrubbed
-    assert f'"command": "ls {" ".join(["<private>"] * len(planted))}"' in scrubbed
+    assert f'"command": "git status --porcelain {" ".join(["<private>"] * len(planted))}"' in scrubbed
     assert probe.assess(probes.reader(dest, probe.fixtures)) == probe.assess(probes.reader(run_dir))
-    write_tree(run_dir, {'probe-with-bash.jsonl': 'not a stream\n{"broken": \n'})
+    write_tree(run_dir, {'guard-1.jsonl': 'not a stream\n{"broken": \n'})
     with pytest.raises(state.SetupError):
-        probes.save_fixtures(run_dir, 'agent-tools', dest)
+        probes.save_fixtures(run_dir, 'guard-liveness', dest)
+
+
+def saved_inputs(dest: Path, fixture: str) -> list[dict]:
+    '''The input of each Bash call in a saved fixture stream.'''
+    events = probe_checks.parse_stream((dest / fixture).read_text(encoding='utf-8'))
+    return [block['input'] for e in events if e.get('type') == 'assistant' for block in e['message']['content']
+            if block.get('type') == 'tool_use' and block['name'] == 'Bash']
+
+
+def ran_bash(command: str) -> dict:
+    return {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'm', 'content': [
+        {'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': command}}]}}
+
+
+def test_save_fixtures_drops_command_text_unless_the_probe_reads_it(tmp_path):
+    '''Only guard-liveness reads a command (probe_checks.bash_calls), so a command in any other probe's stream is
+    text no assertion needs, and it may name a path or a repo of the recording machine.'''
+    assert [pid for pid, probe in probes.PROBE_RUNS.items() if probe.reads_commands] == ['guard-liveness']
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {'probe-with-bash.jsonl': stream(init(), ran_bash('ls -A /some/repo'), RESULT),
+                         'probe-without-bash.jsonl': TOOLS_PASS['probe-without-bash']})
+    probes.save_fixtures(run_dir, 'agent-tools', dest)
+    assert saved_inputs(dest, 'agent-tools.with-bash.jsonl') == [{}]
+    guard_dir(run_dir)
+    probes.save_fixtures(run_dir, 'guard-liveness', dest)
+    assert saved_inputs(dest, 'guard-liveness.1.jsonl') == [{'command': 'git status --porcelain'}]
+
+
+@pytest.mark.parametrize('pid', list(probes.PROBE_RUNS))
+def test_the_scratch_pattern_matches_the_whole_name_mkdtemp_gives_each_probe(pid, tmp_path, monkeypatch):
+    '''run_probe makes its folder with mkdtemp and this prefix; a probe id that holds a digit, or whose last word
+    is eight letters long, must not leave part of the name behind.'''
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
+    name = Path(tempfile.mkdtemp(prefix=f'cc-guide-probe-{pid}-')).name
+    assert probe_checks.SCRATCH_RE.fullmatch(name), name
+    assert probe_checks.SCRATCH_RE.sub('<scratch>', f'/t/{name}/a.py') == '/t/<scratch>/a.py'
+
+
+def test_save_fixtures_replaces_the_scratch_folder_name(tmp_path):
+    '''A scratch folder's name ends in a random suffix, so a re-recorded fixture would change for no reason.'''
+    name = 'cc-guide-probe-agent-model-pins-7665i08q'
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    guard_dir(run_dir, f'git status --porcelain /scratch/{name}/a.py')
+    probes.save_fixtures(run_dir, 'guard-liveness', dest)
+    assert saved_inputs(dest, 'guard-liveness.1.jsonl') == [{'command': 'git status --porcelain /scratch/<scratch>/a.py'}]
+    assert '7665i08q' not in (dest / 'guard-liveness.1.jsonl').read_text()
 
 
 @pytest.mark.parametrize('pid, stream_name, side_name, template, fixture', [
@@ -1346,10 +1429,10 @@ def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_ru
      'agent-model-pins.transcripts.json'),
     ('stop-continuation', 'stop.jsonl', 'stop.log', 'false\n@P@\ntrue\n', 'stop-continuation.log'),
 ])
-def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated_home, monkeypatch, pid, stream_name,
-                                                              side_name, template, fixture):
+def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated_home, planted_privates, pid,
+                                                              stream_name, side_name, template, fixture):
     '''A transcripts.json or a stop.log is copied whole, so it needs the same scrub as a stream.'''
-    planted = planted_privates(monkeypatch)
+    planted = planted_privates
     run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
     write_tree(run_dir, {stream_name: stream(init(), RESULT), side_name: template.replace('@P@', ' '.join(planted))})
     probes.save_fixtures(run_dir, pid, dest)
@@ -1357,3 +1440,35 @@ def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated
     for value in planted:
         assert value not in saved
     assert saved == template.replace('@P@', ' '.join(['<private>'] * len(planted)))
+
+
+@pytest.mark.parametrize('ensure_ascii', [True, False])
+def test_save_fixtures_scrubs_an_escaped_private_value_from_a_side_file(tmp_path, isolated_home, monkeypatch,
+                                                                         ensure_ascii):
+    '''A side file is written by json.dumps, which spells a quote, a backslash and, by default, a non-ASCII
+    character with an escape, so the raw private string would not match it. The home folder's name and the login
+    each hold one of those, and the home's holds all three, so its raw form and its two JSON forms differ.'''
+    home = tmp_path / 'h\u00e9"me\\x'
+    home.mkdir()
+    monkeypatch.setenv('HOME', str(home))
+    monkeypatch.setattr('getpass.getuser', lambda: 'zzl\u00f6gin')
+    written = json.dumps({'Explore': [{'model': f'{home} zzl\u00f6gin', 'effort': 'low'}]}, ensure_ascii=ensure_ascii)
+    assert str(home) not in written
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {'pins.jsonl': stream(init(), RESULT), 'transcripts.json': written})
+    probes.save_fixtures(run_dir, 'agent-model-pins', dest)
+    saved = (dest / 'agent-model-pins.transcripts.json').read_text()
+    assert saved == json.dumps({'Explore': [{'model': '<private> <private>', 'effort': 'low'}]},
+                               ensure_ascii=ensure_ascii)
+
+
+def test_save_fixtures_scrubs_a_raw_private_value_from_a_text_side_file(tmp_path, monkeypatch):
+    '''A stop.log is plain text, not JSON, so a private value with a quote or a non-ASCII character reads there as
+    given, and the JSON forms of the value do not match it.'''
+    home = tmp_path / 'hé"me'
+    home.mkdir()
+    monkeypatch.setenv('HOME', str(home))
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {'stop.jsonl': stream(init(), RESULT), 'stop.log': f'false\n{home}\ntrue\n'})
+    probes.save_fixtures(run_dir, 'stop-continuation', dest)
+    assert (dest / 'stop-continuation.log').read_text() == 'false\n<private>\ntrue\n'
