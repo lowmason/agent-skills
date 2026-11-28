@@ -26,7 +26,7 @@
 - **Shell.** The Bash tool runs zsh. Use `/usr/bin/grep` for sweeps. Never `cd` in a step. Use absolute paths, or `uv run --directory <dir>`.
 - **Who runs a task.** Tasks 1 to 5 go to implementer subagents, in order: Tasks 2 to 4 edit the same functions. Task 6 is **(controller)**: it reads local transcripts and ends at an owner gate.
 - **Final review.** subagent-driven-development's final review runs code-reviewer, briefed as above. The controller runs the Codex seat once, with requesting-code-review's `codex-review.md` recipe, after Task 6. If Codex finds a mutating form that passes, report it by class and severity only, with a pointer to `/tmp/codex-review/<short-HEAD>.md`. Then **STOP, owner**: the owner picks fix, record or stop. Log the pick in `## Decisions`. After any later change to the guard, rerun Task 6's Steps 2 to 4.
-- **Item 1's new denials are git's and sed's only.** On `8131b81` the flat reading already makes a word glued to `(` a subcommand of its own, so `rm(.) x` and `rm(path)` are denied today. Only the two checks that read arguments can deny more: `_classify_git` and `_sed_edits_in_place`. So item 1 adds denials only where the glued word is `git` or `sed` and the words after the group form a denied git command or an in-place `sed`. The spec's §1 example of the false-positive class ("a Python line that calls a function named `rm`") is therefore not new; Task 5 Step 1 amends it, subject to the owner at plan review.
+- **Item 1's new denials are git's and sed's only.** On `8131b81` the flat reading already makes a word glued to `(` a subcommand of its own, so `rm(.) x` and `rm(path)` are denied today. Only the two checks that read arguments can deny more: `_classify_git` and `_sed_edits_in_place`. So item 1 adds denials only where the glued word is `git` or `sed` and the words after the group form a denied git command or an in-place `sed`. The spec's §1 example of the false-positive class ("a Python line that calls a function named `rm`") is therefore not new; Task 5 Step 0 amends it (D2).
 - **Completion.** The plan-completion protocol ticks both backlog items with `→ done <date>`: "A glob qualifier glued to the command word still hides the command from the read-only guard" (section `90-readonly-guard-command-starts — 2026-11-12`) and "Allowlisted git verbs can run a program through configuration or the environment" (section `readonly-guard-leading-token-bypasses`).
 
 ## Review Focus
@@ -40,6 +40,7 @@
 ## Decisions
 
 - **D1** (owner, plan review, 2026-11-28): "Plan needs to be 121.", where `entry_check.py` printed `next free: 117`. Applied in: the plan's file name and every path to it.
+- **D2** (owner, plan review, 2026-11-28): "Approve with amendment", in answer to "Approve plan 121, with the §1 spec amendment in Task 5 Step 0?". The plan stands as written, and Task 5 Step 0 runs. Applied in: Task 5 (spec amendment).
 
 ---
 
@@ -356,7 +357,7 @@ git commit -m "fix(hooks): check lasting assignments of the names git reads"
 - Consumes: the constant and function names of Tasks 1 to 4.
 - Produces: none.
 
-- [ ] **Step 0: Amend the spec's §1 example (spec amendment; drop this step if the owner keeps the spec text at plan review)**
+- [ ] **Step 0: Amend the spec's §1 example (spec amendment, approved as D2)**
 
 In `specs/readonly-guard-glued-qualifier-and-git-config.md`, §1, "False positives", replace:
 
