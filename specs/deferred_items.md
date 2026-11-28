@@ -2788,6 +2788,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: design. Done
       when: the overlapping data-and-modeling skills have a trigger-eval suite with labeled
       queries, near-miss negatives and a train/validation split.
+      → planned 2026-11-28: specs/plans/118-portability-lints-and-skill-checks.md
 - [ ] Distribution channels (plan 53's spec, Out of scope): a Claude Code `marketplace.json`,
       `npx skills`, `gh skill`, or a Codex plugin. Deferred because these are outward-facing,
       and plugin namespacing (`/plugin:skill`) conflicts with the bare-name cross-reference
@@ -2803,12 +2804,14 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: plan. Done
       when: each of the three commands has a manual-only skill adapter for Codex, and
       `build/check_frontmatter.py` passes on each.
+      → planned 2026-11-28: specs/plans/118-portability-lints-and-skill-checks.md
 - [ ] Tables of contents for long `references/` files (plan 53's spec, Out of scope), after
       Anthropic's partial-read guidance. Deferred because it needs a reliable detector
       first; a crude grep was not one. See
       `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: design. Done
       when: a detector for the `references/` files that need a table of contents exists, and
       every file it flags has one.
+      → planned 2026-11-28: specs/plans/118-portability-lints-and-skill-checks.md
 - [x] A versioning policy (plan 53's spec, Out of scope): a CHANGELOG, git tags, and
       `metadata.version` bumps. See `specs/completed/agent-skills-portability-spec.md`, "Out
       of scope". Size: design. Done when: the owner records a versioning policy and the repo
@@ -2821,6 +2824,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       "Out of scope". Size: plan. Done when: a skill scanner runs on `skills/` from the commit
       lints or from `.github/workflows/lints.yml`, and its first findings are triaged.
       → progress 2026-11-17 (owner ruling): plan it. The plan names the scanner, its source and its version, and the owner approves before anything is downloaded.
+      → planned 2026-11-28: specs/plans/118-portability-lints-and-skill-checks.md
 - [x] License travel for single-file agents (plan 53's spec, Out of scope).
       `agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers
       and install as single files without `LICENSE-superpowers`: the same gap R4 closes for
@@ -2904,6 +2908,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the gate. See `specs/plans/completed/53-agent-skills-portability.md`. Size: plan.
       Revisit if: a later edit to `build/check_frontmatter.py` or `build/check_provenance.py`
       touches one of them. Done when: each is fixed, or the owner rules here that it stays.
+      → progress 2026-11-28 (owner ruling): point (d)'s `../scripts/` form and a flag between the runner and the path stay open (plan 118 review, Q7); plan 118 fixes every other point.
+      → planned 2026-11-28: specs/plans/118-portability-lints-and-skill-checks.md
 - [x] Hold, owner-only: refresh each wiki's installed llm-wiki scripts after plan 53 merges
       (DF15). Plan 53's Task 10 gave `skills/llm-wiki/scripts/*.py` PEP 723 headers, but each
       wiki keeps the copies that `bootstrap_wiki.py` installed before that. Until the
@@ -3211,6 +3217,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
 - [ ] Widening `build/check_frontmatter.py` to `.claude/skills` and `.claude/agents` (drift spec, Out
       of scope). Size: design. Revisit if: a project-local skill or agent ships a frontmatter defect
       the lint would have caught.
+      → planned 2026-11-28: specs/plans/118-portability-lints-and-skill-checks.md
 - [x] Hold, owner-only: remove plan 58's scratch files once the branch has merged (plan completion
       notes). They sit outside the repo: `~/.cache/agent-skills/scratch/plan58-bin/` (the held
       `claude` 2.1.304, `broken-claude`, `startup_check.py`, `startup.log`; keep the held binary if
