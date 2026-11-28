@@ -4777,6 +4777,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → progress 2026-11-17 (owner ruling): no Echo. The reading of record stands: the phrase next to an order calls the order stages, and plan 78's round 2 rep5 verdict stands. The `Done when:` still needs the independent runs.
       → planned 2026-11-27: specs/plans/113-derive-roadmap-provisional-items-and-folded-requirements.md
       → progress 2026-11-27 (plan 113): at `2bd982d`, plan 113's final skill text, the two independent five-rep `dr-tracks` runs pass 5 of 5 each, and the `dr-known-progression-79` run passes 3 of 5 (bar 4). Its two fails leave traceability out of every stage. Its re-run at `171e763` passes 5 of 5. The owner accepted the miss at the completion gate (plan 113, D2). The item stays open: at `2bd982d` the `dr-tracks` runs meet its `Done when:`, and the `dr-known-progression-79` run does not. See specs/baseline/red-baseline-new-project-entry.md (Plan 113: summary). The gap between the two texts has its own item. → item: 113-derive-roadmap-provisional-items-and-folded-requirements — 2026-11-27
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -4786,6 +4787,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `plan <id>, Handoff`, as an amendment does. Size: plan. Done when: a two-resume case exists in the kit,
       its control fails (the second resume raises the block again), and the one-clause edit lands with a
       treatment run at 4 of 5.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **The gap-analysis path has no overwrite guard (plan 79 final review; outside plan 79's fence).**
       `skills/derive-roadmap/SKILL.md` §3 and the opening of `references/roadmap-format.md`. "Ask for another
       name: never overwrite it" appears only under New-project roadmaps. On the §1 to §3 path, §3 scans only
@@ -4793,6 +4795,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       source could be overwritten. Size: plan. Done when: a gap-analysis collision case exists in the kit, its
       control fails, and one sentence in §3 (or the roadmap-format.md opening) forbids overwriting a roadmap
       file that is not this spec's, with a treatment run at 4 of 5.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **The unticked-producer clause and the unusable-output path have no case (plan 79 final review).**
       `skills/derive-roadmap/SKILL.md` §5 Ask: a `Consumes` is unmet when a Handoff or stamp shows its input
       missing or not built, or when the stage that is to produce it is unticked. No fixture has a blocked
@@ -4800,6 +4803,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       unusable. The default "a stage added to produce it" fits the second case badly. Size: plan. Done when:
       cases for both exist in the kit, each with a control run and a treatment run, and the Ask text changes
       if either fails.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **A partial block gets no question about the blocked stage (plan 79 final review; owner decision D4).**
       `skills/derive-roadmap/SKILL.md` §5 Ask. The trigger is "none has all its `Consumes` met", which is the
       plan's exact copy of edit 2; D4 as the owner approved it has no "none" condition. With Stage 3 blocked
@@ -4807,6 +4811,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       surfaced. Size: design. Done when: the owner decides whether the question also fires for a blocked stage
       beside a ready one, and the Ask text and a case match that decision.
       → progress 2026-11-17 (owner ruling): the Ask also fires for a blocked stage beside a ready one, as D4 was approved, and the Ask text and a case change to match.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **A Handoff that amends nothing is re-read at every resume (plan 79 final review; owner decision D6
       item 5).** `skills/derive-roadmap/SKILL.md` §5 marker. A Handoff whose bullets change no entry's fields
       (a trap, a deferred item) is never cited, so each resume reads it again. The owner kept the narrow
@@ -4824,6 +4829,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       design. Done when: one of the two texts changes or states the difference, and `dr-offer-yes` and
       `dr-tracks` still pass their bars under the kit.
       → progress 2026-11-17 (owner ruling): §5 Parking states that its heading uses the roadmap file's stem, `<name>-roadmap`. The headings keep their form.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 
 ## spec-drift-finding-22 (no plan; brainstorming session for finding 22, branch claude/spec-drift-history) — 2026-11-08
 - [x] **Retired plans point at the live backlog after their deferred section has moved to the archive (handoff trap
@@ -6271,6 +6277,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       edit out because any skill commit re-runs the V3 runs and the guards that read §5. Size: plan. Done when:
       the Commit bullet names a decline, and the kit cases whose decision that bullet can reach re-run at the
       new text and meet their bars under specs/baseline/red-baseline-new-project-entry/kit/.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **No rule says what a track stop does with a `suggested, not approved` item that is still open (plan 113
       Review Focus 3; owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md` §5, the
       waiting-Ranked-list paragraph and Parking. When the partner stops a research track, that track's remaining
@@ -6281,6 +6288,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       this path (specs/baseline/red-baseline-new-project-entry.md, "Plan 113: summary", Untested passages item
       3). Size: design. Done when: §5 says what a track stop does with an open `suggested, not approved` item,
       and a case with such an item covers the stop with a control run and a treatment run.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **The format does not say what a stage's `Leaves out` reads for a provisional item after approval (plan 113;
       owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/references/roadmap-format.md`,
       Ranked list. For a session that can ask, the paragraph gives two forms. Before the answer the entry is
@@ -6293,6 +6301,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan. Done when: the Ranked list paragraph says what a provisional item's `Leaves out` entry reads in the
       file and after approval, and the three `dr-provisional-*` cases re-run at the new text and meet their bars
       under the kit.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **Numbered points inside the ONE question are not scored (first found in
       specs/baseline/red-baseline-new-project-entry.md, "Plan 85: summary", Unscored observations item 5,
       2026-11-10; raised again in plan 113; owner ruled defer at the completion gate, D5).**
@@ -6302,6 +6311,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       one approve-or-amend request. No clause scores the list form, so no record says whether it meets the rule.
       Size: design. Done when: the owner rules whether numbered points inside one question meet §5's "ONE
       question, not a numbered list", and the Ask text states the ruling or a kit clause scores the form.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **A provisional roadmap with no suggested item still hands off Stage 1 at its first resume (plan 113 Open
       for plan review item 7; owner ruled defer at the completion gate, D5).** `skills/derive-roadmap/SKILL.md`
       §5 and its entry rules. A provisional file, written by a session that could not ask, carries the roadmap
@@ -6313,6 +6323,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       field. dr-provisional-alone holds a suggested item, so it does not test this path. Size: design. Done
       when: §5 says what the first resume that can ask does with a provisional file that holds no suggested
       item, and a case covers that path with a control run.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **The kit's sec-edgar cases depend on an archived clone (plan 113 Fixtures constraint; owner ruled defer at
       the completion gate, D5).** `specs/baseline/red-baseline-new-project-entry/kit/cases.py` (`SEC_SPEC`) pins
       commit `22c6767f`, and `build_prompts.py` reads it under `CASE_REPOS`. That commit is gone from
@@ -6322,6 +6333,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the spec, and if the archive goes, no sec-edgar case rebuilds. Size: design (choose the source of record).
       Done when: every sec-edgar case builds from a named source of record that holds the bytes with sha256
       `c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6`, and the kit's notes name that source.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **dr-known-progression-79 drops from 5 of 5 at plan 113's base to 3 of 5 at its final text (plan 113 Task 6;
       owner accepted the miss at the completion gate, D2).** At `2bd982d`, reps 2 and 3 leave traceability out
       of every stage and name "manifests and replay" instead, so clause C fails by Provenance on bytes. The
@@ -6333,6 +6345,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: the record holds a same-day comparison of dr-known-progression-79 at the current skill text and
       at `171e763`, with at least ten reps per arm under the kit, and it says whether the drop repeats and names
       its cause or calls it sampling.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 - [ ] **dr-park-ranked misses its guard bar at plan 113's final text and at its base (plan 113 Task 5; owner
       accepted the miss at the completion gate, D3).** It passes 1 of 5 at `2bd982d` and 2 of 5 at `171e763`
       (`BASE113`), against 4 of 5 at `2e91b05` and a guard bar of 3. The §5 Parking paragraph is the same at all
@@ -6342,6 +6355,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/baseline/red-baseline-new-project-entry.md ("Plan 113 guards summary and spend", Owner gate). Size:
       plan. Done when: the record names the cause of the drop from 4 of 5, and dr-park-ranked passes at least 3
       of 5 at the current skill text under the kit.
+      → planned 2026-11-28: specs/plans/119-derive-roadmap-resume-and-parking-followups.md
 
 ## 112-superpowers-agent-license-travel — 2026-11-27
 - [ ] Probe live loading of the pointed agents after a default install (final review of plan 112, owner ruled defer).
