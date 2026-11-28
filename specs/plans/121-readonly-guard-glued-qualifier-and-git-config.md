@@ -26,7 +26,7 @@
 - **Shell.** The Bash tool runs zsh. Use `/usr/bin/grep` for sweeps. Never `cd` in a step. Use absolute paths, or `uv run --directory <dir>`.
 - **Who runs a task.** Tasks 1 to 5 go to implementer subagents, in order: Tasks 2 to 4 edit the same functions. Task 6 is **(controller)**: it reads local transcripts and ends at an owner gate.
 - **Final review.** subagent-driven-development's final review runs code-reviewer, briefed as above. The controller runs the Codex seat once, with requesting-code-review's `codex-review.md` recipe, after Task 6. If Codex finds a mutating form that passes, report it by class and severity only, with a pointer to `/tmp/codex-review/<short-HEAD>.md`. Then **STOP, owner**: the owner picks fix, record or stop. Log the pick in `## Decisions`. After any later change to the guard, rerun Task 6's Steps 2 to 4.
-- **Item 1's new denials are git's only.** On `8131b81` the flat reading already makes a word glued to `(` a subcommand of its own, so `rm(.) x` and `rm(path)` are denied today. Item 1 adds denials only where the glued word is `git` and the words after the group form a denied git command. The spec's §1 example of the false-positive class ("a Python line that calls a function named `rm`") is therefore not new; Task 5 records the class as it is.
+- **Item 1's new denials are git's and sed's only.** On `8131b81` the flat reading already makes a word glued to `(` a subcommand of its own, so `rm(.) x` and `rm(path)` are denied today. Only the two checks that read arguments can deny more: `_classify_git` and `_sed_edits_in_place`. So item 1 adds denials only where the glued word is `git` or `sed` and the words after the group form a denied git command or an in-place `sed`. The spec's §1 example of the false-positive class ("a Python line that calls a function named `rm`") is therefore not new; Task 5 Step 1 amends it, subject to the owner at plan review.
 - **Completion.** The plan-completion protocol ticks both backlog items with `→ done <date>`: "A glob qualifier glued to the command word still hides the command from the read-only guard" (section `90-readonly-guard-command-starts — 2026-11-12`) and "Allowlisted git verbs can run a program through configuration or the environment" (section `readonly-guard-leading-token-bypasses`).
 
 ## Review Focus
@@ -39,7 +39,7 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-28): "Plan needs to be 121.", where `entry_check.py` printed `next free: 117`. Applied in: the plan's file name and every path to it.
 
 ---
 
@@ -61,11 +61,11 @@ None.
 ```python
 # Spec §1: a glob group glued to a word where a command can start. zsh with
 # BARE_GLOB_QUAL makes `git(.)` the word git when a file named git exists.
-# Only a glued git is new: the flat reading already denies `rm(.) x` on
-# 8131b81, since it makes `rm` a subcommand of its own.
+# Only a glued git or sed is new: the flat reading already denies `rm(.) x`
+# on 8131b81, since it makes `rm` a subcommand of its own.
 def test_glued_qualifier_on_the_command_word_is_denied():
-    assert guard.classify('git(.) stash') is not None
-    assert guard.classify('/usr/bin/git(.) stash') is not None
+    for line in ('git(.) stash', '/usr/bin/git(.) stash', 'sed(.) -i s/a/b/ f'):
+        assert guard.classify(line) is not None, line
 
 
 def test_glued_word_after_a_prefix():
@@ -349,11 +349,34 @@ git commit -m "fix(hooks): check lasting assignments of the names git reads"
 ### Task 5: The README (spec §4)
 
 **Files:**
+- Modify: `specs/readonly-guard-glued-qualifier-and-git-config.md` (§1, "False positives"; spec amendment)
 - Modify: `hooks/README.md` ("Not caught", `:284-312`; group-word text, `:342-348`; the git option text; "Known false positives")
 
 **Interfaces:**
 - Consumes: the constant and function names of Tasks 1 to 4.
 - Produces: none.
+
+- [ ] **Step 0: Amend the spec's §1 example (spec amendment; drop this step if the owner keeps the spec text at plan review)**
+
+In `specs/readonly-guard-glued-qualifier-and-git-config.md`, §1, "False positives", replace:
+
+```markdown
+**False positives.** A heredoc line, read as shell, that starts with a denied command name glued to a
+parenthesis is denied, for example a Python line that calls a function named `rm`. The README records the class
+under "Known false positives", beside the heredoc-line class it resembles.
+```
+
+with:
+
+```markdown
+**False positives.** A heredoc line, read as shell, that starts with `git` or `sed` glued to a parenthesis, and
+whose later words form a denied git command or an in-place `sed`, is denied *(owner, plan 121, 2026-11-28)*. The
+flat reading already denies such a line for every other denied command name, such as a Python line that calls a
+function named `rm`, so that is not new. The README records the class under "Known false positives", beside the
+heredoc-line class it resembles.
+```
+
+Leave the spec's status line untouched.
 
 - [ ] **Step 1: Edit `hooks/README.md`**
 
@@ -361,7 +384,7 @@ git commit -m "fix(hooks): check lasting assignments of the names git reads"
 2. Replace the git-config bullet (`:305-307`) with one bullet for what stays uncaught: configuration held in a repository or a file (`.git/config`, the global and system config files, `.gitattributes`), and the options and variables that point git at another repository (spec Non-goals).
 3. Beside the group-word text (`:342-348`), say that the guard also reads the word glued before a group as the command.
 4. Beside the git option text, describe the allowlists by constant name: listed `-c` and `--config-env` keys, program-taking keys and variables with listed values only, `--exec-path=<dir>` and `GIT_EXEC_PATH` denied, and the lasting-assignment check (§2c).
-5. Under "Known false positives", add three bullets: a heredoc line, read as shell, that starts with `git` glued to a parenthesis and goes on with the words of a denied git form (the flat reading already denies such a line for every other denied command, so `rm(path)` is not new); an unlisted `-c` key or assignment before git; and a lasting assignment of a name git reads, checked whether or not git follows (`export GIT_…=…` in a heredoc line, `export HOME=…` in test setup).
+5. Under "Known false positives", add three bullets: a heredoc line, read as shell, that starts with `git` or `sed` glued to a parenthesis and goes on with the words of a denied git form or an in-place `sed` (the flat reading already denies such a line for every other denied command, so `rm(path)` is not new); an unlisted `-c` key or assignment before git; and a lasting assignment of a name git reads, checked whether or not git follows (`export GIT_…=…` in a heredoc line, `export HOME=…` in test setup).
 
 The prose follows the plain technical English rule (`rules/write-with-asd-ste100.md`).
 
@@ -373,7 +396,7 @@ Expected: `commit lints passed`.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add hooks/README.md
+git add hooks/README.md specs/readonly-guard-glued-qualifier-and-git-config.md
 git commit -m "docs(hooks): describe the glued-word reading and the git config allowlists"
 ```
 
@@ -397,7 +420,11 @@ Run: `git show 8131b81:hooks/readonly-agent-guard.py > ~/.cache/agent-skills/scr
 
 `compare.py` loads both guards with `importlib` and reads three sources: the transcript corpus (as `sweep.py` loads it, with populations), every `str` constant in `hooks/test_readonly_agent_guard.py` (found with `ast`), and every backtick span and fenced-block line of `hooks/README.md`, on the branch and at `8131b81`. A guard denies an input when `classify` returns a reason or raises. Write each input whose result differs to `flips.jsonl`. Print denied→allowed and allowed→denied counts per source; split the corpus counts by guarded agent (a population in `READONLY_AGENTS`) and other.
 
-Expected: `denied→allowed: 0` for every source. Any other count breaks the spec's Anti-goals: stop, report the count only, and fix the task that caused it.
+Expected:
+- `denied→allowed: 0` for every source. Any other count breaks the spec's Anti-goals: stop, report the count only, and fix the task that caused it.
+- In the test file, allowed→denied for each deny line of the Tasks 1 to 4 tests, which `8131b81` allows.
+- In the README at `8131b81`, allowed→denied for the glued-qualifier example and the three git-config examples under "Not caught". In the branch's README, for the examples of Task 5's three new false-positive bullets.
+- Note any other test-file or README flip for the owner (Step 5).
 
 - [ ] **Step 3: Classify each allowed→denied corpus flip**
 
