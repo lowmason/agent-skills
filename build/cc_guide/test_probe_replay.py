@@ -44,7 +44,7 @@ def test_every_registered_probe_has_its_fixtures():
 
 
 def test_the_worktree_probe_backs_its_section_and_its_two_skills():
-    '''The manifest entry the owner chose (plan 114, Task 8): a worktree DIVERGES sends /cc-guide verify to the
+    '''The manifest entry the owner chose (plan 115, Task 8): a worktree DIVERGES sends /cc-guide verify to the
     guide's worktrees section and /cc-guide files to the two skills that act on it.'''
     manifest = parse_manifest((REPO / MANIFEST).read_text(encoding='utf-8'))
     assert manifest.probes['worktree-isolation'] == (

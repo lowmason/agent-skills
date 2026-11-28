@@ -3497,8 +3497,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the owner rules here that it stays.
       → progress 2026-11-11 (plan 87): the trigger of (l) fired. `build/cc_guide/probes.py` grew from 660 to 785 lines (`drive_cut` with its `drive-cut` entry point, and the compaction-cut probe). Plan 87 did not split it, as it said. Process control is still the part to move out.
       → triggered 2026-11-14: later edits touched `build/cc_guide/probes.py`. Plan 87's `244edd3` and `049d390` (2026-11-10) added the compaction-cut runner and probe, and `d778c3e` (2026-11-12) edited it again. The file is now 785 lines (the item recorded about 550).
-      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
-      → done 2026-11-27 (plan 114): `build/cc_guide/` fixes points (a)–(aa) in Tasks 1–5; process control moved into `probe_process.py` (l)
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `build/cc_guide/` fixes points (a)–(aa) in Tasks 1–5; process control moved into `probe_process.py` (l)
 - [ ] The Stop-hook block cap probe (drift spec, Out of scope; logged at plan completion, as the
       spec's heading says). Size: plan. Revisit if: drift #2 (the Stop-hook continuation reading) is
       resolved toward re-checking.
@@ -6088,8 +6088,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       for `build/cc_guide/test_probe_replay.py`. The desktop case cannot run under `claude -p`, so it stays a hand
       check. Size: plan. Done when: a registered probe that covers the first four facts has a PASS row in
       `build/cc_guide/PROBES.md` on a current binary, or the docs state each of them.
-      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
-      → done 2026-11-27 (plan 114): `worktree-isolation` is registered (`probe_worktrees.py`, `manifest.toml`) and has a PASS row in `build/cc_guide/PROBES.md` on 2.1.330, the newest installed binary, run with `--allow-old` on the owner's go-ahead (D2); the desktop fact stays a hand check
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `worktree-isolation` is registered (`probe_worktrees.py`, `manifest.toml`) and has a PASS row in `build/cc_guide/PROBES.md` on 2.1.330, the newest installed binary, run with `--allow-old` on the owner's go-ahead (D2); the desktop fact stays a hand check
 - [x] Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two
       facts from it: the Code tab ignores `worktree.baseRef` for the worktree it makes, and archiving a session
       can discard the worktree's uncommitted changes and removes a kept worktree about 30 days later. No group in
@@ -6490,32 +6490,32 @@ review and the Plan Completion gate (2026-10-27) add the others.
       a process identity. Pids 0, 1 and the probe's own are excluded already, and reuse inside 5 s needs a wrap of the
       pid space. Size: quick-fix (check the process start time or command line before the kill). Revisit if: a probe
       run's `collect_teardown` kills a process other than the probe's own hook.
-      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
-      → done 2026-11-27 (plan 114): `collect_teardown` signals a pid only when `probes.is_hook` finds the hook path in its `ps -o args=` command line
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `collect_teardown` signals a pid only when `probes.is_hook` finds the hook path in its `ps -o args=` command line
 - [x] The `async-teardown` hook lives 120 s (`TEARDOWN_HOOK` in `build/cc_guide/probes.py`), but the probe's `claude -p`
       call may run up to 600 s. A successful turn longer than 120 s would find the hook gone before teardown, log
       `start <pid>` then `gone` with no signal, and read DIVERGES with no real drift (Codex P2 on the final review of
       plan 109, declined; the probe turn is one short reply). Size: quick-fix (keep the hook alive past the call's
       timeout, or read natural expiry as inconclusive). Revisit if: an `async-teardown` run reports DIVERGES with a
       log of `start` and `gone` only, while its stream shows a turn longer than 120 s.
-      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
-      → done 2026-11-27 (plan 114): the hook logs `expired` when its 120 s loop ends, and `assess_async_teardown` reads that log as ERROR
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): the hook logs `expired` when its 120 s loop ends, and `assess_async_teardown` reads that log as ERROR
 - [x] `prune_generations` (`build/cc_guide/check.py`) measures a generation's age from its folder mtime, not from the
       time it was replaced. A reader that pinned a generation older than an hour, just before two checks swap
       `latest` one after the other, finds the generation removed in the second swap (Codex P2 on the final review of
       plan 109, declined; the read lasts milliseconds). Size: quick-fix (touch the replaced generation in
       `swap_latest`, or keep the two latest replaced ones). Revisit if: a `packets.load` or `rebaseline` run fails
       with a missing file under a generation folder after two checks ran within one minute.
-      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
-      → done 2026-11-27 (plan 114): `swap_latest` touches the replaced generation before `prune_generations`, so a quick second swap keeps it
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `swap_latest` touches the replaced generation before `prune_generations`, so a quick second swap keeps it
 - [x] `explore_void` (`build/cc_guide/probe_checks.py`) treats any tool call by a subagent as a file read and voids
       the rep. A CLI that has these subagents hand back their answer through a tool call, as `SubagentHandback`
       appears in the `agent-model-pins` fixture, would make every `explore-override` rep read ERROR even though the
       answer sits in a tool input (the final review of plan 109, Declined to judge; none of the three 2.1.330 reps
       holds one). Size: quick-fix (read the answer from a hand-back tool input, or exempt that tool by name). Revisit
       if: an `explore-override` run reports ERROR "made 1 tool call(s)" for a rep whose only tool call is a hand-back.
-      → planned 2026-11-27: specs/plans/114-cc-guide-probe-upkeep-and-worktree-probe.md
-      → done 2026-11-27 (plan 114): `explore_sightings` leaves `HANDBACK_TOOLS` calls out of the tool-call count and reads each one's `message` as part of the answer
+      → planned 2026-11-27: specs/plans/115-cc-guide-probe-upkeep-and-worktree-probe.md
+      → done 2026-11-27 (plan 115): `explore_sightings` leaves `HANDBACK_TOOLS` calls out of the tool-call count and reads each one's `message` as part of the answer
 
 ## 110-build-runner-and-ci-kit-suites — 2026-11-26
 - [x] Keep the user's default git excludes file out of `clean_env` in `build/test_commit_lints.py:40`. It sets
@@ -6556,10 +6556,10 @@ review and the Plan Completion gate (2026-10-27) add the others.
       and Claude Code `/agents` each list the same agents as before, with no `LICENSE-superpowers` entry and no
       startup warning, and the result is noted here.
 
-## 114-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
+## 115-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
 - [ ] `probes.save_fixtures` (`build/cc_guide/probes.py`) replaces a scratch folder name (`probe_checks.SCRATCH_RE`,
       `cc-guide-probe-<id>-<suffix>`) only in `.jsonl` streams, not in side files such as `canaries.json` or a
-      sightings file (Task 4 review of plan 114, Declined to judge; the controller deferred it). No committed side
+      sightings file (Task 4 review of plan 115, Declined to judge; the controller deferred it). No committed side
       fixture holds one today, and the `worktree-isolation` sightings file holds no path by test. A name left behind
       is a random suffix, not a private string. Size: quick-fix (run the `SCRATCH_RE` pass in the side-file branch of
       `save_fixtures`). Revisit if: a committed file under `build/cc_guide/probe_streams/` other than a `.jsonl`

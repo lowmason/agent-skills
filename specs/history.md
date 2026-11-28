@@ -945,8 +945,8 @@ Differences from the design:
 Closed earlier deferred items:
 - "License travel for single-file agents (plan 53's spec, Out of scope)." (deferred by 53-agent-skills-portability): both superpowers-derived agents and their four adapters carry a `# license:` pointer, `install.py` installs `LICENSE-superpowers` beside the agents, and `check_provenance.py` checks the pointers.
 
-## 114-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
-Plan: specs/plans/completed/114-cc-guide-probe-upkeep-and-worktree-probe.md · Spec: none
+## 115-cc-guide-probe-upkeep-and-worktree-probe — 2026-11-27
+Plan: specs/plans/completed/115-cc-guide-probe-upkeep-and-worktree-probe.md · Spec: none
 
 Differences from the design:
 - Ruling (Task 3): Task 3 ⚠️/declined "save_fixtures side files redact raw private strings only" — made a finding for Task 4, which already edits save_fixtures: side files get the same escaped-form redaction (both ensure_ascii forms) — if left, a login with a non-ASCII character could reach a committed fixture.
@@ -969,7 +969,7 @@ Differences from the design:
 - Deviation (Task 7): Probe and Read moved to probe_process.py. Final fixes F1 (Invocation.drop_prefixes; the four runs drop inherited GIT_* names) and F3 (main_git_command shell-quotes the scratch path, shared by the prompt and the matcher). Source: plan, Task 7.
 - Deviation (Task 8): one run, on the 2.1.330 Desktop app binary with --allow-old (D2): PASS, 2026-11-27. Source: plan, Task 8.
 - Deviation (Task 8): after F2 and F4 added sightings fields, the fixture was regenerated from the cached raw run through collect_worktrees and save_fixtures, with no second live run. Source: plan, Task 8.
-- Deferred: 1 item. Source: specs/deferred_items.md, § 114-cc-guide-probe-upkeep-and-worktree-probe.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 115-cc-guide-probe-upkeep-and-worktree-probe.
 
 Closed earlier deferred items:
 - "Review Minors from the per-task and final reviews of plan 58, one batch (the owner chose to" (deferred by 58-claude-code-drift-automation).

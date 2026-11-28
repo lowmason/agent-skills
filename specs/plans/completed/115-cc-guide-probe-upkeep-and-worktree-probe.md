@@ -314,4 +314,4 @@ Registration, the live run, the fixture and the PROBES.md row land in one commit
 
 ## Completion
 
-Run writing-plans' Plan Completion Protocol. Its ticking pass marks R52, R122 and R147–R150 `→ done <date> (plan 114): …`, or re-notes each one the gate leaves open. R122's tick needs Task 8's PASS row.
+Run writing-plans' Plan Completion Protocol. Its ticking pass marks R52, R122 and R147–R150 `→ done <date> (plan 115): …`, or re-notes each one the gate leaves open. R122's tick needs Task 8's PASS row.
