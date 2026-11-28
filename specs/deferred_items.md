@@ -1246,6 +1246,7 @@ all 20 named a type.
       writing-skills' micro-test against a no-guidance control. Size: plan. Revisit if: a
       controller mishandles an exit 3, for example by dispatching the reviewer without a
       package or by re-running the same range.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 
 ## 54-entry-check-file-overlaps — 2026-10-18
 - [ ] Read `- Rename:`, `- Delete:` and `- Move:` Files lines in `entry_check.py`'s
@@ -4349,6 +4350,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: a micro-test case with a test-only defect (a test that asserts nothing) shows
       both reviewers still report it, and the sentence is reworded in all four copies if they
       do not.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 - [x] Declined review line: writing-plans' completion gate does not name Declined to judge
       lines as leftovers (plan 73 final review, owner ruled defer).
       `skills/writing-plans/SKILL.md:288-289` lists skipped steps and unfixed findings only;
@@ -4371,6 +4373,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       handoff. Files: `agents/code-reviewer.md`, `skills/requesting-code-review/code-reviewer.md`.
       Size: plan (new wording needs the micro-tests). Revisit if: a final-review rep ignores a
       Review Focus line, or the handoff changes.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 - [x] Declined review line: `skills/requesting-code-review/SKILL.md`'s example still grades
       "Missing progress indicators" Important, while `code-reviewer.md`'s example dropped that
       item as polish (plan 73 final review, owner ruled defer). Spec section 2 changed only the
@@ -4382,6 +4385,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "Type safety", and both preambles claim architecture expertise (plan 73 final review and
       Minor M9, owner ruled defer). Decision D16 trimmed only the four lines it named. Size:
       plan. Revisit if: a code-reviewer rep reports a design-taste point as a finding.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 - [ ] Declined review line: the task reviewer's Full Form
       (`skills/subagent-driven-development/task-reviewer-prompt.md`) was never micro-tested
       (plan 73 final review, owner ruled defer). The kit uses the Short Form plus the agent
@@ -4390,6 +4394,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Form, or its text changes.
       → progress 2026-11-13 (plan 93): R1–R3 ran on the Full Form's `## Mutants` section; the rest of the Full Form is still untested. Plan 93's Task 7 changed the Full Form (68233d8, 39c1ed3), and its treatment-full arm met each bar in 5 of 5 reps (`specs/baseline/red-baseline-mutant-checked-tests.md`, `## Reviewer treatment`).
       → triggered 2026-11-14: the Full Form's text changed. Plan 93's `68233d8` (+137 lines, the mutant-step check) and `39c1ed3` (re-review lines) edited `skills/subagent-driven-development/task-reviewer-prompt.md` on 2026-11-13.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 - [ ] Declined review line: `agents/security-auditor.md` keeps its Minor tier (plan 73 final
       review, owner ruled defer; a spec non-goal). Size: quick-fix. Revisit if:
       security-auditor is dispatched in a flow that expects the two-grade scale.
@@ -5186,6 +5191,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the lint line, the test and the two `CLAUDE.md` lines (`CLAUDE.md`, `build/CLAUDE.md`) in the same change as the
       last exception. Size: plan. Done when: the body is at most 19,700 characters and the exception is removed, and, once
       neither waiver is left, the guard lint is retired.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 
 ## 89-cc-guide-owner-rulings — 2026-11-11
 - [x] `packets --files` marks a packet's sections by stamp alone (`build/cc_guide/packets.py:379-381`). A file that is stale only by hash, the #93 and #94 collision case, gets "Unchanged since @X" and an empty `changed` list for a section whose text changed, so the verifier's packet says the section did not change. The verifier contract (`.claude/agents/cc-guide-verifier.md:61-66`) still requires a quoted row for each statement that rests on any cited section, so the marks inform and do not narrow the review. Found by plan 89's Task 4 review, outside Task 4's file list (owner ruled defer at the gate). Fix: count a section as changed when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`, and pin it in `build/cc_guide/test_packets.py`. Size: quick-fix. Done when: the packet of a file that is stale only by hash marks the changed section as changed, and a test covers it.
@@ -5349,6 +5355,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `build/cc_guide/conformance.toml`, through the writing-skills skill, the compaction gap is no worse, and the
       file is cited after a fresh `/cc-guide` files verify.
       → progress 2026-11-17 (owner ruling): extend the open SDD item to eight lines. Note on :232 that a narrow reading (no suppressing a named finding) may be consistent. No SDD edit now. The 2026-11-17 files pass found both lines: :201 makes effort the last rung, after the model, while `lean.model-routing` says to raise /effort before escalating the model. :232 bars telling a reviewer not to flag a specific issue, the reviewer-scope point of :43 and :53 at another line. The Done-when now covers :201 and :232 as well as the six lines above.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 - [x] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
       now, lint later). This pass added `'anthropic-skills'` to `reserved` in `build/cc_guide/conformance.toml`.
       The guide (`skills.locations`, L78) also reserves synced in any capitalization and a folder name that starts
@@ -5557,6 +5564,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       one place that stated rules come from, a micro-test shows the start-date finding gone from an R4-type
       package with no bar of the record falling, and `build/check_reviewer_block.py` passes.
       → progress 2026-11-17 (owner ruling): stated rules come from the cited spec sentences and the brief only. The global constraints still bind the task, but they get no mutant row.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 
 ## 94-branch-explainer — 2026-11-14
 - [ ] **Notebook explainers with controls, for model changes in downstream repos (spec, Done when 6).** Step 3b
@@ -6053,6 +6061,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] **Check that `skills/tech-debt/SKILL.md` still works as a background fork (E3 files pass, 2026-11-22).** The skill sets `context: fork` and no `background` key, and its steps run a Bash sweep and `marimo` commands. The guide's `background` row says that a fork runs in the background by default (since 2.1.218) and gets the narrower tool set of background subagents, and that a skill whose steps need another tool sets `background: false`. The verifier rated the skill's frontmatter not covered, because no guide sentence says which tools a background subagent lacks. The owner first ruled "guide addition" on a wrong premise from the E3 pass, which said that the guide lacks the default. The guide has it. The repo lint (`HOST_KEYS` in `build/check_frontmatter.py`) rejects a `background` key, so a fix by frontmatter also needs a lint change. Size: design. Done when: a run of the skill in an interactive session, or the docs, shows whether its Bash sweep and `marimo` steps work under the background tool set, and the owner has ruled one of: no change, a `background` key plus a lint change, or a guide statement on which tools a background fork lacks.
 - [ ] **Narrow the `WorktreeCreate` and `--worktree` words in `skills/using-git-worktrees/SKILL.md` line 65 (E3 files pass, owner ruling 2026-11-22: hold).** Line 65 lists `EnterWorktree`, `WorktreeCreate`, a `/worktree` command and a `--worktree` flag as ways that the running session might already have to create a worktree. The guide says that `WorktreeCreate` is a hook, not a tool, and that `--worktree` is a flag that a session starts with, so a running session cannot use either one to create a worktree. Fix: drop those two names from the list, or say what each one is. The skill is adapted from superpowers, so the fix needs a `NOTICE` bullet and a `writing-skills` micro-test, which is why the E3 pass held the file and did not restamp it. Size: plan. Done when: line 65 names only ways that a running session can create a worktree, the `NOTICE` bullet is in, a micro-test shows that the new wording does not change what a session does, and `baseline cite` has stamped the file.
 - [ ] **Correct the rework-cost claim in `skills/subagent-driven-development/references/model-selection.md` line 13 (E3 files pass, owner ruling 2026-11-22: hold).** The file says that a model that takes 2-3× the turns, or needs a re-dispatch, costs more than the tier above it. The guide lists Haiku 5.5 at a fortieth of Opus 5.5's price and a twentieth of Sonnet 5.5's, so on the Anthropic API a cheap-tier model with 3× the turns still costs less than the standard tier. The claim may still hold for time and review effort, but not for price. The paragraph ties it to the two defaults in `SKILL.md`, so the fix must keep that reasoning sound. Fix: say that rework costs time and review effort, and that the cheap tier is cheaper per token by a wide margin. The skill is adapted from superpowers, so the fix needs a `NOTICE` bullet and a `writing-skills` micro-test, which is why the E3 pass held the file and did not restamp it. Size: plan. Done when: line 13 states a claim that matches the guide's prices, the `NOTICE` bullet is in, a micro-test shows that the model choices in a dispatch do not change, and `baseline cite` has stamped the file.
+      → planned 2026-11-28: specs/plans/120-sdd-and-reviewer-text-followups.md
 
 ## 105-writing-skills-improvements — 2026-11-23
 - [x] **Finish the skill-type rename at two older spots (plan 105, ruling at Task 1).** Plan 105 Task 1 Step 5
