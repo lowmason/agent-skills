@@ -161,37 +161,8 @@
       the parametrised case on its assertion (checked, then reverted). Gap (b), judging
       `_required_vars` per idata object, was not decided here; it is carried below under
       `deferred-quick-fixes-2026-10-15`.
-- [x] No pytest executes `COMPARISON_FIXTURE` (`build/snippet_preamble.py`). Plan 33's two
-      comparison tests are static: they check binding and fence selection. A stack change that
-      breaks the fixture's two extra fits would leave the pytest suite green. Only the roughly
-      3-minute Tier 3 `--run` gate executes the fixture, and the preamble docstring already
-      requires a re-measure whenever that file changes. Raised by the Task 3 implementer and
-      reviewer; deferred at the completion gate. Fix (optional): a `@requires_stack` test that
-      runs one annotated comparison block through `check_snippets.run_errors`, at the cost of
-      two extra NUTS fits in the stack-gated suite.
-      Size: quick-fix. Revisit if: a `PINNED` refresh or a Tier 3 run breaks the comparison
-      fixture without a pytest failure.
-      → retired 2026-10-13: the risk is covered, though not by the fix the item sketched.
-      `build/test_check_snippets.py`'s `test_the_comparison_fixtures_helpers_are_gone_at_run_time`
-      (`@requires_stack`, added in f7b68af on 2026-10-05) runs the preamble and the comparison
-      fixture directly in a subprocess, not through `check_snippets.run_errors`, both extra fits
-      included, and asserts it exits 0.
 
 ## 35-claude-code-guide-conformance — 2026-10-04
-- [x] Settle where enforceAvailableModels belongs (plan 35 audit row H-51; guide note H-57):
-      `.claude/settings.json` sets `enforceAvailableModels`, while the guide places its
-      effect in managed settings, and whether the key is honoured elsewhere is guide note
-      H-57. The owner's user-level settings set it too (row O-13, outside the repo). Size:
-      quick-fix. Done when: `/cc-guide verify lean.model-routing` (drift R8.5) settles H-57,
-      and either the key moves to where it takes effect or, if project settings honour it,
-      the gap is void; either way exception `enforce-available-models-project` is removed
-      from `build/cc_guide/conformance.toml` in the same change, with
-      `build/check_conformance.py` passing.
-      → done 2026-10-13 (`/cc-guide audit models`, then an owner-directed correction, not
-      a verify): the 2.1.296 settings reference gives the key Scope "Any file", read from
-      the managed source alone once an organization deploys managed settings, so project
-      settings honour it and the gap is void. `lean.model-routing` now says so; exception
-      removed, `check_conformance.py` passing.
 - [ ] Add the `listing-aggregate` conformance check (plan 35 audit §6, d5, seat check S#5):
       the summed name and description characters against window × fraction. Today 21,297
       characters across 35 skills. It needs the unit the guide leaves open (guide note
@@ -248,25 +219,6 @@
       → done 2026-10-19 (/deferred quick fix): the name row no longer claims
       lowercase-hyphenated names: verify CONFIRMED line 179 (at most 256 characters, no colon).
       The background row (line 192) got settle's correction.
-- [x] Verify guide note A-53 with `/cc-guide verify subagents.models` once drift lands (plan
-      35 audit §7): the guide's line 207 opens Haiku's retirement window on 2026-10-15 while
-      lines 209 and 214 still recommend Haiku, and it leaves the alias's behaviour at
-      retirement unstated. Size: quick-fix. Done when: `/cc-guide verify subagents.models`
-      (drift R8.5) has judged the note.
-      → hand-checked 2026-10-12, ahead of the 2026-10-15 window (plan 43, Timing): nothing breaks
-      that day. On the Anthropic API `haiku` has resolved to Haiku 5.5 (`claude-haiku-5-5`, Active,
-      retirement not sooner than 2027-10-07) since v2.1.293 (this machine's CLI is 2.1.296), and
-      Haiku 4.5's 2026-10-15 is a "not sooner than" floor with no retirement scheduled. Claude
-      Platform on AWS, Amazon Bedrock, Google Cloud's Agent Platform and Microsoft Foundry still
-      map `haiku` to Haiku 4.5. The guide still describes Haiku 4.5 as the Haiku in
-      `subagents.models` (line 211: 200K window, $1/$5) and in `lean.model-routing`'s price table
-      (line 438), so the item stays open for the verify run.
-      → retired 2026-10-13: `/cc-guide audit models` (packet `20261013T113847-audit`, 2.1.296
-      snapshot) judged `subagents.models` line 211 claim by claim in place of a verify: `haiku`
-      resolving to Haiku 5.5 on the Anthropic API, Haiku 4.5 as a legacy model with a 200K
-      window and its retirement window, and the alias still meaning Haiku 4.5 on the other
-      platforms. The line now says all of it, and the price table lists both models; H-57 was
-      closed the same way in #42.
 - [x] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
       (plan 35 audit §7): the guide's line 219 says custom agents load CLAUDE.md and git
       status while the built-in Explore skips both, without saying which applies to line
@@ -277,26 +229,6 @@
       :1113). Settle listed no correction. The report has no row on a custom `Explore` that
       overrides the built-in, so which rule applies to it stays an open coverage question for
       the owner. Two omissions are the owner's call.
-- [x] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
-      (plan 35 audit §7): the guide's line 422 leaves open whether `enforceAvailableModels`
-      is honoured only in managed settings; the enforce-available-models-project item waits
-      on it. Size: quick-fix. Done when: `/cc-guide verify lean.model-routing` (drift R8.5)
-      has judged the note.
-      → done 2026-10-13 (`/cc-guide audit models` and the owner's enforceAvailableModels
-      decision, in place of a verify): the audit judged `lean.model-routing` against the
-      2.1.296 snapshot, whose settings reference gives the key Scope "Any file", read from the
-      managed source alone once an organization deploys managed settings. The section now says
-      so, and the enforce-available-models-project item above is done.
-- [x] Verify guide note H-58 with `/cc-guide verify hooks.patterns` once drift lands (plan
-      35 audit §7): the guide's line 362 endorses a Stop gate that re-blocks until the
-      8-block cap, while line 303 says to check `stop_hook_active`; the stop-hook-guard
-      check enforces only line 303's reading. Size: quick-fix. Done when: `/cc-guide verify
-      hooks.patterns` (drift R8.5) has judged the note.
-      → retired 2026-10-13: the contradiction is gone. The guide's line 310 says to check
-      `stop_hook_active` and calls the 8-block cap only a backstop, and the stop-gate pattern
-      (line 369) sets out both choices, exiting on `stop_hook_active` or re-checking with a
-      retry cap of the hook's own, and says the cap does not bound a re-checking loop. No
-      verify of `hooks.patterns` ran; the owner judged one would only re-confirm that text.
 - [x] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
       (plan 35 audit §7): the guide's line 48 says a PostToolUse hook runs the linter every
       time, which overstates: line 369 says a Write/Edit matcher misses Bash rewrites, and
@@ -322,15 +254,6 @@
       comment loads in all three runtimes.
       → triggered 2026-11-11: the R4.5 load check ran on 2026-10-12 and passed in all three runtimes (`specs/plans/completed/43-claude-code-drift-automation.md`, "R4.5 load check").
       → retired 2026-11-17: the owner keeps deviations register-only (/deferred owner ruling). `conformance.toml` already lists each exception's artifacts, and a copy at each artifact would need a sync check of its own.
-- [x] The guide's §8 `TODO(owner)` (conformance spec, Out of scope): the default-model
-      stance in `specs/guides/claude-code-customization-guide.md` is the owner's call. The
-      drift spec logs the same item at its own completion; keep one. Size: design. Done
-      when: the owner decides it and the `TODO(owner)` comment leaves the guide.
-      → done 2026-10-13 (/deferred quick fix): the owner chose a phase-based stance.
-      `lean.model-routing`'s first bullet now says to plan, design and review on Opus, the
-      account default, and to implement a written plan on Sonnet-class at half the price; the
-      `TODO(owner)` comment is gone. `build/cc_guide/conformance.toml`'s settings comment no
-      longer excepts the bullet, and the drift spec's Out of scope list notes it is settled.
 - [x] A distilled `references/` file for writing-skills (conformance spec Decision 10).
       Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
       Out-of-scope item; R1.7's body-length warning).
@@ -467,62 +390,6 @@
       wrote NO FINDINGS, because the brief carries planted defects.
 
 ## 41-commit-lints-hook-and-ci — 2026-10-12
-- [x] Make the `commit-lints` CI check required, or record that CI is advisory (plan 41
-      final review, owner gate 2026-10-12; triaged defer): the plan's Goal calls
-      `.github/workflows/lints.yml` the authority on what reaches `main`, but no required
-      status check enforces it, and a local merge plus push to `main` is checked only
-      after it lands. Making it required is a repo-settings decision (ruleset or branch
-      protection) that stays the owner's; no agent changes settings. See
-      `specs/plans/completed/41-commit-lints-hook-and-ci.md`. Size: design. Done when: the
-      owner has either required `commit-lints` on `main` or recorded that the check is
-      advisory.
-      → done 2026-10-13 (/deferred, owner decision): the check stays advisory. The pre-commit
-      hook is the gate, and a merge commit git makes without a conflict, which runs no
-      pre-commit hook, is checked by CI after it lands. `CLAUDE.md`'s commit-lint comment and the hook's header now say so, in
-      place of the header's "gates what reaches main". Revisit if: a red `lints` run lands on
-      `main`.
-- [x] First real commit in a linked worktree with the hook enabled (plan 41 final review,
-      recommendation 4; owner-only): the tests cover plain clones, but in a linked
-      worktree the git directory is `.git/worktrees/<name>`, and git exports its
-      repo-local variables to hooks, which `build/run_commit_lints.sh` unsets before the
-      checks. Enabling the hook is the owner's step
-      (`git -C ~/Projects/agent-skills config core.hooksPath build/githooks`). Size:
-      quick-fix. Done when: one clean commit in a linked worktree prints
-      `commit lints passed`, and one commit with deliberately broken skill frontmatter is
-      refused.
-      → done 2026-10-13 (/deferred quick fix): with `core.hooksPath` set, every commit of
-      lowmason/agent-skills#43 and of this pass, each made in a linked worktree, printed
-      `commit lints passed`. In worktree `deferred-2026-10-13`, a commit with
-      `skills/tech-debt/SKILL.md`'s name set to `Tech_Debt` exited 1 with `commit lints
-      failed: check_frontmatter` (the name does not match its directory) and left HEAD
-      unchanged; the file was restored.
-- [x] `build/githooks/pre-commit` polish (plan 41 final-review Minor M5 and the re-review
-      note; triaged defer): the uv probe (`uv run --no-project --python 3.13 python -c
-      pass`) discards uv's output, so a skip caused by, for example, being offline with
-      Python 3.13 not cached gives no reason; and the header comment says "Enable once per
-      clone" while CLAUDE.md now calls enabling an owner step that writes shared config.
-      Size: quick-fix. Done when: the skip message names uv's last stderr line (with a
-      test in `build/test_commit_lints.py` using the `broken_uv` stub) and the header
-      comment matches CLAUDE.md.
-      → done 2026-10-13 (/deferred quick fix): the probe keeps uv's stderr and the skip
-      message names its last line, trimmed of the indent uv gives a closing "Caused by:" line,
-      using bash expansions because the hook's PATH may lack tail; the `broken_uv` stub now
-      prints two stderr lines, the last indented, and `test_hook_fails_open_when_uv_cannot_run`
-      asserts the trimmed last one appears and the first does not (red first, twice: the old
-      message named no reason, then kept the indent). The header says enabling is the
-      owner's step and writes the repo config every worktree reads.
-- [x] `test_frontmatter_violation_is_refused` breaks the YAML instead of emptying the
-      description (plan 41 final-review Minor M4, confirmed; triaged defer):
-      `build/test_commit_lints.py` rewrites the one `description:` line of
-      `skills/explore-data/SKILL.md`, but that description is a folded `>` block whose
-      continuation lines are left orphaned, so `check_frontmatter.py` fails on "not valid
-      YAML" and the empty-description rule is never exercised. Size: quick-fix. Done
-      when: the test edits a skill with a one-line description, or replaces the whole
-      folded block, and the failure it provokes is the empty-description finding.
-      → done 2026-10-13 (/deferred quick fix): the test's pattern now replaces the whole folded
-      block, continuation lines included, and it asserts `check_frontmatter.py`'s
-      `missing description` finding for the skill (red first: the old edit produced the
-      not-valid-YAML error instead).
 - [ ] Nothing pins the runner's environment unset (plan 41 final-review Minor M1; triaged
       defer): `build/run_commit_lints.sh` runs `unset $(git rev-parse --local-env-vars)`
       before the checks, but no test fails if it is deleted. The plan's stated reason (the
@@ -659,26 +526,6 @@
       indentation test, a message of its own for trailing whitespace, one decoding on both read
       paths, and `newline=''` in the `cite` write. Size: quick-fix. Revisit if: a tracked CRLF
       file or a citation line with trailing whitespace appears.
-- [x] Style and typing minors in the citation code (plan 43's per-task and final reviews).
-      `build/cc_guide/state.py:92`: a non-UTF-8 tracked file name raises `UnicodeDecodeError`
-      from the `git grep` decode, not a `cc-guide:` `SetupError`. `state.py:78`: `exclude` has no
-      annotation (`tuple[str, ...]`). `cli.py:132-139`: each citing file is parsed twice, in `lint`
-      and again for the `STALE` lines. `test_state.py:331` asserts `startswith` where the rule is
-      exact equality (git's error text varies by version), and `test_state.py:318` imports
-      `guide` inside the function. `check.py`'s `summary()` comprehension reuses the name `path`
-      of its parameter. `CLAUDE.md:126` is a 169-character comment line where its neighbours wrap
-      near 118; reflowing it makes the file 187 lines, under the 190 ceiling. Size: quick-fix.
-      Revisit if: a later change touches `state.py`, `check.py`, `cli.py` or the commit-lint
-      comments in `CLAUDE.md`.
-      → re-deferred by plan 44 (2026-10-13): none of the lines it names was edited, though plan
-      44 touched each file; `test_state.py:331`'s `startswith` is now near line 366.
-      → done 2026-10-13 (/deferred quick fix), except the double parse: `Source.grep` raises a
-      `SetupError` for a tracked name that is not UTF-8 (red first, with a test that tracks such
-      a name through `update-index --cacheinfo`); `exclude` is `tuple[str, ...]`; the git-grep
-      failure test asserts the part of the message the code controls, since git's own text
-      follows it; `import guide` is at module level; `summary()`'s comprehension names its
-      variable `name`; `CLAUDE.md`'s long comment line is reflowed (187 lines). The double parse
-      is re-deferred below, under the 2026-10-13 /deferred pass.
 
 ## 44-claude-code-drift-automation — 2026-10-13
 - [x] Run drift Stage 3's first jobs (plan 44's Live run). After plan 44 merges, from a fresh
@@ -707,30 +554,6 @@
       the first releases after 2.1.296, with 172 block findings in one packet, and settle exited
       0 (195 items answered, 4 of 4 releases covered, 0 quotes not found, 0 unparseable, 0 left
       out; 2.1.299's coverage line stood as written).
-- [x] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
-      wave, the I2 residual; owner deferred 2026-10-13). The owner's design (a) holds a group's
-      rebaseline in triage while a section that a row for one of its blocks flagged in another
-      group is still flagged (`build/cc_guide/settle.py`, `crossing` in `settle_triage`). But if
-      the same triage also sends one of the block's own-group sections to verify,
-      `packets --verify --from` writes that group's packet with the block in it, and
-      `settle_review`'s `ready` (settle.py, near line 599) checks only the block's candidates: the
-      verify index does not record which sections the triage rows for that block flagged, so the
-      block is rebaselined while the other group's section is still held or deferred. Fix: have
-      `packets.verify` (`build/cc_guide/packets.py`) carry each block's row-flagged sections from
-      `settled.json` into the verify index, and have `ready` require them resolved too (close to
-      the owner's design (b)); test: an alpha block with TOUCHES rows naming `beta.overview` and
-      `alpha.overview`, where alpha's verify must not rebaseline it while `beta.overview` is
-      unresolved. This reopens the owner's choice of design (a) over (b) and amends spec R8.4
-      step 6 / R8.10, so it is the owner's decision. Size: design. Done when: the owner decides,
-      and if (b) is chosen, that test passes and the spec states the rule.
-      → done 2026-10-13 (owner decision, `chore/cc-drift-triage-2026-10-13`): design (a) stays,
-      with an operating rule in place of code. The fix above would never rebaseline such a block:
-      a verify packet's `cleared` is its triage's, which never holds a flagged section, and the
-      other group's packet does not carry the block, so it would return at every triage. Spec
-      R8.4 step 6 now states the residual, and the cc-guide skill's triage step 4 tells the run
-      to verify both groups, settle the other group's packet first, and leave the block out of
-      its own group's `rebaseline` while that section is held or deferred. Carrying the block
-      into every flagged group's verify packet (design (b)) was declined.
 - [x] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
       deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
       (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
@@ -825,83 +648,6 @@
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
       → progress 2026-11-19 (plan 102): the changed arm met P11 in 5 of 5 valid reps against 0 of 5 (3 by the mechanical B-row line, 2 by C rows rated by hand), but gate A failed and Part A is reverted, so an audit at HEAD still misses `deniedModels`. Kept open by the owner's word. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A and Disposition.
       → retired 2026-11-27: the owner retired it after plan 102's gate A failed and Part A was reverted; no new verifier-recall round will run, so its `deniedModels` done-when cannot be met.
-- [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
-      models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
-      (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
-      lose a write. The session ran `accept` and `audited` in parallel; this time the result
-      matched a sequential rerun, but nothing prevents the loss. `.claude/skills/cc-guide/SKILL.md`'s
-      "Dispatch, save, settle" step 4 says to run settle's commands in the order it prints
-      them, not to run them one at a time. Size: quick-fix. Done when: that step says to run
-      them one at a time, never in a parallel batch, with `build/cc_guide/test_skill_files.py`
-      and `check_frontmatter.py` passing.
-      → done 2026-10-13 (/deferred quick fix): step 4 now says to run them in order and one at a
-      time, never in a parallel batch, since each `baseline` command rewrites the file.
-      `test_skill_files.py` and `check_frontmatter.py` pass.
-
-## cc-drift-triage-2026-10-13 (no plan; /cc-guide triage, branch chore/cc-drift-triage-2026-10-13) — 2026-10-13
-
-- [x] The guide's load trigger for path-scoped rules is out of date (`/cc-guide verify`, packet
-      `20261013T175307-verify`, rules group). Guide line 252 (`rules.rules-files`) says a
-      `paths` rule loads when Claude reads or edits a matching file; line 399
-      (`lean.session-hygiene`, overview group) says such a rule reloads when Claude reads,
-      writes or edits its trigger file. The docs name the Read, Write and Edit tools, and the
-      same verifier's changelog rows add 2.1.288 (Write and Edit load rules) and 2.1.293 (a
-      single-file `cat`, `head`, `tail`, `sed -n` or `grep` view in Bash loads them too). The
-      verifier still rated line 252's trigger CONFIRMED, so a re-verify may pass it again, and
-      this item rests on the text rather than on a verdict. Size: quick-fix. Done when: line
-      252 names the triggers the docs give, line 399 agrees with it or says why it differs,
-      each changed section has had `baseline accept --substantive` and `stamp`, and `cli.py
-      lint` and `check_conformance.py` pass.
-      → done 2026-10-13 (/deferred quick fix): line 252 now says a `paths` rule loads when
-      Claude reads, writes or edits a matching file, a single-file Bash read included since
-      2.1.293, as the 2.1.296 snapshot's memory page gives it. Line 399 already agrees: the
-      context-window page uses the same "reads, writes, or edits". `rules.rules-files` was
-      accepted as substantive and stamped; `lint`, `check_conformance.py` and `check
-      --worktree` pass, with no new block due.
-- [x] Six owner's-call rows from the follow-on verify (`/cc-guide verify`, packet
-      `20261013T175307-verify`). Settle lists such rows and never applies them, and the
-      session that ran the verify has ended, so this is their only record. Rules group,
-      each a missing statement (C row): (1) near line 252, a rule whose `paths` frontmatter
-      does not parse loads as if it had none, so it is always loaded, and `claude --debug`
-      shows the error; (2) the L252 correction already says an over-budget brace pattern
-      matches no files, but an unreadable bracket pattern also matches nothing, with no
-      warning, while the rule's other patterns keep working; (3) near line 249, user and
-      project rules both load and neither overrides the other, so on a conflict Claude may
-      follow either, which calls for a keep-them-consistent note. Overview group, line 391
-      (`lean.measure`): (4) the community `ccusage` tool is NOT FOUND for the second run in a
-      row, as expected for a tool the docs do not cover: keep it as the guide's own pointer or
-      drop it; (5) "establish a baseline before optimizing anything" is a JUDGMENT row, the
-      guide's own advice; (6) `/skill-doctor` is recommended without its conditions: it needs
-      2.1.252 or later and cannot run while feature-flag fetching is off (C row). Size:
-      quick-fix each. Done when: the owner has ruled on all six, and each statement added to
-      the guide went through `/cc-guide`'s accept and stamp with `cli.py lint` passing.
-      → done 2026-10-13 (/deferred quick fix): the owner added (1), (2), (3) and (6) and kept
-      (4) and (5) as written. Each added statement was checked against the 2.1.296 snapshot.
-      (2) states only what the docs give, a pattern that matches nothing while the rule's other
-      patterns keep working; the docs do not say the failure is silent. Every added term is
-      unformatted or under three characters, so no new watch term made a block due.
-      `rules.rules-files` and `lean.measure` were accepted as substantive and stamped.
-- [x] A short backticked word in a guide section makes unrelated docs blocks due (`/cc-guide
-      verify`, overview group, 2026-10-13). `section_terms` (`build/cc_guide/guide.py`, near
-      line 143) makes every backticked span of 3 to 60 characters outside fenced code a watch
-      term, less `STOP_TERMS` (line 33, measured on the 2.1.288 snapshot) and the section's
-      `exclude_terms` in `build/cc_guide/manifest.toml`. The matcher (`build/cc_guide/blocks.py`,
-      near line 182) then makes a block a candidate when any term is a case-sensitive substring
-      of its key or text. A correction that wrote `none` in backticks at line 391 made 23
-      unrelated blocks due, one through "nonessential"; writing the word unformatted cleared
-      them, so the guide's formatting now carries an unwritten rule. Options: add such words to
-      `STOP_TERMS` (a code change for every section, best re-measured), a per-section
-      `exclude_terms` entry (owner configuration), a higher `TERM_MIN` (which also drops real
-      short terms), or matching short single-word terms on word boundaries (an amendment to
-      spec R3.6). Size: design. Done when: the owner picks one, and a test shows that a
-      section term `none` no longer makes a block that contains it only inside "nonessential"
-      a candidate.
-      → done 2026-10-13 (/deferred, owner decision): the owner chose case by case and no
-      matcher change, so the test above is not written. A false match costs one triage; each
-      narrowing option risks a missed one, and matching only at a word's start would not even
-      stop `none` inside "nonessential". The cc-guide skill's verify step 4 now says to write a
-      short common word unformatted and, when such a term is needed, to ask the owner for an
-      `exclude_terms` entry in `build/cc_guide/manifest.toml`.
 
 ## deferred-2026-10-13 (no plan; /deferred pass, branch chore/deferred-2026-10-13) — 2026-10-13
 
@@ -941,26 +687,6 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       in both files. Neither file is ready for `/cc-guide files` yet (this section's header):
       `check_frontmatter.py` still has the key-set item below, and `check_conformance.py` the
       stop-hook guard design and its not-covered rows.
-- [x] `build/check_frontmatter.py`'s SKILL.md key set (`ALLOWED_KEYS`, line 28; the unknown-key
-      report, lines 107 and 108). It is described as the spec-valid key set but omits the
-      Agent Skills field `compatibility`, a plain bug. It also rejects two Claude Code fields
-      the guide documents: `agent`, which names the agent type a `context: fork` skill runs
-      on, and `disable-model-invocation`, which the guide says to set on side-effecting skills.
-      writing-skills (about line 104) states the stricter key set as the repo's rule. Size:
-      quick-fix for `compatibility`; the owner decides the other two. Done when:
-      `compatibility` is accepted with a test; for `agent` and `disable-model-invocation`,
-      the owner either allows them, with writing-skills' key list and the lint's tests
-      updated together, or records a deviation in `build/cc_guide/conformance.toml`.
-      → Note: the gap `side-effecting-skills-ungated` (deferred item above, "Gate or make
-      manual-only the four ungated side-effecting skills") needs `disable-model-invocation`
-      to pass this lint if that item makes a skill manual-only.
-      → progress 2026-10-15 (/deferred quick fix, the `compatibility` half): `ALLOWED_KEYS`
-      accepts `compatibility`, red first with `test_compatibility_key_allowed`, and
-      writing-skills' line 104 lists it so its "Any other key fails" stays true. The item
-      stays open for the owner's call on `agent` and `disable-model-invocation`.
-      The lint checks only that the key is allowed, not its value: portability R1.3
-      (`specs/agent-skills-portability-spec.md`, a string of 1-500 characters) still needs its
-      Stage A check, and that spec's baseline row for the missing key (line 39) is now met. → done in plan 53
 - [x] Two `hook-scripts-executable` messages leave out the condition on failing open
       (`build/check_conformance.py:1023`, `:1028`). They say a non-executable hook script
       "fails open", but since 2.1.295 a hook that sets `"onFailure": "block"` blocks instead
@@ -995,38 +721,6 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → progress 2026-10-31 (owner ruling): a loop guard is the flag (a read of `stop_hook_active`) or a waiver per hook, recorded in `build/cc_guide/conformance.toml`, that names the guard the hook uses instead.
       → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
       → done 2026-11-11 (plan 89): a loop guard is a read of `stop_hook_active` or a `stop-hook-guard` waiver on the file that wires the Stop command. The rule, both findings and the `stop-hook-guard-literal` deviation say so, and tests cover the finding, the waiver and the stale waiver (`check_conformance.py`, `conformance.toml`).
-- [x] Three subagent-driven-development decisions, outside the register
-      (`skills/subagent-driven-development/SKILL.md`). (1) Line 239 (line numbers refreshed after plan 46's reorder): an implementer already
-      at `capable` has only fresh context and higher effort left, with no model step; the guide
-      names a Fable step above Opus (`subagents.models`). The Agent tool's `model` option
-      listed `fable` on 2026-10-13 (seen in its schema, not dispatched). (2) Line 69 (also lines 327–328): never fix by hand,
-      and dispatch a fix subagent even for a one-line fix, where the guide lists trivial
-      single-file edits as delegation that burns tokens (`subagents.isolation`). (3) Line 425:
-      after compaction the controller follows the ledger-recovery protocol (about lines
-      387–429), which likely sits past the 5,000-token cut of a re-attached skill, and the
-      skill never says to re-invoke itself (`lean.session-hygiene`). The SDD half of "Move
-      critical sections above the compaction cut" (above) covers the placement, but not the
-      re-invoke instruction. Size: design. Done when: the owner rules on each, and each
-      ruling is applied to the skill (micro-tested, as a discipline skill) or recorded as a
-      deviation in `build/cc_guide/conformance.toml`.
-      → progress 2026-10-20 (owner ruling E3, `/cc-guide` upkeep): the 2026-10-20 files pass
-      found (1) again, now at line 244, as a contradiction with `subagents.models`. Ruled: fix
-      the file in the SDD restructure, micro-tested. (2) and (3) are not yet ruled.
-      → progress 2026-10-28 (superpowers drift review): prior art for (3). Upstream v7.0.1
-      (#2565) does not re-invoke the skill. It re-reads each step's reference from disk at
-      that step. Claude Code's truncation marker already tells the model to read the file, and
-      upstream's #2481 controller never did. See drift finding 17. (3) is still not ruled.
-      → progress 2026-10-29 (owner rulings, in conversation): (2) No: a trivial fix need not
-      go to a fix subagent, limited to one file and no change in behavior, with the same
-      scoped re-review afterward and a pressure case in the micro-test. (3) Yes: a short line
-      near the top to re-invoke the skill and re-read the ledger after a compaction, plus
-      upstream's per-step re-read pointers. The line is tested against a control without it
-      first and dropped if the control already recovers. Plan 71 applies (1), (2) and (3).
-      → done in plan 71 (2026-10-29): (1) the Fable round-5 rung, with one line in SKILL.md's
-      Fix Rounds paragraph because the micro-test prompt holds only SKILL.md; (2) the
-      trivial-fix exception, tightened once after C2b scored 0/5; (3) tested against a control
-      and dropped, because the control recovered 5/5 (stop rule D3). Results:
-      `specs/baseline/red-baseline-sdd-compaction.md`.
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
@@ -6273,7 +5967,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the working directory changed between the two runs.
 
 ## brainstorming-improvements (no plan; owner rulings on specs/findings/brainstorming-improvements.md, branch claude/brainstorming-skill-review-handoff-45fef9) — 2026-11-22
-- [ ] **Let brainstorming's builder check read the project, once a run shows the waste
+- [x] **Let brainstorming's builder check read the project, once a run shows the waste
       (`specs/completed/brainstorming-improvements.md`, item 7; owner ruling 2026-11-22: hold it in the backlog
       with a prove-first note).** `skills/brainstorming/builder-check-prompt.md:12` tells the builder to read the
       design only. The sort at `skills/brainstorming/SKILL.md:323-325` then drops each question "Answered already
@@ -6287,6 +5981,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       compare the two question lists, and add a `NOTICE` sentence. Size: quick-fix after the check. Done when: this item's tick
       note gives the first run's count, and either the item is retired or the prompt carries the line and
       `NOTICE` names it.
+      → done 2026-11-28 (/deferred quick fix): the first run's count is 0. The builder check ran once with today's prompt (general-purpose, Opus 5.5) on `specs/derive-roadmap-provisional-items-and-folded-requirements.md` as drafted at `13f49ed`, with the repo exported at that commit. It raised 6 questions, and the project at `13f49ed` answers none of them. The builder read `skills/derive-roadmap/` and the kit's `cases.py` on its own and checked each question against them, so a builder that reads the project is not the gap the finding assumed. By this item's rule the prompt keeps its text and the item retires.
 
 ## handoff-briefs-in-repo (no plan; owner request, branch claude/briefs-builder-docs-structure-a7dc79) — 2026-11-22
 - [ ] **Keep handoff briefs in the repo under `specs/handoff-briefs/` (owner request, 2026-11-22).** Today
@@ -6407,13 +6102,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (152 characters) loses "micro-testing", and the new text keeps it whole. Size: plan. Done when: a prompt
       set exists that loads the old description in at least 8 of 15 should-load reps on each model, and the
       reorder passes its no-loss bars on both models, or the owner closes spec item 3b.
-- [ ] **Rule on the trigger-rep VOID rule before the trigger runner is reused (plan 107, final review).** The
+- [x] **Rule on the trigger-rep VOID rule before the trigger runner is reused (plan 107, final review).** The
       kit voids a trigger rep for a refused Bash call or a wide Glob, even when the rep had already loaded
       `writing-skills`. Five of the 7 voids in plan 107's run had loaded it. `micro-tests.md` also points to
       "the newest committed kit", which is now this kit. Size: quick-fix. Revisit if: a new directory under
       `specs/baseline/` holds a copy of `run_trigger_reps.sh` or `triggers.py`. Then decide whether a rep that
       loaded before the void counts, and say so in the new record.
       → triggered 2026-11-27: plan 111 committed copies of both files in `specs/baseline/red-baseline-codes-description/kit/`, and its record does not rule on a rep that loaded before the void.
+      → done 2026-11-28 (/deferred quick fix): the owner ruled that a rep that loads the skill before its first void event counts as a load, and a rep that loads only after it stays void. `specs/baseline/red-baseline-codes-description.md` (VOID rule) records the ruling for every kit that copies the trigger runner. It changes no plan 111 verdict, because no rep there was void.
 - [x] **Fix the subagent fallback in `SKILL.md` micro-test step 1 (plan 107, final review).** Step 1 still offers
       "a single-shot subagent if you don't have API access". That rep inherits the user's instruction files, so
       it conflicts with `references/micro-tests.md` (a new directory, instruction files off) and with the guide
