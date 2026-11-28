@@ -1,6 +1,7 @@
 # Read-only guard: the glued glob qualifier and programs named through git configuration — Design Spec
 
-**Status:** DRAFT, awaiting the owner's approval.
+**Status:** APPROVED (2026-11-28). The owner approved this file, its designer's calls included, on 2026-11-28. The
+question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it".
 
 This spec answers two backlog items in `specs/deferred_items.md`:
 
