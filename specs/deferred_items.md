@@ -31,6 +31,7 @@
       core.pager=cat log`; `GIT_*` assignments pose the same choice. Revisit if: an
       agent is seen setting such a key, or the guard is asked to stop arbitrary
       programs rather than drift off the read-only contract.
+      → planned 2026-11-28: specs/readonly-guard-glued-qualifier-and-git-config.md
 - [x] Each of the eight readings holds for a whole line, so a line that needs the flat
       reading for one construct and the nested reading for another is misread by all of
       them (the round-2 review of 854947c: its R1-R4 and Codex P2a/P2b). This is the
@@ -5187,6 +5188,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       that tells the two apart. Filed at plan 90's completion gate, on the owner's word. Size: design. Done when: the
       guard denies the README's glued-qualifier example, while `print(git(x))` in a heredoc, `*(.)` and
       `(#i)readme*` still pass, and the README's "Not caught" bullet for it is removed.
+      → planned 2026-11-28: specs/readonly-guard-glued-qualifier-and-git-config.md
 
 ## claude/peaceful-gauss-1ce419 Step 4b review — 2026-11-12
 - [ ] **The re-vendored ste-lint.py rejects front matter that opens with an indented comment (Codex [P2], carried
