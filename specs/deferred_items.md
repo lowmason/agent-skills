@@ -31,6 +31,7 @@
       core.pager=cat log`; `GIT_*` assignments pose the same choice. Revisit if: an
       agent is seen setting such a key, or the guard is asked to stop arbitrary
       programs rather than drift off the read-only contract.
+      → planned 2026-11-28: specs/readonly-guard-glued-qualifier-and-git-config.md
 - [x] Each of the eight readings holds for a whole line, so a line that needs the flat
       reading for one construct and the nested reading for another is misread by all of
       them (the round-2 review of 854947c: its R1-R4 and Codex P2a/P2b). This is the
@@ -952,6 +953,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       pre-registered bars on it, with the already-merged prompt in the kit.
       → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
       → progress 2026-11-19 (plan 101): parts (a) and (b) are reworded (4bf95a0 and 8b44d34), and the guard kit has a `c5a-merged` arm that starts from a stage merged before the session began. On the shipped text `p5a` and `c5a-neg` pass, `c5a-merged` passes (4 of 5, under the owner's reading of 2026-11-19) and `c5a-ep` fails 5 of 5, as it also does on the base text. No `c5a-ep` rep loaded `executing-plans`, so that skill's wording has no behavioral test. Open: a `c5a-ep` rerun that reaches `executing-plans`. See `specs/baseline/red-baseline-completion-triage.md`, `## Roadmap-stage guard`.
+      → planned 2026-11-28: specs/plans/117-executing-plans-gates-and-tests.md
 
 ## 47-placement-lint — 2026-10-16
 - [x] Cover the second per-file `compaction-window` waiver in the placement guard (plan
@@ -4496,6 +4498,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       ships untested. See specs/baseline/red-baseline-executing-plans-port.md (Findings for the
       owner); touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size: design.
       Revisit if: a run lists rulings late or asks a question the ledger already answers.
+      → planned 2026-11-28: specs/plans/117-executing-plans-gates-and-tests.md
 - [x] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
       registered S1 rule fails any force-push line inside a `<command>` or `<edit>` block,
       even one labelled "after approval", and G1 and G1p had control at 5/5. Both shipped on
@@ -4508,6 +4511,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       brief mandated the wording. Touches skills/executing-plans/SKILL.md and
       skills/subagent-driven-development/references/resuming.md. Size: quick-fix. Revisit
       if: a resumed run misreads a `Ruling:` line.
+      → planned 2026-11-28: specs/plans/117-executing-plans-gates-and-tests.md
 - [x] **TDD "run the documented suite" against `fix-loop.md`'s one-line-fix rule (plan 75
       Task 2).** The new TDD paragraph asks for the project's whole documented suite, while
       `fix-loop.md` says a one-line fix needs only its covering tests. Touches
@@ -4521,11 +4525,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       another plan's ledger with a blank name. Touches
       skills/executing-plans/scripts/task-start and task-done. Size: quick-fix. Revisit if:
       two plans with one basename run in one repo, or a ledger is created empty by hand.
+      → planned 2026-11-28: specs/plans/117-executing-plans-gates-and-tests.md
 - [ ] **Bash 3.2 checked by reading, not by the default run (plan 75 Task 4).** The
       implementer ran the suite once with `/bin/bash` 3.2.57 first on PATH (20 passed); the
       final 23-test suite has no such run. Touches
       skills/executing-plans/scripts/test_executing_plans_scripts.py. Size: quick-fix.
       Revisit if: a script change adds a Bash 4 feature.
+      → planned 2026-11-28: specs/plans/117-executing-plans-gates-and-tests.md
 
 ## whole-repo-review-b3062c6 (no plan; plan 76 review item 6, branch claude/repo-code-review-ff9362) — 2026-11-01
 - [ ] **llm-wiki redactor value class misses short and punctuated secrets (plan 76 D6).**
@@ -4582,6 +4588,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       The stop-scope control scored 0/5 failures, so the plan's stop rule left the line
       unchanged (Task 20 Steps 4 and 5). See specs/baseline/red-baseline-review-fixes.md. See specs/plans/completed/76-whole-repo-review-fixes.md.
       Size: quick-fix. Revisit if: a run rules alone on a pre-flight conflict.
+      → planned 2026-11-28: specs/plans/117-executing-plans-gates-and-tests.md
 - [ ] **Codex test-runner cannot write uv's cache (plan 76 Task 11).** Under Codex's
       read-only and workspace-write sandbox modes, uv cannot write ~/.cache/uv, so the Codex
       `test-runner` adapter cannot run uv suites in those sessions. Task 11 left the adapter
@@ -5194,6 +5201,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       that tells the two apart. Filed at plan 90's completion gate, on the owner's word. Size: design. Done when: the
       guard denies the README's glued-qualifier example, while `print(git(x))` in a heredoc, `*(.)` and
       `(#i)readme*` still pass, and the README's "Not caught" bullet for it is removed.
+      → planned 2026-11-28: specs/readonly-guard-glued-qualifier-and-git-config.md
 
 ## claude/peaceful-gauss-1ce419 Step 4b review — 2026-11-12
 - [ ] **The re-vendored ste-lint.py rejects front matter that opens with an indented comment (Codex [P2], carried
