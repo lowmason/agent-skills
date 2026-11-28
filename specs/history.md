@@ -1019,3 +1019,9 @@ Closed earlier deferred items:
 - "The `async-teardown` hook lives 120 s (`TEARDOWN_HOOK` in `build/cc_guide/probes.py`), but the probe's `claude -p`" (deferred by 109-cc-guide-fetch-notice-and-probes).
 - "`prune_generations` (`build/cc_guide/check.py`) measures a generation's age from its folder mtime, not from the" (deferred by 109-cc-guide-fetch-notice-and-probes).
 - "`explore_void` (`build/cc_guide/probe_checks.py`) treats any tool call by a subagent as a file read and voids" (deferred by 109-cc-guide-fetch-notice-and-probes).
+
+## /deferred — 2026-11-28
+
+Closed deferred items:
+- "**Let brainstorming's builder check read the project, once a run shows the waste" (deferred by brainstorming-improvements): the first run's count is 0. The builder check ran once with today's prompt (general-purpose, Opus 5.5) on `specs/derive-roadmap-provisional-items-and-folded-requirements.md` as drafted at `13f49ed`, with the repo exported at that commit. It raised 6 questions, and the project at `13f49ed` answers none of them. The builder read `skills/derive-roadmap/` and the kit's `cases.py` on its own and checked each question against them, so a builder that reads the project is not the gap the finding assumed. By this item's rule the prompt keeps its text and the item retires.
+- "**Rule on the trigger-rep VOID rule before the trigger runner is reused (plan 107, final review).** The" (deferred by 107-writing-skills-improvements): the owner ruled that a rep that loads the skill before its first void event counts as a load, and a rep that loads only after it stays void. `specs/baseline/red-baseline-codes-description.md` (VOID rule) records the ruling for every kit that copies the trigger runner. It changes no plan 111 verdict, because no rep there was void.

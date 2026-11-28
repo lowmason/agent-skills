@@ -179,6 +179,11 @@ How the kit reads the rules:
   path-audit VOID dropped reps that had loaded the skill. The audit prints a cross-session tool or another
   extra tool in the init record, but it does not void the rep for it. Task 4's probe checks the tools.
 
+**Owner ruling, 2026-11-28 (`/deferred`).** A trigger rep that loads the skill before its first void event
+counts as a load. The void event cannot have caused that load. A rep that loads the skill only after the event
+stays void. The ruling is for every kit that copies `run_trigger_reps.sh` or `triggers.py`, this one included.
+It changes no verdict here, because no rep in this record was void.
+
 A void rep is rerun once, with the next rep number in the same cell. If the rerun is void too, the cell stays
 short of 3 valid reps, `tally` prints `verdict: incomplete`, and the controller asks the owner. A void rep's
 cost still counts in the spend.
